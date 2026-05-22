@@ -1,10 +1,11 @@
 ---
 phase: 36
 slug: stage-and-commit-configuration-rules
-status: draft
+status: final
 nyquist_compliant: true
-wave_0_complete: false
+wave_0_complete: true
 created: 2026-05-22
+updated: 2026-05-22
 ---
 
 # Phase 36 — Stage and Commit Configuration & Rules
@@ -38,8 +39,8 @@ created: 2026-05-22
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 36-01-01 | 01 | 1 | STAGE-01 | T-36-01 | Validate staging targets (exact subset) | unit | `git diff --cached --name-only` | ✅ Wave 0 | ⬜ pending |
-| 36-01-02 | 01 | 1 | STAGE-01 | — | Validate commit message and history | unit | `git log -n 1 --pretty=format:%s` | ✅ Wave 0 | ⬜ pending |
+| 36-01-01 | 01 | 1 | STAGE-01 | T-36-01 | Validate staging targets (exact subset) | unit | `node scripts/stage-batch-1.cjs` | ✅ Wave 0 | ✅ green |
+| 36-01-02 | 01 | 1 | STAGE-01 | — | Validate commit message and history | unit | `git log -n 1 --pretty=format:%s c3e20002` | ✅ Wave 0 | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -66,4 +67,14 @@ All phase behaviors have automated verification.
 - [x] Feedback latency < 5s
 - [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** passed
+
+---
+
+## Validation Audit 2026-05-22
+
+| Metric | Count |
+|--------|-------|
+| Gaps found | 0 |
+| Resolved | 0 |
+| Escalated | 0 |
