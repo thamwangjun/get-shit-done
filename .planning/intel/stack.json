@@ -1,0 +1,51 @@
+{
+  "_meta": {
+    "updated_at": "2026-05-01T14:24:34.122Z",
+    "version": 4
+  },
+  "languages": [
+    "JavaScript",
+    "TypeScript",
+    "Shell"
+  ],
+  "frameworks": [
+    "Node.js",
+    "@anthropic-ai/claude-agent-sdk"
+  ],
+  "tools": [
+    "vitest",
+    "esbuild",
+    "c8",
+    "tsc"
+  ],
+  "build_system": "npm scripts",
+  "test_framework": "vitest (sdk/), node scripts/run-tests.cjs (root)",
+  "package_manager": "npm",
+  "content_formats": [
+    "Markdown (agents, commands, workflows, references, templates)",
+    "JSON (config, CATALOGUE.json, intel files)",
+    "YAML frontmatter (PLAN.md, SUMMARY.md, STATE.md)",
+    "XML task blocks (PLAN.md task bodies)",
+    "CJS (gsd-tools.cjs and lib/*.cjs)"
+  ],
+  "packages": {
+    "root": {
+      "name": "get-shit-done-cc",
+      "version": "1.37.1",
+      "entry": "bin/install.js"
+    },
+    "sdk": {
+      "name": "@gsd-build/sdk",
+      "version": "0.1.0",
+      "entry": "sdk/src/index.ts",
+      "bin": "gsd-sdk"
+    }
+  },
+  "runtime_layout": "standard (no .kilo root detected)",
+  "agents_dir": "agents/",
+  "commands_dir": "commands/gsd/",
+  "workflows_dir": "get-shit-done/workflows/",
+  "references_dir": "get-shit-done/references/",
+  "hooks_dir": "hooks/",
+  "lib_dir": "get-shit-done/bin/lib/"
+}

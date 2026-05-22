@@ -1,0 +1,2147 @@
+{
+  "generated": "2026-04-29T06:15:03.011Z",
+  "levels": [
+    {
+      "level": 1,
+      "directory": "agents",
+      "canonical_tag": "persona",
+      "total": 31,
+      "ok": 17,
+      "anomalies": 14,
+      "files": [
+        {
+          "file": "agents/gsd-advisor-researcher.md",
+          "found_tags": [
+            "task",
+            "persona"
+          ],
+          "expected_tag": "persona",
+          "status": "multiple"
+        },
+        {
+          "file": "agents/gsd-ai-researcher.md",
+          "found_tags": [
+            "persona"
+          ],
+          "expected_tag": "persona",
+          "status": "ok"
+        },
+        {
+          "file": "agents/gsd-assumptions-analyzer.md",
+          "found_tags": [
+            "task",
+            "persona"
+          ],
+          "expected_tag": "persona",
+          "status": "multiple"
+        },
+        {
+          "file": "agents/gsd-code-fixer.md",
+          "found_tags": [
+            "task",
+            "persona"
+          ],
+          "expected_tag": "persona",
+          "status": "multiple"
+        },
+        {
+          "file": "agents/gsd-code-reviewer.md",
+          "found_tags": [
+            "task",
+            "persona"
+          ],
+          "expected_tag": "persona",
+          "status": "multiple"
+        },
+        {
+          "file": "agents/gsd-codebase-mapper.md",
+          "found_tags": [
+            "persona"
+          ],
+          "expected_tag": "persona",
+          "status": "ok"
+        },
+        {
+          "file": "agents/gsd-debug-session-manager.md",
+          "found_tags": [
+            "persona"
+          ],
+          "expected_tag": "persona",
+          "status": "ok"
+        },
+        {
+          "file": "agents/gsd-debugger.md",
+          "found_tags": [
+            "persona"
+          ],
+          "expected_tag": "persona",
+          "status": "ok"
+        },
+        {
+          "file": "agents/gsd-doc-verifier.md",
+          "found_tags": [
+            "task",
+            "persona"
+          ],
+          "expected_tag": "persona",
+          "status": "multiple"
+        },
+        {
+          "file": "agents/gsd-doc-writer.md",
+          "found_tags": [
+            "task",
+            "persona"
+          ],
+          "expected_tag": "persona",
+          "status": "multiple"
+        },
+        {
+          "file": "agents/gsd-domain-researcher.md",
+          "found_tags": [
+            "persona"
+          ],
+          "expected_tag": "persona",
+          "status": "ok"
+        },
+        {
+          "file": "agents/gsd-eval-auditor.md",
+          "found_tags": [
+            "persona"
+          ],
+          "expected_tag": "persona",
+          "status": "ok"
+        },
+        {
+          "file": "agents/gsd-eval-planner.md",
+          "found_tags": [
+            "persona"
+          ],
+          "expected_tag": "persona",
+          "status": "ok"
+        },
+        {
+          "file": "agents/gsd-executor.md",
+          "found_tags": [
+            "persona"
+          ],
+          "expected_tag": "persona",
+          "status": "ok"
+        },
+        {
+          "file": "agents/gsd-framework-selector.md",
+          "found_tags": [
+            "persona"
+          ],
+          "expected_tag": "persona",
+          "status": "ok"
+        },
+        {
+          "file": "agents/gsd-integration-checker.md",
+          "found_tags": [
+            "task",
+            "persona"
+          ],
+          "expected_tag": "persona",
+          "status": "multiple"
+        },
+        {
+          "file": "agents/gsd-intel-updater.md",
+          "found_tags": [
+            "persona"
+          ],
+          "expected_tag": "persona",
+          "status": "ok"
+        },
+        {
+          "file": "agents/gsd-nyquist-auditor.md",
+          "found_tags": [
+            "task",
+            "persona"
+          ],
+          "expected_tag": "persona",
+          "status": "multiple"
+        },
+        {
+          "file": "agents/gsd-pattern-mapper.md",
+          "found_tags": [
+            "persona"
+          ],
+          "expected_tag": "persona",
+          "status": "ok"
+        },
+        {
+          "file": "agents/gsd-phase-researcher.md",
+          "found_tags": [
+            "persona"
+          ],
+          "expected_tag": "persona",
+          "status": "ok"
+        },
+        {
+          "file": "agents/gsd-plan-checker.md",
+          "found_tags": [
+            "persona"
+          ],
+          "expected_tag": "persona",
+          "status": "ok"
+        },
+        {
+          "file": "agents/gsd-planner.md",
+          "found_tags": [
+            "persona"
+          ],
+          "expected_tag": "persona",
+          "status": "ok"
+        },
+        {
+          "file": "agents/gsd-project-researcher.md",
+          "found_tags": [
+            "task",
+            "persona"
+          ],
+          "expected_tag": "persona",
+          "status": "multiple"
+        },
+        {
+          "file": "agents/gsd-research-synthesizer.md",
+          "found_tags": [
+            "persona"
+          ],
+          "expected_tag": "persona",
+          "status": "ok"
+        },
+        {
+          "file": "agents/gsd-roadmapper.md",
+          "found_tags": [
+            "task",
+            "persona"
+          ],
+          "expected_tag": "persona",
+          "status": "multiple"
+        },
+        {
+          "file": "agents/gsd-security-auditor.md",
+          "found_tags": [
+            "task",
+            "persona"
+          ],
+          "expected_tag": "persona",
+          "status": "multiple"
+        },
+        {
+          "file": "agents/gsd-ui-auditor.md",
+          "found_tags": [
+            "task",
+            "persona"
+          ],
+          "expected_tag": "persona",
+          "status": "multiple"
+        },
+        {
+          "file": "agents/gsd-ui-checker.md",
+          "found_tags": [
+            "persona"
+          ],
+          "expected_tag": "persona",
+          "status": "ok"
+        },
+        {
+          "file": "agents/gsd-ui-researcher.md",
+          "found_tags": [
+            "task",
+            "persona"
+          ],
+          "expected_tag": "persona",
+          "status": "multiple"
+        },
+        {
+          "file": "agents/gsd-user-profiler.md",
+          "found_tags": [
+            "task",
+            "persona"
+          ],
+          "expected_tag": "persona",
+          "status": "multiple"
+        },
+        {
+          "file": "agents/gsd-verifier.md",
+          "found_tags": [
+            "persona"
+          ],
+          "expected_tag": "persona",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "level": 2,
+      "directory": "commands/gsd",
+      "canonical_tag": "intent",
+      "total": 79,
+      "ok": 78,
+      "anomalies": 1,
+      "files": [
+        {
+          "file": "commands/gsd/add-backlog.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/add-phase.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/add-tests.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/add-todo.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/ai-integration-phase.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/analyze-dependencies.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/audit-fix.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/audit-milestone.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/audit-uat.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/autonomous.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/check-todos.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/cleanup.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/code-review-fix.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/code-review.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/complete-milestone.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/debug.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/discuss-phase.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/do.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/docs-update.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/eval-review.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/execute-phase.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/explore.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/extract_learnings.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/fast.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/forensics.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/from-gsd2.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/graphify.md",
+          "found_tags": [],
+          "expected_tag": "intent",
+          "status": "missing"
+        },
+        {
+          "file": "commands/gsd/health.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/help.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/import.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/inbox.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/insert-phase.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/intel.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/join-discord.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/list-phase-assumptions.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/list-workspaces.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/manager.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/map-codebase.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/milestone-summary.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/new-milestone.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/new-project.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/new-workspace.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/next.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/note.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/pause-work.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/plan-milestone-gaps.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/plan-phase.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/plant-seed.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/pr-branch.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/profile-user.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/progress.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/quick.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/reapply-patches.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/remove-phase.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/remove-workspace.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/research-phase.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/resume-work.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/review-backlog.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/review.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/scan.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/secure-phase.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/session-report.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/set-profile.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/settings.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/ship.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/sketch-wrap-up.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/sketch.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/spec-phase.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/spike-wrap-up.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/spike.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/stats.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/thread.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/ui-phase.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/ui-review.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/undo.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/update.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/validate-phase.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/verify-work.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        },
+        {
+          "file": "commands/gsd/workstreams.md",
+          "found_tags": [
+            "intent"
+          ],
+          "expected_tag": "intent",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "level": 3,
+      "directory": "get-shit-done/workflows",
+      "canonical_tag": "objective",
+      "total": 80,
+      "ok": 0,
+      "anomalies": 80,
+      "files": [
+        {
+          "file": "get-shit-done/workflows/add-phase.md",
+          "found_tags": [
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/add-tests.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/add-todo.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/ai-integration-phase.md",
+          "found_tags": [
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/analyze-dependencies.md",
+          "found_tags": [
+            "task",
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "multiple"
+        },
+        {
+          "file": "get-shit-done/workflows/audit-fix.md",
+          "found_tags": [
+            "task",
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "multiple"
+        },
+        {
+          "file": "get-shit-done/workflows/audit-milestone.md",
+          "found_tags": [
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/audit-uat.md",
+          "found_tags": [
+            "task",
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "multiple"
+        },
+        {
+          "file": "get-shit-done/workflows/autonomous.md",
+          "found_tags": [
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/check-todos.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/cleanup.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/code-review-fix.md",
+          "found_tags": [
+            "task",
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "multiple"
+        },
+        {
+          "file": "get-shit-done/workflows/code-review.md",
+          "found_tags": [
+            "task",
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "multiple"
+        },
+        {
+          "file": "get-shit-done/workflows/complete-milestone.md",
+          "found_tags": [
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/debug.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/diagnose-issues.md",
+          "found_tags": [
+            "task",
+            "persona"
+          ],
+          "expected_tag": "objective",
+          "status": "multiple"
+        },
+        {
+          "file": "get-shit-done/workflows/discovery-phase.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/discuss-phase-assumptions.md",
+          "found_tags": [
+            "task",
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "multiple"
+        },
+        {
+          "file": "get-shit-done/workflows/discuss-phase-power.md",
+          "found_tags": [
+            "task",
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "multiple"
+        },
+        {
+          "file": "get-shit-done/workflows/discuss-phase.md",
+          "found_tags": [
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/do.md",
+          "found_tags": [
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/docs-update.md",
+          "found_tags": [
+            "task",
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "multiple"
+        },
+        {
+          "file": "get-shit-done/workflows/eval-review.md",
+          "found_tags": [
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/execute-phase.md",
+          "found_tags": [
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/execute-plan.md",
+          "found_tags": [
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/explore.md",
+          "found_tags": [
+            "task",
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "multiple"
+        },
+        {
+          "file": "get-shit-done/workflows/extract_learnings.md",
+          "found_tags": [
+            "purpose",
+            "objective"
+          ],
+          "expected_tag": "objective",
+          "status": "multiple"
+        },
+        {
+          "file": "get-shit-done/workflows/fast.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/forensics.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/health.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/help.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/import.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/inbox.md",
+          "found_tags": [
+            "task",
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "multiple"
+        },
+        {
+          "file": "get-shit-done/workflows/insert-phase.md",
+          "found_tags": [
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/join-discord.md",
+          "found_tags": [
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/list-phase-assumptions.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/list-workspaces.md",
+          "found_tags": [
+            "task",
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "multiple"
+        },
+        {
+          "file": "get-shit-done/workflows/manager.md",
+          "found_tags": [
+            "task",
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "multiple"
+        },
+        {
+          "file": "get-shit-done/workflows/map-codebase.md",
+          "found_tags": [
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/milestone-summary.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/new-milestone.md",
+          "found_tags": [
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/new-project.md",
+          "found_tags": [
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/new-workspace.md",
+          "found_tags": [
+            "task",
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "multiple"
+        },
+        {
+          "file": "get-shit-done/workflows/next.md",
+          "found_tags": [
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/node-repair.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/note.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/pause-work.md",
+          "found_tags": [
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/plan-milestone-gaps.md",
+          "found_tags": [
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/plan-phase.md",
+          "found_tags": [
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/plant-seed.md",
+          "found_tags": [
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/pr-branch.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/profile-user.md",
+          "found_tags": [
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/progress.md",
+          "found_tags": [
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/quick.md",
+          "found_tags": [
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/reapply-patches.md",
+          "found_tags": [
+            "task",
+            "persona"
+          ],
+          "expected_tag": "objective",
+          "status": "multiple"
+        },
+        {
+          "file": "get-shit-done/workflows/remove-phase.md",
+          "found_tags": [
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/remove-workspace.md",
+          "found_tags": [
+            "task",
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "multiple"
+        },
+        {
+          "file": "get-shit-done/workflows/research-phase.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/resume-project.md",
+          "found_tags": [
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/review.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/scan.md",
+          "found_tags": [
+            "task",
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "multiple"
+        },
+        {
+          "file": "get-shit-done/workflows/secure-phase.md",
+          "found_tags": [
+            "task",
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "multiple"
+        },
+        {
+          "file": "get-shit-done/workflows/session-report.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/set-profile.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/settings.md",
+          "found_tags": [
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/ship.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/sketch-wrap-up.md",
+          "found_tags": [
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/sketch.md",
+          "found_tags": [
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/spec-phase.md",
+          "found_tags": [
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/spike-wrap-up.md",
+          "found_tags": [
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/spike.md",
+          "found_tags": [
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/stats.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/transition.md",
+          "found_tags": [
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/ui-phase.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/ui-review.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/undo.md",
+          "found_tags": [
+            "task",
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "multiple"
+        },
+        {
+          "file": "get-shit-done/workflows/update.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/validate-phase.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/verify-phase.md",
+          "found_tags": [
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/workflows/verify-work.md",
+          "found_tags": [
+            "purpose"
+          ],
+          "expected_tag": "objective",
+          "status": "wrong-level"
+        }
+      ]
+    },
+    {
+      "level": 4,
+      "directory": "get-shit-done/templates",
+      "canonical_tag": "task",
+      "total": 32,
+      "ok": 0,
+      "anomalies": 32,
+      "files": [
+        {
+          "file": "get-shit-done/templates/AI-SPEC.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/templates/DEBUG.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/templates/SECURITY.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/templates/UAT.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/templates/UI-SPEC.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/templates/VALIDATION.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/templates/claude-md.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/templates/context.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/templates/continue-here.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/templates/copilot-instructions.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/templates/debug-subagent-prompt.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/templates/dev-preferences.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/templates/discovery.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/templates/discussion-log.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/templates/milestone-archive.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/templates/milestone.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/templates/phase-prompt.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/templates/planner-subagent-prompt.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/templates/project.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/templates/requirements.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/templates/research.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/templates/retrospective.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/templates/roadmap.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/templates/spec.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/templates/state.md",
+          "found_tags": [
+            "purpose"
+          ],
+          "expected_tag": "task",
+          "status": "wrong-level"
+        },
+        {
+          "file": "get-shit-done/templates/summary-complex.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/templates/summary-minimal.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/templates/summary-standard.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/templates/summary.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/templates/user-profile.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/templates/user-setup.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/templates/verification-report.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        }
+      ]
+    },
+    {
+      "level": 5,
+      "directory": "get-shit-done/references",
+      "canonical_tag": "task",
+      "total": 48,
+      "ok": 29,
+      "anomalies": 19,
+      "files": [
+        {
+          "file": "get-shit-done/references/agent-contracts.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "task",
+          "status": "ok"
+        },
+        {
+          "file": "get-shit-done/references/ai-evals.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/references/ai-frameworks.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/references/artifact-types.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "task",
+          "status": "ok"
+        },
+        {
+          "file": "get-shit-done/references/autonomous-smart-discuss.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/references/checkpoints.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "task",
+          "status": "ok"
+        },
+        {
+          "file": "get-shit-done/references/common-bug-patterns.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "task",
+          "status": "ok"
+        },
+        {
+          "file": "get-shit-done/references/context-budget.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "task",
+          "status": "ok"
+        },
+        {
+          "file": "get-shit-done/references/continuation-format.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/references/debugger-philosophy.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/references/decimal-phase-calculation.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "task",
+          "status": "ok"
+        },
+        {
+          "file": "get-shit-done/references/domain-probes.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "task",
+          "status": "ok"
+        },
+        {
+          "file": "get-shit-done/references/executor-examples.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/references/gate-prompts.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "task",
+          "status": "ok"
+        },
+        {
+          "file": "get-shit-done/references/gates.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/references/git-integration.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "task",
+          "status": "ok"
+        },
+        {
+          "file": "get-shit-done/references/git-planning-commit.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/references/ios-scaffold.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/references/mandatory-initial-read.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/references/model-profile-resolution.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "task",
+          "status": "ok"
+        },
+        {
+          "file": "get-shit-done/references/model-profiles.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "task",
+          "status": "ok"
+        },
+        {
+          "file": "get-shit-done/references/phase-argument-parsing.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/references/planner-antipatterns.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/references/planner-gap-closure.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "task",
+          "status": "ok"
+        },
+        {
+          "file": "get-shit-done/references/planner-reviews.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "task",
+          "status": "ok"
+        },
+        {
+          "file": "get-shit-done/references/planner-revision.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "task",
+          "status": "ok"
+        },
+        {
+          "file": "get-shit-done/references/planner-source-audit.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/references/planning-config.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/references/project-skills-discovery.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/references/questioning.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "task",
+          "status": "ok"
+        },
+        {
+          "file": "get-shit-done/references/revision-loop.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "task",
+          "status": "ok"
+        },
+        {
+          "file": "get-shit-done/references/sketch-interactivity.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/references/sketch-theme-system.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/references/sketch-tooling.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/references/sketch-variant-patterns.md",
+          "found_tags": [],
+          "expected_tag": "task",
+          "status": "missing"
+        },
+        {
+          "file": "get-shit-done/references/tdd.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "task",
+          "status": "ok"
+        },
+        {
+          "file": "get-shit-done/references/thinking-models-debug.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "task",
+          "status": "ok"
+        },
+        {
+          "file": "get-shit-done/references/thinking-models-execution.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "task",
+          "status": "ok"
+        },
+        {
+          "file": "get-shit-done/references/thinking-models-planning.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "task",
+          "status": "ok"
+        },
+        {
+          "file": "get-shit-done/references/thinking-models-research.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "task",
+          "status": "ok"
+        },
+        {
+          "file": "get-shit-done/references/thinking-models-verification.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "task",
+          "status": "ok"
+        },
+        {
+          "file": "get-shit-done/references/thinking-partner.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "task",
+          "status": "ok"
+        },
+        {
+          "file": "get-shit-done/references/ui-brand.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "task",
+          "status": "ok"
+        },
+        {
+          "file": "get-shit-done/references/universal-anti-patterns.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "task",
+          "status": "ok"
+        },
+        {
+          "file": "get-shit-done/references/user-profiling.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "task",
+          "status": "ok"
+        },
+        {
+          "file": "get-shit-done/references/verification-overrides.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "task",
+          "status": "ok"
+        },
+        {
+          "file": "get-shit-done/references/verification-patterns.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "task",
+          "status": "ok"
+        },
+        {
+          "file": "get-shit-done/references/workstream-flag.md",
+          "found_tags": [
+            "task"
+          ],
+          "expected_tag": "task",
+          "status": "ok"
+        }
+      ]
+    }
+  ]
+}

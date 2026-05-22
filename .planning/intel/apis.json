@@ -1,0 +1,321 @@
+{
+  "_meta": {
+    "updated_at": "2026-05-01T14:24:34.125Z",
+    "version": 4
+  },
+  "entries": {
+    "gsd-sdk run": {
+      "method": "CLI",
+      "path": "gsd-sdk run",
+      "params": [
+        "prompt",
+        "--project-dir",
+        "--ws-port",
+        "--model",
+        "--max-budget",
+        "--ws"
+      ],
+      "file": "sdk/src/cli.ts",
+      "description": "Run full milestone autonomously against a project directory"
+    },
+    "gsd-sdk phase": {
+      "method": "CLI",
+      "path": "gsd-sdk phase",
+      "params": [
+        "phaseNumber",
+        "--project-dir",
+        "--model",
+        "--max-budget",
+        "--ws"
+      ],
+      "file": "sdk/src/cli.ts",
+      "description": "Run a single phase lifecycle (discuss -> research -> plan -> execute -> verify)"
+    },
+    "gsd-sdk plan": {
+      "method": "CLI",
+      "path": "gsd-sdk plan",
+      "params": [
+        "planPath",
+        "--project-dir",
+        "--model",
+        "--max-budget",
+        "--ws"
+      ],
+      "file": "sdk/src/cli.ts",
+      "description": "Execute a single PLAN.md file"
+    },
+    "gsd-sdk init": {
+      "method": "CLI",
+      "path": "gsd-sdk init",
+      "params": [
+        "input",
+        "--project-dir",
+        "--model",
+        "--ws"
+      ],
+      "file": "sdk/src/cli.ts",
+      "description": "Bootstrap a new GSD project from a PRD or prompt"
+    },
+    "gsd-sdk auto": {
+      "method": "CLI",
+      "path": "gsd-sdk auto",
+      "params": [
+        "--init",
+        "--project-dir",
+        "--model",
+        "--max-budget",
+        "--ws"
+      ],
+      "file": "sdk/src/cli.ts",
+      "description": "Autonomous loop: optionally init then run milestone"
+    },
+    "gsd-sdk query intel.extract-exports": {
+      "method": "CLI",
+      "path": "gsd-sdk query intel.extract-exports",
+      "params": [
+        "file"
+      ],
+      "file": "sdk/src/query/intel.ts",
+      "description": "Extract exported symbols from a source file"
+    },
+    "gsd-sdk query intel.patch-meta": {
+      "method": "CLI",
+      "path": "gsd-sdk query intel.patch-meta",
+      "params": [
+        "file",
+        "--cwd"
+      ],
+      "file": "sdk/src/query/intel.ts",
+      "description": "Update _meta.updated_at timestamp in an intel JSON file"
+    },
+    "gsd-sdk query intel.validate": {
+      "method": "CLI",
+      "path": "gsd-sdk query intel.validate",
+      "params": [
+        "--cwd"
+      ],
+      "file": "sdk/src/query/intel.ts",
+      "description": "Validate intel file structure and exports correctness"
+    },
+    "gsd-sdk query intel.snapshot": {
+      "method": "CLI",
+      "path": "gsd-sdk query intel.snapshot",
+      "params": [
+        "--cwd"
+      ],
+      "file": "sdk/src/query/intel.ts",
+      "description": "Write .last-refresh.json with hashes of current intel files"
+    },
+    "gsd-sdk query intel.status": {
+      "method": "CLI",
+      "path": "gsd-sdk query intel.status",
+      "params": [
+        "--cwd"
+      ],
+      "file": "sdk/src/query/intel.ts",
+      "description": "Show intel file freshness (stale/fresh status per file)"
+    },
+    "gsd-sdk query intel.query": {
+      "method": "CLI",
+      "path": "gsd-sdk query intel.query",
+      "params": [
+        "term",
+        "--cwd"
+      ],
+      "file": "sdk/src/query/intel.ts",
+      "description": "Search intel files for a term"
+    },
+    "gsd-sdk query intel.diff": {
+      "method": "CLI",
+      "path": "gsd-sdk query intel.diff",
+      "params": [
+        "--cwd"
+      ],
+      "file": "sdk/src/query/intel.ts",
+      "description": "Show changed intel entries since last snapshot"
+    },
+    "gsd-sdk query state.*": {
+      "method": "CLI",
+      "path": "gsd-sdk query state.*",
+      "params": [
+        "subcommand",
+        "args"
+      ],
+      "file": "sdk/src/query/state.ts",
+      "description": "STATE.md read/write operations (load, get, snapshot, update, patch, begin-phase, planned-phase)"
+    },
+    "gsd-sdk query roadmap.*": {
+      "method": "CLI",
+      "path": "gsd-sdk query roadmap.*",
+      "params": [
+        "subcommand",
+        "phase"
+      ],
+      "file": "sdk/src/query/roadmap.ts",
+      "description": "ROADMAP.md analysis, phase extraction, plan progress update, requirements mark-complete"
+    },
+    "gsd-sdk query phase.*": {
+      "method": "CLI",
+      "path": "gsd-sdk query phase.*",
+      "params": [
+        "subcommand",
+        "args"
+      ],
+      "file": "sdk/src/query/phase-lifecycle.ts",
+      "description": "Phase lifecycle operations (add, insert, remove, complete, scaffold, list, next-decimal, milestone.complete)"
+    },
+    "gsd-sdk query config.*": {
+      "method": "CLI",
+      "path": "gsd-sdk query config.*",
+      "params": [
+        "subcommand",
+        "args"
+      ],
+      "file": "sdk/src/query/config-query.ts",
+      "description": "Config read and model resolution operations"
+    },
+    "gsd-sdk query verify.*": {
+      "method": "CLI",
+      "path": "gsd-sdk query verify.*",
+      "params": [
+        "subcommand",
+        "file/phase"
+      ],
+      "file": "sdk/src/query/verify.ts",
+      "description": "Verification checks for plans, phases, artifacts, commits, references, schema-drift"
+    },
+    "gsd-sdk query template.*": {
+      "method": "CLI",
+      "path": "gsd-sdk query template.*",
+      "params": [
+        "subcommand",
+        "args"
+      ],
+      "file": "sdk/src/query/template.ts",
+      "description": "Template fill and selection operations for plan/summary/verification docs"
+    },
+    "gsd-sdk query commit": {
+      "method": "CLI",
+      "path": "gsd-sdk query commit",
+      "params": [
+        "message",
+        "--files",
+        "--no-verify"
+      ],
+      "file": "sdk/src/query/commit.ts",
+      "description": "Commit planning docs to git; commit-to-subrepo routes to sub-repos"
+    },
+    "gsd-sdk query workstream.*": {
+      "method": "CLI",
+      "path": "gsd-sdk query workstream.*",
+      "params": [
+        "subcommand",
+        "args"
+      ],
+      "file": "sdk/src/query/workstream.ts",
+      "description": "Workstream lifecycle: list, create, set, status, complete, progress"
+    },
+    "gsd-sdk query summary.*": {
+      "method": "CLI",
+      "path": "gsd-sdk query summary.*",
+      "params": [
+        "subcommand",
+        "args"
+      ],
+      "file": "sdk/src/query/summary.ts",
+      "description": "SUMMARY.md extraction and history digest aggregation"
+    },
+    "gsd-sdk query uat.*": {
+      "method": "CLI",
+      "path": "gsd-sdk query uat.*",
+      "params": [
+        "subcommand",
+        "args"
+      ],
+      "file": "sdk/src/query/uat.ts",
+      "description": "UAT checkpoint rendering and audit-uat scan across phases"
+    },
+    "gsd-sdk query websearch": {
+      "method": "CLI",
+      "path": "gsd-sdk query websearch",
+      "params": [
+        "query",
+        "--limit",
+        "--freshness"
+      ],
+      "file": "sdk/src/query/websearch.ts",
+      "description": "Web search via Brave API (requires BRAVE_API_KEY)"
+    },
+    "gsd-sdk query profile.*": {
+      "method": "CLI",
+      "path": "gsd-sdk query profile.*",
+      "params": [
+        "subcommand",
+        "args"
+      ],
+      "file": "sdk/src/query/profile.ts",
+      "description": "User profile pipeline: learnings copy/query, extract-messages, scan-sessions, generate-claude-profile, generate-claude-md"
+    },
+    "gsd-sdk query progress.*": {
+      "method": "CLI",
+      "path": "gsd-sdk query progress.*",
+      "params": [
+        "subcommand"
+      ],
+      "file": "sdk/src/query/progress.ts",
+      "description": "Progress JSON/bar rendering, stats, todo operations (list, complete, match-phase)"
+    },
+    "node gsd-tools.cjs state": {
+      "method": "CLI",
+      "path": "node gsd-tools.cjs state",
+      "params": [
+        "subcommand",
+        "field",
+        "value"
+      ],
+      "file": "get-shit-done/bin/gsd-tools.cjs",
+      "description": "Legacy CJS: STATE.md read/write operations"
+    },
+    "node gsd-tools.cjs phase": {
+      "method": "CLI",
+      "path": "node gsd-tools.cjs phase",
+      "params": [
+        "subcommand",
+        "args"
+      ],
+      "file": "get-shit-done/bin/gsd-tools.cjs",
+      "description": "Legacy CJS: Phase add/insert/remove/complete lifecycle operations"
+    },
+    "node gsd-tools.cjs roadmap": {
+      "method": "CLI",
+      "path": "node gsd-tools.cjs roadmap",
+      "params": [
+        "subcommand",
+        "phase"
+      ],
+      "file": "get-shit-done/bin/gsd-tools.cjs",
+      "description": "Legacy CJS: ROADMAP.md analysis and updates"
+    },
+    "node gsd-tools.cjs intel": {
+      "method": "CLI",
+      "path": "node gsd-tools.cjs intel",
+      "params": [
+        "subcommand",
+        "args"
+      ],
+      "file": "get-shit-done/bin/gsd-tools.cjs",
+      "description": "Legacy CJS: Intel query, status, update, diff, snapshot, patch-meta, validate, extract-exports"
+    },
+    "node gsd-tools.cjs milestone complete": {
+      "method": "CLI",
+      "path": "node gsd-tools.cjs milestone complete",
+      "params": [
+        "version",
+        "--name",
+        "--archive-phases"
+      ],
+      "file": "get-shit-done/bin/gsd-tools.cjs",
+      "description": "Legacy CJS: Archive milestone, create MILESTONES.md entry"
+    }
+  }
+}

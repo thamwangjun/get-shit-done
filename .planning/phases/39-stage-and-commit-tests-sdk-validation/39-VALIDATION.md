@@ -40,6 +40,7 @@ created: 2026-05-22
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
 | 39-01-01 | 01 | 1 | STAGE-04 | — | N/A (script only stages files) | integration | `node scripts/stage-batch-4.cjs && git diff --cached --name-only` | ✅ | ✅ green |
 | 39-01-02 | 01 | 1 | STAGE-04 | — | Verifies git status clean, correct commit message, expected file scope, staging script untracked | smoke | `COMMIT_MSG=$(git log -n 1 --pretty=format:%s); if [[ "$COMMIT_MSG" != "test: refactor core tests and SDK validation (Batch 4)" ]]; then echo "FAIL: commit message"; exit 1; fi; STAGED=$(git diff --cached --name-only); if [[ -n "$STAGED" ]]; then echo "FAIL: staged files remain"; exit 1; fi; IN_COMMIT=$(git show --name-only --pretty=format: HEAD | grep -c "stage-batch-4"); if [[ "$IN_COMMIT" -ne 0 ]]; then echo "FAIL: stage-batch-4 in commit"; exit 1; fi; echo "OK"` | ✅ | ✅ green |
+| 39-01-03 | 01 | 1 | STAGE-04 | — | Duplicate commit guard skips re-staging when Batch 4 exists anywhere in history (not just as latest commit) | unit | `node --test tests/stage-batch-4.test.cjs` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -73,3 +74,15 @@ created: 2026-05-22
 - [x] `nyquist_compliant: true` set in frontmatter
 
 **Approval:** complete
+
+## Validation Audit 2026-05-22
+
+| Metric | Count |
+|--------|-------|
+| Gaps found | 1 |
+| Resolved | 1 |
+| Escalated | 0 |
+
+**Finding:** Duplicate commit guard in `scripts/stage-batch-4.cjs` checked only the latest commit; subsequent commits (validation docs, Nyquist tests) broke test 39-01-02. Fixed by scanning full git history via `git log --pretty=format:%s`.
+
+**Result:** All 38 stage-batch-4 tests green; full suite 8394/8394 pass.

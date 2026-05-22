@@ -1,0 +1,99 @@
+{
+  "_meta": {
+    "updated_at": "2026-05-01T14:24:34.116Z",
+    "version": 4
+  },
+  "entries": {
+    "@anthropic-ai/claude-agent-sdk": {
+      "version": "^0.2.81",
+      "type": "production",
+      "invocation": "require",
+      "used_by": [
+        "get-shit-done/bin/gsd-tools.cjs"
+      ],
+      "notes": "Root package dependency for agent spawning in hooks and tools"
+    },
+    "@anthropic-ai/claude-agent-sdk (sdk)": {
+      "version": "^0.2.84",
+      "type": "production",
+      "invocation": "require",
+      "used_by": [
+        "sdk/src/session-runner.ts",
+        "sdk/src/phase-runner.ts"
+      ],
+      "notes": "SDK package dependency — drives all agentic plan/phase execution sessions"
+    },
+    "ws": {
+      "version": "^8.20.0",
+      "type": "production",
+      "invocation": "require",
+      "used_by": [
+        "sdk/src/ws-transport.ts"
+      ],
+      "notes": "WebSocket server for WSTransport — enables streaming events over WebSocket connections"
+    },
+    "vitest (root)": {
+      "version": "^4.1.2",
+      "type": "development",
+      "invocation": "npm test",
+      "used_by": [
+        "tests/*.test.cjs"
+      ],
+      "notes": "Root test runner invoked via node scripts/run-tests.cjs"
+    },
+    "vitest (sdk)": {
+      "version": "^3.1.1",
+      "type": "development",
+      "invocation": "npm test",
+      "used_by": [
+        "sdk/src/**/*.test.ts"
+      ],
+      "notes": "SDK test runner — unit and integration project split via vitest.config.ts"
+    },
+    "esbuild": {
+      "version": "^0.27.4",
+      "type": "development",
+      "invocation": "npm run build:hooks",
+      "used_by": [
+        "scripts/build-hooks.js"
+      ],
+      "notes": "Bundles hooks/dist/ for distribution"
+    },
+    "c8": {
+      "version": "^11.0.0",
+      "type": "development",
+      "invocation": "npm run test:coverage",
+      "used_by": [
+        "scripts/run-tests.cjs"
+      ],
+      "notes": "Code coverage for get-shit-done/bin/lib/*.cjs — enforces 70% line coverage"
+    },
+    "typescript": {
+      "version": "^5.7.0",
+      "type": "development",
+      "invocation": "npm run build",
+      "used_by": [
+        "sdk/src/**/*.ts"
+      ],
+      "notes": "TypeScript compiler for SDK package; outputs to sdk/dist/"
+    },
+    "@types/node": {
+      "version": "^22.0.0",
+      "type": "development",
+      "invocation": "implicit",
+      "used_by": [
+        "sdk/src/**/*.ts"
+      ],
+      "notes": "Node.js type definitions for SDK TypeScript compilation"
+    },
+    "@types/ws": {
+      "version": "^8.18.1",
+      "type": "development",
+      "invocation": "implicit",
+      "used_by": [
+        "sdk/src/ws-transport.ts"
+      ],
+      "notes": "Type definitions for ws WebSocket library"
+    }
+  }
+}

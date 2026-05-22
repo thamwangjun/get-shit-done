@@ -1,0 +1,931 @@
+{
+  "_meta": {
+    "updated_at": "2026-05-01T14:24:34.119Z",
+    "version": 4
+  },
+  "entries": {
+    "bin/install.js": {
+      "exports": [],
+      "imports": [
+        "fs",
+        "path",
+        "os",
+        "readline",
+        "crypto"
+      ],
+      "type": "entry-point"
+    },
+    "sdk/src/index.ts": {
+      "exports": [
+        "GSD",
+        "parsePlan",
+        "parsePlanFile",
+        "loadConfig",
+        "GSDTools",
+        "GSDToolsError",
+        "resolveGsdToolsPath",
+        "runPlanSession",
+        "runPhaseStepSession",
+        "buildExecutorPrompt",
+        "parseAgentTools",
+        "GSDEventStream",
+        "ContextEngine",
+        "PHASE_FILE_MANIFEST",
+        "truncateMarkdown",
+        "extractCurrentMilestone",
+        "DEFAULT_TRUNCATION_OPTIONS",
+        "getToolsForPhase",
+        "PHASE_AGENT_MAP",
+        "PHASE_DEFAULT_TOOLS",
+        "checkResearchGate",
+        "PromptFactory",
+        "extractBlock",
+        "extractSteps",
+        "PHASE_WORKFLOW_MAP",
+        "GSDLogger",
+        "PhaseRunner",
+        "PhaseRunnerError",
+        "CLITransport",
+        "WSTransport",
+        "validateWorkstreamName",
+        "relPlanningPath",
+        "InitRunner"
+      ],
+      "imports": [
+        "node:fs/promises",
+        "node:path",
+        "node:os",
+        "./types.js",
+        "./plan-parser.js",
+        "./config.js",
+        "./gsd-tools.js",
+        "./session-runner.js",
+        "./prompt-builder.js",
+        "./event-stream.js",
+        "./phase-runner.js",
+        "./context-engine.js",
+        "./phase-prompt.js"
+      ],
+      "type": "entry-point"
+    },
+    "sdk/src/cli.ts": {
+      "exports": [
+        "ParsedCliArgs"
+      ],
+      "imports": [
+        "node:util",
+        "node:fs/promises",
+        "node:path",
+        "node:url",
+        "./index.js",
+        "./cli-transport.js",
+        "./ws-transport.js",
+        "./init-runner.js",
+        "./workstream-utils.js"
+      ],
+      "type": "entry-point"
+    },
+    "sdk/src/types.ts": {
+      "exports": [
+        "MustHaveArtifact",
+        "MustHaveKeyLink",
+        "MustHaves",
+        "UserSetupEnvVar",
+        "UserSetupDashboardConfig",
+        "UserSetupItem",
+        "PlanFrontmatter",
+        "PlanTask",
+        "ParsedPlan",
+        "InitNewProjectInfo",
+        "SessionOptions",
+        "SessionUsage",
+        "PlanResult",
+        "GSDOptions",
+        "GSDEventType"
+      ],
+      "imports": [],
+      "type": "type-def"
+    },
+    "sdk/src/plan-parser.ts": {
+      "exports": [
+        "parsePlan",
+        "parsePlanFile"
+      ],
+      "imports": [
+        "node:fs/promises",
+        "./types.js"
+      ],
+      "type": "module"
+    },
+    "sdk/src/config.ts": {
+      "exports": [
+        "loadConfig"
+      ],
+      "imports": [
+        "node:fs/promises",
+        "node:path"
+      ],
+      "type": "module"
+    },
+    "sdk/src/gsd-tools.ts": {
+      "exports": [
+        "GSDTools",
+        "GSDToolsError",
+        "resolveGsdToolsPath"
+      ],
+      "imports": [
+        "node:child_process",
+        "node:path",
+        "node:fs/promises"
+      ],
+      "type": "module"
+    },
+    "sdk/src/session-runner.ts": {
+      "exports": [
+        "runPlanSession",
+        "runPhaseStepSession"
+      ],
+      "imports": [
+        "@anthropic-ai/claude-agent-sdk",
+        "./types.js",
+        "./event-stream.js"
+      ],
+      "type": "module"
+    },
+    "sdk/src/prompt-builder.ts": {
+      "exports": [
+        "buildExecutorPrompt",
+        "parseAgentTools"
+      ],
+      "imports": [
+        "./types.js"
+      ],
+      "type": "module"
+    },
+    "sdk/src/event-stream.ts": {
+      "exports": [
+        "GSDEventStream",
+        "EventStreamContext"
+      ],
+      "imports": [
+        "node:events",
+        "./types.js"
+      ],
+      "type": "module"
+    },
+    "sdk/src/phase-runner.ts": {
+      "exports": [
+        "PhaseRunner",
+        "PhaseRunnerError",
+        "PhaseRunnerDeps",
+        "VerificationOutcome"
+      ],
+      "imports": [
+        "./types.js",
+        "./gsd-tools.js",
+        "./event-stream.js",
+        "./context-engine.js",
+        "./phase-prompt.js"
+      ],
+      "type": "module"
+    },
+    "sdk/src/context-engine.ts": {
+      "exports": [
+        "ContextEngine",
+        "PHASE_FILE_MANIFEST",
+        "FileSpec"
+      ],
+      "imports": [
+        "node:fs/promises",
+        "node:path"
+      ],
+      "type": "module"
+    },
+    "sdk/src/phase-prompt.ts": {
+      "exports": [
+        "PromptFactory",
+        "extractBlock",
+        "extractSteps",
+        "PHASE_WORKFLOW_MAP"
+      ],
+      "imports": [
+        "node:fs/promises",
+        "node:path"
+      ],
+      "type": "module"
+    },
+    "sdk/src/logger.ts": {
+      "exports": [
+        "GSDLogger",
+        "LogLevel",
+        "LogEntry",
+        "GSDLoggerOptions"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "sdk/src/cli-transport.ts": {
+      "exports": [
+        "CLITransport"
+      ],
+      "imports": [
+        "./types.js",
+        "./event-stream.js"
+      ],
+      "type": "module"
+    },
+    "sdk/src/ws-transport.ts": {
+      "exports": [
+        "WSTransport",
+        "WSTransportOptions"
+      ],
+      "imports": [
+        "ws",
+        "./types.js",
+        "./event-stream.js"
+      ],
+      "type": "module"
+    },
+    "sdk/src/tool-scoping.ts": {
+      "exports": [
+        "getToolsForPhase",
+        "PHASE_AGENT_MAP",
+        "PHASE_DEFAULT_TOOLS"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "sdk/src/research-gate.ts": {
+      "exports": [
+        "checkResearchGate",
+        "ResearchGateResult"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "sdk/src/workstream-utils.ts": {
+      "exports": [
+        "validateWorkstreamName",
+        "relPlanningPath"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "sdk/src/init-runner.ts": {
+      "exports": [
+        "InitRunner",
+        "InitRunnerDeps"
+      ],
+      "imports": [
+        "./types.js",
+        "./gsd-tools.js",
+        "./event-stream.js"
+      ],
+      "type": "module"
+    },
+    "sdk/src/context-truncation.ts": {
+      "exports": [
+        "truncateMarkdown",
+        "extractCurrentMilestone",
+        "DEFAULT_TRUNCATION_OPTIONS",
+        "TruncationOptions"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "sdk/src/errors.ts": {
+      "exports": [],
+      "imports": [],
+      "type": "module"
+    },
+    "sdk/src/query/index.ts": {
+      "exports": [
+        "createRegistry",
+        "QUERY_MUTATION_COMMANDS",
+        "extractField"
+      ],
+      "imports": [
+        "./registry.js",
+        "./utils.js",
+        "./frontmatter.js",
+        "./config-query.js",
+        "./state.js",
+        "./phase.js",
+        "./roadmap.js",
+        "./progress.js",
+        "./frontmatter-mutation.js",
+        "./state-mutation.js",
+        "./config-mutation.js",
+        "./commit.js",
+        "./template.js",
+        "./verify.js",
+        "./validate.js",
+        "./phase-lifecycle.js",
+        "./init.js",
+        "./init-complex.js",
+        "./skills.js",
+        "./summary.js",
+        "./workstream.js",
+        "./uat.js",
+        "./websearch.js",
+        "./intel.js",
+        "./profile.js"
+      ],
+      "type": "entry-point"
+    },
+    "sdk/src/query/registry.ts": {
+      "exports": [
+        "QueryRegistry"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "sdk/src/query/intel.ts": {
+      "exports": [
+        "MAX_JSON_SEARCH_DEPTH",
+        "searchJsonEntries",
+        "intelStatus",
+        "intelDiff",
+        "intelSnapshot",
+        "intelValidate",
+        "intelQuery",
+        "intelExtractExports",
+        "intelPatchMeta"
+      ],
+      "imports": [
+        "node:fs",
+        "node:path",
+        "node:crypto",
+        "./helpers.js",
+        "./utils.js"
+      ],
+      "type": "module"
+    },
+    "sdk/src/query/phase-lifecycle.ts": {
+      "exports": [
+        "phaseAdd",
+        "phaseInsert",
+        "phaseRemove",
+        "phaseComplete",
+        "phaseScaffold",
+        "phasesClear",
+        "phasesArchive",
+        "phasesList",
+        "phaseNextDecimal",
+        "milestoneComplete"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "sdk/src/query/roadmap.ts": {
+      "exports": [
+        "roadmapAnalyze",
+        "roadmapGetPhase",
+        "roadmapUpdatePlanProgress",
+        "requirementsMarkComplete"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "sdk/src/query/state.ts": {
+      "exports": [
+        "stateLoad",
+        "stateGet",
+        "stateSnapshot"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "sdk/src/query/state-mutation.ts": {
+      "exports": [
+        "stateUpdate",
+        "statePatch",
+        "stateBeginPhase",
+        "stateAdvancePlan",
+        "stateRecordMetric",
+        "stateUpdateProgress",
+        "stateAddDecision",
+        "stateAddBlocker",
+        "stateResolveBlocker",
+        "stateRecordSession",
+        "statePlannedPhase"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "sdk/src/query/config-query.ts": {
+      "exports": [
+        "configGet",
+        "resolveModel"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "sdk/src/query/config-mutation.ts": {
+      "exports": [
+        "configSet",
+        "configSetModelProfile",
+        "configNewProject",
+        "configEnsureSection"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "sdk/src/query/verify.ts": {
+      "exports": [
+        "verifyPlanStructure",
+        "verifyPhaseCompleteness",
+        "verifyArtifacts",
+        "verifyCommits",
+        "verifyReferences",
+        "verifySummary",
+        "verifyPathExists",
+        "verifySchemaDrift"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "sdk/src/query/validate.ts": {
+      "exports": [
+        "verifyKeyLinks",
+        "validateConsistency",
+        "validateHealth"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "sdk/src/query/template.ts": {
+      "exports": [
+        "templateFill",
+        "templateSelect"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "sdk/src/query/commit.ts": {
+      "exports": [
+        "commit",
+        "checkCommit",
+        "commitToSubrepo"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "sdk/src/query/init.ts": {
+      "exports": [
+        "initExecutePhase",
+        "initPlanPhase",
+        "initNewMilestone",
+        "initQuick",
+        "initResume",
+        "initVerifyWork",
+        "initPhaseOp",
+        "initTodos",
+        "initMilestoneOp",
+        "initMapCodebase",
+        "initNewWorkspace",
+        "initListWorkspaces",
+        "initRemoveWorkspace",
+        "docsInit"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "sdk/src/query/init-complex.ts": {
+      "exports": [
+        "initNewProject",
+        "initProgress",
+        "initManager"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "sdk/src/query/skills.ts": {
+      "exports": [
+        "agentSkills"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "sdk/src/query/helpers.ts": {
+      "exports": [
+        "escapeRegex",
+        "normalizePhaseName",
+        "comparePhaseNum",
+        "extractPhaseToken",
+        "phaseTokenMatches",
+        "toPosixPath",
+        "stateExtractField",
+        "normalizeMd",
+        "planningPaths",
+        "resolvePathUnderProject"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "sdk/src/query/frontmatter.ts": {
+      "exports": [
+        "splitInlineArray",
+        "extractFrontmatter",
+        "stripFrontmatter",
+        "parseMustHavesBlock",
+        "frontmatterGet"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "sdk/src/query/frontmatter-mutation.ts": {
+      "exports": [
+        "reconstructFrontmatter",
+        "spliceFrontmatter",
+        "frontmatterSet",
+        "frontmatterMerge",
+        "frontmatterValidate"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "sdk/src/query/progress.ts": {
+      "exports": [
+        "determinePhaseStatus",
+        "progressJson",
+        "progressBar",
+        "statsJson",
+        "listTodos",
+        "todoComplete",
+        "todoMatchPhase"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "sdk/src/query/phase.ts": {
+      "exports": [
+        "findPhase",
+        "phasePlanIndex"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "sdk/src/query/utils.ts": {
+      "exports": [
+        "generateSlug",
+        "currentTimestamp"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "sdk/src/query/pipeline.ts": {
+      "exports": [
+        "wrapWithPipeline"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "sdk/src/query/profile.ts": {
+      "exports": [
+        "learningsCopy",
+        "learningsQuery",
+        "extractMessages",
+        "scanSessions",
+        "profileSample",
+        "profileQuestionnaire",
+        "writeProfile",
+        "generateClaudeProfile",
+        "generateDevPreferences",
+        "generateClaudeMd"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "sdk/src/query/summary.ts": {
+      "exports": [
+        "summaryExtract",
+        "historyDigest"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "sdk/src/query/uat.ts": {
+      "exports": [
+        "uatRenderCheckpoint",
+        "auditUat"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "sdk/src/query/websearch.ts": {
+      "exports": [
+        "websearch"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "sdk/src/query/workspace.ts": {
+      "exports": [
+        "resolveWorkspaceContext",
+        "workspacePlanningPaths"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "sdk/src/query/workstream.ts": {
+      "exports": [
+        "workstreamList",
+        "workstreamCreate",
+        "workstreamSet",
+        "workstreamStatus",
+        "workstreamComplete",
+        "workstreamProgress"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "get-shit-done/bin/gsd-tools.cjs": {
+      "exports": [],
+      "imports": [
+        "fs",
+        "path",
+        "os",
+        "readline",
+        "crypto",
+        "./lib/core.cjs",
+        "./lib/config.cjs",
+        "./lib/state.cjs",
+        "./lib/phase.cjs",
+        "./lib/roadmap.cjs",
+        "./lib/milestone.cjs",
+        "./lib/verify.cjs",
+        "./lib/template.cjs",
+        "./lib/intel.cjs"
+      ],
+      "type": "entry-point"
+    },
+    "get-shit-done/bin/lib/core.cjs": {
+      "exports": [
+        "output",
+        "error",
+        "safeReadFile",
+        "loadConfig",
+        "isGitIgnored",
+        "execGit",
+        "normalizeMd",
+        "escapeRegex",
+        "normalizePhaseName",
+        "comparePhaseNum",
+        "searchPhaseInDir",
+        "extractPhaseToken",
+        "phaseTokenMatches",
+        "findPhaseInternal",
+        "getArchivedPhaseDirs",
+        "getRoadmapPhaseInternal",
+        "resolveModelInternal",
+        "pathExistsInternal",
+        "generateSlugInternal",
+        "getMilestoneInfo",
+        "getMilestonePhaseFilter",
+        "stripShippedMilestones",
+        "extractCurrentMilestone",
+        "replaceInCurrentMilestone",
+        "toPosixPath",
+        "extractOneLinerFromBody",
+        "resolveWorktreeRoot",
+        "withPlanningLock",
+        "findProjectRoot",
+        "detectSubRepos",
+        "reapStaleTempFiles",
+        "GSD_TEMP_DIR",
+        "MODEL_ALIAS_MAP",
+        "CONFIG_DEFAULTS",
+        "planningDir",
+        "planningRoot",
+        "planningPaths"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "get-shit-done/bin/lib/state.cjs": {
+      "exports": [
+        "stateExtractField",
+        "stateReplaceField",
+        "stateReplaceFieldWithFallback",
+        "writeStateMd",
+        "readModifyWriteStateMd",
+        "updatePerformanceMetricsSection",
+        "cmdStateLoad",
+        "cmdStateGet",
+        "cmdStatePatch",
+        "cmdStateUpdate",
+        "cmdStateAdvancePlan",
+        "cmdStateRecordMetric",
+        "cmdStateUpdateProgress",
+        "cmdStateAddDecision",
+        "cmdStateAddBlocker",
+        "cmdStateResolveBlocker",
+        "cmdStateRecordSession",
+        "cmdStateSnapshot",
+        "cmdStateJson",
+        "cmdStateBeginPhase",
+        "cmdStatePlannedPhase",
+        "cmdStateValidate",
+        "cmdStateSync",
+        "cmdStatePrune",
+        "cmdSignalWaiting",
+        "cmdSignalResume"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "get-shit-done/bin/lib/phase.cjs": {
+      "exports": [
+        "cmdPhasesList",
+        "cmdPhaseNextDecimal",
+        "cmdFindPhase",
+        "cmdPhasePlanIndex",
+        "cmdPhaseAdd",
+        "cmdPhaseAddBatch",
+        "cmdPhaseInsert",
+        "cmdPhaseRemove",
+        "cmdPhaseComplete"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "get-shit-done/bin/lib/intel.cjs": {
+      "exports": [
+        "intelQuery",
+        "intelUpdate",
+        "intelStatus",
+        "intelDiff",
+        "saveRefreshSnapshot",
+        "intelSnapshot",
+        "intelValidate",
+        "intelExtractExports",
+        "intelPatchMeta",
+        "ensureIntelDir",
+        "isIntelEnabled",
+        "INTEL_FILES",
+        "INTEL_DIR"
+      ],
+      "imports": [],
+      "type": "module"
+    },
+    "get-shit-done/bin/lib/config.cjs": {
+      "exports": [],
+      "imports": [],
+      "type": "module"
+    },
+    "get-shit-done/bin/lib/roadmap.cjs": {
+      "exports": [],
+      "imports": [],
+      "type": "module"
+    },
+    "get-shit-done/bin/lib/milestone.cjs": {
+      "exports": [],
+      "imports": [],
+      "type": "module"
+    },
+    "get-shit-done/bin/lib/verify.cjs": {
+      "exports": [],
+      "imports": [],
+      "type": "module"
+    },
+    "get-shit-done/bin/lib/template.cjs": {
+      "exports": [],
+      "imports": [],
+      "type": "module"
+    },
+    "get-shit-done/bin/lib/audit.cjs": {
+      "exports": [],
+      "imports": [],
+      "type": "module"
+    },
+    "get-shit-done/bin/lib/commands.cjs": {
+      "exports": [],
+      "imports": [],
+      "type": "module"
+    },
+    "get-shit-done/bin/lib/docs.cjs": {
+      "exports": [],
+      "imports": [],
+      "type": "module"
+    },
+    "get-shit-done/bin/lib/frontmatter.cjs": {
+      "exports": [],
+      "imports": [],
+      "type": "module"
+    },
+    "get-shit-done/bin/lib/init.cjs": {
+      "exports": [],
+      "imports": [],
+      "type": "module"
+    },
+    "get-shit-done/bin/lib/learnings.cjs": {
+      "exports": [],
+      "imports": [],
+      "type": "module"
+    },
+    "get-shit-done/bin/lib/model-profiles.cjs": {
+      "exports": [],
+      "imports": [],
+      "type": "module"
+    },
+    "get-shit-done/bin/lib/profile-output.cjs": {
+      "exports": [],
+      "imports": [],
+      "type": "module"
+    },
+    "get-shit-done/bin/lib/profile-pipeline.cjs": {
+      "exports": [],
+      "imports": [],
+      "type": "module"
+    },
+    "get-shit-done/bin/lib/schema-detect.cjs": {
+      "exports": [],
+      "imports": [],
+      "type": "module"
+    },
+    "get-shit-done/bin/lib/security.cjs": {
+      "exports": [],
+      "imports": [],
+      "type": "module"
+    },
+    "get-shit-done/bin/lib/uat.cjs": {
+      "exports": [],
+      "imports": [],
+      "type": "module"
+    },
+    "get-shit-done/bin/lib/workstream.cjs": {
+      "exports": [],
+      "imports": [],
+      "type": "module"
+    },
+    "get-shit-done/bin/lib/graphify.cjs": {
+      "exports": [],
+      "imports": [],
+      "type": "module"
+    },
+    "get-shit-done/bin/lib/gsd2-import.cjs": {
+      "exports": [],
+      "imports": [],
+      "type": "module"
+    },
+    "hooks/gsd-prompt-guard.js": {
+      "exports": [],
+      "imports": [],
+      "type": "script"
+    },
+    "hooks/gsd-workflow-guard.js": {
+      "exports": [],
+      "imports": [],
+      "type": "script"
+    },
+    "hooks/gsd-read-guard.js": {
+      "exports": [],
+      "imports": [],
+      "type": "script"
+    },
+    "hooks/gsd-read-injection-scanner.js": {
+      "exports": [],
+      "imports": [],
+      "type": "script"
+    },
+    "hooks/gsd-statusline.js": {
+      "exports": [],
+      "imports": [],
+      "type": "script"
+    },
+    "hooks/gsd-check-update.js": {
+      "exports": [],
+      "imports": [],
+      "type": "script"
+    },
+    "hooks/gsd-check-update-worker.js": {
+      "exports": [],
+      "imports": [],
+      "type": "script"
+    },
+    "hooks/gsd-context-monitor.js": {
+      "exports": [],
+      "imports": [],
+      "type": "script"
+    },
+    "scripts/build-hooks.js": {
+      "exports": [],
+      "imports": [
+        "fs",
+        "path"
+      ],
+      "type": "script"
+    },
+    "scripts/run-tests.cjs": {
+      "exports": [],
+      "imports": [],
+      "type": "script"
+    },
+    "scripts/audit-tags.js": {
+      "exports": [],
+      "imports": [],
+      "type": "script"
+    }
+  }
+}
