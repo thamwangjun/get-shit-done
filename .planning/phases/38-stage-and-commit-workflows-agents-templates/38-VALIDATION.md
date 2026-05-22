@@ -1,9 +1,9 @@
 ---
 phase: 38
 slug: stage-and-commit-workflows-agents-templates
-status: draft
+status: passed
 nyquist_compliant: true
-wave_0_complete: false
+wave_0_complete: true
 created: 2026-05-22
 ---
 
@@ -38,8 +38,8 @@ created: 2026-05-22
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 38-01-01 | 01 | 1 | STAGE-03 | T-38-01 | Validate staging targets (exact subset) | unit | `git diff --cached --name-only` | ✅ Wave 0 | ⬜ pending |
-| 38-01-02 | 01 | 1 | STAGE-03 | — | Validate commit message and history | unit | `git log -n 1 --pretty=format:%s` | ✅ Wave 0 | ⬜ pending |
+| 38-01-01 | 01 | 1 | STAGE-03 | T-38-01 | Validate staging targets (exact subset) | unit | `git diff --cached --name-only` | ✅ Wave 0 | ✅ green |
+| 38-01-02 | 01 | 1 | STAGE-03 | — | Validate commit message and history | unit | `git log -n 1 --pretty=format:%s` | ✅ Wave 0 | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 

@@ -260,7 +260,7 @@ Full details: `.planning/milestones/v1.41.3-ROADMAP.md`
 | 35. Backup and Soft Reset | v1.41.5 | 0/0 | Pending | - |
 | 36. Stage and Commit Configuration & Rules | v1.41.5 | 1/1 | Complete    | 2026-05-22 |
 | 37. Stage and Commit Scanner Logic | v1.41.5 | 1/1 | Complete    | 2026-05-22 |
-| 38. Stage and Commit Workflows, Agents, & Templates | v1.41.5 | 0/0 | Pending | - |
+| 38. Stage and Commit Workflows, Agents, & Templates | v1.41.5 | 1/1 | Complete    | 2026-05-22 |
 | 39. Stage and Commit Tests & SDK Validation | v1.41.5 | 0/0 | Pending | - |
 | 40. Stage and Commit Maintenance, Logs, & State | v1.41.5 | 0/0 | Pending | - |
 | 41. Final Verification & Parity Audit | v1.41.5 | 0/0 | Pending | - |
