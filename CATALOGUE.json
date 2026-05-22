@@ -1,0 +1,1100 @@
+{
+  "total": 270,
+  "counts": {
+    "commands": 79,
+    "workflows": 80,
+    "agents": 31,
+    "references": 48,
+    "templates": 32
+  },
+  "commands": [
+    {
+      "file": "commands/gsd/add-backlog.md",
+      "description": "Add an idea to backlog parking lot with 999.x numbering"
+    },
+    {
+      "file": "commands/gsd/add-phase.md",
+      "description": "Add phase to end of current milestone in roadmap"
+    },
+    {
+      "file": "commands/gsd/add-tests.md",
+      "description": "Generate tests for a completed phase based on UAT criteria and implementation"
+    },
+    {
+      "file": "commands/gsd/add-todo.md",
+      "description": "Capture idea or task as todo from current conversation context"
+    },
+    {
+      "file": "commands/gsd/ai-integration-phase.md",
+      "description": "Generate AI design contract (AI-SPEC.md) for phases that involve building AI systems — framework selection, implementation guidance from official docs, and evaluation strategy"
+    },
+    {
+      "file": "commands/gsd/analyze-dependencies.md",
+      "description": "Analyze phase dependencies and suggest Depends-on entries"
+    },
+    {
+      "file": "commands/gsd/audit-fix.md",
+      "description": "Autonomous audit-to-fix pipeline with test verification"
+    },
+    {
+      "file": "commands/gsd/audit-milestone.md",
+      "description": "Audit milestone completion against original intent before archiving"
+    },
+    {
+      "file": "commands/gsd/audit-uat.md",
+      "description": "Cross-phase audit of outstanding UAT and verification items"
+    },
+    {
+      "file": "commands/gsd/autonomous.md",
+      "description": "Run all remaining phases autonomously — discuss→plan→execute per phase"
+    },
+    {
+      "file": "commands/gsd/check-todos.md",
+      "description": "List pending todos and select one to work on"
+    },
+    {
+      "file": "commands/gsd/cleanup.md",
+      "description": "Archive accumulated phase directories from completed milestones"
+    },
+    {
+      "file": "commands/gsd/code-review.md",
+      "description": "Review source files for bugs, security, and quality issues"
+    },
+    {
+      "file": "commands/gsd/code-review-fix.md",
+      "description": "Auto-fix issues from code review with atomic commits"
+    },
+    {
+      "file": "commands/gsd/complete-milestone.md",
+      "description": "Archive completed milestone and prepare for next version"
+    },
+    {
+      "file": "commands/gsd/debug.md",
+      "description": "Systematic debugging with persistent state across context resets"
+    },
+    {
+      "file": "commands/gsd/discuss-phase.md",
+      "description": "Gather phase context through adaptive questioning before planning (use `--auto` to skip)"
+    },
+    {
+      "file": "commands/gsd/do.md",
+      "description": "Route freeform text to the right GSD command automatically"
+    },
+    {
+      "file": "commands/gsd/docs-update.md",
+      "description": "Generate or update documentation verified against codebase"
+    },
+    {
+      "file": "commands/gsd/eval-review.md",
+      "description": "Retroactively audit an executed AI phase's evaluation coverage — scores each eval dimension as COVERED/PARTIAL/MISSING and produces an actionable EVAL-REVIEW.md with remediation plan"
+    },
+    {
+      "file": "commands/gsd/execute-phase.md",
+      "description": "Execute all plans in a phase with wave-based parallelization"
+    },
+    {
+      "file": "commands/gsd/explore.md",
+      "description": "Socratic ideation session to think through ideas"
+    },
+    {
+      "file": "commands/gsd/extract_learnings.md",
+      "description": "Extract decisions, lessons, patterns, and surprises from completed phase artifacts"
+    },
+    {
+      "file": "commands/gsd/fast.md",
+      "description": "Execute a trivial task inline — no subagents, no planning overhead"
+    },
+    {
+      "file": "commands/gsd/forensics.md",
+      "description": "Post-mortem investigation for failed GSD workflows"
+    },
+    {
+      "file": "commands/gsd/from-gsd2.md",
+      "description": "Import a GSD-2 (.gsd/) project back to GSD v1 (.planning/) format"
+    },
+    {
+      "file": "commands/gsd/graphify.md",
+      "description": "Build, query, and inspect the project knowledge graph in .planning/graphs/"
+    },
+    {
+      "file": "commands/gsd/health.md",
+      "description": "Diagnose planning directory health and optionally repair issues"
+    },
+    {
+      "file": "commands/gsd/help.md",
+      "description": "Show available GSD commands and usage guide"
+    },
+    {
+      "file": "commands/gsd/inbox.md",
+      "description": "Triage and review all open GitHub issues and PRs against project templates and contribution guidelines"
+    },
+    {
+      "file": "commands/gsd/import.md",
+      "description": "Ingest external plans with conflict detection"
+    },
+    {
+      "file": "commands/gsd/insert-phase.md",
+      "description": "Insert urgent work as decimal phase (e.g., 72.1) between existing phases"
+    },
+    {
+      "file": "commands/gsd/intel.md",
+      "description": "Query, inspect, or refresh codebase intelligence files"
+    },
+    {
+      "file": "commands/gsd/join-discord.md",
+      "description": "Join the GSD Discord community"
+    },
+    {
+      "file": "commands/gsd/list-phase-assumptions.md",
+      "description": "Surface Claude's assumptions about a phase approach before planning"
+    },
+    {
+      "file": "commands/gsd/list-workspaces.md",
+      "description": "List active GSD workspaces and their status"
+    },
+    {
+      "file": "commands/gsd/manager.md",
+      "description": "Interactive command center for managing multiple phases"
+    },
+    {
+      "file": "commands/gsd/map-codebase.md",
+      "description": "Analyze codebase with parallel mapper agents to produce `.planning/codebase/` documents"
+    },
+    {
+      "file": "commands/gsd/milestone-summary.md",
+      "description": "Generate comprehensive project summary for team onboarding"
+    },
+    {
+      "file": "commands/gsd/new-milestone.md",
+      "description": "Start a new milestone cycle — update PROJECT.md and route to requirements"
+    },
+    {
+      "file": "commands/gsd/new-project.md",
+      "description": "Initialize a new project with deep context gathering and PROJECT.md"
+    },
+    {
+      "file": "commands/gsd/new-workspace.md",
+      "description": "Create isolated workspace with repo copies"
+    },
+    {
+      "file": "commands/gsd/next.md",
+      "description": "Automatically advance to the next logical step in the GSD workflow"
+    },
+    {
+      "file": "commands/gsd/note.md",
+      "description": "Zero-friction idea capture — append, list, or promote notes to todos"
+    },
+    {
+      "file": "commands/gsd/pause-work.md",
+      "description": "Create context handoff when pausing work mid-phase"
+    },
+    {
+      "file": "commands/gsd/plan-milestone-gaps.md",
+      "description": "Create phases to close all gaps identified by milestone audit"
+    },
+    {
+      "file": "commands/gsd/plan-phase.md",
+      "description": "Create detailed phase plan (PLAN.md) with verification loop"
+    },
+    {
+      "file": "commands/gsd/plant-seed.md",
+      "description": "Capture a forward-looking idea with trigger conditions — surfaces at the right milestone"
+    },
+    {
+      "file": "commands/gsd/pr-branch.md",
+      "description": "Create a clean PR branch filtering out `.planning/` commits"
+    },
+    {
+      "file": "commands/gsd/profile-user.md",
+      "description": "Generate developer behavioral profile and create Claude-discoverable artifacts"
+    },
+    {
+      "file": "commands/gsd/progress.md",
+      "description": "Check project progress, show context, and route to next action"
+    },
+    {
+      "file": "commands/gsd/quick.md",
+      "description": "Execute a quick task with GSD guarantees but skip optional agents"
+    },
+    {
+      "file": "commands/gsd/reapply-patches.md",
+      "description": "Reapply local modifications after a GSD update"
+    },
+    {
+      "file": "commands/gsd/remove-phase.md",
+      "description": "Remove a future phase from roadmap and renumber subsequent phases"
+    },
+    {
+      "file": "commands/gsd/remove-workspace.md",
+      "description": "Remove a GSD workspace and clean up worktrees"
+    },
+    {
+      "file": "commands/gsd/research-phase.md",
+      "description": "Research how to implement a phase (standalone — usually use `/gsd:plan-phase` instead)"
+    },
+    {
+      "file": "commands/gsd/resume-work.md",
+      "description": "Resume work from previous session with full context restoration"
+    },
+    {
+      "file": "commands/gsd/review.md",
+      "description": "Request cross-AI peer review of phase plans from external AI CLIs"
+    },
+    {
+      "file": "commands/gsd/review-backlog.md",
+      "description": "Review and promote backlog items to active milestone"
+    },
+    {
+      "file": "commands/gsd/scan.md",
+      "description": "Rapid codebase assessment with lightweight alternative"
+    },
+    {
+      "file": "commands/gsd/secure-phase.md",
+      "description": "Retroactively verify threat mitigations for completed phase"
+    },
+    {
+      "file": "commands/gsd/session-report.md",
+      "description": "Generate a session report with token usage estimates, work summary, and outcomes"
+    },
+    {
+      "file": "commands/gsd/set-profile.md",
+      "description": "Switch model profile for GSD agents (quality/balanced/budget/inherit)"
+    },
+    {
+      "file": "commands/gsd/settings.md",
+      "description": "Configure GSD workflow toggles and model profile"
+    },
+    {
+      "file": "commands/gsd/ship.md",
+      "description": "Create PR, run review, and prepare for merge after verification passes"
+    },
+    {
+      "file": "commands/gsd/sketch.md",
+      "description": "Rapidly sketch UI/design ideas using throwaway HTML mockups with multi-variant exploration"
+    },
+    {
+      "file": "commands/gsd/sketch-wrap-up.md",
+      "description": "Package sketch design findings into a persistent project skill for future build conversations"
+    },
+    {
+      "file": "commands/gsd/spec-phase.md",
+      "description": "Socratic spec refinement — clarify WHAT a phase delivers with ambiguity scoring before discuss-phase"
+    },
+    {
+      "file": "commands/gsd/spike.md",
+      "description": "Rapidly spike an idea with throwaway experiments to validate feasibility before planning"
+    },
+    {
+      "file": "commands/gsd/spike-wrap-up.md",
+      "description": "Package spike findings into a persistent project skill for future build conversations"
+    },
+    {
+      "file": "commands/gsd/stats.md",
+      "description": "Display project statistics — phases, plans, requirements, git metrics, and timeline"
+    },
+    {
+      "file": "commands/gsd/thread.md",
+      "description": "Manage persistent context threads for cross-session work"
+    },
+    {
+      "file": "commands/gsd/ui-phase.md",
+      "description": "Generate UI design contract (UI-SPEC.md) for frontend phases"
+    },
+    {
+      "file": "commands/gsd/ui-review.md",
+      "description": "Retroactive 6-pillar visual audit of implemented frontend code"
+    },
+    {
+      "file": "commands/gsd/undo.md",
+      "description": "Safe git revert with dependency checks and confirmation"
+    },
+    {
+      "file": "commands/gsd/update.md",
+      "description": "Update GSD to latest version with changelog display"
+    },
+    {
+      "file": "commands/gsd/validate-phase.md",
+      "description": "Retroactively audit and fill Nyquist validation gaps for a completed phase"
+    },
+    {
+      "file": "commands/gsd/verify-work.md",
+      "description": "Validate built features through conversational UAT"
+    },
+    {
+      "file": "commands/gsd/workstreams.md",
+      "description": "Manage parallel workstreams for concurrent milestone work"
+    }
+  ],
+  "workflows": [
+    {
+      "file": "get-shit-done/workflows/add-phase.md",
+      "description": "Extends roadmap by calculating next phase number and updating state"
+    },
+    {
+      "file": "get-shit-done/workflows/add-tests.md",
+      "description": "Classifies files, generates TDD/E2E tests, and reports coverage gaps"
+    },
+    {
+      "file": "get-shit-done/workflows/add-todo.md",
+      "description": "Extracts ideas from context and preserves structured todo records"
+    },
+    {
+      "file": "get-shit-done/workflows/ai-integration-phase.md",
+      "description": "Generates AI design contract (AI-SPEC.md) for phases involving AI systems — orchestrates framework-selector, ai-researcher, domain-researcher, and eval-planner agents"
+    },
+    {
+      "file": "get-shit-done/workflows/analyze-dependencies.md",
+      "description": "Detects file overlap and semantic dependencies between phases to prevent merge conflicts"
+    },
+    {
+      "file": "get-shit-done/workflows/audit-fix.md",
+      "description": "Autonomously classifies and fixes auto-fixable audit findings with atomic commits"
+    },
+    {
+      "file": "get-shit-done/workflows/audit-milestone.md",
+      "description": "Aggregates phase-level verification data and produces go/no-go assessment"
+    },
+    {
+      "file": "get-shit-done/workflows/audit-uat.md",
+      "description": "Cross-phase audit of all outstanding UAT items and stale documentation verification"
+    },
+    {
+      "file": "get-shit-done/workflows/autonomous.md",
+      "description": "Drives all remaining phases to completion without unnecessary pauses"
+    },
+    {
+      "file": "get-shit-done/workflows/check-todos.md",
+      "description": "Surfaces pending items, loads context, and routes to next action"
+    },
+    {
+      "file": "get-shit-done/workflows/cleanup.md",
+      "description": "Identifies completed milestones and archives phase directories"
+    },
+    {
+      "file": "get-shit-done/workflows/code-review.md",
+      "description": "Reviews source files changed during phase for bugs and quality issues"
+    },
+    {
+      "file": "get-shit-done/workflows/code-review-fix.md",
+      "description": "Auto-fixes issues from code review with optional --auto iteration loop"
+    },
+    {
+      "file": "get-shit-done/workflows/complete-milestone.md",
+      "description": "Closes out milestones with verification, archiving, and git tagging"
+    },
+    {
+      "file": "get-shit-done/workflows/debug.md",
+      "description": "Manages lifecycle of debug sessions and presents root-cause findings"
+    },
+    {
+      "file": "get-shit-done/workflows/diagnose-issues.md",
+      "description": "Parses UAT gaps and spawns focused debug agents in parallel"
+    },
+    {
+      "file": "get-shit-done/workflows/discovery-phase.md",
+      "description": "Investigates technology choices and produces structured findings"
+    },
+    {
+      "file": "get-shit-done/workflows/discuss-phase.md",
+      "description": "Extracts implementation decisions through thinking partnership before planning"
+    },
+    {
+      "file": "get-shit-done/workflows/discuss-phase-assumptions.md",
+      "description": "Surfaces implementation decisions via codebase analysis instead of interview questions"
+    },
+    {
+      "file": "get-shit-done/workflows/discuss-phase-power.md",
+      "description": "Generates all discussion questions upfront as JSON for asynchronous offline answering"
+    },
+    {
+      "file": "get-shit-done/workflows/do.md",
+      "description": "Analyzes freeform input and routes to the most appropriate command"
+    },
+    {
+      "file": "get-shit-done/workflows/docs-update.md",
+      "description": "Generates and verifies all project documentation with accuracy checking and gap detection"
+    },
+    {
+      "file": "get-shit-done/workflows/eval-review.md",
+      "description": "Retroactive audit of an implemented AI phase's evaluation coverage — produces scored EVAL-REVIEW.md with gap analysis and remediation plan"
+    },
+    {
+      "file": "get-shit-done/workflows/execute-phase.md",
+      "description": "Coordinates wave-based parallel plan execution across a phase"
+    },
+    {
+      "file": "get-shit-done/workflows/execute-plan.md",
+      "description": "Reads PLAN.md and carries out every task, producing SUMMARY.md"
+    },
+    {
+      "file": "get-shit-done/workflows/explore.md",
+      "description": "Socratic ideation workflow for exploring ideas and creating planning artifacts"
+    },
+    {
+      "file": "get-shit-done/workflows/extract_learnings.md",
+      "description": "Extracts decisions, lessons learned, patterns, and surprises from completed phase artifacts into a structured LEARNINGS.md file"
+    },
+    {
+      "file": "get-shit-done/workflows/fast.md",
+      "description": "Executes trivial changes directly with no planning overhead"
+    },
+    {
+      "file": "get-shit-done/workflows/forensics.md",
+      "description": "Post-mortem investigation for failed workflows with anomaly detection and diagnosis"
+    },
+    {
+      "file": "get-shit-done/workflows/health.md",
+      "description": "Validates `.planning/` integrity and performs safe auto-repairs"
+    },
+    {
+      "file": "get-shit-done/workflows/help.md",
+      "description": "Displays reference material exactly as written"
+    },
+    {
+      "file": "get-shit-done/workflows/import.md",
+      "description": "Ingests external plans with conflict detection and format normalization"
+    },
+    {
+      "file": "get-shit-done/workflows/inbox.md",
+      "description": "Triages GitHub issues and PRs against templates for compliance and gates"
+    },
+    {
+      "file": "get-shit-done/workflows/insert-phase.md",
+      "description": "Inserts urgent decimal phases while preserving existing numbering"
+    },
+    {
+      "file": "get-shit-done/workflows/join-discord.md",
+      "description": "Presents GSD Discord invite link"
+    },
+    {
+      "file": "get-shit-done/workflows/list-phase-assumptions.md",
+      "description": "Surfaces own assumptions about a phase for user correction"
+    },
+    {
+      "file": "get-shit-done/workflows/list-workspaces.md",
+      "description": "Lists all GSD workspaces with status and repository information"
+    },
+    {
+      "file": "get-shit-done/workflows/manager.md",
+      "description": "Interactive command center for managing phases with inline and background actions"
+    },
+    {
+      "file": "get-shit-done/workflows/map-codebase.md",
+      "description": "Coordinates parallel analysis agents exploring focused codebase domains"
+    },
+    {
+      "file": "get-shit-done/workflows/milestone-summary.md",
+      "description": "Generates human-friendly project summary from completed milestone artifacts"
+    },
+    {
+      "file": "get-shit-done/workflows/new-milestone.md",
+      "description": "Guides from raw intent to fully committed, phased roadmap"
+    },
+    {
+      "file": "get-shit-done/workflows/new-project.md",
+      "description": "Guides from idea to fully structured project plan"
+    },
+    {
+      "file": "get-shit-done/workflows/new-workspace.md",
+      "description": "Creates isolated workspace with git worktrees or clones for multi-repo orchestration"
+    },
+    {
+      "file": "get-shit-done/workflows/next.md",
+      "description": "Reads state and advances project to next logical step"
+    },
+    {
+      "file": "get-shit-done/workflows/node-repair.md",
+      "description": "Diagnoses execution failures and applies bounded repair strategies"
+    },
+    {
+      "file": "get-shit-done/workflows/note.md",
+      "description": "Zero-friction note capture for saving, listing, and promoting developer notes"
+    },
+    {
+      "file": "get-shit-done/workflows/pause-work.md",
+      "description": "Captures complete handoff artifacts to preserve work state across context resets"
+    },
+    {
+      "file": "get-shit-done/workflows/plan-milestone-gaps.md",
+      "description": "Translates audit findings into executable phase plans"
+    },
+    {
+      "file": "get-shit-done/workflows/plan-phase.md",
+      "description": "Coordinates research, planning, and verification agents with revision loop"
+    },
+    {
+      "file": "get-shit-done/workflows/plant-seed.md",
+      "description": "Captures ideas with structured trigger conditions for future surfacing"
+    },
+    {
+      "file": "get-shit-done/workflows/pr-branch.md",
+      "description": "Produces clean, reviewer-friendly PR branches without `.planning/` files"
+    },
+    {
+      "file": "get-shit-done/workflows/profile-user.md",
+      "description": "Guides through session analysis and produces developer profile"
+    },
+    {
+      "file": "get-shit-done/workflows/progress.md",
+      "description": "Assesses project state and routes intelligently to next command"
+    },
+    {
+      "file": "get-shit-done/workflows/quick.md",
+      "description": "Executes focused, atomic tasks with optional discussion/research/verification"
+    },
+    {
+      "file": "get-shit-done/workflows/reapply-patches.md",
+      "description": "Merges previously saved local modifications after GSD update"
+    },
+    {
+      "file": "get-shit-done/workflows/remove-phase.md",
+      "description": "Removes future phases and renumbers subsequent phases"
+    },
+    {
+      "file": "get-shit-done/workflows/remove-workspace.md",
+      "description": "Removes workspace directory with git worktree cleanup and safety checks"
+    },
+    {
+      "file": "get-shit-done/workflows/research-phase.md",
+      "description": "Validates phase and delivers fully-populated research prompt"
+    },
+    {
+      "file": "get-shit-done/workflows/resume-project.md",
+      "description": "Reconstructs project context and determines next action"
+    },
+    {
+      "file": "get-shit-done/workflows/review.md",
+      "description": "Coordinates independent AI model reviews of implementation plans"
+    },
+    {
+      "file": "get-shit-done/workflows/scan.md",
+      "description": "Lightweight codebase mapping for targeted tech stack and architecture documentation"
+    },
+    {
+      "file": "get-shit-done/workflows/secure-phase.md",
+      "description": "Verifies threat mitigations for completed phases and updates security documentation"
+    },
+    {
+      "file": "get-shit-done/workflows/session-report.md",
+      "description": "Generates structured report with outcomes and resource usage"
+    },
+    {
+      "file": "get-shit-done/workflows/set-profile.md",
+      "description": "Updates GSD agent model tier setting"
+    },
+    {
+      "file": "get-shit-done/workflows/settings.md",
+      "description": "Manages workflow toggles and model profile selection"
+    },
+    {
+      "file": "get-shit-done/workflows/ship.md",
+      "description": "Creates PR, coordinates review, and prepares for merge after verification"
+    },
+    {
+      "file": "get-shit-done/workflows/sketch.md",
+      "description": "Explores design directions through throwaway HTML mockups with multi-variant comparison and artifact storage"
+    },
+    {
+      "file": "get-shit-done/workflows/sketch-wrap-up.md",
+      "description": "Curates sketch findings and packages them into a persistent project skill with a wrap-up summary"
+    },
+    {
+      "file": "get-shit-done/workflows/spec-phase.md",
+      "description": "Clarifies phase deliverables through Socratic ambiguity scoring and produces a SPEC.md with falsifiable requirements"
+    },
+    {
+      "file": "get-shit-done/workflows/spike.md",
+      "description": "Rapid feasibility validation through focused throwaway experiments with observable evidence"
+    },
+    {
+      "file": "get-shit-done/workflows/spike-wrap-up.md",
+      "description": "Curates spike findings and packages them into a persistent project skill with a wrap-up summary"
+    },
+    {
+      "file": "get-shit-done/workflows/stats.md",
+      "description": "Gathers and displays comprehensive project progress metrics"
+    },
+    {
+      "file": "get-shit-done/workflows/transition.md",
+      "description": "Transitional workflow for multi-phase setup"
+    },
+    {
+      "file": "get-shit-done/workflows/ui-phase.md",
+      "description": "Generates UI design contracts with researcher and checker agents"
+    },
+    {
+      "file": "get-shit-done/workflows/ui-review.md",
+      "description": "Performs retroactive 6-pillar visual audits of implemented frontend"
+    },
+    {
+      "file": "get-shit-done/workflows/undo.md",
+      "description": "Safe git revert workflow with dependency checks and confirmation gate"
+    },
+    {
+      "file": "get-shit-done/workflows/update.md",
+      "description": "Checks version, displays changelog, and executes clean installation"
+    },
+    {
+      "file": "get-shit-done/workflows/validate-phase.md",
+      "description": "Audits Nyquist coverage and fills gaps with generated tests"
+    },
+    {
+      "file": "get-shit-done/workflows/verify-phase.md",
+      "description": "Validates phase goal achievement through goal-backward analysis"
+    },
+    {
+      "file": "get-shit-done/workflows/verify-work.md",
+      "description": "Validates built features through conversational UAT"
+    }
+  ],
+  "agents": [
+    {
+      "file": "agents/gsd-advisor-researcher.md",
+      "description": "Researches a gray-area decision and returns a structured comparison table with rationale"
+    },
+    {
+      "file": "agents/gsd-ai-researcher.md",
+      "description": "Researches a chosen AI framework's official docs to produce implementation-ready guidance — best practices, syntax, core patterns, and pitfalls distilled for the specific use case. Writes the Framework Quick Reference and Implementation Guidance sections of AI-SPEC.md. Spawned by /gsd-ai-integration-phase orchestrator."
+    },
+    {
+      "file": "agents/gsd-assumptions-analyzer.md",
+      "description": "Deeply analyzes codebase and returns structured assumptions with evidence"
+    },
+    {
+      "file": "agents/gsd-code-fixer.md",
+      "description": "Applies code review findings intelligently and commits each fix atomically"
+    },
+    {
+      "file": "agents/gsd-code-reviewer.md",
+      "description": "Reviews code for bugs, security issues, and quality problems systematically"
+    },
+    {
+      "file": "agents/gsd-codebase-mapper.md",
+      "description": "Explores codebase and writes structured analysis documents for focus areas"
+    },
+    {
+      "file": "agents/gsd-debug-session-manager.md",
+      "description": "Manages multi-cycle /gsd-debug checkpoint and continuation loop in isolated context. Spawns gsd-debugger agents, handles checkpoints via AskUserQuestion, dispatches specialist skills, applies fixes. Returns compact summary to main context. Spawned by /gsd-debug command."
+    },
+    {
+      "file": "agents/gsd-debugger.md",
+      "description": "Investigates bugs using scientific method, manages debug sessions and checkpoints"
+    },
+    {
+      "file": "agents/gsd-doc-verifier.md",
+      "description": "Verifies factual claims in docs against live codebase and writes JSON results"
+    },
+    {
+      "file": "agents/gsd-doc-writer.md",
+      "description": "Writes and updates project documentation from scratch or revises existing docs"
+    },
+    {
+      "file": "agents/gsd-domain-researcher.md",
+      "description": "Researches the business domain and real-world application context of the AI system being built. Surfaces domain expert evaluation criteria, industry-specific failure modes, regulatory context, and what \"good\" looks like for practitioners in this field — before the eval-planner turns it into measurable rubrics. Spawned by /gsd-ai-integration-phase orchestrator."
+    },
+    {
+      "file": "agents/gsd-eval-auditor.md",
+      "description": "Retroactive audit of an implemented AI phase's evaluation coverage. Checks implementation against the AI-SPEC.md evaluation plan. Scores each eval dimension as COVERED/PARTIAL/MISSING. Produces a scored EVAL-REVIEW.md with findings, gaps, and remediation guidance. Spawned by /gsd-eval-review orchestrator."
+    },
+    {
+      "file": "agents/gsd-eval-planner.md",
+      "description": "Designs a structured evaluation strategy for an AI phase. Identifies critical failure modes, selects eval dimensions with rubrics, recommends tooling, and specifies the reference dataset. Writes the Evaluation Strategy, Guardrails, and Production Monitoring sections of AI-SPEC.md. Spawned by /gsd-ai-integration-phase orchestrator."
+    },
+    {
+      "file": "agents/gsd-executor.md",
+      "description": "Executes GSD plans with atomic commits, deviation handling, checkpoint protocols, and state management"
+    },
+    {
+      "file": "agents/gsd-framework-selector.md",
+      "description": "Presents an interactive decision matrix to surface the right AI/LLM framework for the user's specific use case. Produces a scored recommendation with rationale. Spawned by /gsd-ai-integration-phase and /gsd-select-framework orchestrators."
+    },
+    {
+      "file": "agents/gsd-integration-checker.md",
+      "description": "Verifies cross-phase integration and E2E flows to find connection breaks at runtime"
+    },
+    {
+      "file": "agents/gsd-intel-updater.md",
+      "description": "Analyzes codebase and writes structured intel files to .planning/intel/"
+    },
+    {
+      "file": "agents/gsd-nyquist-auditor.md",
+      "description": "Fills Nyquist validation gaps by generating tests and verifying coverage for requirements"
+    },
+    {
+      "file": "agents/gsd-pattern-mapper.md",
+      "description": "Analyzes codebase for existing patterns and produces PATTERNS.md mapping new files to closest analogs. Read-only codebase analysis spawned by /gsd-plan-phase orchestrator before planning."
+    },
+    {
+      "file": "agents/gsd-phase-researcher.md",
+      "description": "Researches how to implement a phase before planning with technical investigation"
+    },
+    {
+      "file": "agents/gsd-plan-checker.md",
+      "description": "Verifies plans will achieve phase goal before execution through goal-backward analysis"
+    },
+    {
+      "file": "agents/gsd-planner.md",
+      "description": "Creates executable phase plans with task breakdown, dependency analysis, and goal-backward verification"
+    },
+    {
+      "file": "agents/gsd-project-researcher.md",
+      "description": "Researches domain ecosystem before roadmap creation for technology landscape mapping"
+    },
+    {
+      "file": "agents/gsd-research-synthesizer.md",
+      "description": "Synthesizes research outputs from parallel researchers into consolidated SUMMARY.md"
+    },
+    {
+      "file": "agents/gsd-roadmapper.md",
+      "description": "Creates project roadmaps with phase breakdown, requirement mapping, and success criteria derivation"
+    },
+    {
+      "file": "agents/gsd-security-auditor.md",
+      "description": "Verifies threat mitigations from plan exist in implementation code"
+    },
+    {
+      "file": "agents/gsd-ui-auditor.md",
+      "description": "Retroactive 6-pillar visual audit of implemented frontend code with scored findings"
+    },
+    {
+      "file": "agents/gsd-ui-checker.md",
+      "description": "Validates UI-SPEC.md design contracts against 6 quality dimensions with BLOCK/FLAG/PASS verdicts"
+    },
+    {
+      "file": "agents/gsd-ui-researcher.md",
+      "description": "Produces UI-SPEC.md design contract for frontend phases with existing design system detection"
+    },
+    {
+      "file": "agents/gsd-user-profiler.md",
+      "description": "Analyzes session messages across 8 behavioral dimensions to produce scored developer profile"
+    },
+    {
+      "file": "agents/gsd-verifier.md",
+      "description": "Verifies phase goal achievement through goal-backward analysis with codebase validation"
+    }
+  ],
+  "references": [
+    {
+      "file": "get-shit-done/references/agent-contracts.md",
+      "description": "Completion markers and handoff schemas for GSD agents"
+    },
+    {
+      "file": "get-shit-done/references/ai-evals.md",
+      "description": "AI evaluation reference: frameworks, metrics, and rubric patterns for gsd-eval-planner and gsd-eval-auditor"
+    },
+    {
+      "file": "get-shit-done/references/ai-frameworks.md",
+      "description": "AI framework decision matrix for framework selection and comparison"
+    },
+    {
+      "file": "get-shit-done/references/artifact-types.md",
+      "description": "Artifact types in planning taxonomy with lifecycle and consumption mechanism"
+    },
+    {
+      "file": "get-shit-done/references/autonomous-smart-discuss.md",
+      "description": "Autonomous-mode variant of discuss-phase — proposes grey-area answers in batch tables for user acceptance or override"
+    },
+    {
+      "file": "get-shit-done/references/checkpoints.md",
+      "description": "Checkpoint types, execution protocol, authentication gates, and automation reference"
+    },
+    {
+      "file": "get-shit-done/references/common-bug-patterns.md",
+      "description": "Checklist of frequent bug patterns ordered by frequency"
+    },
+    {
+      "file": "get-shit-done/references/context-budget.md",
+      "description": "Standard rules for keeping orchestrator context lean"
+    },
+    {
+      "file": "get-shit-done/references/continuation-format.md",
+      "description": "Standard format for presenting next steps after completing commands"
+    },
+    {
+      "file": "get-shit-done/references/decimal-phase-calculation.md",
+      "description": "Calculate next decimal phase number for urgent insertions using gsd-tools CLI"
+    },
+    {
+      "file": "get-shit-done/references/debugger-philosophy.md",
+      "description": "Evergreen debugging disciplines applicable across every bug, language, and system — loaded by gsd-debugger"
+    },
+    {
+      "file": "get-shit-done/references/domain-probes.md",
+      "description": "Domain-aware probing patterns for technology decision discussions"
+    },
+    {
+      "file": "get-shit-done/references/executor-examples.md",
+      "description": "Executor extended examples — on-demand reference for gsd-executor agent"
+    },
+    {
+      "file": "get-shit-done/references/gate-prompts.md",
+      "description": "Reusable prompt patterns for structured gate checks in workflows"
+    },
+    {
+      "file": "get-shit-done/references/gates.md",
+      "description": "Canonical gate types taxonomy used across GSD workflows"
+    },
+    {
+      "file": "get-shit-done/references/git-integration.md",
+      "description": "When to commit during GSD execution, commit message formats, and per-task commit strategy"
+    },
+    {
+      "file": "get-shit-done/references/git-planning-commit.md",
+      "description": "Commit planning artifacts using gsd-tools CLI with automatic config checking"
+    },
+    {
+      "file": "get-shit-done/references/ios-scaffold.md",
+      "description": "iOS app scaffold rules and patterns for creating new iOS app targets"
+    },
+    {
+      "file": "get-shit-done/references/model-profile-resolution.md",
+      "description": "Resolve model profile setting from config and map to per-agent model values"
+    },
+    {
+      "file": "get-shit-done/references/model-profiles.md",
+      "description": "Four model profiles (quality/balanced/budget/inherit) with per-agent model assignments"
+    },
+    {
+      "file": "get-shit-done/references/mandatory-initial-read.md",
+      "description": "Protocol requiring agents to load all required_reading files before performing any other actions"
+    },
+    {
+      "file": "get-shit-done/references/phase-argument-parsing.md",
+      "description": "Parse and normalize phase arguments for phase-operating commands"
+    },
+    {
+      "file": "get-shit-done/references/planner-antipatterns.md",
+      "description": "Planner anti-patterns and specificity examples — on-demand reference for gsd-planner"
+    },
+    {
+      "file": "get-shit-done/references/planner-gap-closure.md",
+      "description": "Planner reference for addressing verification and UAT failures"
+    },
+    {
+      "file": "get-shit-done/references/planner-reviews.md",
+      "description": "Planner reference for replanning from scratch with review feedback"
+    },
+    {
+      "file": "get-shit-done/references/planner-source-audit.md",
+      "description": "Planner source audit and authority limits — multi-source coverage audit format and constraints"
+    },
+    {
+      "file": "get-shit-done/references/planner-revision.md",
+      "description": "Planner reference for targeted updates to existing plans"
+    },
+    {
+      "file": "get-shit-done/references/planning-config.md",
+      "description": "Configuration options for `.planning/` directory behavior"
+    },
+    {
+      "file": "get-shit-done/references/project-skills-discovery.md",
+      "description": "Steps for discovering and applying project-defined skills before execution — shared across all GSD agents"
+    },
+    {
+      "file": "get-shit-done/references/questioning.md",
+      "description": "Project initialization questioning philosophy, AskUserQuestion usage, and decision gates"
+    },
+    {
+      "file": "get-shit-done/references/revision-loop.md",
+      "description": "Standard pattern for iterative agent revision with feedback"
+    },
+    {
+      "file": "get-shit-done/references/sketch-interactivity.md",
+      "description": "Required interactivity patterns for sketch mockups — every interactive element must respond to user actions"
+    },
+    {
+      "file": "get-shit-done/references/sketch-theme-system.md",
+      "description": "Shared CSS variable theme system for sketch artifacts stored in .planning/sketches/themes/"
+    },
+    {
+      "file": "get-shit-done/references/sketch-tooling.md",
+      "description": "Floating toolbar specification included in every sketch for reset, variant switching, and note capture"
+    },
+    {
+      "file": "get-shit-done/references/sketch-variant-patterns.md",
+      "description": "Multi-variant HTML patterns for sketches — tab-based switching between 2-3 design variants"
+    },
+    {
+      "file": "get-shit-done/references/tdd.md",
+      "description": "TDD philosophy, Red-Green-Refactor cycle execution, test quality criteria, and framework setup"
+    },
+    {
+      "file": "get-shit-done/references/thinking-models-debug.md",
+      "description": "Structured reasoning models for debugger agent decision points"
+    },
+    {
+      "file": "get-shit-done/references/thinking-models-execution.md",
+      "description": "Structured reasoning models for executor agent decision points"
+    },
+    {
+      "file": "get-shit-done/references/thinking-models-planning.md",
+      "description": "Structured reasoning models for planner and roadmapper agents"
+    },
+    {
+      "file": "get-shit-done/references/thinking-models-research.md",
+      "description": "Structured reasoning models for researcher and synthesizer agents"
+    },
+    {
+      "file": "get-shit-done/references/thinking-models-verification.md",
+      "description": "Structured reasoning models for verifier and plan-checker agents"
+    },
+    {
+      "file": "get-shit-done/references/thinking-partner.md",
+      "description": "Conditional extended thinking at workflow decision points"
+    },
+    {
+      "file": "get-shit-done/references/ui-brand.md",
+      "description": "Visual patterns for user-facing GSD output: banners, checkpoints, status symbols, and tables"
+    },
+    {
+      "file": "get-shit-done/references/universal-anti-patterns.md",
+      "description": "Rules that apply to all workflows and agents universally"
+    },
+    {
+      "file": "get-shit-done/references/user-profiling.md",
+      "description": "Detection heuristics for 8 behavioral profiling dimensions with signal patterns and confidence scoring"
+    },
+    {
+      "file": "get-shit-done/references/verification-overrides.md",
+      "description": "Mechanism for accepting must-have failures when deviations are acceptable"
+    },
+    {
+      "file": "get-shit-done/references/verification-patterns.md",
+      "description": "Four-level verification model (exists/substantive/wired/functional) with artifact-specific patterns"
+    },
+    {
+      "file": "get-shit-done/references/workstream-flag.md",
+      "description": "Workstream scoping mechanism for parallel milestone work"
+    }
+  ],
+  "templates": [
+    {
+      "file": "get-shit-done/templates/claude-md.md",
+      "description": "CLAUDE.md template for project-specific Claude Code instructions"
+    },
+    {
+      "file": "get-shit-done/templates/context.md",
+      "description": "Phase context template capturing implementation decisions"
+    },
+    {
+      "file": "get-shit-done/templates/continue-here.md",
+      "description": "Continue-here template preserving work state across context resets"
+    },
+    {
+      "file": "get-shit-done/templates/copilot-instructions.md",
+      "description": "Instructions template for GitHub Copilot integration"
+    },
+    {
+      "file": "get-shit-done/templates/debug-subagent-prompt.md",
+      "description": "Debug subagent prompt template for investigation-focused debugging"
+    },
+    {
+      "file": "get-shit-done/templates/dev-preferences.md",
+      "description": "Developer preferences template for personalized GSD behavior"
+    },
+    {
+      "file": "get-shit-done/templates/discovery.md",
+      "description": "Discovery template for shallow research decisions"
+    },
+    {
+      "file": "get-shit-done/templates/discussion-log.md",
+      "description": "Audit trail template capturing options considered during discuss-phase"
+    },
+    {
+      "file": "get-shit-done/templates/DEBUG.md",
+      "description": "Debug template capturing debug session state"
+    },
+    {
+      "file": "get-shit-done/templates/milestone-archive.md",
+      "description": "Milestone archive template for historical milestone records"
+    },
+    {
+      "file": "get-shit-done/templates/milestone.md",
+      "description": "Milestone entry template for MILESTONES.md version records"
+    },
+    {
+      "file": "get-shit-done/templates/phase-prompt.md",
+      "description": "Phase prompt template defining PLAN.md output format that planners produce"
+    },
+    {
+      "file": "get-shit-done/templates/planner-subagent-prompt.md",
+      "description": "Planner subagent prompt template for focused planning agent invocation"
+    },
+    {
+      "file": "get-shit-done/templates/project.md",
+      "description": "PROJECT.md template for project definition, goals, constraints, and success criteria"
+    },
+    {
+      "file": "get-shit-done/templates/requirements.md",
+      "description": "Requirements template defining checkable done criteria"
+    },
+    {
+      "file": "get-shit-done/templates/research.md",
+      "description": "Research template for phase investigation before planning"
+    },
+    {
+      "file": "get-shit-done/templates/retrospective.md",
+      "description": "Project retrospective template for milestone completion analysis"
+    },
+    {
+      "file": "get-shit-done/templates/roadmap.md",
+      "description": "Roadmap template for phase breakdown and schedule"
+    },
+    {
+      "file": "get-shit-done/templates/SECURITY.md",
+      "description": "Per-phase security contract with threat register and accepted risks log"
+    },
+    {
+      "file": "get-shit-done/templates/spec.md",
+      "description": "Phase spec template locking falsifiable requirements before discuss-phase begins"
+    },
+    {
+      "file": "get-shit-done/templates/state.md",
+      "description": "State template tracking milestone, phase, and plan progress"
+    },
+    {
+      "file": "get-shit-done/templates/summary-complex.md",
+      "description": "Complex summary template for phases with intricate work"
+    },
+    {
+      "file": "get-shit-done/templates/summary-minimal.md",
+      "description": "Minimal summary template for simple or skipped work"
+    },
+    {
+      "file": "get-shit-done/templates/summary-standard.md",
+      "description": "Standard summary template for typical phase completion"
+    },
+    {
+      "file": "get-shit-done/templates/summary.md",
+      "description": "Base summary template for phase completion records"
+    },
+    {
+      "file": "get-shit-done/templates/UAT.md",
+      "description": "UAT template for acceptance testing records"
+    },
+    {
+      "file": "get-shit-done/templates/UI-SPEC.md",
+      "description": "UI-SPEC template for design contracts"
+    },
+    {
+      "file": "get-shit-done/templates/user-profile.md",
+      "description": "Developer profile template for behavioral analysis output"
+    },
+    {
+      "file": "get-shit-done/templates/user-setup.md",
+      "description": "User setup template for initial GSD configuration and onboarding"
+    },
+    {
+      "file": "get-shit-done/templates/VALIDATION.md",
+      "description": "Validation template for test coverage records"
+    },
+    {
+      "file": "get-shit-done/templates/verification-report.md",
+      "description": "Verification report template for goal achievement assessment"
+    },
+    {
+      "file": "get-shit-done/templates/AI-SPEC.md",
+      "description": "AI integration specification template for phases that involve building AI systems"
+    }
+  ]
+}
