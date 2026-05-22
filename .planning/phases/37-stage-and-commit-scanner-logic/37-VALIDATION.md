@@ -7,7 +7,7 @@ wave_0_complete: false
 created: 2026-05-22
 ---
 
-# Phase 37 — Validation Strategy
+# Phase 37 — Stage and Commit Scanner Logic
 
 > Per-phase validation contract for feedback sampling during execution.
 
@@ -17,20 +17,20 @@ created: 2026-05-22
 
 | Property | Value |
 |----------|-------|
-| **Framework** | Node.js built-in runner |
+| **Framework** | Git CLI / Bash script verification |
 | **Config file** | none |
-| **Quick run command** | `node --test tests/read-injection-scanner.test.cjs` |
-| **Full suite command** | `npm test` |
-| **Estimated runtime** | ~5 seconds |
+| **Quick run command** | `git diff --cached --name-only` |
+| **Full suite command** | `git diff --cached --name-only` |
+| **Estimated runtime** | ~1 second |
 
 ---
 
 ## Sampling Rate
 
-- **After every task commit:** Run `node --test tests/read-injection-scanner.test.cjs`
-- **After every plan wave:** Run `npm test`
+- **After every task commit:** Run `git diff --cached --name-only`
+- **After every plan wave:** Run `git diff --cached --name-only`
 - **Before `/gsd-verify-work`:** Full suite must be green
-- **Max feedback latency:** 5 seconds
+- **Max feedback latency:** 1 second
 
 ---
 
@@ -38,7 +38,8 @@ created: 2026-05-22
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 37-01-01 | 01 | 1 | STAGE-02 | — | N/A | unit | `node scripts/stage-batch-2.cjs` | ❌ W0 | ⬜ pending |
+| 37-01-01 | 01 | 1 | STAGE-02 | T-37-01 | Validate staging targets (exact subset) | unit | `git diff --cached --name-only` | ✅ Wave 0 | ⬜ pending |
+| 37-01-02 | 01 | 1 | STAGE-02 | — | Validate commit message and history | unit | `git log -n 1 --pretty=format:%s` | ✅ Wave 0 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
