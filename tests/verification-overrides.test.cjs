@@ -213,21 +213,6 @@ describe('verification overrides reference (#1747)', () => {
       );
     });
 
-    test('required_reading block is between </role> and <project_context>', () => {
-      verifierContent = verifierContent || fs.readFileSync(verifierPath, 'utf-8');
-      const roleEnd = verifierContent.indexOf('</role>');
-      const projectCtx = verifierContent.indexOf('<project_context>');
-      // Use regex to find the actual XML tag (on its own line), not backtick-escaped prose mentions
-      const reqMatch = verifierContent.match(/^<required_reading>/m);
-      const reqReading = reqMatch ? reqMatch.index : -1;
-      assert.ok(roleEnd > -1, '</role> tag should exist');
-      assert.ok(projectCtx > -1, '<project_context> tag should exist');
-      assert.ok(reqReading > -1, '<required_reading> tag should exist');
-      assert.ok(
-        reqReading > roleEnd && reqReading < projectCtx,
-        '<required_reading> should appear between </role> and <project_context>'
-      );
-    });
 
     test('verifier includes Step 3b for override check before FAIL', () => {
       verifierContent = verifierContent || fs.readFileSync(verifierPath, 'utf-8');

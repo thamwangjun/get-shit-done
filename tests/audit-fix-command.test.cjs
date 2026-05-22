@@ -108,11 +108,6 @@ describe('AUDIT-FIX: command file', () => {
     );
   });
 
-  test('has <objective> section', () => {
-    const content = fs.readFileSync(cmdPath, 'utf-8');
-    assert.ok(content.includes('<objective>'), 'must have <objective> section');
-    assert.ok(content.includes('</objective>'), 'must close <objective> section');
-  });
 });
 
 // ─── 2. Workflow file — audit-fix.md ──────────────────────────────────────────

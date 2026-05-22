@@ -62,7 +62,7 @@ describe('CONFIG: workflow.ai_integration_phase default', () => {
   afterEach(() => { cleanup(tmpDir); });
 
   test('config-ensure-section includes workflow.ai_integration_phase as boolean', () => {
-    const result = runGsdTools('config-ensure-section', tmpDir);
+    const result = runGsdTools('config-ensure-section', tmpDir, { HOME: tmpDir, USERPROFILE: tmpDir });
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const config = readConfig(tmpDir);
@@ -71,7 +71,7 @@ describe('CONFIG: workflow.ai_integration_phase default', () => {
   });
 
   test('workflow.ai_integration_phase defaults to true', () => {
-    runGsdTools('config-ensure-section', tmpDir);
+    runGsdTools('config-ensure-section', tmpDir, { HOME: tmpDir, USERPROFILE: tmpDir });
     const config = readConfig(tmpDir);
     assert.strictEqual(config.workflow.ai_integration_phase, true, 'workflow.ai_integration_phase should default to true');
   });
@@ -84,13 +84,13 @@ describe('CONFIG: config-set / config-get workflow.ai_integration_phase', () => 
 
   beforeEach(() => {
     tmpDir = createTempProject();
-    runGsdTools('config-ensure-section', tmpDir);
+    runGsdTools('config-ensure-section', tmpDir, { HOME: tmpDir, USERPROFILE: tmpDir });
   });
 
   afterEach(() => { cleanup(tmpDir); });
 
   test('config-set workflow.ai_integration_phase false persists as boolean false', () => {
-    const result = runGsdTools('config-set workflow.ai_integration_phase false', tmpDir);
+    const result = runGsdTools('config-set workflow.ai_integration_phase false', tmpDir, { HOME: tmpDir, USERPROFILE: tmpDir });
     assert.ok(result.success, `config-set failed: ${result.error}`);
 
     const config = readConfig(tmpDir);
@@ -99,8 +99,8 @@ describe('CONFIG: config-set / config-get workflow.ai_integration_phase', () => 
   });
 
   test('config-set workflow.ai_integration_phase true persists as boolean true', () => {
-    runGsdTools('config-set workflow.ai_integration_phase false', tmpDir);
-    const result = runGsdTools('config-set workflow.ai_integration_phase true', tmpDir);
+    runGsdTools('config-set workflow.ai_integration_phase false', tmpDir, { HOME: tmpDir, USERPROFILE: tmpDir });
+    const result = runGsdTools('config-set workflow.ai_integration_phase true', tmpDir, { HOME: tmpDir, USERPROFILE: tmpDir });
     assert.ok(result.success, `config-set failed: ${result.error}`);
 
     const config = readConfig(tmpDir);
@@ -108,8 +108,8 @@ describe('CONFIG: config-set / config-get workflow.ai_integration_phase', () => 
   });
 
   test('config-get workflow.ai_integration_phase returns the stored value', () => {
-    runGsdTools('config-set workflow.ai_integration_phase false', tmpDir);
-    const result = runGsdTools('config-get workflow.ai_integration_phase', tmpDir);
+    runGsdTools('config-set workflow.ai_integration_phase false', tmpDir, { HOME: tmpDir, USERPROFILE: tmpDir });
+    const result = runGsdTools('config-get workflow.ai_integration_phase', tmpDir, { HOME: tmpDir, USERPROFILE: tmpDir });
     assert.ok(result.success, `config-get failed: ${result.error}`);
     assert.strictEqual(JSON.parse(result.output), false);
   });
@@ -127,7 +127,7 @@ describe('HEALTH: W016 — workflow.ai_integration_phase absent', () => {
     writeMinimalHealth(tmpDir);
     writeConfig(tmpDir, { model_profile: 'balanced', workflow: { research: true, nyquist_validation: true } });
 
-    const result = runGsdTools('validate health', tmpDir);
+    const result = runGsdTools('validate health', tmpDir, { HOME: tmpDir, USERPROFILE: tmpDir });
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -144,7 +144,7 @@ describe('HEALTH: W016 — workflow.ai_integration_phase absent', () => {
       workflow: { research: true, nyquist_validation: true, ai_integration_phase: true },
     });
 
-    const result = runGsdTools('validate health', tmpDir);
+    const result = runGsdTools('validate health', tmpDir, { HOME: tmpDir, USERPROFILE: tmpDir });
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -161,7 +161,7 @@ describe('HEALTH: W016 — workflow.ai_integration_phase absent', () => {
       workflow: { research: true, nyquist_validation: true, ai_integration_phase: false },
     });
 
-    const result = runGsdTools('validate health', tmpDir);
+    const result = runGsdTools('validate health', tmpDir, { HOME: tmpDir, USERPROFILE: tmpDir });
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -187,7 +187,7 @@ describe('HEALTH --repair: addAiIntegrationPhaseKey', () => {
       JSON.stringify({ model_profile: 'balanced', workflow: { research: true, nyquist_validation: true } }, null, 2)
     );
 
-    const result = runGsdTools('validate health --repair', tmpDir);
+    const result = runGsdTools('validate health --repair', tmpDir, { HOME: tmpDir, USERPROFILE: tmpDir });
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);

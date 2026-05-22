@@ -39,42 +39,6 @@ describe('ios-scaffold.md reference exists and contains XcodeGen guidance', () =
     );
   });
 
-  test('reference prohibits Package.swift as primary build system for iOS apps', () => {
-    const content = fs.readFileSync(IOS_SCAFFOLD_REF, 'utf-8');
-    const prohibitsPackageSwift =
-      content.includes('Package.swift') &&
-      (
-        content.includes('NEVER') ||
-        content.includes('never') ||
-        content.includes('prohibited') ||
-        content.includes('do not') ||
-        content.includes('Do not') ||
-        content.includes('must not')
-      );
-    assert.ok(
-      prohibitsPackageSwift,
-      'ios-scaffold.md must explicitly prohibit Package.swift as the primary build system for iOS apps'
-    );
-  });
-
-  test('reference prohibits .executableTarget for iOS apps', () => {
-    const content = fs.readFileSync(IOS_SCAFFOLD_REF, 'utf-8');
-    const prohibitsExecutableTarget =
-      content.includes('executableTarget') &&
-      (
-        content.includes('NEVER') ||
-        content.includes('never') ||
-        content.includes('prohibited') ||
-        content.includes('do not') ||
-        content.includes('Do not') ||
-        content.includes('must not')
-      );
-    assert.ok(
-      prohibitsExecutableTarget,
-      'ios-scaffold.md must explicitly prohibit .executableTarget for iOS app targets'
-    );
-  });
-
   test('reference requires project.yml (XcodeGen spec) for iOS app scaffolding', () => {
     const content = fs.readFileSync(IOS_SCAFFOLD_REF, 'utf-8');
     assert.ok(

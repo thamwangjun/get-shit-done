@@ -208,9 +208,18 @@ Options:
 `.trim();
 
 /**
- * Read the package version from package.json.
+ * Read the package version, preferring SHA from VERSION file (written by installer).
+ * Falls back to package.json version in development (no VERSION file present).
  */
 async function getVersion(): Promise<string> {
+  // Prefer SHA from VERSION file (written by installer)
+  try {
+    const versionPath = resolve(fileURLToPath(import.meta.url), '..', '..', 'VERSION');
+    const ver = (await readFile(versionPath, 'utf-8')).trim();
+    if (ver) return ver;
+  } catch {
+    // VERSION file not found — fall through to package.json
+  }
   try {
     const pkgPath = resolve(fileURLToPath(import.meta.url), '..', '..', 'package.json');
     const raw = await readFile(pkgPath, 'utf-8');

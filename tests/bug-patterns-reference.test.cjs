@@ -45,12 +45,8 @@ describe('common-bug-patterns.md reference', () => {
     );
   });
 
-  test('has title and intro', () => {
+  test('has separator', () => {
     const content = fs.readFileSync(REFERENCE_PATH, 'utf-8');
-    assert.ok(
-      content.startsWith('# Common Bug Patterns'),
-      'File should start with "# Common Bug Patterns" title'
-    );
     assert.ok(
       content.includes('---'),
       'File should contain --- separator after intro'

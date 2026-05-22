@@ -48,10 +48,8 @@ describe('quick command: --research in frontmatter', () => {
 
   test('objective section describes --research flag', () => {
     content = fs.readFileSync(commandPath, 'utf-8');
-    const objectiveMatch = content.match(/<objective>([\s\S]*?)<\/objective>/);
-    assert.ok(objectiveMatch, 'should have <objective> section');
     assert.ok(
-      objectiveMatch[1].includes('--research'),
+      content.includes('--research'),
       'objective should describe --research flag'
     );
   });

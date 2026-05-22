@@ -304,10 +304,14 @@ describe('bug #2136 part 4: installed .sh hooks contain stamped concrete version
 
       const versionMatch = content.match(/# gsd-hook-version:\s*(\S+)/);
       assert.ok(versionMatch, `installed ${sh} version header must have a version value`);
-      assert.match(
-        versionMatch[1],
-        /^\d+\.\d+\.\d+/,
-        `installed ${sh} version "${versionMatch[1]}" must be a semver-like string`
+      // After INST-01/INST-02 fix: gsdVersion is a 7-char hex SHA (git available)
+      // or 'no-network' sentinel (git unavailable). Both are valid concrete values.
+      const stamped = versionMatch[1];
+      const isSha = /^[0-9a-f]{7}$/.test(stamped);
+      const isSentinel = stamped === 'no-network';
+      assert.ok(
+        isSha || isSentinel,
+        `installed ${sh} version "${stamped}" must be either a 7-char hex SHA or 'no-network' sentinel`
       );
     }
   });
@@ -317,32 +321,34 @@ describe('bug #2136 part 4: installed .sh hooks contain stamped concrete version
     // version-check logic (extracted from gsd-check-update.js) against the
     // installed hooks and verify none are flagged stale.
     const hooksDir = runInstaller(tmpDir);
-    const pkg = require(path.join(__dirname, '..', 'package.json'));
-    const installedVersion = pkg.version;
 
-    // Build a subprocess that runs the staleness check logic in isolation.
-    // We pass the installed version, hooks dir, and hook filenames as JSON
-    // to avoid any injection risk.
+    // After INST-01/INST-02 fix: gsdVersion is written as a 7-char hex SHA (when
+    // git is available) or 'no-network' sentinel. The hook staleness check in
+    // gsd-check-update-worker.js uses SHA equality (isNewer = latest.slice(0,7) !== installed),
+    // not semver comparison. We replicate that logic here.
+    //
+    // Derive the installed version directly from the stamped hook — this ensures
+    // the comparison is self-consistent (hook version === installed version at fresh install).
     const checkScript = `
       'use strict';
       const fs = require('fs');
       const path = require('path');
 
-      function isNewer(a, b) {
-        const pa = (a || '').split('.').map(s => Number(s.replace(/-.*/, '')) || 0);
-        const pb = (b || '').split('.').map(s => Number(s.replace(/-.*/, '')) || 0);
-        for (let i = 0; i < 3; i++) {
-          if (pa[i] > pb[i]) return true;
-          if (pa[i] < pb[i]) return false;
-        }
-        return false;
+      // SHA-equality isNewer (matches gsd-check-update-worker.js after HOOK-03 fix)
+      function isNewer(latest, installed) {
+        return !!latest && latest.slice(0, 7) !== installed;
       }
 
       const hooksDir = ${JSON.stringify(hooksDir)};
-      const installed = ${JSON.stringify(installedVersion)};
       const shHooks = ${JSON.stringify(SH_HOOKS)};
       // Use the same regex that the fixed gsd-check-update.js uses
       const versionRe = /(?:\\/\\/|#) gsd-hook-version:\\s*(.+)/;
+
+      // Read gsdVersion from one of the installed bash hooks (they all have the same stamp)
+      const firstHookPath = path.join(hooksDir, shHooks[0]);
+      const firstContent = fs.existsSync(firstHookPath) ? fs.readFileSync(firstHookPath, 'utf8') : '';
+      const firstMatch = firstContent.match(versionRe);
+      const installed = firstMatch ? firstMatch[1].trim() : 'unknown';
 
       const staleHooks = [];
       for (const hookFile of shHooks) {
@@ -355,7 +361,7 @@ describe('bug #2136 part 4: installed .sh hooks contain stamped concrete version
         const m = content.match(versionRe);
         if (m) {
           const hookVersion = m[1].trim();
-          if (isNewer(installed, hookVersion) && !hookVersion.includes('{{')) {
+          if (isNewer(hookVersion, installed) && !hookVersion.includes('{{')) {
             staleHooks.push({ file: hookFile, hookVersion, installedVersion: installed });
           }
         } else {

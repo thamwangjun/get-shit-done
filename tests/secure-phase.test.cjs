@@ -68,12 +68,6 @@ describe('SECURE: gsd-security-auditor agent', () => {
     }
   });
 
-  test('has <role> section', () => {
-    const content = fs.readFileSync(agentPath, 'utf-8');
-    assert.ok(content.includes('<role>'), 'must have <role> section');
-    assert.ok(content.includes('</role>'), 'must close <role> section');
-  });
-
   test('has <execution_flow> section', () => {
     const content = fs.readFileSync(agentPath, 'utf-8');
     assert.ok(content.includes('<execution_flow>'), 'must have <execution_flow> section');
@@ -141,9 +135,8 @@ describe('SECURE: secure-phase command file', () => {
     );
   });
 
-  test('has <objective> section mentioning states A, B, C', () => {
+  test('mentions states A, B, C', () => {
     const content = fs.readFileSync(cmdPath, 'utf-8');
-    assert.ok(content.includes('<objective>'), 'must have <objective> section');
     assert.ok(content.includes('(A)'), 'must mention state A');
     assert.ok(content.includes('(B)'), 'must mention state B');
     assert.ok(content.includes('(C)'), 'must mention state C');

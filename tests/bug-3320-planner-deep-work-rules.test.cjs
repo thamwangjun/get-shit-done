@@ -30,8 +30,8 @@ describe('bug #3320 planner action contract', () => {
 
     assert.match(
       planner,
-      /NEVER place fenced code blocks \(```\) inside `<action>`/,
-      'gsd-planner.md must explicitly forbid fenced implementation code in <action>'
+      /Keep `<action>` as directive prose only/,
+      'gsd-planner.md must explicitly keep <action> as directive prose only (no fenced implementation code)'
     );
     assert.match(
       planner,

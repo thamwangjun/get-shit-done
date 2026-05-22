@@ -15,9 +15,20 @@ const path = require('node:path');
 const ROOT = path.resolve(__dirname, '..');
 const MANIFEST_PATH = path.join(ROOT, 'docs', 'INVENTORY-MANIFEST.json');
 
+const COMMANDS_DIR = path.join(ROOT, 'commands', 'gsd');
+
 const FAMILIES = [
   { name: 'agents',      dir: path.join(ROOT, 'agents'),                           filter: (f) => /^gsd-.*\.md$/.test(f),  toName: (f) => f.replace(/\.md$/, '') },
-  { name: 'commands',    dir: path.join(ROOT, 'commands', 'gsd'),                  filter: (f) => f.endsWith('.md'),        toName: (f) => '/gsd-' + f.replace(/\.md$/, '') },
+  {
+    name: 'commands',
+    dir: COMMANDS_DIR,
+    filter: (f) => f.endsWith('.md'),
+    toName: (f) => {
+      const content = fs.readFileSync(path.join(COMMANDS_DIR, f), 'utf8');
+      const m = content.match(/^name:\s*gsd:(.+)$/m);
+      return m ? '/gsd-' + m[1].trim() : '/gsd-' + f.replace(/\.md$/, '');
+    },
+  },
   { name: 'workflows',   dir: path.join(ROOT, 'get-shit-done', 'workflows'),        filter: (f) => f.endsWith('.md'),        toName: (f) => f },
   { name: 'references',  dir: path.join(ROOT, 'get-shit-done', 'references'),       filter: (f) => f.endsWith('.md'),        toName: (f) => f },
   { name: 'cli_modules', dir: path.join(ROOT, 'get-shit-done', 'bin', 'lib'),       filter: (f) => f.endsWith('.cjs'),       toName: (f) => f },

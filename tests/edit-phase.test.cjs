@@ -289,11 +289,12 @@ describe('edit-phase workflow: phase number and position preservation', () => {
 
   test('anti_patterns block renumbering', () => {
     const content = fs.readFileSync(WORKFLOW_PATH, 'utf-8');
-    const antiPatterns = content.match(/<anti_patterns>([\s\S]*?)<\/anti_patterns>/i);
-    assert.ok(antiPatterns, 'workflow should have anti_patterns section');
+    // Phase 33 renamed <anti_patterns> to <expected_patterns> per fork positive-framing standard
+    const expectedPatterns = content.match(/<expected_patterns>([\s\S]*?)<\/expected_patterns>/i);
+    assert.ok(expectedPatterns, 'workflow should have expected_patterns section (renamed from anti_patterns in Phase 33)');
     assert.ok(
-      /renumber|number.*preserved|preserve.*number/i.test(antiPatterns[1]),
-      'anti_patterns must prohibit renumbering'
+      /renumber|number.*preserved|preserve.*number/i.test(expectedPatterns[1]),
+      'expected_patterns must address renumbering'
     );
   });
 

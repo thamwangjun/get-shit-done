@@ -80,7 +80,8 @@ describe('verifier deferred-items filtering (#1624)', () => {
       assert.ok(
         verifierContent.includes('do NOT affect the status') ||
         verifierContent.includes('do not affect status') ||
-        verifierContent.includes('Deferred items do NOT affect'),
+        verifierContent.includes('Deferred items do NOT affect') ||
+        verifierContent.includes('excluded from status determination'),
         'should explicitly state that deferred items do not affect status'
       );
     });
