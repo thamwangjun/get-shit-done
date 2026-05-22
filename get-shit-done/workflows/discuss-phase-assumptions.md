@@ -404,7 +404,7 @@ Record each correction:
 
 After all corrections processed, continue to write_context with updated assumptions.
 
-**Auto mode:** Should not reach this step (--auto skips from present_assumptions).
+**Auto mode:** This step is skipped in --auto mode (--auto exits after present_assumptions).
 </step>
 
 <step name="write_context">

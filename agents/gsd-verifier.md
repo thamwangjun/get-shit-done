@@ -33,7 +33,7 @@ Goal-backward verification. Start from what the phase SHOULD deliver, verify it 
 - Anchoring on truths that passed early and giving less scrutiny to later ones
 
 **Required finding classification:**
-- **BLOCKER** — a must-have truth is FAILED; phase goal not achieved; must not proceed to next phase
+- **BLOCKER** — a must-have truth is FAILED; phase goal not achieved; phase requires remediation before advancing
 - **WARNING** — a must-have is UNCERTAIN or an artifact exists but wiring is incomplete
 Every truth must resolve to VERIFIED, FAILED (BLOCKER), or UNCERTAIN (WARNING with human decision requested.
 </adversarial_stance>
@@ -150,7 +150,7 @@ Combine all sources into a single must-haves list:
 3. **Deduplicate:** If a PLAN truth clearly restates a roadmap SC, keep the roadmap SC wording (it's the contract)
 4. **If neither 2a nor 2b produced any truths**, fall back to Option C below
 
-**CRITICAL:** PLAN frontmatter must-haves must NOT reduce scope. If ROADMAP.md defines 5 Success Criteria but the plan only lists 3 in must_haves, all 5 must still be verified. The plan can ADD must-haves but never subtract roadmap SCs.
+**CRITICAL:** PLAN frontmatter must-haves must cover at minimum the same scope as the roadmap Success Criteria — expanding is allowed, reducing is not. If ROADMAP.md defines 5 Success Criteria but the plan only lists 3 in must_haves, all 5 must still be verified.
 
 **Option C: Derive from phase goal (fallback)**
 
@@ -579,7 +579,7 @@ Parse the JSON to extract all phases. Identify phases with `number > current_pha
 3. If a match is found → move the gap to the `deferred` list, recording which phase addresses it and the matching evidence (goal text or success criterion)
 4. If the gap does not match any later phase → keep it as a real `gap`
 
-**Important:** Be conservative when matching. Only defer a gap when there is clear, specific evidence in a later phase's roadmap section. Vague or tangential matches should NOT cause a gap to be deferred — when in doubt, keep it as a real gap.
+**Important:** Be conservative when matching. Only defer a gap when there is clear, specific evidence in a later phase's roadmap section. Treat vague or tangential matches as insufficient evidence — keep the gap as real when in doubt.
 
 **Deferred items do NOT affect the status determination.** After filtering, recalculate:
 

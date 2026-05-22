@@ -52,7 +52,7 @@ Phase: $ARGUMENTS
 - `--gaps-only` is active only if the literal `--gaps-only` token is present in `$ARGUMENTS`
 - `--interactive` is active only if the literal `--interactive` token is present in `$ARGUMENTS`
 - If none of these tokens appear, run the standard full-phase execution flow with no flag-specific filtering
-- Do not infer that a flag is active just because it is documented in this prompt
+- Do not infer that a flag is active just because it is documented in this prompt — derive active flags from `$ARGUMENTS` only
 
 Context files are resolved inside the workflow via `gsd-sdk query init.execute-phase` and per-subagent `<files_to_read>` blocks.
 </context>

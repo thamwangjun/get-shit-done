@@ -73,14 +73,20 @@ Build: `{ threat_id, category, component, disposition, status, evidence }`
 
 **Short-circuit rule:**
 - If `threats_open: 0 AND register_authored_at_plan_time: true` → skip to Step 6 directly. All plan-time threats are verified CLOSED.
-- If `threats_open: 0 AND register_authored_at_plan_time: false` → **do NOT skip**. Empty-by-no-planning must not rubber-stamp a clean SECURITY.md. Proceed to Step 5 in **retroactive-STRIDE mode** — the auditor builds a register from implementation files first, then verifies mitigations.
+- If `threats_open: 0 AND register_authored_at_plan_time: false` → **always proceed to Step 5 in retroactive-STRIDE mode**. An empty-by-no-planning register requires a real audit — a clean SECURITY.md is not sufficient without one.
 - If `threats_open > 0` → proceed to Step 4 (present threat plan to user).
 
 ## 4. Present Threat Plan
 
 
-**Text mode (`workflow.text_mode: true` in config or `--text` flag):** Set `TEXT_MODE=true` if `--text` is present in `$ARGUMENTS` OR `text_mode` from init JSON is `true`. When TEXT_MODE is active, replace every `AskUserQuestion` call with a plain-text numbered list and ask the user to type their choice number. This is required for non-Claude runtimes (OpenAI Codex, Gemini CLI, etc.) where `AskUserQuestion` is not available.
-Call AskUserQuestion with threat table and options:
+**Text mode (`workflow.text_mode: true` in config or `--text` flag):** Set `TEXT_MODE=true` if `--text` is present in `$ARGUMENTS` OR `text_mode` from init JSON is `true`. This is required for non-Claude runtimes (OpenAI Codex, Gemini CLI, etc.) where `AskUserQuestion` is not available.
+
+**If TEXT_MODE is active:** Replace `AskUserQuestion` with a plain-text numbered list and ask the user to type their choice number:
+1. "Verify all open threats" → Step 5
+2. "Accept all open — document in accepted risks log" → add to SECURITY.md accepted risks, set all CLOSED, Step 6
+3. "Cancel" → exit
+
+**If TEXT_MODE is inactive:** Call AskUserQuestion with:
 1. "Verify all open threats" → Step 5
 2. "Accept all open — document in accepted risks log" → add to SECURITY.md accepted risks, set all CLOSED, Step 6
 3. "Cancel" → exit

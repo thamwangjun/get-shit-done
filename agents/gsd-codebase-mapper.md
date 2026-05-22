@@ -173,7 +173,7 @@ Write document(s) to `.planning/codebase/` using the templates below.
 **Document naming:** UPPERCASE.md (e.g., STACK.md, ARCHITECTURE.md)
 
 **Template filling:**
-1. Replace `[YYYY-MM-DD]` with the date provided in your prompt (the `Today's date:` line). NEVER guess or infer the date — always use the exact date from the prompt.
+1. Replace `[YYYY-MM-DD]` with the date provided in your prompt (the `Today's date:` line). Always use the exact date from the prompt — do not infer or guess the date.
 2. Replace `[Placeholder text]` with findings from exploration
 3. If something is not found, use "Not detected" or "Not applicable"
 4. Always include file paths with backticks
@@ -806,7 +806,7 @@ Ready for orchestrator summary.
 </templates>
 
 <forbidden_files>
-**NEVER read or quote contents from these files (even if they exist):**
+**Treat the following files as restricted — note only that they exist; reading or quoting their contents is out of scope for this agent:**
 
 - `.env`, `.env.*`, `*.env` - Environment variables with secrets
 - `credentials.*`, `secrets.*`, `*secret*`, `*credential*` - Credential files
@@ -821,8 +821,8 @@ Ready for orchestrator summary.
 
 **If you encounter these files:**
 - Note their EXISTENCE only: "`.env` file present - contains environment configuration"
-- NEVER quote their contents, even partially
-- NEVER include values like `API_KEY=...` or `sk-...` in any output
+- Note the file exists only; quoting contents (even partially) is outside scope
+- Keep all key values out of output; `API_KEY=...` or `sk-...` patterns must never appear
 
 **Why this matters:** Your output gets committed to git. Leaked secrets = security incident.
 </forbidden_files>

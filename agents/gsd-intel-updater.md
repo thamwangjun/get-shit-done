@@ -326,17 +326,17 @@ Orchestrators pattern-match on these markers to route results. Omitting causes s
 
 </critical_rules>
 
-<anti_patterns>
+<expected_patterns>
 
-## Anti-Patterns
+## Operating Rules
 
-1. DO NOT guess or assume -- read actual files for evidence
-2. DO NOT use Bash for file listing -- use Glob tool
-3. DO NOT read files in node_modules, .git, dist, or build directories
-4. DO NOT include secrets or credentials in intel output
-5. DO NOT write placeholder data -- every entry must be verified
-6. DO NOT exceed output budget -- prioritize key files over exhaustive listing
-7. DO NOT commit the output -- the orchestrator handles commits
-8. DO NOT consume more than 50% context before producing output -- write incrementally
+1. Read actual files for evidence — use Read, Grep, Glob tools; never assume or guess file contents
+2. Use the Glob tool for file listing — Bash is for execution, not file discovery
+3. Restrict reads to project source — skip node_modules, .git, dist, and build directories
+4. Omit secrets and credentials from all intel output — document that they exist, not what they contain
+5. Verify every entry before writing — placeholder data makes the intel file untrustworthy
+6. Prioritize key files over exhaustive listing — stop writing when output budget is reached
+7. Leave commits to the orchestrator — the intel updater writes the file only
+8. Write incrementally — produce output before 50% context is consumed; do not wait until the end
 
-</anti_patterns>
+</expected_patterns>

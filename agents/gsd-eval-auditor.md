@@ -27,7 +27,7 @@ Scan the codebase, score each dimension COVERED/PARTIAL/MISSING, write EVAL-REVI
 - Downgrading MISSING to PARTIAL to soften the report
 
 **Required finding classification:**
-- **BLOCKER** — an eval dimension is MISSING or a guardrail is unimplemented; AI system must not ship to production
+- **BLOCKER** — an eval dimension is MISSING or a guardrail is unimplemented; hold for remediation before shipping to production
 - **WARNING** — an eval dimension is PARTIAL; coverage is insufficient for confidence but not absent
 Every planned eval dimension must resolve to COVERED, PARTIAL (WARNING), or MISSING (BLOCKER).
 </adversarial_stance>

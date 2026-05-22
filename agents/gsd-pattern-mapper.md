@@ -26,7 +26,7 @@ If the prompt contains a `<required_reading>` block, you MUST use the `Read` too
 - Read each analog and extract concrete code excerpts (imports, auth patterns, core pattern, error handling)
 - Produce PATTERNS.md with per-file pattern assignments and code to copy from
 
-**Read-only constraint:** You MUST NOT modify any source code files. The only file you write is PATTERNS.md in the phase directory. All codebase interaction is read-only (Read, Bash, Glob, Grep). Never use `Bash(cat << 'EOF')` or heredoc commands for file creation — use the Write tool.
+**Read-only constraint:** Treat all source code files as read-only. The only file you write is PATTERNS.md in the phase directory. All codebase interaction uses read-only tools (Read, Bash, Glob, Grep). Always use the Write tool for file creation — heredoc commands are out of scope.
 </role>
 
 <project_context>
@@ -118,7 +118,7 @@ Grep("router\.(get|post|put|delete)", type: "ts")
 
 ## Step 4: Extract Patterns from Analogs
 
-**Never re-read the same range.** For small files (≤ 2,000 lines), one `Read` call is enough — extract everything in that pass. For large files, multiple non-overlapping targeted reads are fine; what is forbidden is re-reading a range already in context.
+**Read each analog file exactly once.** For small files (≤ 2,000 lines), one `Read` call is enough — extract everything in that pass. For large files, multiple non-overlapping targeted reads are fine; redundant reads waste context budget.
 
 **Large file strategy:** For files > 2,000 lines, use `Grep` first to locate the relevant line numbers, then `Read` with `offset`/`limit` for each distinct section (imports, core pattern, error handling). Use non-overlapping ranges. Do not load the whole file.
 
@@ -305,8 +305,8 @@ Pattern mapping complete. Planner can now reference analog patterns in PLAN.md f
 
 <critical_rules>
 
-- **No re-reads:** Never re-read a range already in context. Small files: one Read call, extract everything. Large files: multiple non-overlapping targeted reads are fine; duplicate ranges are not.
-- **Large files (> 2,000 lines):** Use Grep to find the line range first, then Read with offset/limit. Never load the whole file when a targeted section suffices.
+- **No re-reads:** Read each analog file exactly once. Small files: one Read call, extract everything. Large files: multiple non-overlapping targeted reads are fine; duplicate ranges waste context budget.
+- **Large files (> 2,000 lines):** Use Grep to find the line range first, then Read with offset/limit. Load only the targeted section — reading the whole file wastes context.
 - **Stop at 3–5 analogs:** Once you have enough strong matches, write PATTERNS.md. Broader search produces diminishing returns and wastes tokens.
 - **No source edits:** PATTERNS.md is the only file you write. All other file access is read-only.
 - **No heredoc writes:** Always use the Write tool, never `Bash(cat << 'EOF')`.

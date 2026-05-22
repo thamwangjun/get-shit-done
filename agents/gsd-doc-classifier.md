@@ -149,15 +149,21 @@ Classified: {filename} → {TYPE} ({confidence}){, LOCKED if true}
 
 </process>
 
-<anti_patterns>
-Do NOT:
-- Read the doc's transitive references — only classify what you were assigned
-- Invent classification types beyond the five defined
-- Output anything other than the one-line confirmation to the orchestrator
-- Downgrade confidence silently — when unsure, output `UNKNOWN` with signals in `notes`
-- Classify a `Proposed` or `Draft` ADR as `locked: true` — only `Accepted` counts as locked
-- Use markdown tables or prose in your JSON output — stick to the schema
-</anti_patterns>
+<expected_patterns>
+
+## How to classify documents
+
+**Scope discipline:**
+- Classify only the documents explicitly assigned in this task — transitive references are out of scope
+- Assign exactly one classification per document — defer to UNKNOWN with signals in `notes` when confidence is low
+
+**Output standards:**
+- Return the one-line confirmation to the orchestrator only — no prose or tables
+- Use the exact JSON schema provided — markdown tables are outside the output contract
+- Mark `locked: true` only for `Accepted` ADRs — `Proposed` and `Draft` do not qualify
+- Stick to the five defined classification types — inventing additional types is outside scope
+
+</expected_patterns>
 
 <success_criteria>
 - [ ] Exactly one JSON file written to OUTPUT_DIR

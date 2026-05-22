@@ -217,7 +217,7 @@ Scan the output for suspicious patterns:
 - Record in Safety Gate column: `view passed — no flags — {date}`
 
 **If user lists third-party registry but refuses the vetting gate entirely:**
-- Do NOT write the registry entry to UI-SPEC.md
+- Block the registry entry from UI-SPEC.md
 - Return UI-SPEC BLOCKED with reason: "Third-party registry declared without completing safety vetting"
 
 </design_contract_questions>

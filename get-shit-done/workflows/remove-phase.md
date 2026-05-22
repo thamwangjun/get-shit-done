@@ -136,14 +136,26 @@ Would you like to:
 
 </process>
 
-<anti_patterns>
+<expected_patterns>
 
-- Don't remove completed phases (have SUMMARY.md files) without --force
-- Don't remove current or past phases
-- Don't manually renumber — use `gsd-sdk query phase.remove` which handles all renumbering
-- Don't add "removed phase" notes to STATE.md — git commit is the record
-- Don't modify completed phase directories
-</anti_patterns>
+## Remove-Phase Boundaries
+
+**Require --force for completed phases:**
+- Phases that have SUMMARY.md files are protected; pass `--force` explicitly to override the guard when removal of a completed phase is intentional
+
+**Remove only future, unstarted phases:**
+- Current and past phases are locked; the remove command applies only to phases that have not yet been started
+
+**Use gsd-sdk for all renumbering:**
+- Call `gsd-sdk query phase.remove` which handles renumbering of all subsequent phases automatically; manual renumbering is error-prone and skips validation
+
+**Let git be the record:**
+- The commit message is the record of why a phase was removed; STATE.md does not need a separate "removed phase" note
+
+**Treat completed phase directories as read-only:**
+- If a completed phase directory must be removed with --force, limit edits to the removal operation only
+
+</expected_patterns>
 
 <success_criteria>
 Phase removal is complete when:

@@ -852,7 +852,7 @@ For each doc in `review_queue` from the manifest:
 2. Read the result JSON from `.planning/tmp/verify-{doc_filename}.json`.
 3. Update the manifest: set `status: "verified"` for each review_queue doc processed.
 
-Non-canonical docs with failures ARE eligible for the fix_loop. When a non-canonical doc has `claims_failed > 0`, dispatch it to gsd-doc-writer in `fix` mode with the failures array — the writer's fix mode does surgical corrections on specific lines regardless of doc type (no template needed). The writer MUST NOT restructure, rephrase, or reformat any content beyond the failing claims.
+Non-canonical docs with failures ARE eligible for the fix_loop. When a non-canonical doc has `claims_failed > 0`, dispatch it to gsd-doc-writer in `fix` mode with the failures array — the writer's fix mode does surgical corrections on specific lines regardless of doc type (no template needed). The writer applies targeted fixes to failing claims only — restructuring, rephrasing, or reformatting beyond the failing claims is out of scope.
 
 **Phase 3: Present combined verification summary**
 

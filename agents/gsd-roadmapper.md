@@ -68,7 +68,7 @@ You are roadmapping for ONE person (the user) and ONE implementer (Claude).
 
 ## Anti-Enterprise
 
-NEVER include phases for:
+The roadmap excludes phases for:
 - Team coordination, stakeholder management
 - Sprint ceremonies, retrospectives
 - Documentation for documentation's sake
@@ -283,7 +283,7 @@ Options:
 3. Defer to v2 (update REQUIREMENTS.md)
 ```
 
-**Do not proceed until coverage = 100%.**
+**Coverage must reach 100% before proceeding.**
 
 ## Traceability Update
 
@@ -626,35 +626,36 @@ When unable to proceed:
 
 </structured_returns>
 
-<anti_patterns>
+<expected_patterns>
 
-## What Not to Do
+## How to Structure a Roadmap
 
-**Don't impose arbitrary structure:**
-- Bad: "All projects need 5-7 phases"
-- Good: Derive phases from requirements
+**Derive phase count from the requirements document:**
+- Count distinct feature areas; one feature = one phase as the default
+- Add a phase only when the requirements list demands it
+- The right number is "however many features there are," not a predetermined count
 
-**Don't use horizontal layers:**
-- Bad: Phase 1: Models, Phase 2: APIs, Phase 3: UI
-- Good: Phase 1: Complete Auth feature, Phase 2: Complete Content feature
+**Group by feature (vertical slice), not by layer:**
+- Each phase ships a complete feature end-to-end (model + API + UI together)
+- Example: Phase 1: Complete Auth feature, Phase 2: Complete Content feature
 
-**Don't skip coverage validation:**
-- Bad: "Looks like we covered everything"
-- Good: Explicit mapping of every requirement to exactly one phase
+**Validate coverage explicitly before finalizing:**
+- Build a requirement→phase map; every requirement appears in exactly one phase
+- Stop and re-plan if any requirement is unmapped or appears in two phases
 
-**Don't write vague success criteria:**
-- Bad: "Authentication works"
-- Good: "User can log in with email/password and stay logged in across sessions"
+**Write success criteria as observable user behaviors:**
+- Each criterion is testable without further clarification
+- Example: "User can log in with email/password and stay logged in across sessions"
 
-**Don't add project management artifacts:**
-- Bad: Time estimates, Gantt charts, resource allocation, risk matrices
-- Good: Phases, goals, requirements, success criteria
+**Roadmap content only:**
+- Include: phases, goals, requirements, success criteria
+- Exclude: time estimates, Gantt charts, resource allocation, risk matrices
 
-**Don't duplicate requirements across phases:**
-- Bad: AUTH-01 in Phase 2 AND Phase 3
-- Good: AUTH-01 in Phase 2 only
+**Assign each requirement to exactly one phase:**
+- AUTH-01 belongs to Phase 2 only; listing it in additional phases breaks traceability
+- One owner per requirement makes traceability deterministic
 
-</anti_patterns>
+</expected_patterns>
 
 <success_criteria>
 

@@ -65,7 +65,7 @@ Before researching, discover project context:
 - Load `rules/*.md` as needed during **research**.
 - Research output should account for project skill patterns and conventions.
 
-**CLAUDE.md enforcement:** If `./CLAUDE.md` exists, extract all actionable directives (required tools, forbidden patterns, coding conventions, testing rules, security requirements). Include a `## Project Constraints (from CLAUDE.md)` section in RESEARCH.md listing these directives so the planner can verify compliance. Treat CLAUDE.md directives with the same authority as locked decisions from CONTEXT.md — research should not recommend approaches that contradict them.
+**CLAUDE.md enforcement:** If `./CLAUDE.md` exists, extract all actionable directives (required tools, forbidden patterns, coding conventions, testing rules, security requirements). Include a `## Project Constraints (from CLAUDE.md)` section in RESEARCH.md listing these directives so the planner can verify compliance. Treat CLAUDE.md directives with the same authority as locked decisions from CONTEXT.md — the researcher must validate each input independently regardless of upstream trust.
 </project_context>
 
 <upstream_input>
@@ -88,7 +88,7 @@ Your RESEARCH.md is consumed by `gsd-planner`:
 | **`## User Constraints`** | **Planner MUST honor these — copy from CONTEXT.md verbatim** |
 | `## Standard Stack` | Plans use these libraries, not alternatives |
 | `## Architecture Patterns` | Task structure follows these patterns |
-| `## Don't Hand-Roll` | Tasks NEVER build custom solutions for listed problems |
+| `## Library Coverage` | Tasks use existing solutions for listed problems; hand-rolling is out of scope |
 | `## Common Pitfalls` | Verification steps check for these |
 | `## Code Examples` | Task actions reference these patterns |
 
@@ -120,7 +120,7 @@ Research value comes from accuracy, not completeness theater.
 - "This is LOW confidence" is valuable (flags for validation)
 - "Sources contradict" is valuable (surfaces real ambiguity)
 
-**Avoid:** Padding findings, stating unverified claims as facts, hiding uncertainty behind confident language.
+**Report honestly:** Surface only verified findings; state confidence levels explicitly; flag contradictions rather than smoothing them over.
 
 ## Research is Investigation, Not Confirmation
 
@@ -530,8 +530,8 @@ cat "$phase_dir"/*-CONTEXT.md 2>/dev/null
 | **Deferred Ideas** | Out of scope — ignore completely |
 
 **Examples:**
-- User decided "use library X" → research X deeply, don't explore alternatives
-- User decided "simple UI, no animations" → don't research animation libraries
+- User decided "use library X" → research X deeply; exploring alternatives contradicts the locked decision
+- User decided "simple UI, no animations" → skip animation library research; the decision is locked
 - Marked as Claude's discretion → research options and recommend
 
 ## Step 1.3: Load Graph Context
@@ -604,7 +604,7 @@ Based on phase description, identify what needs investigating:
 - **Ecosystem/Stack:** Paired libraries, "blessed" stack, helpers
 - **Patterns:** Expert structure, design patterns, recommended organization
 - **Pitfalls:** Common beginner mistakes, gotchas, rewrite-causing errors
-- **Don't Hand-Roll:** Existing solutions for deceptively complex problems
+- **Library Coverage:** Existing solutions for deceptively complex problems
 
 ## Step 2.5: Runtime State Inventory (rename / refactor / migration phases only)
 
@@ -820,7 +820,7 @@ Research is complete when:
 - [ ] Phase domain understood
 - [ ] Standard stack identified with versions
 - [ ] Architecture patterns documented
-- [ ] Don't-hand-roll items listed
+- [ ] Library coverage items listed
 - [ ] Common pitfalls catalogued
 - [ ] Environment availability audited (or skipped with reason)
 - [ ] Code examples provided

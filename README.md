@@ -1,6 +1,13 @@
-<div align="center">
+# GET SHIT DONE - Wang Jun's Opinionated Edition
 
-# GET SHIT DONE
+## Modifications
+
+* Adhere to my own opinionated prompt engineering principles
+  * `.planning/references/PROMPT_ENGINEERING_GUIDE_V10.md`
+
+## Original README
+
+<div align="center">
 
 **English** · [Português](README.pt-BR.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja-JP.md) · [한국어](README.ko-KR.md)
 

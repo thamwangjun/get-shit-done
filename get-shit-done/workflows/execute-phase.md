@@ -439,8 +439,7 @@ increases monotonically across waves. `{status}` is `complete` (success),
 
    Before spawning any agents for this wave, inspect the `files_modified` list of all plans
    in the wave. Check every pair of plans in the wave — if any two plans share even one file
-   in their `files_modified` lists, those plans have an implicit dependency and MUST NOT run
-   in parallel.
+   in their `files_modified` lists, those plans have an implicit dependency and require sequential execution.
 
    **Detection algorithm (pseudocode):**
    ```
@@ -1213,7 +1212,7 @@ Selected wave finished successfully. This phase still has incomplete plans, so p
 </step>
 
 <step name="code_review_gate" required="true">
-**This step is REQUIRED and must not be skipped.** Auto-invoke code review on the phase's source changes. Advisory only — never blocks execution flow.
+**This step is REQUIRED — run it before proceeding.** Auto-invoke code review on the phase's source changes. Advisory only — never blocks execution flow.
 
 **Config gate:**
 ```bash
@@ -1630,7 +1629,7 @@ GL_ENABLED=$(gsd-sdk query config-get features.global_learnings --raw 2>/dev/nul
 ```bash
 gsd-sdk query learnings.copy 2>/dev/null || echo "⚠ Learnings copy failed — continuing"
 ```
-Copy failure must NOT block phase completion.
+Copy failure is non-blocking — log the warning and continue to phase completion.
 </step>
 
 <step name="close_phase_todos">

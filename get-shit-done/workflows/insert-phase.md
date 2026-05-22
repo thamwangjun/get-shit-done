@@ -129,15 +129,25 @@ Project state updated: .planning/STATE.md
 
 </process>
 
-<anti_patterns>
+<expected_patterns>
 
-- Don't use this for planned work at end of milestone (use /gsd-add-phase)
-- Don't insert before Phase 1 (decimal 0.1 makes no sense)
-- Don't renumber existing phases
-- Don't modify the target phase content
-- Don't create plans yet (that's /gsd-plan-phase)
-- Don't commit changes (user decides when to commit)
-</anti_patterns>
+## Insert-Phase Boundaries
+
+**Use this command for unplanned work only:**
+- Use `/gsd-add-phase` for planned work at end of a milestone; this command is for inserting unexpected phases mid-stream
+
+**Insert into valid positions only:**
+- The first valid insertion point is between Phase 1 and Phase 2; inserting before Phase 1 creates a 0.1 phase which makes no sense
+
+**Preserve existing structure:**
+- Keep all existing phase numbers intact; insertion reflows by renumbering only the phases after the insertion point automatically via gsd-sdk
+- Treat the target phase content as read-only context
+
+**Respect the workflow sequence:**
+- Creating plans is the next step after insertion — use `/gsd-plan-phase` for that
+- Committing is the user's decision; complete the insertion and report, then stop
+
+</expected_patterns>
 
 <success_criteria>
 Phase insertion is complete when:

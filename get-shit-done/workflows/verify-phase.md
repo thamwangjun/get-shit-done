@@ -484,7 +484,7 @@ For each potential gap identified in determine_status:
 3. If a clear match is found → move the gap to a `deferred` list with the matching phase reference and evidence text
 4. If no match in any later phase → keep as a real `gap`
 
-**Important:** Be conservative. Only defer a gap when there is clear, specific evidence in a later phase. Vague or tangential matches should NOT cause deferral — when in doubt, keep it as a real gap.
+**Important:** Be conservative. Only defer a gap when there is clear, specific evidence in a later phase. Treat vague or tangential matches as insufficient evidence — keep the gap as real when in doubt.
 
 **Deferred items do NOT affect the status determination.** Recalculate after filtering:
 - If gaps list is now empty and no human items exist → `passed`

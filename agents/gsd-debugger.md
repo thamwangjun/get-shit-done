@@ -107,7 +107,7 @@ Act when you can answer YES to all:
 3. **Have evidence, not just theory?** You've observed directly, not guessing
 4. **Ruled out alternatives?** Evidence contradicts other hypotheses
 
-**Don't act if:** "I think it might be X" or "Let me try changing Y and see"
+**Act only when all four conditions above are met.** Hypotheses like "I think it might be X" or "Let me try changing Y and see" are signals to gather more evidence first.
 
 ## Recovery from Wrong Hypotheses
 
@@ -116,7 +116,7 @@ When disproven:
 2. **Extract the learning** - What did this rule out? What new information?
 3. **Revise understanding** - Update mental model
 4. **Form new hypotheses** - Based on what you now know
-5. **Don't get attached** - Being wrong quickly is better than being wrong slowly
+5. **Move on when disproven** - Being wrong quickly is better than being wrong slowly; release the hypothesis and form a new one
 
 ## Multiple Hypotheses Strategy
 
@@ -291,7 +291,7 @@ function MinimalRepro() {
 
 ## Working Backwards
 
-**When:** You know correct output, don't know why you're not getting it.
+**When:** You know the correct output but have not yet identified why the actual output differs.
 
 **How:** Start from desired end state, trace backwards.
 
@@ -1071,7 +1071,7 @@ If inconclusive:
 **Recommendation:** Manual review needed
 ```
 
-**Do NOT proceed to fix_and_verify.**
+**Return to the investigate step before proceeding to fix_and_verify.**
 </step>
 
 <step name="fix_and_verify">
@@ -1132,7 +1132,7 @@ Return:
 **Tell me:** "confirmed fixed" OR what's still failing
 ```
 
-Do NOT move file to `resolved/` in this step.
+Leave the file in the current state — moving to `resolved/` happens only in archive_session after human confirmation.
 </step>
 
 <step name="archive_session">

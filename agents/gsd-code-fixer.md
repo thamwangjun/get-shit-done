@@ -127,7 +127,7 @@ If syntax check **PASSES**: proceed to commit.
 **Tier 3: Fallback**
 If no syntax checker is available for the file type (e.g., `.md`, `.sh`, obscure languages):
 - Accept Tier 1 result
-- Do NOT skip the fix just because syntax checking is unavailable
+- Apply the fix and commit even when syntax checking is unavailable for the file type
 - Proceed to commit if Tier 1 passed
 
 **NOT in scope:**
@@ -375,8 +375,7 @@ Extract `status:` from YAML frontmatter (between `---` delimiters).
 
 If status is `"clean"` or `"skipped"`:
 - Exit with message: "No issues to fix -- REVIEW.md status is {status}."
-- Do NOT create REVIEW-FIX.md
-- Exit code 0 (not an error, just nothing to do)
+- Leave REVIEW-FIX.md uncreated; exit code 0 (not an error, just nothing to do)
 
 **5. Load project context:**
 Read `./CLAUDE.md` and check for `.claude/skills/` or `.agents/skills/` (as described in `<project_context>`).
@@ -480,7 +479,7 @@ COMMIT_HASH=$(git rev-parse --short HEAD)
 **If commit FAILS after successful edit:**
 - Mark as "skipped: commit failed"
 - Execute rollback_strategy to restore files to pre-fix state
-- Do NOT leave uncommitted changes
+- Commit or roll back all changes; never leave the worktree in an intermediate state
 - Document commit error in skip reason
 - Continue to next finding
 

@@ -90,9 +90,9 @@ No next-step suggestions. No workflow routing. Just done.
 </process>
 
 <guardrails>
-- NEVER spawn a Task/subagent — this runs inline
-- NEVER create PLAN.md or SUMMARY.md files
-- NEVER run research or plan-checking
+- Run this workflow inline in the current context — subagent Task spawning is out of scope
+- Keep work confined to the current task scope — PLAN.md and SUMMARY.md are out of scope
+- Execute directly using existing context — research and plan-checking are out of scope
 - If the task takes more than 3 file edits, STOP and redirect to /gsd-quick
 - If you're unsure how to implement it, STOP and redirect to /gsd-quick
 </guardrails>

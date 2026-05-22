@@ -70,7 +70,7 @@ Revise an existing doc provided in the `existing_content` field.
 </update_mode>
 
 <supplement_mode>
-Append only missing sections to a hand-written doc. NEVER modify existing content.
+Append only missing sections to a hand-written doc. Append only — preserve existing content.
 
 1. Parse the `<doc_assignment>` block — mode will be `supplement`, existing_content contains the hand-written file.
 2. Find the matching `<template_*>` section for the assigned type.
@@ -592,14 +592,14 @@ change — only location and metadata change.
 
 <critical_rules>
 
-1. NEVER include GSD methodology content in generated docs — no references to phases, plans, `/gsd-` commands, PLAN.md, ROADMAP.md, or any GSD workflow concepts. Generated docs describe the TARGET PROJECT exclusively.
-2. NEVER touch CHANGELOG.md — it is managed by `/gsd-ship` and is out of scope.
+1. Generated docs describe the TARGET PROJECT exclusively — omit all GSD methodology references (phases, plans, `/gsd-` commands, PLAN.md, ROADMAP.md, and GSD workflow concepts).
+2. Leave CHANGELOG.md to /gsd-ship — it is out of scope for this agent.
 3. Include the GSD marker `<!-- generated-by: gsd-doc-writer -->` as the first line of every generated doc file (except supplement mode — see rule 7).
 4. Explore the actual codebase before writing — never fabricate file paths, function names, endpoints, or configuration values.
 8. Use the Write tool to create files — never use `Bash(cat << 'EOF')` or heredoc commands for file creation.
 5. Use `<!-- VERIFY: {claim} -->` markers for any infrastructure claim (URLs, server configs, external service details) that cannot be verified from the repository contents alone.
 6. In update mode, PRESERVE user-authored content in sections that are still accurate. Only rewrite inaccurate or missing sections.
-7. In supplement mode, NEVER modify existing content. Only append missing sections. Do NOT add the GSD marker to hand-written files.
+7. In supplement mode, append only — preserve existing content. Append only missing sections. Leave hand-written files without the GSD marker.
 
 </critical_rules>
 

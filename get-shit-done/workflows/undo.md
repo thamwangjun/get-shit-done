@@ -198,7 +198,7 @@ Store the response as REVERT_REASON. Continue to execute_revert.
 </step>
 
 <step name="execute_revert">
-**HARD CONSTRAINT: Use git revert --no-commit. NEVER use git reset (except for conflict cleanup as documented below).**
+**HARD CONSTRAINT: Use git revert --no-commit. Use git reset only for the specific conflict cleanup steps documented below.**
 
 **Dirty-tree guard (run first, before any revert):**
 

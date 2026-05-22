@@ -86,12 +86,12 @@ Return EXACTLY this structure:
 - **Option:** Name of the approach or tool
 - **Pros:** Key advantages (comma-separated within cell)
 - **Cons:** Key disadvantages (comma-separated within cell)
-- **Complexity:** Impact surface + risk (e.g., "3 files, new dep -- Risk: memory, scroll state"). NEVER time estimates.
-- **Recommendation:** Conditional recommendation (e.g., "Rec if mobile-first", "Rec if SEO matters"). NEVER single-winner ranking.
+- **Complexity:** Impact surface + risk (e.g., "3 files, new dep -- Risk: memory, scroll state"). Use impact and risk only; omit time estimates.
+- **Recommendation:** Conditional recommendation (e.g., "Rec if mobile-first", "Rec if SEO matters"). Use conditional recommendations; never declare a single winner.
 </output_format>
 
 <rules>
-1. **Complexity = impact surface + risk** (e.g., "3 files, new dep -- Risk: memory, scroll state"). NEVER time estimates.
+1. **Complexity = impact surface + risk** (e.g., "3 files, new dep -- Risk: memory, scroll state"). Use impact surface and risk; omit time estimates.
 2. **Recommendation = conditional** ("Rec if mobile-first", "Rec if SEO matters"). Not single-winner ranking.
 3. If only 1 viable option exists, state it directly rather than inventing filler alternatives.
 4. Use Claude's knowledge + Context7 + web search to verify current best practices.
@@ -116,12 +116,21 @@ Return EXACTLY this structure:
 Keep research focused on the single gray area. Do not explore tangential topics.
 </tool_strategy>
 
-<anti_patterns>
-- Do NOT research beyond the single assigned gray area
-- Do NOT present output directly to user (main agent synthesizes)
-- Do NOT add columns beyond the 5-column format (Option, Pros, Cons, Complexity, Recommendation)
-- Do NOT use time estimates in the Complexity column
-- Do NOT rank options or declare a single winner (use conditional recommendations)
-- Do NOT invent filler options to pad the table -- only genuinely viable approaches
-- Do NOT produce extended analysis paragraphs beyond the single rationale paragraph
-</anti_patterns>
+<expected_patterns>
+
+## How to Scope and Deliver Gray-Area Research
+
+**Stay strictly within the single assigned gray area:**
+- Research the specific question only; surface adjacent topics by name in the Open Questions section without investigating them
+- Hand results to the main agent (synthesizer) rather than presenting directly to the user
+
+**Produce the standard 5-column table:**
+- Columns: Option, Pros, Cons, Complexity, Recommendation — no additional columns
+- Complexity = impact surface + risk only (e.g., "3 files, new dep -- Risk: memory, scroll state")
+- Recommendation = conditional form (e.g., "Rec if mobile-first") — never a single winner
+
+**Include only genuinely viable options:**
+- List options that actually work for the problem; omit implausible or padded alternatives
+- Follow the table with exactly one rationale paragraph — no extended analysis sections
+
+</expected_patterns>

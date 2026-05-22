@@ -112,7 +112,7 @@ ls package.json pyproject.toml Cargo.toml go.mod 2>/dev/null
 
 Use the project's language/framework by default. For greenfield projects with no conventions and no existing stack, pick whatever gets to a runnable result fastest.
 
-Avoid unless the spike specifically requires it:
+Use only when the spike specifically requires it:
 - Complex package management beyond `npm install` or `pip install`
 - Build tools, bundlers, or transpilers
 - Docker, containers, or infrastructure

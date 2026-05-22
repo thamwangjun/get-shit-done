@@ -42,19 +42,15 @@ fi
 
 if [ -z "$PATCHES_DIR" ] && [ -n "$OPENCODE_CONFIG_DIR" ]; then
   candidate="$(expand_home "$OPENCODE_CONFIG_DIR")/gsd-local-patches"
-  if [ -d "$candidate" ]; then
-    PATCHES_DIR="$candidate"
-  fi
-elif [ -z "$PATCHES_DIR" ] && [ -n "$OPENCODE_CONFIG" ]; then
+  if [ -d "$candidate" ]; then PATCHES_DIR="$candidate"; fi
+fi
+if [ -z "$PATCHES_DIR" ] && [ -n "$OPENCODE_CONFIG" ]; then
   candidate="$(dirname "$(expand_home "$OPENCODE_CONFIG")")/gsd-local-patches"
-  if [ -d "$candidate" ]; then
-    PATCHES_DIR="$candidate"
-  fi
-elif [ -z "$PATCHES_DIR" ] && [ -n "$XDG_CONFIG_HOME" ]; then
+  if [ -d "$candidate" ]; then PATCHES_DIR="$candidate"; fi
+fi
+if [ -z "$PATCHES_DIR" ] && [ -n "$XDG_CONFIG_HOME" ]; then
   candidate="$(expand_home "$XDG_CONFIG_HOME")/opencode/gsd-local-patches"
-  if [ -d "$candidate" ]; then
-    PATCHES_DIR="$candidate"
-  fi
+  if [ -d "$candidate" ]; then PATCHES_DIR="$candidate"; fi
 fi
 
 if [ -z "$PATCHES_DIR" ] && [ -n "$GEMINI_CONFIG_DIR" ]; then
@@ -320,7 +316,7 @@ Resolve before proceeding:
 Then re-run /gsd-update --reapply to re-verify.
 ```
 
-Do not proceed to cleanup until the verifier exits 0.
+The verifier must exit 0 before proceeding to cleanup.
 
 **Only when `VERIFY_STATUS` is 0** (or when all files had zero significant user-added lines, which the verifier reports as `Failures: 0`) may execution continue to gate 5b.
 
@@ -353,7 +349,7 @@ Review the merged file manually, then either:
   (b) Restore from backup: cp {patches_dir}/{file} {installed_path}
 ```
 
-Do not proceed to cleanup until both gates (5a and 5b) pass.
+Both gates (5a and 5b) must pass before proceeding to cleanup.
 
 **Why both gates?** 5a (the script) is the binding gate — it does the actual substring check structurally and cannot be shortcut by the LLM. 5b (the table review) is the advisory gate — it provides a redundant safety net via the Step 4 prose summary, ensuring that even a script regression or absent pristine baseline cannot silently allow a `verified: no` row to slip past, nor can a missing table go unnoticed. Layered gates favour false-positive halts (recoverable) over silent successes on lost content (unrecoverable).
 

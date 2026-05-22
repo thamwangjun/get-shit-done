@@ -46,7 +46,7 @@ This ensures verification respects project-specific design conventions.
 | Section | How You Use It |
 |---------|----------------|
 | `## Decisions` | Locked — UI-SPEC must reflect these. Flag if contradicted. |
-| `## Deferred Ideas` | Out of scope — UI-SPEC must NOT include these. |
+| `## Deferred Ideas` | Out of scope — exclude all deferred ideas from UI-SPEC. |
 
 **RESEARCH.md** (if exists) — Technical findings
 
@@ -212,7 +212,7 @@ Status: {APPROVED / BLOCKED}
 ```
 
 **Overall status:**
-- **BLOCKED** if ANY dimension is BLOCK → plan-phase must not run
+- **BLOCKED** if ANY dimension is BLOCK → plan-phase requires resolution before it can run
 - **APPROVED** if all dimensions are PASS or FLAG → planning can proceed
 
 If APPROVED: update UI-SPEC.md frontmatter `status: approved` and `reviewed_at: {timestamp}` via structured return (researcher handles the write).

@@ -181,16 +181,21 @@ Do NOT dump intel contents. The orchestrator reads the files directly.
 
 </process>
 
-<anti_patterns>
-Do NOT:
-- Pick a winner between two LOCKED ADRs — always BLOCK
-- Merge competing PRD acceptance criteria into a single "combined" criterion — preserve all variants
-- Write PROJECT.md, REQUIREMENTS.md, ROADMAP.md, or STATE.md — those are the roadmapper's job
-- Skip cycle detection — synthesis loops produce garbage output
-- Use markdown tables in the conflicts report — violates the doc-conflict-engine contract
-- Auto-resolve by filename order, timestamp, or arbitrary tiebreaker — precedence rules only
-- Silently drop `UNKNOWN`-confidence-low docs — they must surface as blockers
-</anti_patterns>
+<expected_patterns>
+
+## How to synthesize documentation
+
+**Conflict handling:**
+- When two LOCKED ADRs conflict, surface the conflict as a BLOCK — precedence rules only; filename order or timestamp are not valid tiebreakers
+- Preserve all variants of competing PRD acceptance criteria — merge into a single combined criterion is outside scope
+
+**Output discipline:**
+- Write synthesized output only — PROJECT.md, REQUIREMENTS.md, ROADMAP.md, and STATE.md belong to the roadmapper
+- Run cycle detection before outputting — synthesis loops produce unreliable output
+- Use the doc-conflict-engine contract format for the conflicts report — markdown tables violate the contract
+- Surface `UNKNOWN`-confidence-low docs as blockers — silent drops produce incomplete synthesis
+
+</expected_patterns>
 
 <success_criteria>
 - [ ] All classifications in CLASSIFICATIONS_DIR consumed

@@ -106,7 +106,7 @@ Additional checks:
 - `files`: Array of changed files to review (passed by workflow — primary scoping mechanism)
 - `diff_base`: Git commit hash for diff range (passed by workflow when files not available)
 
-**Validate depth (defense-in-depth):** If depth is not one of `quick`, `standard`, `deep`, warn and default to `standard`. The workflow already validates, but agents should not trust input blindly.
+**Validate depth (defense-in-depth):** If depth is not one of `quick`, `standard`, `deep`, warn and default to `standard`. The workflow already validates, but agents must validate input independently regardless of upstream trust.
 
 **3. Determine changed files:**
 

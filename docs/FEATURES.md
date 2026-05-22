@@ -1984,7 +1984,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 87. Commit-Docs Guard Hook
 
-**Hook:** `gsd-commit-docs.js`
+**Implementation:** `gsd-tools.cjs commit` command
 
 **Purpose:** PreToolUse hook that enforces the `commit_docs` configuration, preventing `.planning/` files from being committed when `planning.commit_docs` is `false`.
 

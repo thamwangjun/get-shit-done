@@ -188,7 +188,7 @@ Parse the `phases` array to get all valid phase numbers.
 For each phase number referenced in `depends_on`:
 - Normalize it (strip whitespace, "Phase" prefix if present)
 - Check it is in the valid phase numbers set
-- It must not reference itself (phase {target})
+- It must reference a different phase — self-reference (phase {target}) is invalid.
 
 If any reference is invalid:
 
@@ -268,16 +268,16 @@ Fields changed: {changed_field_list}
 
 </process>
 
-<anti_patterns>
-- Don't renumber the phase — number and position must be preserved exactly
-- Don't modify other phases when editing one
-- Don't skip depends_on validation (invalid references block writes)
-- Don't write without showing a diff and getting confirmation
-- Don't edit in_progress/completed phases without --force
-- Don't use raw Write on ROADMAP.md without reading it first; always replace section in place
-- Don't modify the phase directory structure — only ROADMAP.md changes
-- Don't commit the change — that's the user's decision
-</anti_patterns>
+<expected_patterns>
+- Preserve the phase number and position exactly — renumbering is invalid.
+- Edit only the target phase; leave all other phases untouched.
+- Always validate depends_on before writing (invalid references block writes).
+- Always show a diff and get confirmation before writing.
+- Edit in_progress/completed phases only when --force is passed.
+- Read ROADMAP.md first, then replace the section in place using a targeted edit.
+- Change only ROADMAP.md; leave the phase directory structure intact.
+- Leave committing to the user — that's their decision.
+</expected_patterns>
 
 <success_criteria>
 Edit-phase is complete when:

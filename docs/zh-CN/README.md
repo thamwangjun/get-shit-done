@@ -1,6 +1,14 @@
 <div align="center">
 
-# GET SHIT DONE
+# GET SHIT DONE - Wang Jun's Opinionated Edition
+
+## 修改说明
+
+* 遵循我自己的意见性提示工程原则
+  * `.planning/references/PROMPT_ENGINEERING_GUIDE_V09.md`
+  * `.planning/references/PROMPT_IMPROVEMENT_GUIDE_V01.md`
+* 根据以下计划修改所有提示内容：
+  * `plans/`
 
 **一个轻量级且强大的元提示、上下文工程和规格驱动开发系统，支持 Claude Code、OpenCode、Gemini CLI、Kilo、Codex、Copilot、Cursor、Windsurf、Antigravity、Augment、Trae 和 Cline。**
 

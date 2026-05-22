@@ -24,7 +24,7 @@ Valid GSD subagent types (use exact names — do not fall back to 'general-purpo
 
 ## 0. Git Branch Invariant
 
-**Do not create, rename, or switch git branches during plan-phase.** Branch identity is established at discuss-phase and is owned by the user's git workflow. A phase rename in ROADMAP.md is a plan-level change only — it does not mutate git branch names. If `phase_slug` in the init JSON differs from the current branch name, that is expected and correct; leave the branch unchanged.
+**Do not create, rename, or switch git branches during plan-phase** — keep the current branch unchanged. Branch identity is established at discuss-phase and is owned by the user's git workflow. A phase rename in ROADMAP.md is a plan-level change only — it does not mutate git branch names. If `phase_slug` in the init JSON differs from the current branch name, that is expected and correct; leave the branch unchanged.
 
 ## 1. Initialize
 
@@ -307,7 +307,7 @@ If "Run discuss-phase first":
 
   /gsd-discuss-phase {X} ${GSD_WS}
   ```
-  **Exit the plan-phase workflow. Do not continue.**
+  **Exit the plan-phase workflow — the precondition check failed.**
 
 ## 4.5. Check AI-SPEC
 
@@ -935,7 +935,7 @@ for crash resilience. If any run hangs and the terminal is force-killed, rerunni
 
 **Intended for new or in-progress chunked runs.** To recover plans already written by a prior
 *non-chunked* run, use step 6's "Add more plans" or proceed directly to `/gsd-execute-phase`
-— don't start a fresh chunked run over existing non-chunked plans.
+— resume from existing non-chunked plans instead of starting a fresh chunked run over them.
 
 ### 8.5.1 Outline Phase (outline-only mode, ~2 min)
 
@@ -1307,7 +1307,7 @@ Offer: 1) Force proceed, 2) Provide guidance and retry, 3) Abandon
 
 **Skip if:** `--skip-bounce` flag, `--gaps` flag, or bounce is not activated.
 
-**Activation:** Bounce runs when `--bounce` flag is present OR `workflow.plan_bounce` config is `true`. The `--skip-bounce` flag always wins (disables bounce even if config enables it). The `--gaps` flag also disables bounce (gap-closure mode should not modify plans externally).
+**Activation:** Bounce runs when `--bounce` flag is present OR `workflow.plan_bounce` config is `true`. The `--skip-bounce` flag always wins (disables bounce even if config enables it). The `--gaps` flag also disables bounce (gap-closure mode applies external plan refinement only when --bounce is active and workflow.plan_bounce_script is configured).
 
 **Prerequisites:** `workflow.plan_bounce_script` must be set to a valid script path. If bounce is activated but no script is configured, display warning and skip:
 ```
@@ -1473,7 +1473,7 @@ step 13b.
 names each uncovered decision (`D-NN | category | text`) and tells the user
 what to do — cite the id in a relevant plan's `must_haves` / `truths`, or
 move the decision under `### Claude's Discretion` / tag it `[informational]`
-if it should not be tracked. Then offer:
+if the item is out of tracking scope. Then offer:
 
 ```text
 Options:
@@ -1543,7 +1543,7 @@ if [ "$POST_PLANNING_GAPS" = "true" ]; then
 fi
 ```
 
-(`gsd-tools.cjs gap-analysis` reads `.planning/REQUIREMENTS.md`, `${PHASE_DIR}/CONTEXT.md`,
+(`node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" gap-analysis` reads `.planning/REQUIREMENTS.md`, `${PHASE_DIR}/CONTEXT.md`,
 and `${PHASE_DIR}/*-PLAN.md`, then prints a markdown table with one row per
 REQ-ID and D-ID. Word-boundary matching prevents `REQ-1` from being mistaken for
 `REQ-10`.)

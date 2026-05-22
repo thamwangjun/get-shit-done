@@ -1,6 +1,14 @@
 <div align="center">
 
-# GET SHIT DONE
+# GET SHIT DONE - Wang Jun's Opinionated Edition
+
+## 修改说明
+
+* 遵循我自己的意见性提示工程原则
+  * `.planning/references/PROMPT_ENGINEERING_GUIDE_V09.md`
+  * `.planning/references/PROMPT_IMPROVEMENT_GUIDE_V01.md`
+* 根据以下计划修改所有提示内容：
+  * `plans/`
 
 [English](README.md) · [Português](README.pt-BR.md) · **简体中文** · [日本語](README.ja-JP.md) · [한국어](README.ko-KR.md)
 

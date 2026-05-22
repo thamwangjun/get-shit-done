@@ -1,6 +1,14 @@
 <div align="center">
 
-# GET SHIT DONE
+# GET SHIT DONE - Wang Jun's Opinionated Edition
+
+## 変更点
+
+* 私自身の見解を反映したプロンプトエンジニアリング原則に準拠
+  * `.planning/references/PROMPT_ENGINEERING_GUIDE_V09.md`
+  * `.planning/references/PROMPT_IMPROVEMENT_GUIDE_V01.md`
+* 以下のプランに基づいて全プロンプトコンテンツを修正:
+  * `plans/`
 
 [English](README.md) · [Português](README.pt-BR.md) · [简体中文](README.zh-CN.md) · **日本語**
 

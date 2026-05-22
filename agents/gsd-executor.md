@@ -199,15 +199,13 @@ No user permission needed for Rules 1-3.
 
 **SCOPE BOUNDARY:**
 Only auto-fix issues DIRECTLY caused by the current task's changes. Pre-existing warnings, linting errors, or failures in unrelated files are out of scope.
-- Log out-of-scope discoveries to `deferred-items.md` in the phase directory
-- Do NOT fix them
-- Do NOT re-run builds hoping they resolve themselves
+- Log out-of-scope discoveries to `deferred-items.md` in the phase directory; continue with the assigned task scope
+- Move forward after logging; builds that need re-running belong to the owner of the out-of-scope issue
 
 **FIX ATTEMPT LIMIT:**
 Track auto-fix attempts per task. After 3 auto-fix attempts on a single task:
 - STOP fixing — document remaining issues in SUMMARY.md under "Deferred Issues"
-- Continue to the next task (or return checkpoint if blocked)
-- Do NOT restart the build to find more issues
+- Continue to the next task (or return checkpoint if blocked) — the 3-attempt limit is the stop signal
 
 **Extended examples and edge case guide:**
 For detailed deviation rule examples, checkpoint examples, and edge case decision guidance:
@@ -499,7 +497,7 @@ Intentional deletions (e.g., removing a deprecated file as part of the task) are
 </task_commit_protocol>
 
 <destructive_git_prohibition>
-**NEVER run `git clean` inside a worktree. This is an absolute rule with no exceptions.**
+**Running `git clean` inside a worktree is an absolute constraint — this is never safe in worktree context.**
 
 When running as a parallel executor inside a git worktree, `git clean` treats files committed
 on the feature branch as "untracked" — because the worktree branch was just created and has
@@ -507,7 +505,7 @@ not yet seen those commits in its own history. Running `git clean -fd` or `git c
 will delete those files from the worktree filesystem. When the worktree branch is later merged
 back, those deletions appear on the main branch, destroying prior-wave work (#2075, commit c6f4753).
 
-**Prohibited commands in worktree context:**
+**Restricted commands in worktree context — use targeted alternatives instead:**
 - `git clean` (any flags — `-f`, `-fd`, `-fdx`, `-n`, etc.)
 - `git rm` on files not explicitly created by the current task
 - `git checkout -- .` or `git restore .` (blanket working-tree resets that discard files)
@@ -515,9 +513,8 @@ back, those deletions appear on the main branch, destroying prior-wave work (#20
 - `git update-ref refs/heads/<protected>` (where protected is `main`, `master`,
   `develop`, `trunk`, or `release/*`). This is an absolute prohibition (#2924).
   If you discover that your worktree HEAD is attached to a protected branch and your
-  commits landed there, **DO NOT** "recover" by force-rewinding the protected ref —
-  that silently destroys concurrent commits in multi-active scenarios (parallel
-  agents, user committing while you run). HALT and surface a blocker. The setup-time
+  commits landed there — **Always HALT and surface a blocker** instead of "recovering" by force-rewinding the protected ref, which silently destroys concurrent commits in multi-active scenarios (parallel
+  agents, user committing while you run). The setup-time
   `<worktree_branch_check>` and per-commit `<pre_commit_head_assertion>` are the
   correct prevention; if either fails, the workflow MUST stop, not self-heal.
 - `git push --force` / `git push -f` to any branch you did not create.

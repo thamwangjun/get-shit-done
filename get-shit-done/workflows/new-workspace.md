@@ -107,7 +107,7 @@ Use AskUserQuestion:
 
 Before creating anything, validate:
 
-1. **Target path** — must not exist or must be empty:
+1. **Target path** — validate that the target path does not exist or is empty before creating anything:
 ```bash
 if [ -d "$TARGET_PATH" ] && [ "$(ls -A "$TARGET_PATH" 2>/dev/null)" ]; then
   echo "Error: Target path already exists and is not empty: $TARGET_PATH"

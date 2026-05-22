@@ -30,7 +30,7 @@ Extract implementation decisions that downstream agents need — researcher and 
 
 <execution_context>
 Workflow files are loaded on-demand in the <process> section below — not upfront.
-Do not pre-load any workflow files before reading the mode routing instructions.
+Read the mode routing instructions first; load workflow files only on-demand in the <process> section.
 </execution_context>
 
 <runtime_note>

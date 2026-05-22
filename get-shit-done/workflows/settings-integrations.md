@@ -127,8 +127,7 @@ AskUserQuestion([
 ```
 
 For each "Set" or "Replace", follow with a text-input prompt that asks for the
-key value. **The answer must not be echoed back** in subsequent question
-descriptions or confirmation text. Write the value via:
+key value. **Keep the answer out of subsequent question descriptions or confirmation text.** Write the value via:
 
 ```bash
 gsd-sdk query config-set brave_search "<value>"     # masked in output

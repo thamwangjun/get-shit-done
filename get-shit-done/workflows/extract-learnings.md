@@ -110,7 +110,7 @@ capture_thought({
 })
 ```
 
-**If not available** (no MCP server in the session exposes this tool, or the runtime does not support it), skip the step silently and continue. The workflow must not fail or warn — this is expected behavior for users who do not run a knowledge-base MCP.
+**If not available** (no MCP server in the session exposes this tool, or the runtime does not support it), skip the step silently and continue. The workflow continues silently — this is expected behavior for users who do not run a knowledge-base MCP.
 </step>
 
 <step name="write_learnings">
@@ -236,7 +236,7 @@ Next steps:
 - VERIFICATION.md, UAT.md, and STATE.md are optional — extract from them if present, skip gracefully if not found
 - Every extracted learning must have source attribution back to the originating artifact
 - Running extract-learnings twice on the same phase must overwrite (replace) the previous LEARNINGS.md, not append
-- Do not fabricate learnings — only extract what is explicitly documented in artifacts
-- If capture_thought is unavailable, the workflow must not fail — graceful degradation to file-only output
+- Extract only what is explicitly documented in artifacts — fabricated content invalidates the learnings file
+- If capture_thought is unavailable, the workflow degrades gracefully to file-only output without failure
 - LEARNINGS.md frontmatter must include counts for all 4 categories and list any missing_artifacts
 </critical_rules>

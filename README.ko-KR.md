@@ -1,6 +1,14 @@
 <div align="center">
 
-# GET SHIT DONE
+# GET SHIT DONE - Wang Jun's Opinionated Edition
+
+## 수정 사항
+
+* 나만의 의견이 반영된 프롬프트 엔지니어링 원칙을 준수
+  * `.planning/references/PROMPT_ENGINEERING_GUIDE_V09.md`
+  * `.planning/references/PROMPT_IMPROVEMENT_GUIDE_V01.md`
+* 다음의 계획에 따라 모든 프롬프트 콘텐츠를 수정:
+  * `plans/`
 
 [English](README.md) · [Português](README.pt-BR.md) · [简体中文](README.zh-CN.md) · [日本語](README.ja-JP.md) · **한국어**
 

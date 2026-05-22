@@ -45,7 +45,7 @@ find .planning/phases -name "*-LEARNINGS.md" | sort | tail -n "$GRADUATION_WINDO
 For each file found:
 1. Parse the four category sections: `## Decisions`, `## Lessons`, `## Patterns`, `## Surprises`
 2. Extract each `### Item Title` + body as a single item record: `{ category, title, body, source_phase, source_file }`
-3. **Skip items that already contain `**Graduated:**`** — they have been promoted and must not re-surface
+3. **Skip items that already contain `**Graduated:**`** — they have already been promoted and are out of scope for re-surfacing
 
 ---
 

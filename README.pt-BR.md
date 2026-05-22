@@ -1,6 +1,14 @@
 <div align="center">
 
-# GET SHIT DONE
+# GET SHIT DONE - Wang Jun's Opinionated Edition
+
+## Modificações
+
+* Aderir aos meus próprios princípios opinativos de engenharia de prompt
+  * `.planning/references/PROMPT_ENGINEERING_GUIDE_V09.md`
+  * `.planning/references/PROMPT_IMPROVEMENT_GUIDE_V01.md`
+* Modificação de todo o conteúdo de prompt com base nos planos em:
+  * `plans/`
 
 [English](README.md) · **Português** · [简体中文](README.zh-CN.md) · [日本語](README.ja-JP.md)
 

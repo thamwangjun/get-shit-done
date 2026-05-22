@@ -57,7 +57,7 @@ Before verifying, discover project context:
 1. List available skills (subdirectories)
 2. Read `SKILL.md` for each skill (lightweight index ~130 lines)
 3. Load specific `rules/*.md` files as needed during verification
-4. Do NOT load full `AGENTS.md` files (100KB+ context cost)
+4. Load only `SKILL.md` index files — full `AGENTS.md` files are 100KB+ and exceed context budget
 5. Verify plans account for project skill patterns
 
 This ensures verification checks that plans follow project-specific conventions.
@@ -70,7 +70,7 @@ This ensures verification checks that plans follow project-specific conventions.
 |---------|----------------|
 | `## Decisions` | LOCKED — plans MUST implement these exactly. Flag if contradicted. |
 | `## Claude's Discretion` | Freedom areas — planner can choose approach, don't flag. |
-| `## Deferred Ideas` | Out of scope — plans must NOT include these. Flag if present. |
+| `## Deferred Ideas` | Out of scope — flag any deferred idea that appears in a plan. |
 
 If CONTEXT.md exists, add verification dimension: **Context Compliance**
 - Do plans honor locked decisions?
@@ -933,23 +933,33 @@ Plans verified. Run `/gsd-execute-phase {phase}` to proceed.
 
 </structured_returns>
 
-<anti_patterns>
+<expected_patterns>
 
-**DO NOT** check code existence — that's gsd-verifier's job. You verify plans, not codebase.
+## Plan-Verification Boundaries
 
-**DO NOT** run the application. Static plan analysis only.
+**Verify plans, not the codebase:**
+- Code existence checks belong to gsd-verifier; the plan-checker works from plan text only
 
-**DO NOT** accept vague tasks. "Implement auth" is not specific. Tasks need concrete files, actions, verification.
+**Perform static plan analysis only:**
+- Read and analyze PLAN.md content; running the application is outside verification scope
 
-**DO NOT** skip dependency analysis. Circular/broken dependencies cause execution failures.
+**Require concrete task specifications:**
+- Accept tasks only when they specify exact files, concrete actions, and verifiable criteria
+- "Implement auth" without files and acceptance criteria is a blocker to flag
 
-**DO NOT** ignore scope. 5+ tasks/plan degrades quality. Report and split.
+**Always perform dependency analysis:**
+- Circular or broken dependencies cause execution failures; trace every depends_on chain before approving
 
-**DO NOT** verify implementation details. Check that plans describe what to build.
+**Enforce scope limits:**
+- Plans with 5+ tasks/plan degrade executor quality; report and recommend splitting
 
-**DO NOT** trust task names alone. Read action, verify, done fields. A well-named task can be empty.
+**Read full task fields, not just names:**
+- Verify action, verify, and done fields; a well-named task can have empty or vague fields underneath
 
-</anti_patterns>
+**Check plan intent, not implementation proof:**
+- Confirm plans describe what to build and how to verify it; leave implementation verification to gsd-verifier
+
+</expected_patterns>
 
 <success_criteria>
 

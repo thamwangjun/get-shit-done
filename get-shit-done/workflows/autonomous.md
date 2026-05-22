@@ -257,7 +257,7 @@ Proceed to 3b.
 **If SKIP_DISCUSS is `false` (or unset):**
 
 **IMPORTANT — Discuss must be single-pass in autonomous mode.**
-The discuss step in `--auto` mode MUST NOT loop. If CONTEXT.md already exists after discuss completes, do NOT re-invoke discuss for the same phase. The `has_context` check below is authoritative — once true, discuss is done for this phase regardless of perceived "gaps" in the context file.
+The discuss step in `--auto` mode runs exactly once; invoke discuss at most once per phase. If CONTEXT.md already exists after discuss completes, skip re-invocation. The `has_context` check below is authoritative — once true, discuss is done for this phase regardless of perceived "gaps" in the context file.
 
 **If `INTERACTIVE` is set:** Run the standard discuss-phase skill inline (asks interactive questions, waits for user answers). This preserves user input on all design decisions while keeping plan+execute out of the main context:
 

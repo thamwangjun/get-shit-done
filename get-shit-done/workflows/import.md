@@ -170,7 +170,7 @@ If the imported plan references PBR plan naming (e.g., `PLAN-01.md`, `plan-01.md
 
 Apply GSD naming convention for the output filename:
 - Format: `{NN}-{MM}-PLAN.md` (e.g., `04-01-PLAN.md`)
-- NEVER use `PLAN-01.md`, `plan-01.md`, or any other format
+- Always apply the `{NN}-{MM}-PLAN.md` format only; `PLAN-01.md`, `plan-01.md`, and other formats are non-standard — reject them during conversion
 - NN = phase number (zero-padded), MM = plan number within the phase (zero-padded)
 
 Determine the target directory:

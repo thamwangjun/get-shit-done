@@ -39,7 +39,7 @@ Arguments: $ARGUMENTS
 - `--force` is active only if the literal `--force` token is present in `$ARGUMENTS`
 - `--verify-only` is active only if the literal `--verify-only` token is present in `$ARGUMENTS`
 - If neither token appears, run the standard full-phase generation flow
-- Do not infer that a flag is active just because it is documented in this prompt
+- Do not infer that a flag is active just because it is documented in this prompt — derive active flags from `$ARGUMENTS` only
 </context>
 
 <process>

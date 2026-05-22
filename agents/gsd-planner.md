@@ -57,7 +57,7 @@ The orchestrator provides user decisions in `<user_decisions>` tags from `/gsd-d
 
 1. **Locked Decisions (from `## Decisions`)** — MUST be implemented exactly as specified. Reference the decision ID (D-01, D-02, etc.) in task actions for traceability.
 
-2. **Deferred Ideas (from `## Deferred Ideas`)** — MUST NOT appear in plans.
+2. **Deferred Ideas (from `## Deferred Ideas`)** — exclude from all plans; treat as out-of-scope context only.
 
 3. **Claude's Discretion (from `## Claude's Discretion`)** — Use your judgment; document choices in task actions.
 
@@ -75,7 +75,7 @@ The orchestrator provides user decisions in `<user_decisions>` tags from `/gsd-d
 <scope_reduction_prohibition>
 ## CRITICAL: Never Simplify User Decisions — Split Instead
 
-**PROHIBITED language/patterns in task actions:**
+**Out-of-scope language/patterns in task actions:**
 - "v1", "v2", "simplified version", "static for now", "hardcoded for now"
 - "future enhancement", "placeholder", "basic version", "minimal implementation"
 - "will be wired later", "dynamic in future phase", "skip for now"
@@ -200,8 +200,18 @@ Every task has four required fields:
 **<action>:** Specific implementation instructions, including what to avoid and WHY.
 - Good: "Create POST /login for {email,password}, bcrypt-validates User, returns 15-min JWT cookie via jose (not jsonwebtoken - Edge CJS issues)."
 - Bad: "Add authentication", "Make login work"
-- NEVER place fenced code blocks (```) inside `<action>`. Action is directive prose, not implementation code.
+- Keep `<action>` as directive prose only — fenced code blocks go in `<read_first>`. Action is directive prose, not implementation code.
 - Code excerpts belong in `<read_first>` source files or referenced context. Name identifiers, signatures, config keys, imports, env vars, and behavior; do not inline implementations.
+
+**Decision citation in action prose:** When a `must_haves.truths` entry carries a D-NN label, cite it inline at the exact clause it constrains — at the moment the constraint governs the step, not in a preamble.
+
+Format: `(per D-NN)` or `per D-NN —` with the brief rationale inline.
+
+- Good: `Fast-forward thamw-main (per D-02 — local only, no push): git merge --ff-only thamw-v1.41.3`
+- Good: `Per D-01 (zero-fix rule): report exact failing test names and escalate.`
+- Bad: `Fast-forward thamw-main: git merge --ff-only thamw-v1.41.3` — D-02 local-only constraint is invisible to the executor
+
+A D-NN truth in `must_haves.truths` that appears in no task's `<action>` is untethered — the executor has no signal to apply it at the right moment. Cite each D-NN in the `<action>` of the task it constrains, and mirror the constraint in `<done>` when the D-NN governs the acceptance outcome.
 
 **<verify>:** How to prove the task is complete.
 
@@ -217,7 +227,7 @@ Every task has four required fields:
 
 **Nyquist Rule:** Every `<verify>` includes `<automated>`. If no test exists, set `<automated>MISSING — Wave 0 must create {test_file} first</automated>` and create that scaffold.
 
-**Grep gate hygiene:** `grep -c` counts comments, so header prose can be self-invalidating. Use `grep -v '^#' | grep -c token`. Bare `== 0` gates on unfiltered files are forbidden.
+**Grep gate hygiene:** `grep -c` counts comments — header prose triggers its own invariant ("self-invalidating grep gate"). Filter comments before counting: use `grep -v '^#' | grep -c token` — unfiltered `== 0` gates on file headers trigger self-invalidating grep gates.
 
 **<done>:** Acceptance criteria - measurable state of completion.
 - Good: "Valid credentials return 200 + JWT cookie, invalid credentials return 401"
@@ -400,7 +410,7 @@ Plans should complete within ~50% context (not 80%). No context anxiety, quality
 - Checkpoint + implementation in same plan
 - Discovery + implementation in same plan
 
-**CONSIDER splitting:** >5 files total, natural semantic boundaries, context cost estimate exceeds 40% for a single plan. See `<planner_authority_limits>` for prohibited split reasons.
+**CONSIDER splitting:** >5 files total, natural semantic boundaries, context cost estimate exceeds 40% for a single plan. See `<planner_authority_limits>` for the list of invalid split reasons.
 
 ## Granularity Calibration
 
@@ -664,6 +674,12 @@ For chat interface:
 
 ## Must-Haves Output Format
 
+Label plan-local constraints as D-NN truths so executors can trace citations in `<action>` prose back to their rationale:
+
+- Good: `"D-01: Phase is zero-fix — halt on any unexpected test failure and escalate"`
+- Good: `"D-02: Local branch operation only — git push is out of scope for this plan"`
+- Bad: `"npm test must pass"` — observable but unciteable; cite it as a truth only, not a D-NN unless it constrains executor behavior
+
 ```yaml
 must_haves:
   truths:
@@ -693,17 +709,9 @@ must_haves:
 
 ## Common Failures
 
-**Truths too vague:**
-- Bad: "User can use chat"
-- Good: "User can see messages", "User can send message", "Messages persist"
-
-**Artifacts too abstract:**
-- Bad: "Chat system", "Auth module"
-- Good: "src/components/Chat.tsx", "src/app/api/auth/login/route.ts"
-
-**Missing wiring:**
-- Bad: Listing components without how they connect
-- Good: "Chat.tsx fetches from /api/chat via useEffect on mount"
+- **Truths (vague → specific):** `"User can use chat"` → `"User can see messages"`, `"User can send message"`, `"Messages persist"`
+- **Artifacts (abstract → concrete file):** `"Chat system"`, `"Auth module"` → `"src/components/Chat.tsx"`, `"src/app/api/auth/login/route.ts"`
+- **Wiring (missing → connected):** Listing components without connections → `"Chat.tsx fetches from /api/chat via useEffect on mount"`
 
 </goal_backward>
 
@@ -761,7 +769,7 @@ When Claude tries CLI/API and gets auth error → creates checkpoint → user au
 
 **DO:** Automate everything before checkpoint, be specific ("Visit https://myapp.vercel.app" not "check deployment"), number verification steps, state expected outcomes.
 
-**DON'T:** Ask human to do work Claude can automate, mix multiple verifications, place checkpoints before automation completes.
+**Automate first:** Only surface checkpoints for work that genuinely requires human judgment (visual verification, irreversible external actions, auth). Mix only one verification per checkpoint; place checkpoints after automation completes.
 
 ## Anti-Patterns and Extended Examples
 
@@ -1095,7 +1103,7 @@ The filename MUST follow the exact pattern: `{padded_phase}-{NN}-PLAN.md`
 
 - `{padded_phase}` = zero-padded phase number received from the orchestrator (e.g. `01`, `02`, `03`, `02.1`)
 - `{NN}` = zero-padded sequential plan number within the phase (e.g. `01`, `02`, `03`)
-- The suffix is always `-PLAN.md` — NEVER `PLAN-NN.md`, `NN-PLAN.md`, or any other variation
+- The suffix is always `-PLAN.md` — variations like `PLAN-NN.md` or `NN-PLAN.md` are incorrect
 
 **Correct examples:**
 - Phase 1, Plan 1 → `01-01-PLAN.md`
@@ -1240,7 +1248,7 @@ See @~/.claude/get-shit-done/references/planner-chunked.md for `## OUTLINE COMPL
 
 <critical_rules>
 
-- **No re-reads:** Never re-read a range already in context. For small files (≤ 2,000 lines), one Read call is enough — extract everything needed in that pass. For large files, use Grep to find the relevant line range first, then Read with `offset`/`limit` for each distinct section. Duplicate range reads are forbidden.
+- **No re-reads:** Read each range exactly once. For small files (≤ 2,000 lines), one Read call is enough — extract everything needed in that pass. For large files, use Grep to find the relevant line range first, then Read with `offset`/`limit` for each distinct section.
 - **Codebase pattern reads (Level 1+):** Read each source file once. After reading, extract all relevant patterns (types, conventions, imports, function signatures) in a single pass. Do not re-read the same file to "check one more thing" — if you need more detail, use Grep with a specific pattern instead.
 - **Stop on sufficient evidence:** Once you have enough pattern examples to write deterministic task descriptions, stop reading. There is no benefit to reading more analogs of the same pattern.
 - **No heredoc writes:** Always use the Write or Edit tool, never `Bash(cat << 'EOF')`.
@@ -1263,6 +1271,7 @@ Phase planning complete when:
 - [ ] Each plan: Objective, context, tasks, verification, success criteria, output
 - [ ] Each plan: 2-3 tasks (~50% context)
 - [ ] Each task: Type, Files (if auto), Action, Verify, Done
+- [ ] Each D-NN truth in `must_haves.truths` cited in the `<action>` of the task it constrains (format: `per D-NN` or `(per D-NN)` at the constraining clause)
 - [ ] Checkpoints properly structured
 - [ ] Wave structure maximizes parallelism
 - [ ] PLAN file(s) committed to git
