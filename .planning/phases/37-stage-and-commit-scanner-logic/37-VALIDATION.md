@@ -17,10 +17,10 @@ created: 2026-05-22
 
 | Property | Value |
 |----------|-------|
-| **Framework** | Git CLI / Bash script verification |
+| **Framework** | node:test (Node.js built-in) |
 | **Config file** | none |
-| **Quick run command** | `git diff --cached --name-only` |
-| **Full suite command** | `git diff --cached --name-only` |
+| **Quick run command** | `node --test tests/stage-batch-2.test.cjs` |
+| **Full suite command** | `node --test tests/stage-batch-2.test.cjs` |
 | **Estimated runtime** | ~1 second |
 
 ---
@@ -38,8 +38,8 @@ created: 2026-05-22
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 37-01-01 | 01 | 1 | STAGE-02 | T-37-01 | Validate staging targets (exact subset) | unit | `git diff --cached --name-only` | ✅ Wave 0 | ⬜ pending |
-| 37-01-02 | 01 | 1 | STAGE-02 | — | Validate commit message and history | unit | `git log -n 1 --pretty=format:%s` | ✅ Wave 0 | ⬜ pending |
+| 37-01-01 | 01 | 1 | STAGE-02 | T-37-01 | Validate staging targets (exact subset) | unit | `node --test tests/stage-batch-2.test.cjs` | green | green |
+| 37-01-02 | 01 | 1 | STAGE-02 | — | Validate commit message and history | unit | `node --test tests/stage-batch-2.test.cjs` | green | green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -47,9 +47,10 @@ created: 2026-05-22
 
 ## Wave 0 Requirements
 
-- [ ] `scripts/stage-batch-2.cjs` — Staging automation script
+- [x] `scripts/stage-batch-2.cjs` — Staging automation script
+- [x] `tests/stage-batch-2.test.cjs` — Structural and behavioral validation tests
 
-*If none: "Existing infrastructure covers all phase requirements."*
+*For gap verification: See GAPS FILLED report (2026-05-22 Nyquist audit).*
 
 ---
 
