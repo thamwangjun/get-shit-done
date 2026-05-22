@@ -1,0 +1,69 @@
+---
+phase: 36
+slug: stage-and-commit-configuration-rules
+status: draft
+nyquist_compliant: true
+wave_0_complete: false
+created: 2026-05-22
+---
+
+# Phase 36 — Stage and Commit Configuration & Rules
+
+> Per-phase validation contract for feedback sampling during execution.
+
+---
+
+## Test Infrastructure
+
+| Property | Value |
+|----------|-------|
+| **Framework** | Git CLI / Bash script verification |
+| **Config file** | none |
+| **Quick run command** | `git diff --cached --name-only` |
+| **Full suite command** | `git diff --cached --name-only` |
+| **Estimated runtime** | ~1 second |
+
+---
+
+## Sampling Rate
+
+- **After every task commit:** Run `git diff --cached --name-only`
+- **After every plan wave:** Run `git diff --cached --name-only`
+- **Before `/gsd-verify-work`:** Full suite must be green
+- **Max feedback latency:** 1 second
+
+---
+
+## Per-Task Verification Map
+
+| Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
+|---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
+| 36-01-01 | 01 | 1 | STAGE-01 | T-36-01 | Validate staging targets (exact subset) | unit | `git diff --cached --name-only` | ✅ Wave 0 | ⬜ pending |
+| 36-01-02 | 01 | 1 | STAGE-01 | — | Validate commit message and history | unit | `git log -n 1 --pretty=format:%s` | ✅ Wave 0 | ⬜ pending |
+
+*Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
+
+---
+
+## Wave 0 Requirements
+
+Existing infrastructure covers all phase requirements.
+
+---
+
+## Manual-Only Verifications
+
+All phase behaviors have automated verification.
+
+---
+
+## Validation Sign-Off
+
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 5s
+- [x] `nyquist_compliant: true` set in frontmatter
+
+**Approval:** pending
