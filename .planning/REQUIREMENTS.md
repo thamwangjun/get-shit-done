@@ -9,8 +9,8 @@ Requirements for history consolidation and git refactoring.
 
 ### Git Operations (GITOPS)
 
-- [ ] **GITOPS-01**: Create local branch backup and physical directory backup before starting the refactor.
-- [ ] **GITOPS-02**: Soft reset the active branch HEAD to tag `v1.41.2` and unstage all files, preserving working directory changes.
+- [x] **GITOPS-01**: Create local branch backup and physical directory backup before starting the refactor.
+- [x] **GITOPS-02**: Soft reset the active branch HEAD to tag `v1.41.2` and unstage all files, preserving working directory changes.
 
 ### Staging & Commits (STAGE)
 
@@ -52,8 +52,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| GITOPS-01   | Phase 35 | Pending |
-| GITOPS-02   | Phase 35 | Pending |
+| GITOPS-01   | Phase 35 | Complete |
+| GITOPS-02   | Phase 35 | Complete |
 | STAGE-01    | Phase 36 | Complete |
 | STAGE-02    | Phase 37 | Complete |
 | STAGE-03    | Phase 38 | Complete |

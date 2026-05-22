@@ -257,7 +257,7 @@ Full details: `.planning/milestones/v1.41.3-ROADMAP.md`
 | 32. Quick Test Fixes | v1.41.3 | 1/1 | Complete   | 2026-05-13 |
 | 33. Positive Framing Pass | v1.41.3 | 2/2 | Complete    | 2026-05-14 |
 | 34. Gate and Merge | v1.41.3 | 1/1 | Complete    | 2026-05-14 |
-| 35. Backup and Soft Reset | v1.41.5 | 0/0 | Pending | - |
+| 35. Backup and Soft Reset | v1.41.5 | 1/1 | Complete | 2026-05-22 |
 | 36. Stage and Commit Configuration & Rules | v1.41.5 | 1/1 | Complete    | 2026-05-22 |
 | 37. Stage and Commit Scanner Logic | v1.41.5 | 1/1 | Complete    | 2026-05-22 |
 | 38. Stage and Commit Workflows, Agents, & Templates | v1.41.5 | 1/1 | Complete    | 2026-05-22 |
