@@ -1,9 +1,9 @@
 ---
 phase: 39
 slug: stage-and-commit-tests-sdk-validation
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: complete
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-05-22
 ---
 
@@ -38,7 +38,8 @@ created: 2026-05-22
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 39-01-01 | 01 | 1 | STAGE-04 | — | N/A (script only stages files) | integration | `node scripts/stage-batch-4.cjs && git diff --cached --name-only` | ✅ | ⬜ pending |
+| 39-01-01 | 01 | 1 | STAGE-04 | — | N/A (script only stages files) | integration | `node scripts/stage-batch-4.cjs && git diff --cached --name-only` | ✅ | ✅ green |
+| 39-01-02 | 01 | 1 | STAGE-04 | — | Verifies git status clean, correct commit message, expected file scope, staging script untracked | smoke | `COMMIT_MSG=$(git log -n 1 --pretty=format:%s); if [[ "$COMMIT_MSG" != "test: refactor core tests and SDK validation (Batch 4)" ]]; then echo "FAIL: commit message"; exit 1; fi; STAGED=$(git diff --cached --name-only); if [[ -n "$STAGED" ]]; then echo "FAIL: staged files remain"; exit 1; fi; IN_COMMIT=$(git show --name-only --pretty=format: HEAD | grep -c "stage-batch-4"); if [[ "$IN_COMMIT" -ne 0 ]]; then echo "FAIL: stage-batch-4 in commit"; exit 1; fi; echo "OK"` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -46,8 +47,8 @@ created: 2026-05-22
 
 ## Wave 0 Requirements
 
-- [ ] `scripts/stage-batch-4.cjs` — stubs for STAGE-04 batch staging
-- [ ] `tests/stage-batch-4.test.cjs` — tests for the staging script (if applicable)
+- [x] `scripts/stage-batch-4.cjs` — stubs for STAGE-04 batch staging
+- [x] `tests/stage-batch-4.test.cjs` — tests for the staging script (if applicable)
 
 *If none: "Existing infrastructure covers all phase requirements."*
 
@@ -64,11 +65,11 @@ created: 2026-05-22
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 30s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 30s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** complete
