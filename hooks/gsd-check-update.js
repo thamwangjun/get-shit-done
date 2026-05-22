@@ -44,15 +44,14 @@ if (!fs.existsSync(cacheDir)) {
   fs.mkdirSync(cacheDir, { recursive: true });
 }
 
-// Run check in background via a dedicated worker script.
-// Spawning a file (rather than node -e '<inline code>') keeps the worker logic
-// in plain JS with no template-literal regex-escaping concerns, and makes the
-// worker independently testable.
-const workerPath = path.join(__dirname, 'gsd-check-update-worker.js');
-const child = spawn(process.execPath, [workerPath], {
+// Path to worker file (co-located with this hook after installation)
+const workerFile = path.join(__dirname, 'gsd-check-update-worker.js');
+
+// Run check in background (spawn background process, windowsHide prevents console flash)
+const child = spawn(process.execPath, [workerFile], {
   stdio: 'ignore',
   windowsHide: true,
-  detached: true,  // Required on Windows for proper process detachment
+  detached: true,
   env: {
     ...process.env,
     GSD_CACHE_FILE: cacheFile,

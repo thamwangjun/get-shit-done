@@ -18,6 +18,10 @@
 
 const path = require('path');
 
+// Hooks directory is wherever this script was installed — exclude it from scanning
+// regardless of runtime (Claude and Qwen use different installation paths).
+const HOOKS_DIR = __dirname;
+
 // Summarisation-specific patterns (novel — not in gsd-prompt-guard.js).
 // These target instructions specifically designed to survive context compression.
 const SUMMARISATION_PATTERNS = [
@@ -56,7 +60,8 @@ function isExcludedPath(filePath) {
     /CHECKPOINT/i.test(path.basename(p)) ||
     /[/\\](?:security|techsec|injection)[/\\.]/i.test(p) ||
     /security\.cjs$/.test(p) ||
-    p.includes('/.claude/hooks/')
+    // Exclude hook's own install directory — runtime-agnostic (works for both Claude and Qwen)
+    p.startsWith(HOOKS_DIR.replace(/\\/g, '/'))
   );
 }
 
@@ -105,7 +110,7 @@ process.stdin.on('end', () => {
     for (const pattern of ALL_PATTERNS) {
       if (pattern.test(content)) {
         // Trim pattern source for readable output
-        findings.push(pattern.source.replace(/\\s\+/g, '-').replace(/[()\\]/g, '').substring(0, 50));
+        findings.push(pattern.source.replace(/\\s+/g, '-').replace(/[()\\]/g, '').substring(0, 50));
       }
     }
 
