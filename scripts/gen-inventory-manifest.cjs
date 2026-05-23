@@ -30,7 +30,11 @@ const FAMILIES = [
     name: 'commands',
     dir: path.join(ROOT, 'commands', 'gsd'),
     filter: (f) => f.endsWith('.md'),
-    toName: (f) => '/gsd-' + f.replace(/\.md$/, ''),
+    toName: (f) => {
+      const content = fs.readFileSync(path.join(ROOT, 'commands', 'gsd', f), 'utf8');
+      const m = content.match(/^name:\s*gsd:(.+)$/m);
+      return m ? '/gsd-' + m[1].trim() : '/gsd-' + f.replace(/\.md$/, '');
+    },
   },
   {
     name: 'workflows',

@@ -77,6 +77,24 @@ const {
   stageSkillsForMode,
 } = require(path.join(_gsdLibDir, 'install-profiles.cjs'));
 
+// Local-only install: git is always available in a git clone.
+// Note: npm install support is not implemented — revisit if added in a future phase.
+let gsdVersion = 'no-network'; // non-SHA sentinel; fails grep -Eq '^[0-9a-f]{7}' intentionally
+try {
+  const { execSync } = require('child_process');
+  const sha = execSync('git rev-parse --short=7 HEAD', {
+    encoding: 'utf8',
+    timeout: 5000,
+    windowsHide: true,
+    cwd: path.join(__dirname, '..'),
+  }).trim();
+  if (/^[0-9a-f]{7}$/.test(sha)) {
+    gsdVersion = sha;
+  }
+} catch (e) {
+  // Not in a git repo — gsdVersion stays as 'no-network'
+}
+
 // Parse args
 const args = process.argv.slice(2);
 const hasGlobal = args.includes('--global') || args.includes('-g');
@@ -222,6 +240,38 @@ function getConfigDirFromHome(runtime, isGlobal) {
   if (runtime === 'codebuddy') return "'.codebuddy'";
   if (runtime === 'cline') return "'.cline'";
   return "'.claude'";
+}
+
+/**
+ * Ensure hooks/dist/ exists. If absent, builds it on-demand using scripts/build-hooks.js.
+ * Aborts the installer with a non-zero exit if the build fails.
+ * @param {string} src - GSD package root directory
+ * @returns {boolean} true if an on-demand build was triggered, false if dist/ was already present
+ */
+function ensureHooksDist(src) {
+  const hooksDist = path.join(src, 'hooks', 'dist');
+  if (fs.existsSync(hooksDist)) return false;
+
+  console.log(`  ${cyan}▶${reset} Building hooks from source...`);
+  const buildScript = path.join(src, 'scripts', 'build-hooks.js');
+  if (!fs.existsSync(buildScript)) {
+    console.error(`\n  ${yellow}Build failed!${reset} hooks/dist/ is missing and build script not found:`);
+    console.error(`  ${buildScript}`);
+    console.error(`  Re-install GSD or run: node scripts/build-hooks.js`);
+    process.exit(1);
+  }
+  const { spawnSync } = require('child_process');
+  const result = spawnSync(process.execPath, [buildScript], {
+    encoding: 'utf8',
+    stdio: ['pipe', 'pipe', 'pipe'],
+  });
+  if (result.status !== 0) {
+    console.error(`\n  ${yellow}Build failed!${reset} Could not build hooks/dist/:`);
+    if (result.error) console.error(result.error.message);   // spawn-level error
+    if (result.stderr) console.error(result.stderr);          // build-level stderr
+    process.exit(1);
+  }
+  return true;
 }
 
 /**
@@ -446,7 +496,7 @@ const banner = '\n' +
   '  ╚██████╔╝███████║██████╔╝\n' +
   '   ╚═════╝ ╚══════╝╚═════╝' + reset + '\n' +
   '\n' +
-  '  Get Shit Done ' + dim + 'v' + pkg.version + reset + '\n' +
+  '  Get Shit Done ' + dim + gsdVersion + reset + '\n' +
   '  A meta-prompting, context engineering and spec-driven\n' +
   '  development system for Claude Code, OpenCode, Gemini, Kilo, Codex, Copilot, Antigravity, Cursor, Windsurf, Augment, Trae, Qwen Code, Hermes Agent, Cline and CodeBuddy by TÂCHES.\n';
 
@@ -7217,7 +7267,7 @@ function writeManifest(configDir, runtime = 'claude', options = {}) {
   const codexSkillsManifestPrefix = isHermes ? 'skills/gsd/' : 'skills/';
   const agentsDir = path.join(configDir, 'agents');
   const manifest = {
-    version: pkg.version,
+    version: gsdVersion,
     timestamp: new Date().toISOString(),
     mode: options.mode === 'minimal' ? 'minimal' : 'full',
     files: {},
@@ -8246,12 +8296,15 @@ function install(isGlobal, runtime = 'claude') {
 
   // Write VERSION file
   const versionDest = path.join(targetDir, 'get-shit-done', 'VERSION');
-  fs.writeFileSync(versionDest, pkg.version);
+  fs.writeFileSync(versionDest, gsdVersion);
   if (verifyFileInstalled(versionDest, 'VERSION')) {
-    console.log(`  ${green}✓${reset} Wrote VERSION (${pkg.version})`);
+    console.log(`  ${green}✓${reset} Wrote VERSION (${gsdVersion})`);
   } else {
     failures.push('VERSION');
   }
+
+  // Ensure hooks/dist/ is built — triggers on-demand build if absent (fixes silent-skip bug)
+  const builtFromSource = ensureHooksDist(src);
 
   if (!isCodex && !isCopilot && !isCursor && !isWindsurf && !isTrae && !isCline) {
     // Write package.json to force CommonJS mode for GSD scripts
@@ -8268,6 +8321,7 @@ function install(isGlobal, runtime = 'claude') {
       const hooksDest = path.join(targetDir, 'hooks');
       fs.mkdirSync(hooksDest, { recursive: true });
       const hookEntries = fs.readdirSync(hooksSrc);
+      const installedVersion = gsdVersion;
       const configDirReplacement = getConfigDirFromHome(runtime, isGlobal);
       for (const entry of hookEntries) {
         const srcFile = path.join(hooksSrc, entry);
@@ -8288,7 +8342,7 @@ function install(isGlobal, runtime = 'claude') {
               content = content.replace(/CLAUDE\.md/g, 'HERMES.md');
               content = content.replace(/\bClaude Code\b/g, 'Hermes Agent');
             }
-            content = content.replace(/\{\{GSD_VERSION\}\}/g, pkg.version);
+            content = content.replace(/\{\{GSD_VERSION\}\}/g, installedVersion);
             fs.writeFileSync(destFile, content);
             // Ensure hook files are executable (fixes #1162 — missing +x permission)
             try { fs.chmodSync(destFile, 0o755); } catch (e) { /* Windows doesn't support chmod */ }
@@ -8297,7 +8351,7 @@ function install(isGlobal, runtime = 'claude') {
             // detect staleness after updates — stamp the version just like .js hooks.
             if (entry.endsWith('.sh')) {
               let content = fs.readFileSync(srcFile, 'utf8');
-              content = content.replace(/\{\{GSD_VERSION\}\}/g, pkg.version);
+              content = content.replace(/\{\{GSD_VERSION\}\}/g, installedVersion);
               fs.writeFileSync(destFile, content);
               try { fs.chmodSync(destFile, 0o755); } catch (e) { /* Windows doesn't support chmod */ }
             } else {
@@ -8307,7 +8361,7 @@ function install(isGlobal, runtime = 'claude') {
         }
       }
       if (verifyInstalled(hooksDest, 'hooks')) {
-        console.log(`  ${green}✓${reset} Installed hooks (bundled)`);
+        console.log(`  ${green}✓${reset} Installed hooks (${builtFromSource ? 'built from source' : 'bundled'})`);
         // Warn if expected community .sh hooks are missing (non-fatal)
         const expectedShHooks = ['gsd-session-state.sh', 'gsd-validate-commit.sh', 'gsd-phase-boundary.sh'];
         for (const sh of expectedShHooks) {
@@ -8564,13 +8618,13 @@ function install(isGlobal, runtime = 'claude') {
           content = content.replace(/'\.claude'/g, configDirReplacement);
           content = content.replace(/\/\.claude\//g, `/${getDirName(runtime)}/`);
           content = content.replace(/\.claude\//g, `${getDirName(runtime)}/`);
-          content = content.replace(/\{\{GSD_VERSION\}\}/g, pkg.version);
+          content = content.replace(/\{\{GSD_VERSION\}\}/g, gsdVersion);
           fs.writeFileSync(destFile, content);
           try { fs.chmodSync(destFile, 0o755); } catch (e) { /* Windows */ }
         } else {
           if (entry.endsWith('.sh')) {
             let content = fs.readFileSync(srcFile, 'utf8');
-            content = content.replace(/\{\{GSD_VERSION\}\}/g, pkg.version);
+            content = content.replace(/\{\{GSD_VERSION\}\}/g, gsdVersion);
             fs.writeFileSync(destFile, content);
             try { fs.chmodSync(destFile, 0o755); } catch (e) { /* Windows */ }
           } else {
