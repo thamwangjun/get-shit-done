@@ -22,8 +22,8 @@ Requirements for history consolidation and git refactoring.
 
 ### Validation (VALID)
 
-- [ ] **VALID-01**: Run a tree diff between the consolidated HEAD and the backup branch to verify 100% byte-for-byte content parity (zero diff).
-- [ ] **VALID-02**: Execute `npm test` on the final HEAD to guarantee all 8300+ assertions pass cleanly with zero regressions.
+- [x] **VALID-01**: Run a tree diff between the consolidated HEAD and the backup branch to verify 100% byte-for-byte content parity (zero diff).
+- [x] **VALID-02**: Execute `npm test` on the final HEAD to guarantee all 8300+ assertions pass cleanly with zero regressions.
 
 ## v2 Requirements
 
@@ -59,8 +59,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | STAGE-03    | Phase 38 | Complete |
 | STAGE-04    | Phase 39 | Pending |
 | STAGE-05    | Phase 40 | Complete |
-| VALID-01    | Phase 41 | Pending |
-| VALID-02    | Phase 41 | Pending |
+| VALID-01    | Phase 41 | Complete |
+| VALID-02    | Phase 41 | Complete |
 
 **Coverage:**
 - v1 requirements: 9 total
