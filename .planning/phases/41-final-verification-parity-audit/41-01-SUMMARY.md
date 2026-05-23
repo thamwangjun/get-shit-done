@@ -121,6 +121,18 @@ Phase 41 is complete. v1.41.5 milestone verification is done:
 
 The 2 pre-existing failures in `ai-evals.test.cjs` are a known upstream issue unrelated to this milestone — they should be tracked in the next milestone's scope.
 
+## Self-Check: PASSED
+
+- 41-VERIFICATION.md: FOUND
+- 41-01-SUMMARY.md: FOUND
+- status: passed in VERIFICATION.md: VERIFIED
+- status: complete in STATE.md: VERIFIED
+- Phase 39 ROADMAP row Complete: VERIFIED
+- VALID-01 in SUMMARY: VERIFIED
+- VALID-02 in SUMMARY: VERIFIED
+- D-07 in SUMMARY: VERIFIED
+- Task commits in git log: a5f59c41, 8923d724, e9ebb1bd, b1ac7f80, 30839a70
+
 ---
 *Phase: 41-final-verification-parity-audit*
 *Completed: 2026-05-23*
