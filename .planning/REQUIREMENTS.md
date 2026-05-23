@@ -18,7 +18,7 @@ Requirements for history consolidation and git refactoring.
 - [x] **STAGE-02**: Stage and commit Batch 2: Scanner logic, audit scripts, and update checkers (`hooks/gsd-read-injection-scanner.js`, `scripts/audit-tags.js`, `hooks/gsd-check-update.js`).
 - [x] **STAGE-03**: Stage and commit Batch 3: Workflows, agents, commands, and non-test documentation (`agents/`, `commands/gsd/`, `get-shit-done/workflows/`, root markdown files, non-test docs).
 - [ ] **STAGE-04**: Stage and commit Batch 4: Core unit and integration tests and validation runner (`tests/*.test.cjs`, `scripts/run-tests.cjs`).
-- [ ] **STAGE-05**: Stage and commit Batch 5: Quick tasks, maintenance scripts, run logs, and metadata state files (`.planning/quick/`, `logs/`, `.planning/PROJECT.md`, `.planning/STATE.md`, `.planning/ROADMAP.md`, `.planning/PROJECT_HISTORY.md`, `.planning/MILESTONES.md`, `.planning/RETROSPECTIVE.md`, codebase/critique/debug/intel/notes/research outputs, installer scripts, update workers).
+- [x] **STAGE-05**: Stage and commit Batch 5: Quick tasks, maintenance scripts, run logs, and metadata state files (`.planning/quick/`, `logs/`, `.planning/PROJECT.md`, `.planning/STATE.md`, `.planning/ROADMAP.md`, `.planning/PROJECT_HISTORY.md`, `.planning/MILESTONES.md`, `.planning/RETROSPECTIVE.md`, codebase/critique/debug/intel/notes/research outputs, installer scripts, update workers).
 
 ### Validation (VALID)
 
@@ -58,7 +58,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | STAGE-02    | Phase 37 | Complete |
 | STAGE-03    | Phase 38 | Complete |
 | STAGE-04    | Phase 39 | Pending |
-| STAGE-05    | Phase 40 | Pending |
+| STAGE-05    | Phase 40 | Complete |
 | VALID-01    | Phase 41 | Pending |
 | VALID-02    | Phase 41 | Pending |
 
