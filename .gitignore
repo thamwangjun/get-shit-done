@@ -11,6 +11,11 @@ commands.html
 # Cursor IDE — local agents/skills bundle (never commit)
 .cursor/
 
+# Antigravity CLI — local runtime config and session state (never commit)
+.antigravity/
+.antigravitycli/
+.claudeignore
+
 # Build artifacts (committed to npm, not git)
 hooks/dist/
 
@@ -27,7 +32,6 @@ animation/
 # Internal planning documents
 reports/
 RAILROAD_ARCHITECTURE.md
-.planning/
 analysis/
 docs/GSD-MASTER-ARCHITECTURE.md
 docs/GSD-RUST-IMPLEMENTATION-GUIDE.md
