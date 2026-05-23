@@ -87,7 +87,7 @@ Every agent, command, and workflow file on `thamw-main` meets the fork's prompt 
   - `.planning/fork_plans/B0-SYNC_CATALOGUE_V01.md` — CATALOGUE.json sync process
   - `.planning/fork_plans/C0-POSITIVE_FRAMING_PASS_V01.md` — positive framing pass across all prompt content files
 
-- **Current state**: v1.41.3 shipped 2026-05-19. thamw-main fast-forwarded to thamw-v1.41.3 (8306/8307 pass, 0 fail, 1 intentional HDOC skip). All upstream v1.41.2 test failures resolved (Phases 32–33). Negative-framing scanner passed across all upstream-introduced files. Bug #3242 (cmdStateJson progress trampling) fixed. Historical milestone delivery records and validated requirements are in .planning/PROJECT_HISTORY.md. Next milestone: awaiting next upstream release.
+- **Current state**: v1.41.5 shipped 2026-05-23. 5-batch commit history refactor complete — thamw-main squashed from ~70 fine-grained commits to 5 coherent batches. Parity audit confirmed zero content divergence (10 allowlisted files in diff, all within D-03). npm test: 8392 pass, 2 pre-existing failures in unchanged ai-evals.test.cjs, negative-framing scanner 99/99. Phase 41 (final verification) passed 6/6 must-haves. Historical milestone delivery records and validated requirements are in .planning/PROJECT_HISTORY.md. Next milestone: awaiting next upstream release.
 - **Test suite**: `npm test` runs Node.js built-in test runner. `agent-frontmatter.test.cjs` is the critical gate — all agent YAML frontmatter is validated there. Fork-side tests: negative-framing-scan (99/99 — agent+command+workflow corpus all green, prohibited+forbidden branches added in v1.38.6), ios-scaffold-safety (6/6), bug-1924-ensure-hooks-dist-on-demand (8/8), agent-frontmatter (155/155), execute-phase-wave (15/15), execute-phase-active-flags (upstream v1.37.1), semver-compare (17/17), debug-session-management (HDOC subtest intentionally skipped — fork standard overrides upstream assertion), qwen-install (16/16), read-injection-scanner (19/19). Full suite: 8306/8307 pass, 0 fail, 1 intentional skip (v1.41.3).
 - **File-writing agents** (those with `Write` in their tools list) must retain the string `Only use the Write tool` in their prompt body. Dynamic `FILE_WRITING_AGENTS` list used (WR-04: no longer hardcoded).
 - **Scanner precedence**: When tests conflict with fork standards (e.g., test asserts for upstream negative-framing strings), modify the test to reflect fork behavior — established precedent in v1.36.0 Phase 3.
@@ -139,4 +139,4 @@ This document evolves at phase transitions and milestone boundaries.
 ---
 ---
 ---
-*Last updated: 2026-05-21 after v1.41.5 milestone start*
+*Last updated: 2026-05-23 after v1.41.5 Phase 41 completion*
