@@ -451,6 +451,7 @@ function cmdStateUpdateProgress(cwd, raw) {
   const phasesDir = planningPaths(cwd).phases;
   let totalPlans = 0;
   let totalSummaries = 0;
+  let completedPhases = 0;
 
   if (fs.existsSync(phasesDir)) {
     const isDirInMilestone = getMilestonePhaseFilter(cwd);
@@ -459,12 +460,33 @@ function cmdStateUpdateProgress(cwd, raw) {
       .filter(isDirInMilestone);
     for (const dir of phaseDirs) {
       const files = fs.readdirSync(path.join(phasesDir, dir));
-      totalPlans += files.filter(f => f.match(/-PLAN\.md$/i)).length;
-      totalSummaries += files.filter(f => f.match(/-SUMMARY\.md$/i)).length;
+      const plans = files.filter(f => f.match(/-PLAN\.md$/i)).length;
+      const summaries = files.filter(f => f.match(/-SUMMARY\.md$/i)).length;
+      totalPlans += plans;
+      totalSummaries += summaries;
+      if (plans > 0 && summaries >= plans) completedPhases++;
     }
   }
 
-  const percent = totalPlans > 0 ? Math.min(100, Math.round(totalSummaries / totalPlans * 100)) : 0;
+  // Determine total phases from ROADMAP (may be larger than realized disk dirs).
+  // Mirrors the logic in cmdStateSync so both commands report consistent percents (#3242 Bug B).
+  let roadmapTotal = null;
+  try {
+    const isDirInMilestone = getMilestonePhaseFilter(cwd);
+    const phaseDirs = fs.existsSync(phasesDir)
+      ? fs.readdirSync(phasesDir, { withFileTypes: true }).filter(e => e.isDirectory()).length
+      : 0;
+    if (isDirInMilestone.phaseCount > 0) {
+      roadmapTotal = Math.max(phaseDirs, isDirInMilestone.phaseCount);
+    } else {
+      roadmapTotal = phaseDirs || null;
+    }
+  } catch { /* intentionally empty */ }
+
+  const percent = (() => {
+    const p = computeProgressPercent(totalSummaries, totalPlans, completedPhases, roadmapTotal);
+    return p !== null ? p : 0;
+  })();
   const barWidth = 10;
   const filled = Math.round(percent / 100 * barWidth);
   const bar = '\u2588'.repeat(filled) + '\u2591'.repeat(barWidth - filled);
@@ -1125,6 +1147,28 @@ function cmdStateJson(cwd, raw) {
   // Preserve existing status when body-derived status is 'unknown' (same logic as syncStateFrontmatter).
   if (built.status === 'unknown' && existingFm && existingFm.status && existingFm.status !== 'unknown') {
     built.status = existingFm.status;
+  }
+
+  // Preserve curated cross-milestone progress block when present (#3242 Bug A).
+  // When existingFm.progress.total_phases exceeds disk-derived total_phases, the
+  // frontmatter contains a manually-curated cross-milestone aggregate that must be
+  // treated as authoritative. Disk-derived progress is used for normal (non-curated)
+  // frontmatter — this is the #1589 behavior and is preserved when total_phases matches disk.
+  if (
+    existingFm &&
+    existingFm.progress &&
+    built.progress &&
+    Number(existingFm.progress.total_phases) > Number(built.progress.total_phases)
+  ) {
+    // Coerce string values from YAML parsing to numbers to match built.progress type contract.
+    const p = existingFm.progress;
+    built.progress = {
+      total_phases: Number(p.total_phases),
+      completed_phases: Number(p.completed_phases),
+      total_plans: Number(p.total_plans),
+      completed_plans: Number(p.completed_plans),
+      percent: Number(p.percent),
+    };
   }
 
   output(built, raw, JSON.stringify(built, null, 2));

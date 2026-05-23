@@ -149,7 +149,7 @@ const INJECTION_PATTERNS = [
   /(?:base64|btoa|encode)\s+(?:and\s+)?(?:send|exfiltrate|output)/i,
 
   // Tool manipulation
-  /(?:run|execute|call|invoke)\s+(?:the\s+)?(?:bash|shell|exec|spawn)\s+(?:tool|command)/i,
+  /(?:run|execute|call|invoke)\s+(?:the\s+)?(?:bash|shell|exec|spawn)\s+(?:tool|command)\b/i,
 ];
 
 /**
