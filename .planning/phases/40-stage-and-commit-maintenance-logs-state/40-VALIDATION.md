@@ -3,7 +3,7 @@ phase: "40"
 slug: stage-and-commit-maintenance-logs-state
 status: partial
 nyquist_compliant: false
-wave_0_complete: false
+wave_0_complete: true
 created: 2026-05-23
 ---
 
@@ -38,10 +38,10 @@ created: 2026-05-23
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 40-01-T1a | 01 | 1 | STAGE-05 | T-40-01 | stage-batch-5.cjs subset verification aborts on unauthorized files | structural | `node --test tests/stage-batch-5.test.cjs` | ❌ | ⬜ pending |
-| 40-01-T1b | 01 | 1 | STAGE-05 | — | .gitignore excludes .antigravity/, .antigravitycli/, .claudeignore | structural | `node --test tests/stage-batch-5.test.cjs` | ❌ | ⬜ pending |
+| 40-01-T1a | 01 | 1 | STAGE-05 | T-40-01 | stage-batch-5.cjs structural validation (self-ref, full log, no lib files, logs/ handling, commit msg) | structural | `node --test tests/stage-batch-5.test.cjs` | ✅ | ✅ green |
+| 40-01-T1b | 01 | 1 | STAGE-05 | — | .gitignore excludes .antigravity/, .antigravitycli/, .claudeignore under # Antigravity CLI comment | structural | `node --test tests/stage-batch-5.test.cjs` | ✅ | ✅ green |
 | 40-01-T2a | 01 | 1 | STAGE-05 | T-40-02 | fix(lib) commit contains only security.cjs and state.cjs | structural | manual — see manual-only section | — | ⬜ pending |
-| 40-01-T2b | 01 | 1 | STAGE-05 | — | state.cjs cross-milestone progress tracking | unit | `node --test tests/state.test.cjs` | ✅ (partial) | ⬜ pending |
+| 40-01-T2b | 01 | 1 | STAGE-05 | — | state.cjs cross-milestone progress preservation (#3242 Bug A) | unit | `node --test tests/state.test.cjs` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -72,6 +72,16 @@ Existing infrastructure covers most phase requirements. Missing tests are captur
 | Resolved (automated) | 0 |
 | Escalated to manual-only | 4 |
 
+## Validation Audit 2026-05-24
+
+| Metric | Count |
+|--------|-------|
+| Gaps found | 3 automatable (T1a, T1b, T2b) + 1 manual-only (T2a) |
+| Resolved (automated) | 3 |
+| Escalated to manual-only | 0 |
+| New test files | `tests/stage-batch-5.test.cjs` (16 tests, T1a + T1b) |
+| Extended test files | `tests/state.test.cjs` (+1 test, T2b cross-milestone #3242) |
+
 ---
 
 ## Validation Sign-Off
@@ -83,4 +93,4 @@ Existing infrastructure covers most phase requirements. Missing tests are captur
 - [ ] Feedback latency < 30s
 - [ ] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending — 4 gaps marked manual-only; generate `tests/stage-batch-5.test.cjs` to achieve full compliance
+**Approval:** partial — 3/4 gaps automated (T1a, T1b, T2b green); T2a remains manual-only (git history boundary, not unit-testable)
