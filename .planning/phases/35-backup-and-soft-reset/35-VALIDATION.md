@@ -2,8 +2,8 @@
 phase: 35
 slug: backup-and-soft-reset
 status: complete
-nyquist_compliant: false
-wave_0_complete: false
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-05-22
 ---
 
@@ -38,8 +38,9 @@ created: 2026-05-22
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 35-01-01 | 01 | 1 | GITOPS-01 | — | N/A — git branch creation | N/A | N/A | N/A | manual-only |
-| 35-01-02 | 01 | 1 | GITOPS-02 | — | N/A — git soft reset | N/A | N/A | N/A | manual-only |
+| 35-01-01 | 01 | 1 | GITOPS-01 (backup branches) | — | Both backup-thamw-main-* branches exist | smoke | `node --test tests/phase-35-nyquist.test.cjs` | ✅ | ✅ green |
+| 35-01-01 | 01 | 1 | GITOPS-01 (tag exists) | — | Tag v1.41.2 exists in repository | smoke | `node --test tests/phase-35-nyquist.test.cjs` | ✅ | ✅ green |
+| 35-01-02 | 01 | 1 | GITOPS-02 (ancestor check) | — | v1.41.2 is ancestor of HEAD | smoke | `node --test tests/phase-35-nyquist.test.cjs` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -55,10 +56,8 @@ Existing infrastructure covers all phase requirements. No test stubs needed — 
 
 | Behavior | Requirement | Why Manual | Test Instructions |
 |----------|-------------|------------|-------------------|
-| Backup branches created at pre-reset HEAD | GITOPS-01 | Automated tests can't recreate the exact git state before the reset; branches reference specific SHAs from May 2026 | `git branch --list 'backup-thamw-main-*'` — both `backup-thamw-main-before-squash` and `backup-thamw-main-with-planning` must exist |
-| Physical backup directory exists | GITOPS-01 | Filesystem snapshot of 1K+ files; verifying integrity requires manual inspection or checksum comparison | `ls -d ../get-shit-done-backup/` — directory must exist with full tree copy |
-| HEAD soft-reset to v1.41.2 | GITOPS-02 | `git reset --soft` is destructive; the exact pre-reset state is unrecoverable by an isolated test | `git merge-base --is-ancestor v1.41.2 HEAD` — must return 0; `git reflog` must show `reset: moving to v1.41.2` entry |
-| Working tree preserved after reset | GITOPS-02 | Working tree state is a snapshot in time; tests can't meaningfully assert what "modified" means after subsequent commits | `git status` immediately after reset showed all modifications unstaged (verified May 22, 2026 per SUMMARY.md) |
+| Physical backup directory exists | GITOPS-01 | Filesystem snapshot outside the repo; unreliable in CI and on other machines | `ls -d ../get-shit-done-backup/` — directory must exist with full tree copy |
+| Working tree preserved after reset | GITOPS-02 | Working tree state is a snapshot in time; can't be re-asserted after subsequent commits | `git status` immediately after reset showed all modifications unstaged (verified May 22, 2026 per SUMMARY.md) |
 
 ## Live Verification (May 22, 2026)
 
@@ -85,6 +84,18 @@ $ git merge-base --is-ancestor v1.41.2 HEAD
 - [x] Wave 0 covers all MISSING references
 - [x] No watch-mode flags
 - [x] Feedback latency: N/A
-- [x] `nyquist_compliant: false` — both requirements are manual-only
+- [x] `nyquist_compliant: true` — 3 gaps automated, 2 remain manual-only (physical backup, working tree snapshot)
 
 **Approval:** 2026-05-22 — all manual verifications pass against live git state
+
+---
+
+## Validation Audit 2026-05-24
+
+| Metric | Count |
+|--------|-------|
+| Gaps found | 3 |
+| Resolved | 3 |
+| Escalated | 0 |
+
+Automated tests added in `tests/phase-35-nyquist.test.cjs` (5 tests, all green). Three requirements promoted from manual-only to automated: GITOPS-01 backup branches, GITOPS-01 tag existence, GITOPS-02 ancestor check. Two requirements remain manual-only: physical backup directory (outside repo) and working tree snapshot (point-in-time state).
