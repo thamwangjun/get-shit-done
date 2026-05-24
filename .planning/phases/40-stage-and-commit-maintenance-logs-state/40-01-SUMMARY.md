@@ -3,6 +3,7 @@ plan: "40-01"
 phase: "40"
 status: complete
 self_check: PASSED
+requirements-completed: [STAGE-05]
 key-files:
   created:
     - scripts/stage-batch-5.cjs
