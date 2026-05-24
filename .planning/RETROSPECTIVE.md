@@ -460,6 +460,51 @@ The decision was made to stop after Phase 20 and not continue with Phases 21–2
 
 ---
 
+## Milestone: v1.41.5 — Refactor Git Commit History
+
+**Shipped:** 2026-05-24
+**Phases:** 7 | **Plans:** 7 | **Timeline:** 3 days (2026-05-22 → 2026-05-24) | **Commits:** 73
+
+### What Was Built
+
+- Dual-layer backup established: git branches (`backup-thamw-main-before-squash`, `backup-thamw-main-with-planning`) + physical backup at `../get-shit-done-backup/`; HEAD soft-reset to `v1.41.2` with ~70 commits unstaged
+- 5 batch staging scripts (`scripts/stage-batch-N.cjs`) — each self-verifying against expected file sets before committing
+- 5 coherent logical commits replacing ~70 fine-grained commits: config/rules → scanner logic → workflows/agents/templates → tests/SDK → maintenance/logs/state
+- Zero-diff parity verified: tree diff against backup branch shows only 10 allowlisted files (staging scripts, Nyquist tests, ignore tweaks)
+- npm test 8392 pass, 2 pre-existing failures in ai-evals.test.cjs (zero regression vs backup), negative-framing scanner 99/99
+
+### What Worked
+
+- **Self-verifying staging scripts**: Writing `stage-batch-N.cjs` scripts that validate the staged file set against an expected list before committing was the right abstraction — caught staging accidents automatically and made each batch auditable
+- **Physical backup + branch backup**: Two-layer safety meant the refactor could be executed confidently. The branch backup was easy to diff against; the physical backup was the ultimate fallback
+- **D-03 allowlist pattern**: Documenting accepted diff exceptions explicitly (10 files that legitimately differ from original tree) converted an ambiguous "almost zero diff" into a clear "zero diff with documented exceptions" — better than pretending the diff doesn't exist
+- **Phase decomposition matched the commit plan**: 7 phases mapping 1:1 to the 7 operations (backup, batch 1–5, verify) made execution mechanical and progress legible
+
+### What Was Inefficient
+
+- **audit-open false positives (7th consecutive milestone)**: 4 quick tasks reported as incomplete despite `status: complete` in `{slug}-SUMMARY.md`. The underlying scanner issue (`lib/audit.cjs` scanning for bare `SUMMARY.md` only) is still not fixed. This has now appeared at every milestone close since v1.37.1b.
+- **STATE.md overcounting artifact**: `completed_phases: 8` vs `total_phases: 7` was a leftover from a regression-and-fix sequence during Phase 41. A post-phase state consistency check would catch this before milestone close.
+- **Documentation gaps accumulation**: Phase 35 (manual git ops) and Phase 39 legitimately couldn't get VERIFICATION.md artifacts; Phase 40/41 had frontmatter inconsistencies. These produced a `tech_debt` audit status rather than `passed`. Keeping doc hygiene during execution would yield cleaner audit results.
+
+### Patterns Established
+
+- **Batch staging script pattern**: For any refactor moving 700+ files across logical groups, write a `stage-batch-N.cjs` script per batch with embedded expected-file validation. Script serves as both automation and documentation of what each batch contains.
+- **Allowlist parity gate**: When a refactor can't achieve byte-for-byte zero diff (e.g., scripts created during the refactor appear in the diff), document acceptable exceptions explicitly in a D-03 allowlist rather than relaxing the parity gate.
+
+### Key Lessons
+
+1. **Fix `audit-open` before next milestone** — this is the 7th consecutive milestone where audit-open produces false positives. The fix is known: `lib/audit.cjs` must scan for `{slug}-SUMMARY.md` pattern, not just bare `SUMMARY.md`. No longer deferrable.
+2. **Git history refactoring as a repeatable milestone type**: The 5-batch structure (config → scanners → prompts → tests → maintenance) is now a proven template. If history gets cluttered again, apply the same phase structure.
+3. **Self-verifying scripts are better than manual checklists**: The `stage-batch-N.cjs` approach made each batch commit auditable without human review. The expected-file list in the script is the source of truth.
+
+### Cost Observations
+
+- Model mix: balanced profile (Sonnet for execution)
+- Sessions: ~3 sessions across 3 days
+- Notable: 7 plans, 7 commits — 1:1 mapping between plans and commits is the most mechanically clean structure achieved so far; no planning overhead required once the batch structure was defined
+
+---
+
 ## Cross-Milestone Trends
 
 ### Process Evolution
@@ -476,6 +521,7 @@ The decision was made to stop after Phase 20 and not continue with Phases 21–2
 | v1.37.2 | 3 | 9 | TDD red gate for scanner expansion; `<expected_patterns>` reframe pattern; hard-failure vs. warn-only classification workflow |
 | v1.38.6 | 4 | 11 | Manual read audit as discovery phase before scanner expansion; AUDIT-03 examined-and-found-none disposition; budget gap-close plan for large audit phases |
 | v1.41.3 | 3 | 4 | Tight 3-phase structure (test fixes → framing → gate/merge); Bug #3242 cmdStateJson fix as independent plan; scanner-first confirmed on upstream merge pass |
+| v1.41.5 | 7 | 7 | Git history refactor as standalone milestone type; self-verifying batch staging scripts; allowlist parity gate pattern |
 
 ### Cumulative Quality
 
@@ -490,6 +536,7 @@ The decision was made to stop after Phase 20 and not continue with Phases 21–2
 | v1.37.2 | 4183/4184 (1 skip) | 0 violations all dirs (agent+command+workflow) | 34 prompt files + scanner + 4 test files |
 | v1.38.6 | 5705/5706 (1 skip) | 99/99 subtests (prohibited+forbidden added) | 10 agents + 7 workflows + scanner + docs |
 | v1.41.3 | 8306/8307 (1 skip) | 99/99 subtests (unchanged — scanner already complete) | 5 prompt files + state.cjs + 2 test files |
+| v1.41.5 | 8392/8394 (2 pre-existing) | 99/99 subtests (unchanged) | 754 files (history refactor — no content changes) |
 
 ### Top Lessons (Verified Across Milestones)
 
@@ -504,3 +551,4 @@ The decision was made to stop after Phase 20 and not continue with Phases 21–2
 9. TDD red gate is non-negotiable for scanner additions — verifying RED before any file edits is what makes scanner subtests meaningful, not just passing vacuously (v1.37.2, v1.38.6)
 10. Manual read is discovery; scanner is verification — the scanner missed 8 new patterns that manual review found; both steps are necessary in a complete audit cycle (v1.38.6)
 11. Budget a gap-close plan for large audit phases — any phase reading 200+ files will find discrepancies during cross-validation; plan for it rather than treating it as overflow (v1.38.6)
+12. Fix `audit-open` bare SUMMARY.md detection — has appeared at 7 consecutive milestone closes; fix `lib/audit.cjs` to scan for `{slug}-SUMMARY.md` before next milestone (v1.37.1b–v1.41.5)

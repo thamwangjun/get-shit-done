@@ -12,7 +12,7 @@
 - ✅ **v1.37.2 Positive Framing TDD Pass** — Phases 25–27 (shipped 2026-05-02)
 - ✅ **v1.38.6 Positive Framing Pass** — Phases 28–31 (shipped 2026-05-03)
 - ✅ **v1.41.3 Upstream v1.41.2 Fork Compliance** — Phases 32–34 (shipped 2026-05-19)
-- ⏳ **v1.41.5 Refactor Git Commit History** — Phases 35–41 (planning)
+- ✅ **v1.41.5 Refactor Git Commit History** — Phases 35–41 (shipped 2026-05-24)
 
 ## Phases
 
@@ -153,70 +153,18 @@ Full details: `.planning/milestones/v1.41.3-ROADMAP.md`
 
 </details>
 
-<details open>
-<summary>⏳ v1.41.5 Refactor Git Commit History (Phases 35–41) — Planning</summary>
+<details>
+<summary>✅ v1.41.5 Refactor Git Commit History (Phases 35–41) — SHIPPED 2026-05-24</summary>
 
-**Milestone Goal:** Consolidate fork commit history since tag `v1.41.2` by soft resetting and staging/committing the changes in 5 coherent, logical, dependency-ordered batches while ensuring 100% test compatibility and zero file content divergence (zero diff).
+- [x] Phase 35: Backup and Soft Reset (1/1 plans) — completed 2026-05-22
+- [x] Phase 36: Stage and Commit Configuration & Rules (1/1 plans) — completed 2026-05-22
+- [x] Phase 37: Stage and Commit Scanner Logic (1/1 plans) — completed 2026-05-22
+- [x] Phase 38: Stage and Commit Workflows, Agents, & Templates (1/1 plans) — completed 2026-05-22
+- [x] Phase 39: Stage and Commit Tests & SDK Validation (1/1 plans) — completed 2026-05-22
+- [x] Phase 40: Stage and Commit Maintenance, Logs, & State (1/1 plans) — completed 2026-05-23
+- [x] Phase 41: Final Verification & Parity Audit (1/1 plans) — completed 2026-05-23
 
-### Phase 35: Backup and Soft Reset
-- **Goal:** Establish dual-layer backup (git branch and physical directory) and soft reset HEAD to tag `v1.41.2` while keeping modifications unstaged.
-- **Requirements:** GITOPS-01, GITOPS-02
-- **Success Criteria:**
-  - Local backup branch created pointing to current HEAD.
-  - Full backup directory created outside the working directory (e.g. `../get-shit-done-backup/`).
-  - Git soft reset to `v1.41.2` runs successfully.
-  - Working tree contains all modified files unstaged, and HEAD is at tag `v1.41.2`.
-
-### Phase 36: Stage and Commit Configuration & Rules
-- **Goal:** Stage and commit rules and configuration files (Batch 1).
-- **Requirements:** STAGE-01
-- **Success Criteria:**
-  - Files `CATALOGUE.json`, `mise.toml`, `.planning/config.json`, and `.planning/references/*` are staged.
-  - Staged files verified with `git diff --cached --name-only` to ensure only configuration and rules are included.
-  - Batch 1 committed with conventional message: `chore(config): refactor rules and configuration files (Batch 1)`.
-
-### Phase 37: Stage and Commit Scanner Logic
-- **Goal:** Stage and commit scanner logic, audit scripts, and update checkers (Batch 2).
-- **Requirements:** STAGE-02
-- **Success Criteria:**
-  - Files `hooks/gsd-read-injection-scanner.js`, `scripts/audit-tags.js`, and `hooks/gsd-check-update.js` are staged.
-  - Verification with `git diff --cached --name-only` confirms only scanner and check hooks are staged.
-  - Batch 2 committed with conventional message: `feat(scanner): refactor scanner logic and audit scripts (Batch 2)`.
-
-### Phase 38: Stage and Commit Workflows, Agents, & Templates
-- **Goal:** Stage and commit workflows, agents, commands, non-test documentation, and templates (Batch 3).
-- **Requirements:** STAGE-03
-- **Success Criteria:**
-  - Target files in `agents/`, `commands/gsd/`, `get-shit-done/workflows/`, root markdown files, and templates are staged.
-  - Staged file list verified to prevent inclusion of test or state files.
-  - Batch 3 committed with conventional message: `refactor(prompts): refactor workflows, agents, and templates (Batch 3)`.
-
-### Phase 39: Stage and Commit Tests & SDK Validation
-- **Goal:** Stage and commit core unit/integration tests and SDK CLI files (Batch 4).
-- **Requirements:** STAGE-04
-- **Success Criteria:**
-  - Files under `tests/*.test.cjs`, `scripts/run-tests.cjs`, and `sdk/src/cli.ts` are staged.
-  - Verification confirms only test and SDK files are staged.
-  - Batch 4 committed with conventional message: `test: refactor core tests and SDK validation (Batch 4)`.
-
-### Phase 40: Stage and Commit Maintenance, Logs, & State
-- **Goal:** Stage and commit quick tasks, maintenance scripts, run logs, and metadata state files (Batch 5).
-- **Requirements:** STAGE-05
-- **Success Criteria:**
-  - Directory `.planning/quick/`, logs, and state files (`.planning/PROJECT.md`, `.planning/STATE.md`, `.planning/ROADMAP.md`, `.planning/PROJECT_HISTORY.md`, `.planning/MILESTONES.md`, `.planning/RETROSPECTIVE.md`) are staged.
-  - Working directory is verified to be completely clean (verified by `git status` output).
-  - Batch 5 committed with conventional message: `chore(maintenance): refactor quick tasks, logs, and state files (Batch 5)`.
-
-### Phase 41: Final Verification & Parity Audit
-- **Goal:** Validate the refactored commit history against the backup branch for zero-diff parity and run the full test runner suite.
-- **Requirements:** VALID-01, VALID-02
-- **Success Criteria:**
-  - Tree diff between consolidated HEAD and the backup branch produces no output, proving 100% byte-for-byte content parity.
-  - Command `npm test` runs successfully, with all 8300+ assertions passing cleanly with zero regressions.
-  - Scanner checks and tag audits run cleanly with 0 violations and 0 warnings.
-
-Plans:
-- [x] 41-01-PLAN.md — Run parity diff, npm test, fix Phase 39 ROADMAP row, mark phase complete
+Full details: `.planning/milestones/v1.41.5-ROADMAP.md`
 
 </details>
 
@@ -261,11 +209,12 @@ Plans:
 | 33. Positive Framing Pass | v1.41.3 | 2/2 | Complete    | 2026-05-14 |
 | 34. Gate and Merge | v1.41.3 | 1/1 | Complete    | 2026-05-14 |
 | 35. Backup and Soft Reset | v1.41.5 | 1/1 | Complete | 2026-05-22 |
-| 36. Stage and Commit Configuration & Rules | v1.41.5 | 1/1 | Complete    | 2026-05-22 |
-| 37. Stage and Commit Scanner Logic | v1.41.5 | 1/1 | Complete    | 2026-05-22 |
-| 38. Stage and Commit Workflows, Agents, & Templates | v1.41.5 | 1/1 | Complete    | 2026-05-22 |
+| 36. Stage and Commit Configuration & Rules | v1.41.5 | 1/1 | Complete | 2026-05-22 |
+| 37. Stage and Commit Scanner Logic | v1.41.5 | 1/1 | Complete | 2026-05-22 |
+| 38. Stage and Commit Workflows, Agents, & Templates | v1.41.5 | 1/1 | Complete | 2026-05-22 |
 | 39. Stage and Commit Tests & SDK Validation | v1.41.5 | 1/1 | Complete | 2026-05-22 |
-| 40. Stage and Commit Maintenance, Logs, & State | v1.41.5 | 1/1 | Complete    | 2026-05-23 |
-| 41. Final Verification & Parity Audit | v1.41.5 | 1/1 | Complete    | 2026-05-23 |
+| 40. Stage and Commit Maintenance, Logs, & State | v1.41.5 | 1/1 | Complete | 2026-05-23 |
+| 41. Final Verification & Parity Audit | v1.41.5 | 1/1 | Complete | 2026-05-23 |
 
 *v1.41.3 shipped 2026-05-19 — see `.planning/milestones/v1.41.3-ROADMAP.md`*
+*v1.41.5 shipped 2026-05-24 — see `.planning/milestones/v1.41.5-ROADMAP.md`*

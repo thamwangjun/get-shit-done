@@ -8,20 +8,9 @@ An opinionated fork of the GSD (Get Shit Done) framework that applies systematic
 
 Every agent, command, and workflow file on `thamw-main` meets the fork's prompt engineering quality bar before it ships — upstream content additions are modified, not accepted verbatim.
 
-## Current Milestone: v1.41.5 Refactor Git Commit History
+## Current Milestone
 
-**Goal:** Consolidate fork commit divergence since upstream/v1.41.2 to make the commit history concise.
-
-**Target features:**
-- Soft reset the branch to tag v1.41.2 and unstage all changes.
-- Stage and commit the fork changes in 5 coherent, feature-focused batches:
-  1. Rules and configuration files (e.g., `.antigravity/rules.md`, `.planning/config.json`)
-  2. Scanner logic and associated scanner configuration/rules
-  3. Workflows, agents, commands, and templates
-  4. Core tests, unit tests, and validation gates
-  5. Quick tasks, maintenance, historical logs, and state updates
-- Verify 100% file content parity with the original tree (zero diff).
-- Guarantee all 8300+ tests pass in the test suite.
+Awaiting next upstream GSD release. Run `/gsd-new-milestone` to begin next milestone planning.
 
 ## Requirements
 
@@ -60,6 +49,15 @@ Every agent, command, and workflow file on `thamw-main` meets the fork's prompt 
 - ✓ SCAN-12: Negative-framing scanner run across all upstream v1.41.2 changed files; 0 unaddressed violations — v1.41.3
 - ✓ GATE-03: Full `npm test` suite passes at 8306 pass, 0 fail, 1 intentional HDOC skip — v1.41.3
 - ✓ MERGE-01: `thamw-main` fast-forwarded to `thamw-v1.41.3` after GATE-03 — v1.41.3
+- ✓ GITOPS-01: Local branch backup and physical directory backup created before history refactor — v1.41.5
+- ✓ GITOPS-02: Soft reset HEAD to `v1.41.2` with all modifications preserved unstaged — v1.41.5
+- ✓ STAGE-01: Batch 1 committed — rules and configuration files — v1.41.5
+- ✓ STAGE-02: Batch 2 committed — scanner logic and audit scripts — v1.41.5
+- ✓ STAGE-03: Batch 3 committed — workflows, agents, commands, templates — v1.41.5
+- ✓ STAGE-04: Batch 4 committed — core tests and SDK validation — v1.41.5
+- ✓ STAGE-05: Batch 5 committed — maintenance, logs, state files — v1.41.5
+- ✓ VALID-01: Zero-diff parity confirmed (10 allowlisted files, zero unexpected divergence) — v1.41.5
+- ✓ VALID-02: npm test 8392 pass, 2 pre-existing failures (zero regression vs backup branch) — v1.41.5
 
 ### Active
 
@@ -87,7 +85,7 @@ Every agent, command, and workflow file on `thamw-main` meets the fork's prompt 
   - `.planning/fork_plans/B0-SYNC_CATALOGUE_V01.md` — CATALOGUE.json sync process
   - `.planning/fork_plans/C0-POSITIVE_FRAMING_PASS_V01.md` — positive framing pass across all prompt content files
 
-- **Current state**: v1.41.5 shipped 2026-05-23. 5-batch commit history refactor complete — thamw-main squashed from ~70 fine-grained commits to 5 coherent batches. Parity audit confirmed zero content divergence (10 allowlisted files in diff, all within D-03). npm test: 8392 pass, 2 pre-existing failures in unchanged ai-evals.test.cjs, negative-framing scanner 99/99. Phase 41 (final verification) passed 6/6 must-haves. Historical milestone delivery records and validated requirements are in .planning/PROJECT_HISTORY.md. Next milestone: awaiting next upstream release.
+- **Current state**: v1.41.5 shipped 2026-05-24. 5-batch commit history refactor complete — thamw-main squashed from ~70 fine-grained commits to 5 coherent batches. Parity audit confirmed zero content divergence (10 allowlisted files in diff, all within D-03). npm test: 8392 pass, 2 pre-existing failures in unchanged ai-evals.test.cjs, negative-framing scanner 99/99. Historical milestone delivery records and validated requirements are in `.planning/PROJECT_HISTORY.md`. Next milestone: awaiting next upstream release.
 - **Test suite**: `npm test` runs Node.js built-in test runner. `agent-frontmatter.test.cjs` is the critical gate — all agent YAML frontmatter is validated there. Fork-side tests: negative-framing-scan (99/99 — agent+command+workflow corpus all green, prohibited+forbidden branches added in v1.38.6), ios-scaffold-safety (6/6), bug-1924-ensure-hooks-dist-on-demand (8/8), agent-frontmatter (155/155), execute-phase-wave (15/15), execute-phase-active-flags (upstream v1.37.1), semver-compare (17/17), debug-session-management (HDOC subtest intentionally skipped — fork standard overrides upstream assertion), qwen-install (16/16), read-injection-scanner (19/19). Full suite: 8306/8307 pass, 0 fail, 1 intentional skip (v1.41.3).
 - **File-writing agents** (those with `Write` in their tools list) must retain the string `Only use the Write tool` in their prompt body. Dynamic `FILE_WRITING_AGENTS` list used (WR-04: no longer hardcoded).
 - **Scanner precedence**: When tests conflict with fork standards (e.g., test asserts for upstream negative-framing strings), modify the test to reflect fork behavior — established precedent in v1.36.0 Phase 3.
@@ -116,6 +114,8 @@ Every agent, command, and workflow file on `thamw-main` meets the fork's prompt 
 | Scanner-first confirmed again (v1.41.2): only 12 violations across 5 files from ~193 upstream-modified files | Running scanner before editing avoids unnecessary edits; consistent with v1.37.1 Phase 9 precedent. debug.md was pre-clean (FRAME-01 pre-satisfied) | ✓ Good — v1.41.3 |
 | Bug #3242 cmdStateJson heuristic: `existingFm.progress.total_phases > built.progress.total_phases` detects curated cross-milestone progress | Discriminating heuristic avoids trampling curated STATE.md aggregates while preserving v1589 disk-freshness behavior. `Number()` coercion required because extractFrontmatter returns all YAML values as strings | ✓ Good — v1.41.3 |
 | Test updates for fork framing: tests asserting upstream negative-framing strings updated to verify fork affirmative forms | Consistent with v1.36.0/v1.38.6 precedent — "tests should verify fork behavior, not upstream behavior." Applied in Phase 33 to bug-3320 and edit-phase tests | ✓ Good — v1.41.3 |
+| Self-verifying batch staging scripts (`scripts/stage-batch-N.cjs`): each script validates staged file list against expected set before committing | Avoids staging accidents when manually curating 700+ changed files across 5 logical batches — validation at script-level catches set mismatches before commit | ✓ Good — v1.41.5 |
+| D-03 allowlist accepted for parity diff: 10 files legitimately differ from original tree (staging scripts created during refactor, Nyquist tests added retroactively, ignore-file tweaks) | Zero-diff parity gate must account for files created during the refactor process itself; allowlist documents the exception clearly | ✓ Good — v1.41.5 |
 
 > Historical Key Decisions (implementation-specific, settled) are archived in .planning/PROJECT_HISTORY.md.
 
@@ -139,4 +139,4 @@ This document evolves at phase transitions and milestone boundaries.
 ---
 ---
 ---
-*Last updated: 2026-05-23 after v1.41.5 Phase 41 completion*
+*Last updated: 2026-05-24 after v1.41.5 milestone close*

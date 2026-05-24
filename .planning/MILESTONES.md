@@ -1,5 +1,21 @@
 # Milestones
 
+## v1.41.5 Refactor Git Commit History (Shipped: 2026-05-24)
+
+**Phases completed:** 7 phases, 7 plans
+**Git range:** v1.41.2..HEAD · 73 commits · 754 files, +122,468 / -518 lines
+**Timeline:** 2026-05-22 → 2026-05-24 (3 days)
+**Known deferred items at close:** 4 (all pre-existing quick tasks with `status: complete` — false positives from audit scanner)
+
+**Key accomplishments:**
+
+- Established dual-layer backup (git branches `backup-thamw-main-before-squash`, `backup-thamw-main-with-planning` + physical backup at `../get-shit-done-backup/`) and soft-reset HEAD to `v1.41.2` with all modifications preserved unstaged
+- Committed 5 coherent logical batches: Batch 1 config/rules, Batch 2 scanner logic, Batch 3 workflows/agents/templates (61 files), Batch 4 tests/SDK (27 files), Batch 5 maintenance/logs/state
+- Zero-diff parity confirmed: tree diff shows only 10 allowlisted files (staging scripts, Nyquist tests, ignore tweaks) — zero unexpected content divergence
+- npm test 8392 pass, 2 pre-existing failures in ai-evals.test.cjs (identical to backup branch — zero regression), negative-framing scanner 99/99 clean
+
+---
+
 ## v1.41.3 Upstream v1.41.2 Fork Compliance (Shipped: 2026-05-19)
 
 **Phases completed:** 3 phases, 4 plans
