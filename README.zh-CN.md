@@ -1,3 +1,5 @@
+> ⚠️ This is an active fork. See the [English README](README.md) for the full notice about the original repo.
+
 <div align="center">
 
 # GET SHIT DONE - Wang Jun's Opinionated Edition
@@ -16,19 +18,17 @@
 
 **它解决的是 context rot：随着 Claude 的上下文窗口被填满，输出质量逐步劣化的问题。**
 
-[![npm version](https://img.shields.io/npm/v/get-shit-done-cc?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/get-shit-done-cc)
-[![npm downloads](https://img.shields.io/npm/dm/get-shit-done-cc?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/get-shit-done-cc)
-[![Tests](https://img.shields.io/github/actions/workflow/status/gsd-build/get-shit-done/test.yml?branch=main&style=for-the-badge&logo=github&label=Tests)](https://github.com/gsd-build/get-shit-done/actions/workflows/test.yml)
+[![npm version](https://img.shields.io/npm/v/%40opengsd%2Fget-shit-done-redux?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/@opengsd/get-shit-done-redux)
+[![npm downloads](https://img.shields.io/npm/dm/%40opengsd%2Fget-shit-done-redux?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/@opengsd/get-shit-done-redux)
+[![Tests](https://img.shields.io/github/actions/workflow/status/open-gsd/get-shit-done-redux/test.yml?branch=main&style=for-the-badge&logo=github&label=Tests)](https://github.com/open-gsd/get-shit-done-redux/actions/workflows/test.yml)
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/mYgfVNfA2r)
-[![X (Twitter)](https://img.shields.io/badge/X-@gsd__foundation-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/gsd_foundation)
-[![$GSD Token](https://img.shields.io/badge/$GSD-Dexscreener-1C1C1C?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMCIgZmlsbD0iIzAwRkYwMCIvPjwvc3ZnPg==&logoColor=00FF00)](https://dexscreener.com/solana/dwudwjvan7bzkw9zwlbyv6kspdlvhwzrqy6ebk8xzxkv)
-[![GitHub stars](https://img.shields.io/github/stars/gsd-build/get-shit-done?style=for-the-badge&logo=github&color=181717)](https://github.com/gsd-build/get-shit-done)
+[![GitHub stars](https://img.shields.io/github/stars/open-gsd/get-shit-done-redux?style=for-the-badge&logo=github&color=181717)](https://github.com/open-gsd/get-shit-done-redux)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](LICENSE)
 
 <br>
 
 ```bash
-npx get-shit-done-cc@latest
+npx @opengsd/get-shit-done-redux@latest
 ```
 
 **支持 Mac、Windows 和 Linux。**
@@ -83,14 +83,14 @@ GSD 解决的就是这个问题。它是让 Claude Code 变得可靠的上下文
 
 ### v1.39.0 亮点
 
-完整列表请参阅 [v1.39.0 发行说明](https://github.com/gsd-build/get-shit-done/releases/tag/v1.39.0)。
+完整列表请参阅 [v1.39.0 发行说明](https://github.com/open-gsd/get-shit-done-redux/releases/tag/v1.39.0)。
 
 - **`--minimal` 安装档** — 别名 `--core-only`。仅安装主循环的 6 个核心技能（`new-project`、`discuss-phase`、`plan-phase`、`execute-phase`、`help`、`update`），不安装任何 `gsd-*` 子代理。将冷启动系统提示开销从 ~12k token 降至 ~700 token（≥94% 减少）。适合 32K–128K 上下文的本地 LLM 和按 token 计费的 API。
 - **`/gsd-phase --edit`** — 就地修改 `ROADMAP.md` 中已有阶段的任意字段，不改变其编号或位置。`--force` 跳过确认 diff，验证 `depends_on` 引用，并在写入时更新 `STATE.md`。
 - **合并后构建与测试门** — `execute-phase` 步骤 5.6 优先自动检测 `workflow.build_command` 配置，否则按 Xcode（`.xcodeproj`）、Makefile、Justfile、Cargo、Go、Python、npm 顺序回退。Xcode/iOS 项目自动运行 `xcodebuild build` 和 `xcodebuild test`。在并行与串行模式下均生效。
 - **每运行时评审模型选择** — `review.models.<cli>` 让每个外部评审 CLI（codex、gemini 等）独立于规划/执行档选择自己的模型。
 - **工作流设置继承** — 设置 `GSD_WORKSTREAM` 后，先加载根 `.planning/config.json`，再与该工作流的配置进行深合并（冲突时工作流优先）。工作流配置中显式 `null` 会覆盖根值。
-- **手动 canary 发布工作流** — `.github/workflows/canary.yml` 通过 `workflow_dispatch` 从 `dev` 分支按需将 `{base}-canary.{N}` 构建（`get-shit-done-cc` 与 `@gsd-build/sdk`）发布到 `@canary` dist-tag。
+- **手动 canary 发布工作流** — `.github/workflows/canary.yml` 通过 `workflow_dispatch` 从 `dev` 分支按需将 `{base}-canary.{N}` 构建（`@opengsd/get-shit-done-redux` 与 `@opengsd/gsd-sdk`）发布到 `@canary` dist-tag。
 - **技能整合：86 → 59** — 4 个新分组技能（`capture`、`phase`、`config`、`workspace`）吸收了 31 个微技能。6 个已有父技能将收尾与子操作合并为标志：`update --sync/--reapply`、`sketch --wrap-up`、`spike --wrap-up`、`map-codebase --fast/--query`、`code-review --fix`、`progress --do/--next`。功能无损失。
 
 ---
@@ -98,7 +98,7 @@ GSD 解决的就是这个问题。它是让 Claude Code 变得可靠的上下文
 ## 快速开始
 
 ```bash
-npx get-shit-done-cc@latest
+npx @opengsd/get-shit-done-redux@latest
 ```
 
 安装器会提示你选择：
@@ -122,7 +122,7 @@ npx get-shit-done-cc@latest
 GSD 迭代很快，建议定期更新：
 
 ```bash
-npx get-shit-done-cc@latest
+npx @opengsd/get-shit-done-redux@latest
 ```
 
 <details>
@@ -130,53 +130,53 @@ npx get-shit-done-cc@latest
 
 ```bash
 # Claude Code
-npx get-shit-done-cc --claude --global   # 安装到 ~/.claude/
-npx get-shit-done-cc --claude --local    # 安装到 ./.claude/
+npx @opengsd/get-shit-done-redux --claude --global   # 安装到 ~/.claude/
+npx @opengsd/get-shit-done-redux --claude --local    # 安装到 ./.claude/
 
 # OpenCode
-npx get-shit-done-cc --opencode --global # 安装到 ~/.config/opencode/
+npx @opengsd/get-shit-done-redux --opencode --global # 安装到 ~/.config/opencode/
 
 # Gemini CLI
-npx get-shit-done-cc --gemini --global   # 安装到 ~/.gemini/
+npx @opengsd/get-shit-done-redux --gemini --global   # 安装到 ~/.gemini/
 
 # Kilo
-npx get-shit-done-cc --kilo --global     # 安装到 ~/.config/kilo/
-npx get-shit-done-cc --kilo --local      # 安装到 ./.kilo/
+npx @opengsd/get-shit-done-redux --kilo --global     # 安装到 ~/.config/kilo/
+npx @opengsd/get-shit-done-redux --kilo --local      # 安装到 ./.kilo/
 
 # Codex
-npx get-shit-done-cc --codex --global    # 安装到 ~/.codex/
-npx get-shit-done-cc --codex --local     # 安装到 ./.codex/
+npx @opengsd/get-shit-done-redux --codex --global    # 安装到 ~/.codex/
+npx @opengsd/get-shit-done-redux --codex --local     # 安装到 ./.codex/
 
 # Copilot
-npx get-shit-done-cc --copilot --global  # 安装到 ~/.github/
-npx get-shit-done-cc --copilot --local   # 安装到 ./.github/
+npx @opengsd/get-shit-done-redux --copilot --global  # 安装到 ~/.github/
+npx @opengsd/get-shit-done-redux --copilot --local   # 安装到 ./.github/
 
 # Cursor CLI
-npx get-shit-done-cc --cursor --global   # 安装到 ~/.cursor/
-npx get-shit-done-cc --cursor --local    # 安装到 ./.cursor/
+npx @opengsd/get-shit-done-redux --cursor --global   # 安装到 ~/.cursor/
+npx @opengsd/get-shit-done-redux --cursor --local    # 安装到 ./.cursor/
 
 # Antigravity
-npx get-shit-done-cc --antigravity --global # 安装到 ~/.gemini/antigravity/
-npx get-shit-done-cc --antigravity --local  # 安装到 ./.agent/
+npx @opengsd/get-shit-done-redux --antigravity --global # 安装到 ~/.gemini/antigravity/
+npx @opengsd/get-shit-done-redux --antigravity --local  # 安装到 ./.agent/
 
 # Augment
-npx get-shit-done-cc --augment --global     # 安装到 ~/.augment/
-npx get-shit-done-cc --augment --local      # 安装到 ./.augment/
+npx @opengsd/get-shit-done-redux --augment --global     # 安装到 ~/.augment/
+npx @opengsd/get-shit-done-redux --augment --local      # 安装到 ./.augment/
 
 # Trae
-npx get-shit-done-cc --trae --global     # 安装到 ~/.trae/
-npx get-shit-done-cc --trae --local      # 安装到 ./.trae/
+npx @opengsd/get-shit-done-redux --trae --global     # 安装到 ~/.trae/
+npx @opengsd/get-shit-done-redux --trae --local      # 安装到 ./.trae/
 
 # CodeBuddy
-npx get-shit-done-cc --codebuddy --global # 安装到 ~/.codebuddy/
-npx get-shit-done-cc --codebuddy --local  # 安装到 ./.codebuddy/
+npx @opengsd/get-shit-done-redux --codebuddy --global # 安装到 ~/.codebuddy/
+npx @opengsd/get-shit-done-redux --codebuddy --local  # 安装到 ./.codebuddy/
 
 # Cline
-npx get-shit-done-cc --cline --global       # 安装到 ~/.cline/
-npx get-shit-done-cc --cline --local        # 安装到 ./.clinerules
+npx @opengsd/get-shit-done-redux --cline --global       # 安装到 ~/.cline/
+npx @opengsd/get-shit-done-redux --cline --local        # 安装到 ./.clinerules
 
 # 所有运行时
-npx get-shit-done-cc --all --global      # 安装到所有目录
+npx @opengsd/get-shit-done-redux --all --global      # 安装到所有目录
 ```
 
 使用 `--global`（`-g`）或 `--local`（`-l`）可以跳过安装位置提示。
@@ -190,7 +190,7 @@ npx get-shit-done-cc --all --global      # 安装到所有目录
 克隆仓库并在本地运行安装器：
 
 ```bash
-git clone https://github.com/gsd-build/get-shit-done.git
+git clone https://github.com/open-gsd/get-shit-done-redux.git
 cd get-shit-done
 node bin/install.js --claude --local
 ```
@@ -761,18 +761,18 @@ GSD 的代码库映射和分析命令会读取文件来理解你的项目。**�
 
 **命令行为不符合预期？**
 - 运行 `/gsd-help` 确认安装成功
-- 重新执行 `npx get-shit-done-cc` 进行重装
+- 重新执行 `npx @opengsd/get-shit-done-redux` 进行重装
 
 **想更新到最新版本？**
 ```bash
-npx get-shit-done-cc@latest
+npx @opengsd/get-shit-done-redux@latest
 ```
 
 **在 Docker 或容器环境中使用？**
 
 如果使用波浪线路径（`~/.claude/...`）时读取失败，请在安装前设置 `CLAUDE_CONFIG_DIR`：
 ```bash
-CLAUDE_CONFIG_DIR=/home/youruser/.claude npx get-shit-done-cc --global
+CLAUDE_CONFIG_DIR=/home/youruser/.claude npx @opengsd/get-shit-done-redux --global
 ```
 这样可以确保使用绝对路径，而不是在容器里可能无法正确展开的 `~`。
 
@@ -782,30 +782,30 @@ CLAUDE_CONFIG_DIR=/home/youruser/.claude npx get-shit-done-cc --global
 
 ```bash
 # 全局安装
-npx get-shit-done-cc --claude --global --uninstall
-npx get-shit-done-cc --opencode --global --uninstall
-npx get-shit-done-cc --gemini --global --uninstall
-npx get-shit-done-cc --kilo --global --uninstall
-npx get-shit-done-cc --codex --global --uninstall
-npx get-shit-done-cc --copilot --global --uninstall
-npx get-shit-done-cc --cursor --global --uninstall
-npx get-shit-done-cc --antigravity --global --uninstall
-npx get-shit-done-cc --augment --global --uninstall
-npx get-shit-done-cc --trae --global --uninstall
-npx get-shit-done-cc --cline --global --uninstall
+npx @opengsd/get-shit-done-redux --claude --global --uninstall
+npx @opengsd/get-shit-done-redux --opencode --global --uninstall
+npx @opengsd/get-shit-done-redux --gemini --global --uninstall
+npx @opengsd/get-shit-done-redux --kilo --global --uninstall
+npx @opengsd/get-shit-done-redux --codex --global --uninstall
+npx @opengsd/get-shit-done-redux --copilot --global --uninstall
+npx @opengsd/get-shit-done-redux --cursor --global --uninstall
+npx @opengsd/get-shit-done-redux --antigravity --global --uninstall
+npx @opengsd/get-shit-done-redux --augment --global --uninstall
+npx @opengsd/get-shit-done-redux --trae --global --uninstall
+npx @opengsd/get-shit-done-redux --cline --global --uninstall
 
 # 本地安装（当前项目）
-npx get-shit-done-cc --claude --local --uninstall
-npx get-shit-done-cc --opencode --local --uninstall
-npx get-shit-done-cc --gemini --local --uninstall
-npx get-shit-done-cc --kilo --local --uninstall
-npx get-shit-done-cc --codex --local --uninstall
-npx get-shit-done-cc --copilot --local --uninstall
-npx get-shit-done-cc --cursor --local --uninstall
-npx get-shit-done-cc --antigravity --local --uninstall
-npx get-shit-done-cc --augment --local --uninstall
-npx get-shit-done-cc --trae --local --uninstall
-npx get-shit-done-cc --cline --local --uninstall
+npx @opengsd/get-shit-done-redux --claude --local --uninstall
+npx @opengsd/get-shit-done-redux --opencode --local --uninstall
+npx @opengsd/get-shit-done-redux --gemini --local --uninstall
+npx @opengsd/get-shit-done-redux --kilo --local --uninstall
+npx @opengsd/get-shit-done-redux --codex --local --uninstall
+npx @opengsd/get-shit-done-redux --copilot --local --uninstall
+npx @opengsd/get-shit-done-redux --cursor --local --uninstall
+npx @opengsd/get-shit-done-redux --antigravity --local --uninstall
+npx @opengsd/get-shit-done-redux --augment --local --uninstall
+npx @opengsd/get-shit-done-redux --trae --local --uninstall
+npx @opengsd/get-shit-done-redux --cline --local --uninstall
 ```
 
 这会移除所有 GSD 命令、代理、hooks 和设置，但会保留你其他配置。
@@ -814,7 +814,7 @@ npx get-shit-done-cc --cline --local --uninstall
 
 ## 社区移植版本
 
-OpenCode、Gemini CLI、Kilo 和 Codex 现在都已经通过 `npx get-shit-done-cc` 获得原生支持。
+OpenCode、Gemini CLI、Kilo 和 Codex 现在都已经通过 `npx @opengsd/get-shit-done-redux` 获得原生支持。
 
 这些社区移植版本曾率先探索多运行时支持：
 
@@ -827,11 +827,11 @@ OpenCode、Gemini CLI、Kilo 和 Codex 现在都已经通过 `npx get-shit-done-
 
 ## Star History
 
-<a href="https://star-history.com/#gsd-build/get-shit-done&Date">
+<a href="https://star-history.com/#open-gsd/get-shit-done-redux&Date">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=gsd-build/get-shit-done&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=gsd-build/get-shit-done&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=gsd-build/get-shit-done&type=Date" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=open-gsd/get-shit-done-redux&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=open-gsd/get-shit-done-redux&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=open-gsd/get-shit-done-redux&type=Date" />
  </picture>
 </a>
 

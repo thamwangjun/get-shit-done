@@ -104,7 +104,7 @@ describe('#3242 Bug A: body-only state.update preserves curated progress frontma
     cleanup(tmpDir);
   });
 
-  test('state.update "Last Activity" does not overwrite progress.completed_plans', () => {
+  test('state.update "Last Activity" does not overwrite progress.completed_plans', (t) => {
     const statePath = path.join(tmpDir, '.planning', 'STATE.md');
     fs.writeFileSync(statePath, buildStateWithCuratedProgress({
       completedPlans: 22,
@@ -181,6 +181,28 @@ describe('#3242 Bug A: body-only state.update preserves curated progress frontma
       'state.update should have written the new date to the Last Activity body field',
     );
   });
+
+  test('state.update "Progress" resyncs progress frontmatter from the updated body', () => {
+    const statePath = path.join(tmpDir, '.planning', 'STATE.md');
+    fs.writeFileSync(statePath, buildStateWithCuratedProgress({
+      completedPlans: 22,
+      totalPlans: 22,
+      completedPhases: 6,
+      totalPhases: 12,
+      percent: 50,
+    }).replace('Last Activity: 2026-01-01\n', 'Last Activity: 2026-01-01\nProgress: [█████░░░░░] 50%\n'));
+
+    const updateResult = runGsdTools(
+      ['state', 'update', 'Progress', '[████████░░] 80%'],
+      tmpDir,
+    );
+    assert.ok(updateResult.success, `state update failed: ${updateResult.error}`);
+
+    const jsonResult = runGsdTools('state json', tmpDir);
+    assert.ok(jsonResult.success, `state json failed: ${jsonResult.error}`);
+    const fm = JSON.parse(jsonResult.output);
+    assert.strictEqual(fm.progress.percent, 80);
+  });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -198,7 +220,7 @@ describe('#3242 Bug B: progress.percent reflects phase fraction when ROADMAP dec
     cleanup(tmpDir);
   });
 
-  test('12 declared phases / 6 realized / 6/6 plans done → percent is 50, not 100', () => {
+  test('12 declared phases / 6 realized / 6/6 plans done → percent is 50, not 100', (t) => {
     const statePath = path.join(tmpDir, '.planning', 'STATE.md');
 
     // Body: 6 realized phases visible to disk scan.
@@ -251,7 +273,7 @@ describe('#3242 Bug B: progress.percent reflects phase fraction when ROADMAP dec
     );
   });
 
-  test('all phases realized: percent equals plan fraction (no artificial cap)', () => {
+  test('all phases realized: percent equals plan fraction (no artificial cap)', (t) => {
     const statePath = path.join(tmpDir, '.planning', 'STATE.md');
 
     fs.writeFileSync(statePath, [

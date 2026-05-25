@@ -1,3 +1,5 @@
+> ⚠️ This is an active fork. See the [English README](README.md) for the full notice about the original repo.
+
 <div align="center">
 
 # GET SHIT DONE - Wang Jun's Opinionated Edition
@@ -16,19 +18,17 @@
 
 **コンテキストロット（Claudeがコンテキストウィンドウを消費するにつれ品質が劣化する現象）を解決します。**
 
-[![npm version](https://img.shields.io/npm/v/get-shit-done-cc?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/get-shit-done-cc)
-[![npm downloads](https://img.shields.io/npm/dm/get-shit-done-cc?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/get-shit-done-cc)
-[![Tests](https://img.shields.io/github/actions/workflow/status/gsd-build/get-shit-done/test.yml?branch=main&style=for-the-badge&logo=github&label=Tests)](https://github.com/gsd-build/get-shit-done/actions/workflows/test.yml)
+[![npm version](https://img.shields.io/npm/v/%40opengsd%2Fget-shit-done-redux?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/@opengsd/get-shit-done-redux)
+[![npm downloads](https://img.shields.io/npm/dm/%40opengsd%2Fget-shit-done-redux?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/@opengsd/get-shit-done-redux)
+[![Tests](https://img.shields.io/github/actions/workflow/status/open-gsd/get-shit-done-redux/test.yml?branch=main&style=for-the-badge&logo=github&label=Tests)](https://github.com/open-gsd/get-shit-done-redux/actions/workflows/test.yml)
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/mYgfVNfA2r)
-[![X (Twitter)](https://img.shields.io/badge/X-@gsd__foundation-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/gsd_foundation)
-[![$GSD Token](https://img.shields.io/badge/$GSD-Dexscreener-1C1C1C?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMCIgZmlsbD0iIzAwRkYwMCIvPjwvc3ZnPg==&logoColor=00FF00)](https://dexscreener.com/solana/dwudwjvan7bzkw9zwlbyv6kspdlvhwzrqy6ebk8xzxkv)
-[![GitHub stars](https://img.shields.io/github/stars/gsd-build/get-shit-done?style=for-the-badge&logo=github&color=181717)](https://github.com/gsd-build/get-shit-done)
+[![GitHub stars](https://img.shields.io/github/stars/open-gsd/get-shit-done-redux?style=for-the-badge&logo=github&color=181717)](https://github.com/open-gsd/get-shit-done-redux)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](LICENSE)
 
 <br>
 
 ```bash
-npx get-shit-done-cc@latest
+npx @opengsd/get-shit-done-redux@latest
 ```
 
 **Mac、Windows、Linuxで動作します。**
@@ -85,14 +85,14 @@ GSDはそれを解決します。Claude Codeを信頼性の高いものにする
 
 ### v1.39.0 ハイライト
 
-完全なリストは [v1.39.0 リリースノート](https://github.com/gsd-build/get-shit-done/releases/tag/v1.39.0) を参照してください。
+完全なリストは [v1.39.0 リリースノート](https://github.com/open-gsd/get-shit-done-redux/releases/tag/v1.39.0) を参照してください。
 
 - **`--minimal` インストールプロファイル** — エイリアス `--core-only`。メインループの6スキル（`new-project`、`discuss-phase`、`plan-phase`、`execute-phase`、`help`、`update`）のみをインストールし、`gsd-*` サブエージェントはゼロ。コールドスタート時のシステムプロンプトのオーバーヘッドを ~12kトークンから ~700トークンへ削減（≥94%減）。32K〜128Kコンテキストのローカル LLM やトークン課金 API に有効。
 - **`/gsd-phase --edit`** — `ROADMAP.md` 上の既存フェーズの任意フィールドをその場で編集（番号や位置は変更されない）。`--force` で確認 diff をスキップ、`depends_on` の参照を検証し、書き込み時に `STATE.md` も更新。
 - **マージ後ビルド & テストゲート** — `execute-phase` のステップ 5.6 が `workflow.build_command` の設定を自動検出し、無ければ Xcode（`.xcodeproj`）、Makefile、Justfile、Cargo、Go、Python、npm の順にフォールバック。Xcode/iOS プロジェクトでは `xcodebuild build` と `xcodebuild test` を自動実行。並列・直列両モードで動作。
 - **ランタイム別レビューモデル選択** — `review.models.<cli>` で各外部レビュー CLI（codex、gemini など）が使うモデルをプランナー/実行プロファイルとは独立に指定可能。
 - **ワークストリーム設定の継承** — `GSD_WORKSTREAM` が設定されている場合、ルートの `.planning/config.json` を先に読み込み、ワークストリーム設定をディープマージ（衝突時はワークストリーム側が優先）。ワークストリーム設定で明示的に `null` を指定するとルート値を上書き可能。
-- **手動カナリアリリースワークフロー** — `.github/workflows/canary.yml` が `workflow_dispatch` 経由で `dev` ブランチから `{base}-canary.{N}` ビルドを `@canary` dist-tag に手動公開（`get-shit-done-cc` と `@gsd-build/sdk`）。
+- **手動カナリアリリースワークフロー** — `.github/workflows/canary.yml` が `workflow_dispatch` 経由で `dev` ブランチから `{base}-canary.{N}` ビルドを `@canary` dist-tag に手動公開（`@opengsd/get-shit-done-redux` と `@opengsd/gsd-sdk`）。
 - **スキルの統合：86 → 59** — 4つの新しいグループ化スキル（`capture`、`phase`、`config`、`workspace`）が31のマイクロスキルを吸収。既存の親スキル6つはラップアップやサブ操作をフラグ化：`update --sync/--reapply`、`sketch --wrap-up`、`spike --wrap-up`、`map-codebase --fast/--query`、`code-review --fix`、`progress --do/--next`。機能の欠損なし。
 
 ---
@@ -100,7 +100,7 @@ GSDはそれを解決します。Claude Codeを信頼性の高いものにする
 ## はじめに
 
 ```bash
-npx get-shit-done-cc@latest
+npx @opengsd/get-shit-done-redux@latest
 ```
 
 インストーラーが以下の選択を求めます：
@@ -124,7 +124,7 @@ npx get-shit-done-cc@latest
 GSDは急速に進化しています。定期的にアップデートしてください：
 
 ```bash
-npx get-shit-done-cc@latest
+npx @opengsd/get-shit-done-redux@latest
 ```
 
 <details>
@@ -132,49 +132,49 @@ npx get-shit-done-cc@latest
 
 ```bash
 # Claude Code
-npx get-shit-done-cc --claude --global   # ~/.claude/ にインストール
-npx get-shit-done-cc --claude --local    # ./.claude/ にインストール
+npx @opengsd/get-shit-done-redux --claude --global   # ~/.claude/ にインストール
+npx @opengsd/get-shit-done-redux --claude --local    # ./.claude/ にインストール
 
 # OpenCode
-npx get-shit-done-cc --opencode --global # ~/.config/opencode/ にインストール
+npx @opengsd/get-shit-done-redux --opencode --global # ~/.config/opencode/ にインストール
 
 # Gemini CLI
-npx get-shit-done-cc --gemini --global   # ~/.gemini/ にインストール
+npx @opengsd/get-shit-done-redux --gemini --global   # ~/.gemini/ にインストール
 
 # Kilo
-npx get-shit-done-cc --kilo --global     # ~/.config/kilo/ にインストール
-npx get-shit-done-cc --kilo --local      # ./.kilo/ にインストール
+npx @opengsd/get-shit-done-redux --kilo --global     # ~/.config/kilo/ にインストール
+npx @opengsd/get-shit-done-redux --kilo --local      # ./.kilo/ にインストール
 
 # Codex
-npx get-shit-done-cc --codex --global    # ~/.codex/ にインストール
-npx get-shit-done-cc --codex --local     # ./.codex/ にインストール
+npx @opengsd/get-shit-done-redux --codex --global    # ~/.codex/ にインストール
+npx @opengsd/get-shit-done-redux --codex --local     # ./.codex/ にインストール
 
 # Copilot
-npx get-shit-done-cc --copilot --global  # ~/.github/ にインストール
-npx get-shit-done-cc --copilot --local   # ./.github/ にインストール
+npx @opengsd/get-shit-done-redux --copilot --global  # ~/.github/ にインストール
+npx @opengsd/get-shit-done-redux --copilot --local   # ./.github/ にインストール
 
 # Cursor CLI
-npx get-shit-done-cc --cursor --global      # ~/.cursor/ にインストール
-npx get-shit-done-cc --cursor --local       # ./.cursor/ にインストール
+npx @opengsd/get-shit-done-redux --cursor --global      # ~/.cursor/ にインストール
+npx @opengsd/get-shit-done-redux --cursor --local       # ./.cursor/ にインストール
 
 # Antigravity
-npx get-shit-done-cc --antigravity --global # ~/.gemini/antigravity/ にインストール
-npx get-shit-done-cc --antigravity --local  # ./.agent/ にインストール
+npx @opengsd/get-shit-done-redux --antigravity --global # ~/.gemini/antigravity/ にインストール
+npx @opengsd/get-shit-done-redux --antigravity --local  # ./.agent/ にインストール
 
 # Augment
-npx get-shit-done-cc --augment --global     # ~/.augment/ にインストール
-npx get-shit-done-cc --augment --local      # ./.augment/ にインストール
+npx @opengsd/get-shit-done-redux --augment --global     # ~/.augment/ にインストール
+npx @opengsd/get-shit-done-redux --augment --local      # ./.augment/ にインストール
 
 # Trae
-npx get-shit-done-cc --trae --global        # ~/.trae/ にインストール
-npx get-shit-done-cc --trae --local         # ./.trae/ にインストール
+npx @opengsd/get-shit-done-redux --trae --global        # ~/.trae/ にインストール
+npx @opengsd/get-shit-done-redux --trae --local         # ./.trae/ にインストール
 
 # Cline
-npx get-shit-done-cc --cline --global       # ~/.cline/ にインストール
-npx get-shit-done-cc --cline --local        # ./.clinerules にインストール
+npx @opengsd/get-shit-done-redux --cline --global       # ~/.cline/ にインストール
+npx @opengsd/get-shit-done-redux --cline --local        # ./.clinerules にインストール
 
 # 全ランタイム
-npx get-shit-done-cc --all --global      # すべてのディレクトリにインストール
+npx @opengsd/get-shit-done-redux --all --global      # すべてのディレクトリにインストール
 ```
 
 `--global`（`-g`）または `--local`（`-l`）でインストール先の質問をスキップできます。
@@ -188,7 +188,7 @@ npx get-shit-done-cc --all --global      # すべてのディレクトリにイ�
 リポジトリをクローンしてインストーラーをローカルで実行します：
 
 ```bash
-git clone https://github.com/gsd-build/get-shit-done.git
+git clone https://github.com/open-gsd/get-shit-done-redux.git
 cd get-shit-done
 node bin/install.js --claude --local
 ```
@@ -793,18 +793,18 @@ GSDのコードベースマッピングおよび分析コマンドは、プロ�
 
 **コマンドが期待通りに動作しない？**
 - `/gsd-help` を実行してインストールを確認してください
-- `npx get-shit-done-cc` を再実行して再インストールしてください
+- `npx @opengsd/get-shit-done-redux` を再実行して再インストールしてください
 
 **最新バージョンへのアップデート？**
 ```bash
-npx get-shit-done-cc@latest
+npx @opengsd/get-shit-done-redux@latest
 ```
 
 **Dockerまたはコンテナ化環境を使用している？**
 
 チルダパス（`~/.claude/...`）でファイル読み取りが失敗する場合、インストール前に `CLAUDE_CONFIG_DIR` を設定してください：
 ```bash
-CLAUDE_CONFIG_DIR=/home/youruser/.claude npx get-shit-done-cc --global
+CLAUDE_CONFIG_DIR=/home/youruser/.claude npx @opengsd/get-shit-done-redux --global
 ```
 これにより、コンテナ内で正しく展開されない可能性がある `~` の代わりに絶対パスが使用されます。
 
@@ -814,26 +814,26 @@ GSDを完全に削除するには：
 
 ```bash
 # グローバルインストール
-npx get-shit-done-cc --claude --global --uninstall
-npx get-shit-done-cc --opencode --global --uninstall
-npx get-shit-done-cc --gemini --global --uninstall
-npx get-shit-done-cc --kilo --global --uninstall
-npx get-shit-done-cc --codex --global --uninstall
-npx get-shit-done-cc --copilot --global --uninstall
-npx get-shit-done-cc --cursor --global --uninstall
-npx get-shit-done-cc --antigravity --global --uninstall
-npx get-shit-done-cc --trae --global --uninstall
+npx @opengsd/get-shit-done-redux --claude --global --uninstall
+npx @opengsd/get-shit-done-redux --opencode --global --uninstall
+npx @opengsd/get-shit-done-redux --gemini --global --uninstall
+npx @opengsd/get-shit-done-redux --kilo --global --uninstall
+npx @opengsd/get-shit-done-redux --codex --global --uninstall
+npx @opengsd/get-shit-done-redux --copilot --global --uninstall
+npx @opengsd/get-shit-done-redux --cursor --global --uninstall
+npx @opengsd/get-shit-done-redux --antigravity --global --uninstall
+npx @opengsd/get-shit-done-redux --trae --global --uninstall
 
 # ローカルインストール（現在のプロジェクト）
-npx get-shit-done-cc --claude --local --uninstall
-npx get-shit-done-cc --opencode --local --uninstall
-npx get-shit-done-cc --gemini --local --uninstall
-npx get-shit-done-cc --kilo --local --uninstall
-npx get-shit-done-cc --codex --local --uninstall
-npx get-shit-done-cc --copilot --local --uninstall
-npx get-shit-done-cc --cursor --local --uninstall
-npx get-shit-done-cc --antigravity --local --uninstall
-npx get-shit-done-cc --trae --local --uninstall
+npx @opengsd/get-shit-done-redux --claude --local --uninstall
+npx @opengsd/get-shit-done-redux --opencode --local --uninstall
+npx @opengsd/get-shit-done-redux --gemini --local --uninstall
+npx @opengsd/get-shit-done-redux --kilo --local --uninstall
+npx @opengsd/get-shit-done-redux --codex --local --uninstall
+npx @opengsd/get-shit-done-redux --copilot --local --uninstall
+npx @opengsd/get-shit-done-redux --cursor --local --uninstall
+npx @opengsd/get-shit-done-redux --antigravity --local --uninstall
+npx @opengsd/get-shit-done-redux --trae --local --uninstall
 ```
 
 これにより、他の設定を保持しながら、すべてのGSDコマンド、エージェント、フック、設定が削除されます。
@@ -842,7 +842,7 @@ npx get-shit-done-cc --trae --local --uninstall
 
 ## コミュニティポート
 
-OpenCode、Gemini CLI、Kilo、Codexは `npx get-shit-done-cc` でネイティブサポートされています。
+OpenCode、Gemini CLI、Kilo、Codexは `npx @opengsd/get-shit-done-redux` でネイティブサポートされています。
 
 以下のコミュニティポートがマルチランタイムサポートの先駆けとなりました：
 
@@ -855,11 +855,11 @@ OpenCode、Gemini CLI、Kilo、Codexは `npx get-shit-done-cc` でネイティ�
 
 ## スター履歴
 
-<a href="https://star-history.com/#gsd-build/get-shit-done&Date">
+<a href="https://star-history.com/#open-gsd/get-shit-done-redux&Date">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=gsd-build/get-shit-done&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=gsd-build/get-shit-done&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=gsd-build/get-shit-done&type=Date" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=open-gsd/get-shit-done-redux&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=open-gsd/get-shit-done-redux&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=open-gsd/get-shit-done-redux&type=Date" />
  </picture>
 </a>
 

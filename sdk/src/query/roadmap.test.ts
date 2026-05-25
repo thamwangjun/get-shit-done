@@ -809,6 +809,71 @@ Detail
     expect(result).toContain('Phase 100');
     expect(result).toContain('Phase Details');
   });
+
+  // ─── Bug #3493: generic `## Phase Details` after planned-milestone sibling ──
+  it('bug-3493: preserves generic `## Phase Details` heading after `### 📋 vX.Y+ (Planned)` sibling', async () => {
+    // Minimal repro from issue #3493 verbatim: a generic (non-version-prefixed)
+    // `## Phase Details` heading sits AFTER a `### 📋 v2.1+ (Planned)` sibling
+    // in document order. The 📋-bearing sibling otherwise terminates the slice
+    // and the generic Phase Details body — including `### Phase 4: Next` — is
+    // dropped, even though it belongs to the active v2.0 milestone.
+    const roadmap = `# Roadmap: Example
+
+## Phases
+
+<details>
+<summary>✅ v1.0 First Milestone — SHIPPED</summary>
+- [x] **Phase 1: First** (1/1 plans)
+</details>
+
+### v2.0 Active Milestone (Phases 2–5)
+
+- [x] **Phase 2: Foundation** (5/5 plans) — completed
+- [x] **Phase 3: Pipeline** (8/8 plans) — completed
+- [ ] **Phase 4: Next** — pending
+- [ ] **Phase 5: Final** — pending
+
+### 📋 v2.1+ (Planned — Not Yet Scoped)
+
+Candidates pending milestone selection.
+
+## Phase Details
+
+### Phase 2: Foundation
+**Goal**: Foundation goal.
+
+### Phase 3: Pipeline
+**Goal**: Pipeline goal.
+
+### Phase 4: Next
+**Goal**: Next goal.
+
+### Phase 5: Final
+**Goal**: Final goal.
+`;
+    const state = `---\nmilestone: v2.0\n---\n# State\n`;
+    await writeFile(join(tmpDir, '.planning', 'STATE.md'), state);
+    await writeFile(join(tmpDir, '.planning', 'ROADMAP.md'), roadmap);
+
+    const slice = await extractCurrentMilestone(roadmap, tmpDir);
+
+    // The generic Phase Details heading and all four detail sections must
+    // survive — they belong to the active v2.0 milestone even though they
+    // sit after the planned-milestone sibling in document order.
+    expect(slice).toContain('## Phase Details');
+    expect(slice).toContain('### Phase 2: Foundation');
+    expect(slice).toContain('### Phase 3: Pipeline');
+    expect(slice).toContain('### Phase 4: Next');
+    expect(slice).toContain('### Phase 5: Final');
+
+    // And roadmapGetPhase (which calls extractCurrentMilestone internally)
+    // must locate Phase 4's detail section.
+    const result = await roadmapGetPhase(['4'], tmpDir);
+    const data = result.data as Record<string, unknown>;
+    expect(data.found).toBe(true);
+    expect(data.phase_number).toBe('4');
+    expect(data.phase_name).toBe('Next');
+  });
 });
 
 // ─── roadmapGetPhase ──────────────────────────────────────────────────────
@@ -1016,6 +1081,75 @@ describe('roadmapAnalyze', () => {
     expect(phases.length).toBe(2);
     expect(phases.some(p => p.number === '1')).toBe(true);
     expect(phases.some(p => p.number === '3')).toBe(true);
+  });
+
+  // ─── Bug #3816: bullet-list phases under prefixed-milestone heading ─────
+
+  it('#3816: roadmapAnalyze finds phases listed as bullets under prefixed-milestone heading', async () => {
+    // Project uses "aimpf-v1.1" milestone (non-standard prefix).
+    // ROADMAP uses bullet-format phases (- [ ] Phase N:) under the active
+    // milestone heading, not heading-format (### Phase N:).
+    const roadmap = [
+      '# Roadmap',
+      '',
+      '### 🚧 aimpf-v1.1 Branch Rename + V1.0 Debt Closure (active)',
+      '',
+      '- [x] Phase 7: Branch Rename — pending /gsd:spec-phase 7',
+      '',
+      '## Backlog',
+      '',
+      '### Phase 999.1: PycartaContext — backlog item',
+      '**Goal:** Parked idea.',
+      '',
+      '---',
+      '*Last updated: 2026-05-21*',
+    ].join('\n');
+    const state = '---\nmilestone: aimpf-v1.1\nstatus: executing\n---\n\n# State\n';
+
+    await writeFile(join(tmpDir, '.planning', 'STATE.md'), state);
+    await writeFile(join(tmpDir, '.planning', 'ROADMAP.md'), roadmap);
+
+    const result = await roadmapAnalyze([], tmpDir);
+    const data = result.data as Record<string, unknown>;
+    const phases = data.phases as Array<Record<string, unknown>>;
+
+    // Phase 7 must be discovered — it is in the active milestone section
+    expect(phases.some(p => p.number === '7')).toBe(true);
+    // Backlog phase 999.1 must NOT appear in the phases list
+    expect(phases.every(p => p.number !== '999.1')).toBe(true);
+    // phase_count must reflect active phases only
+    const activePhases = phases.filter(p => {
+      const num = parseFloat(String(p.number));
+      return num < 999;
+    });
+    expect(activePhases.length).toBeGreaterThan(0);
+  });
+
+  it('#3816: roadmapGetPhase finds phase listed as bullet under prefixed-milestone heading', async () => {
+    // Same ROADMAP structure as above, but using roadmapGetPhase
+    const roadmap = [
+      '# Roadmap',
+      '',
+      '### 🚧 aimpf-v1.1 Branch Rename + V1.0 Debt Closure (active)',
+      '',
+      '- [ ] Phase 7: Branch Rename',
+      '',
+      '## Backlog',
+      '',
+      '---',
+      '*Last updated: 2026-05-21*',
+    ].join('\n');
+    const state = '---\nmilestone: aimpf-v1.1\nstatus: executing\n---\n\n# State\n';
+
+    await writeFile(join(tmpDir, '.planning', 'STATE.md'), state);
+    await writeFile(join(tmpDir, '.planning', 'ROADMAP.md'), roadmap);
+
+    const result = await roadmapGetPhase(['7'], tmpDir);
+    const data = result.data as Record<string, unknown>;
+
+    expect(data.found).toBe(true);
+    expect(data.phase_number).toBe('7');
+    expect(data.phase_name).toBe('Branch Rename');
   });
 });
 

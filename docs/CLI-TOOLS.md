@@ -1,6 +1,6 @@
 # GSD CLI Tools Reference
 
-> Surface-area reference for `get-shit-done/bin/gsd-tools.cjs` (legacy Node CLI). Workflows and agents should prefer `gsd-sdk query` or `@gsd-build/sdk` where a handler exists — see [SDK and programmatic access](#sdk-and-programmatic-access). For slash commands and user flows, see [Command Reference](COMMANDS.md).
+> Surface-area reference for `get-shit-done/bin/gsd-tools.cjs` (legacy Node CLI). Workflows and agents should prefer `gsd-sdk query` or `@opengsd/gsd-sdk` where a handler exists — see [SDK and programmatic access](#sdk-and-programmatic-access). For slash commands and user flows, see [Command Reference](COMMANDS.md).
 
 ---
 
@@ -43,7 +43,7 @@ Use this when authoring workflows, not when you only need the command list below
 - Resolves argv with the same **longest-prefix** rules as the typed registry (`resolveQueryArgv` in `sdk/src/query/registry.ts`). Unregistered commands **fail fast** — use `node …/gsd-tools.cjs` only for handlers not in the registry.
 - Full matrix (CJS command → registry key, CLI-only tools, aliases, golden tiers): [sdk/src/query/QUERY-HANDLERS.md](../sdk/src/query/QUERY-HANDLERS.md).
 
-**2. TypeScript — `@gsd-build/sdk` (`GSDTools`, `createRegistry`)**
+**2. TypeScript — `@opengsd/gsd-sdk` (`GSDTools`, `createRegistry`)**
 
 - `GSDTools` now routes through the **SDK Runtime Bridge Module** (`sdk/src/query-runtime-bridge.ts`). Native registry dispatch is preferred; subprocess fallback is explicit policy (`allowFallbackToSubprocess`) and can be disabled for strict SDK-only execution.
 - `strictSdk` mode fails fast when a command has no native adapter, making SDK publish/readiness checks deterministic.
@@ -207,7 +207,9 @@ node gsd-tools.cjs config-set-model-profile <profile>
 ```bash
 # Get model for agent based on current profile
 node gsd-tools.cjs resolve-model <agent-name>
-# Returns: opus | sonnet | haiku | inherit
+# Raw output returns the selected model ID/tier.
+# JSON output also includes profile and, when the active runtime supports it,
+# reasoning_effort.
 ```
 
 Agent names: `gsd-planner`, `gsd-executor`, `gsd-phase-researcher`, `gsd-project-researcher`, `gsd-research-synthesizer`, `gsd-verifier`, `gsd-plan-checker`, `gsd-integration-checker`, `gsd-roadmapper`, `gsd-debugger`, `gsd-codebase-mapper`, `gsd-nyquist-auditor`
@@ -418,14 +420,15 @@ node gsd-tools.cjs audit-uat
 # Cross-artifact audit queue — scan `.planning/` for unresolved audit items
 node gsd-tools.cjs audit-open [--json]
 
-# Reverse-migrate a GSD-2 project into the current structure (backs `/gsd-from-gsd2`)
+# Reverse-migrate a GSD-2 project into the current structure (backs `/gsd-import --from-gsd2`)
 node gsd-tools.cjs from-gsd2 [--path <dir>] [--force] [--dry-run]
 
 # Git commit with config checks
-node gsd-tools.cjs commit <message> [--files f1 f2] [--amend] [--no-verify]
+node gsd-tools.cjs commit <message> [--files f1 f2] [--amend] [--no-verify] [--respect-staged]
 ```
 
 > `--no-verify`: Skips pre-commit hooks. Used by parallel executor agents during wave-based execution to avoid build lock contention (e.g., cargo lock fights in Rust projects). The orchestrator runs hooks once after each wave completes. Do not use `--no-verify` during sequential execution — let hooks run normally.
+> `--files <paths>` **staging behaviour**: by default, `--files` runs `git add -- <path>` for each named file before committing. This overwrites any per-hunk staging set up via `git add -p`. Pass `--respect-staged` to skip the `git add` step and commit only what is already in the index within the requested pathspec. If nothing is staged within that scope, the command returns `{ committed: false, reason: 'nothing staged' }` without error. The trailing `-- <paths>` pathspec on the commit is applied under both modes, so files staged outside the `--files` scope are never included (#3061 invariant).
 
 # Web search (requires Brave API key)
 node gsd-tools.cjs websearch <query> [--limit N] [--freshness day|week|month]
@@ -481,14 +484,14 @@ User-facing entry point: `/gsd-graphify` (see [Command Reference](COMMANDS.md#gs
 | Graphify | `lib/graphify.cjs` | Knowledge graph build/query/status/diff/snapshot (backs `/gsd-graphify`) |
 | Learnings | `lib/learnings.cjs` | Extract learnings from phases/SUMMARY artifacts (backs `/gsd-extract-learnings`) |
 | Audit | `lib/audit.cjs` | Phase/milestone audit queue handlers; `audit-open` helper |
-| GSD2 Import | `lib/gsd2-import.cjs` | Reverse-migration importer from GSD-2 projects (backs `/gsd-from-gsd2`) |
+| GSD2 Import | `lib/gsd2-import.cjs` | Reverse-migration importer from GSD-2 projects (backs `/gsd-import --from-gsd2`) |
 | Intel | `lib/intel.cjs` | Queryable codebase intelligence index (backs `/gsd-map-codebase --query`) |
 
 ---
 
 ## Reviewer CLI Routing
 
-`review.models.<cli>` maps a reviewer flavor to a shell command invoked by the code-review workflow. Set via [`/gsd-settings-integrations`](COMMANDS.md#gsd-settings-integrations) or directly:
+`review.models.<cli>` maps a reviewer flavor to a shell command invoked by the code-review workflow. Set via [`/gsd-config --integrations`](COMMANDS.md#gsd-config) or directly:
 
 ```bash
 gsd-sdk query config-set review.models.codex    "codex exec --model gpt-5"
@@ -501,7 +504,7 @@ Slugs are validated against `[a-zA-Z0-9_-]+`; empty or path-containing slugs are
 
 ## Secret Handling
 
-API keys configured via `/gsd-settings-integrations` (`brave_search`, `firecrawl`, `exa_search`) are written plaintext to `.planning/config.json` but are masked (`****<last-4>`) in every `config-set` / `config-get` output, confirmation table, and interactive prompt. See `get-shit-done/bin/lib/secrets.cjs` for the masking implementation. The `config.json` file itself is the security boundary — protect it with filesystem permissions and keep it out of git (`.planning/` is gitignored by default).
+API keys configured via `/gsd-settings` (`brave_search`, `firecrawl`, `exa_search`) are written plaintext to `.planning/config.json` but are masked (`****<last-4>`) in every `config-set` / `config-get` output, confirmation table, and interactive prompt. See `get-shit-done/bin/lib/secrets.cjs` for the masking implementation. The `config.json` file itself is the security boundary — protect it with filesystem permissions and keep it out of git (`.planning/` is gitignored by default).
 
 ---
 

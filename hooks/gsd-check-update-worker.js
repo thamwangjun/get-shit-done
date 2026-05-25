@@ -11,16 +11,27 @@
 
 const fs = require('fs');
 const path = require('path');
-const https = require('https');
+const { execFileSync } = require('child_process');
 
 const cacheFile = process.env.GSD_CACHE_FILE;
-const projectVersionFile = process.env.GSD_PROJECT_VERSION_FILE || '';
-const globalVersionFile  = process.env.GSD_GLOBAL_VERSION_FILE  || '';
+const projectVersionFile = process.env.GSD_PROJECT_VERSION_FILE;
+const globalVersionFile = process.env.GSD_GLOBAL_VERSION_FILE;
+
+// Compare semver: true if a > b (a is strictly newer than b)
+// Strips pre-release suffixes (e.g. '3-beta.1' → '3') to avoid NaN from Number()
+function isNewer(a, b) {
+  const pa = (a || '').split('.').map(s => Number(s.replace(/-.*/, '')) || 0);
+  const pb = (b || '').split('.').map(s => Number(s.replace(/-.*/, '')) || 0);
+  for (let i = 0; i < 3; i++) {
+    if (pa[i] > pb[i]) return true;
+    if (pa[i] < pb[i]) return false;
+  }
+  return false;
+}
 
 // Check project directory first (local install), then global
-let installed = 'unknown';
+let installed = '0.0.0';
 let configDir = '';
-let readError = null;
 try {
   if (fs.existsSync(projectVersionFile)) {
     installed = fs.readFileSync(projectVersionFile, 'utf8').trim();
@@ -29,9 +40,7 @@ try {
     installed = fs.readFileSync(globalVersionFile, 'utf8').trim();
     configDir = path.dirname(path.dirname(globalVersionFile));
   }
-} catch (e) {
-  readError = e.message;
-}
+} catch (e) {}
 
 // Check for stale hooks — compare hook version headers against installed VERSION
 // Hooks are installed at configDir/hooks/ (e.g. ~/.claude/hooks/) (#1421)
@@ -40,14 +49,15 @@ try {
 const MANAGED_HOOKS = [
   'gsd-check-update-worker.js',
   'gsd-check-update.js',
-  'gsd-update-banner.js',
   'gsd-context-monitor.js',
+  'gsd-graphify-update.sh',
   'gsd-phase-boundary.sh',
   'gsd-prompt-guard.js',
   'gsd-read-guard.js',
   'gsd-read-injection-scanner.js',
   'gsd-session-state.sh',
   'gsd-statusline.js',
+  'gsd-update-banner.js',
   'gsd-validate-commit.sh',
   'gsd-workflow-guard.js',
 ];
@@ -65,10 +75,7 @@ if (configDir) {
           const versionMatch = content.match(/(?:\/\/|#) gsd-hook-version:\s*(.+)/);
           if (versionMatch) {
             const hookVersion = versionMatch[1].trim();
-            // Normalize both sides to 7-char prefix before comparing so a
-            // full 40-char SHA in the VERSION file doesn't cause false positives.
-            const norm = (s) => (s && s.length >= 7 ? s.slice(0, 7) : s);
-            if (norm(hookVersion) !== norm(installed) && !hookVersion.includes('{{')) {
+            if (isNewer(installed, hookVersion) && !hookVersion.includes('{{')) {
               staleHooks.push({ file: hookFile, hookVersion, installedVersion: installed });
             }
           } else {
@@ -81,61 +88,30 @@ if (configDir) {
   } catch (e) {}
 }
 
-// isNewer with SHA equality semantics (D-01)
-// Normalise both sides to 7-char prefix so a full 40-char SHA stored in
-// the VERSION file (e.g. future tarball install path) never causes a
-// permanent false-positive "update available" — mirrors stale-hook check
-// at lines 70-71 which already uses this defensive norm() pattern.
-function isNewer(latest, installed) {
-  if (!latest) return false;
-  const norm = (s) => (s && s.length >= 7 ? s.slice(0, 7) : s);
-  return norm(latest) !== norm(installed);
-}
-
 let latest = null;
-let wrote = false;
-
-function writeResult() {
-  if (wrote) return;
-  wrote = true;
-  const result = {
-    update_available: installed !== 'unknown' && latest && isNewer(latest, installed),
-    installed,
-    latest: latest || 'unknown',
-    checked: Math.floor(Date.now() / 1000),
-    stale_hooks: staleHooks.length > 0 ? staleHooks : undefined,
-    read_error: readError || undefined,
-  };
-  if (cacheFile) {
-    try { fs.writeFileSync(cacheFile, JSON.stringify(result)); } catch (e) {}
-  }
-}
 try {
-  const req = https.get(
-    'https://api.github.com/repos/{{GSD_REPO}}/commits/{{GSD_BRANCH}}',
-    {
-      headers: {
-        'User-Agent': 'gsd-check-update-worker',
-        'Accept': 'application/vnd.github.v3+json',
-      },
-      timeout: 10000,
-    },
-    (res) => {
-      let body = '';
-      res.on('data', (chunk) => { body += chunk; });
-      res.on('end', () => {
-        try {
-          const sha = JSON.parse(body).sha;
-          if (sha && /^[0-9a-f]{40}$/.test(sha)) {
-            latest = sha.slice(0, 7);
-          }
-        } catch (e) {}
-        writeResult();
-      });
-    }
-  );
-  req.on('error', () => writeResult());
-  req.on('timeout', () => { req.destroy(); writeResult(); });
-} catch (e) {
-  writeResult();
+  latest = execFileSync('npm', ['view', 'get-shit-done-redux', 'version'], {
+    encoding: 'utf8',
+    timeout: 10000,
+    windowsHide: true,
+    // On Windows, 'npm' is distributed as npm.cmd. Node's execFileSync does
+    // not apply PATHEXT resolution and looks for a literal 'npm' binary,
+    // failing with ENOENT. Setting shell:true on Windows routes through
+    // cmd.exe which resolves npm.cmd via PATHEXT.
+    // POSIX (Linux/macOS) is left untouched — no shell spawn, no extra
+    // signal/exit-code semantics, no overhead.
+    shell: process.platform === 'win32',
+  }).trim();
+} catch (e) {}
+
+const result = {
+  update_available: latest && isNewer(latest, installed),
+  installed,
+  latest: latest || 'unknown',
+  checked: Math.floor(Date.now() / 1000),
+  stale_hooks: staleHooks.length > 0 ? staleHooks : undefined,
+};
+
+if (cacheFile) {
+  try { fs.writeFileSync(cacheFile, JSON.stringify(result)); } catch (e) {}
 }

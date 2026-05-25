@@ -21,6 +21,11 @@ import {
   resolveAgentsDir,
   getRuntimeConfigDir,
   detectRuntime,
+  resolveGlobalSkillsBase,
+  resolveGlobalSkillDir,
+  resolveGlobalSkillMarkdownPath,
+  renderGlobalSkillsBaseDisplayPath,
+  renderGlobalSkillDisplayPath,
   findProjectRoot,
   SUPPORTED_RUNTIMES,
   type Runtime,
@@ -188,6 +193,11 @@ describe('stateExtractField', () => {
 // ─── planningPaths ──────────────────────────────────────────────────────────
 
 describe('planningPaths', () => {
+  afterEach(() => {
+    delete process.env['GSD_WORKSTREAM'];
+    delete process.env['GSD_PROJECT'];
+  });
+
   it('returns all expected keys', () => {
     const paths = planningPaths('/proj');
     expect(paths).toHaveProperty('planning');
@@ -203,6 +213,19 @@ describe('planningPaths', () => {
     const paths = planningPaths('/proj');
     expect(paths.state).toContain('.planning/STATE.md');
     expect(paths.config).toContain('.planning/config.json');
+  });
+
+  it('uses GSD_PROJECT env when no explicit workstream is provided', () => {
+    process.env['GSD_PROJECT'] = 'proj-scope';
+    const paths = planningPaths('/proj');
+    expect(paths.planning).toContain('/proj/.planning/proj-scope');
+  });
+
+  it('explicit workstream overrides GSD_PROJECT env', () => {
+    process.env['GSD_PROJECT'] = 'proj-scope';
+    const paths = planningPaths('/proj', 'ws-a');
+    expect(paths.planning).toContain('/proj/.planning/workstreams/ws-a');
+    expect(paths.planning).not.toContain('proj-scope');
   });
 });
 
@@ -380,8 +403,57 @@ describe('detectRuntime', () => {
     expect(detectRuntime()).toBe('codex');
   });
 
+  it('normalizes Codex env aliases to canonical codex runtime', () => {
+    process.env.GSD_RUNTIME = 'codex-app';
+    expect(detectRuntime()).toBe('codex');
+    process.env.GSD_RUNTIME = 'codex_cli';
+    expect(detectRuntime()).toBe('codex');
+  });
+
+  it('normalizes common runtime env aliases to canonical runtime IDs', () => {
+    const cases: Array<[string, Runtime]> = [
+      ['claude-code', 'claude'],
+      ['gemini-cli', 'gemini'],
+      ['opencode-cli', 'opencode'],
+      ['qwen-code', 'qwen'],
+      ['hermes-agent', 'hermes'],
+      ['github-copilot', 'copilot'],
+      ['cursor-nightly', 'cursor'],
+      ['windsurf-next', 'windsurf'],
+      ['augment-code', 'augment'],
+      ['codebuddy-cli', 'codebuddy'],
+      ['cline-cli', 'cline'],
+    ];
+
+    for (const [alias, runtime] of cases) {
+      process.env.GSD_RUNTIME = alias;
+      expect(detectRuntime()).toBe(runtime);
+    }
+  });
+
   it('falls back to config.runtime when GSD_RUNTIME unset', () => {
     expect(detectRuntime({ runtime: 'gemini' })).toBe('gemini');
+  });
+
+  it('normalizes Codex config aliases to canonical codex runtime', () => {
+    expect(detectRuntime({ runtime: 'codex-cli' })).toBe('codex');
+    expect(detectRuntime({ runtime: 'codex app' })).toBe('codex');
+  });
+
+  it('normalizes common runtime config aliases to canonical runtime IDs', () => {
+    const cases: Array<[string, Runtime]> = [
+      ['claude-cli', 'claude'],
+      ['gemini-code', 'gemini'],
+      ['open code', 'opencode'],
+      ['hermes_cli', 'hermes'],
+      ['antigravity-agent', 'antigravity'],
+      ['trae-cli', 'trae'],
+      ['kilo-cli', 'kilo'],
+    ];
+
+    for (const [alias, runtime] of cases) {
+      expect(detectRuntime({ runtime: alias })).toBe(runtime);
+    }
   });
 
   it('GSD_RUNTIME wins over config.runtime', () => {
@@ -429,6 +501,55 @@ describe('resolveAgentsDir (runtime-aware)', () => {
 });
 
 // ─── findProjectRoot (issue #2623) ─────────────────────────────────────────
+
+describe('runtime-global skills directory helpers', () => {
+  const saved: Record<string, string | undefined> = {};
+  beforeEach(() => {
+    for (const k of RUNTIME_ENV_VARS) { saved[k] = process.env[k]; delete process.env[k]; }
+  });
+  afterEach(() => {
+    for (const k of RUNTIME_ENV_VARS) {
+      if (saved[k] === undefined) delete process.env[k];
+      else process.env[k] = saved[k];
+    }
+  });
+
+  it('appends /skills for runtimes with a global skills directory', () => {
+    process.env.CODEX_HOME = '/codex';
+    expect(resolveGlobalSkillsBase('codex')).toBe(join('/codex', 'skills'));
+    expect(resolveGlobalSkillDir('codex', 'demo')).toBe(join('/codex', 'skills', 'demo'));
+    expect(resolveGlobalSkillMarkdownPath('codex', 'demo')).toBe(join('/codex', 'skills', 'demo', 'SKILL.md'));
+  });
+
+  it('returns null for cline and renders unsupported display path', () => {
+    expect(resolveGlobalSkillsBase('cline')).toBeNull();
+    expect(renderGlobalSkillsBaseDisplayPath('cline')).toBe('(cline does not use a skills directory)');
+    expect(resolveGlobalSkillDir('cline', 'demo')).toBeNull();
+    expect(resolveGlobalSkillMarkdownPath('cline', 'demo')).toBeNull();
+    expect(renderGlobalSkillDisplayPath('cline', 'demo')).toBe('(cline does not use a skills directory)');
+  });
+
+  it('renders home-relative display paths with ~ for warnings', () => {
+    expect(renderGlobalSkillsBaseDisplayPath('claude')).toBe('~/.claude/skills');
+    expect(renderGlobalSkillDisplayPath('claude', 'demo')).toBe(join('~/.claude/skills', 'demo'));
+  });
+
+  it('rejects path-traversal segments — resolveGlobalSkillDir returns null for ../../foo', () => {
+    process.env.CODEX_HOME = '/codex';
+    expect(resolveGlobalSkillDir('codex', '../../foo')).toBeNull();
+    expect(resolveGlobalSkillDir('codex', '../escape')).toBeNull();
+    expect(resolveGlobalSkillDir('codex', '')).toBeNull();
+    // Absolute path as skillName is also rejected
+    expect(resolveGlobalSkillDir('codex', '/abs/path')).toBeNull();
+    // Legitimate name still works
+    expect(resolveGlobalSkillDir('codex', 'demo')).toBe(join('/codex', 'skills', 'demo'));
+    // resolveGlobalSkillMarkdownPath must also propagate the null for unsafe inputs
+    expect(resolveGlobalSkillMarkdownPath('codex', '../../foo')).toBeNull();
+    expect(resolveGlobalSkillMarkdownPath('codex', '../escape')).toBeNull();
+    expect(resolveGlobalSkillMarkdownPath('codex', '')).toBeNull();
+    expect(resolveGlobalSkillMarkdownPath('codex', '/abs/path')).toBeNull();
+  });
+});
 
 describe('findProjectRoot (multi-repo .planning resolution)', () => {
   let workspace: string;

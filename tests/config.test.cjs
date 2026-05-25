@@ -25,6 +25,24 @@ function writeConfig(tmpDir, obj) {
   fs.writeFileSync(configPath, JSON.stringify(obj, null, 2), 'utf-8');
 }
 
+function sleep(ms) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
+
+function runConfigEnsureSectionWithRetry(tmpDir, attempts = 4) {
+  let last;
+  for (let i = 0; i < attempts; i += 1) {
+    last = runGsdTools('config-ensure-section', tmpDir);
+    if (last.success) return last;
+
+    const detail = `${last.error || ''}\n${last.output || ''}`;
+    const transient = /(EPERM|EBUSY|EACCES|ENOTEMPTY|resource busy|used by another process|permission denied)/i.test(detail);
+    if (!transient || i === attempts - 1) return last;
+    sleep(150 * (i + 1));
+  }
+  return last;
+}
+
 // ─── config-ensure-section ───────────────────────────────────────────────────
 
 describe('config-ensure-section command', () => {
@@ -64,12 +82,12 @@ describe('config-ensure-section command', () => {
   });
 
   test('is idempotent — returns already_exists on second call', () => {
-    const first = runGsdTools('config-ensure-section', tmpDir);
+    const first = runConfigEnsureSectionWithRetry(tmpDir);
     assert.ok(first.success, `First call failed: ${first.error}`);
     const firstOutput = JSON.parse(first.output);
     assert.strictEqual(firstOutput.created, true);
 
-    const second = runGsdTools('config-ensure-section', tmpDir);
+    const second = runConfigEnsureSectionWithRetry(tmpDir);
     assert.ok(second.success, `Second call failed: ${second.error}`);
     const secondOutput = JSON.parse(second.output);
     assert.strictEqual(secondOutput.created, false);
@@ -953,14 +971,15 @@ describe('config-path command (#2282)', () => {
   test('returns root config path when no workstream is active', () => {
     const result = runGsdTools('config-path', tmpDir);
     assert.ok(result.success, `config-path failed: ${result.error}`);
-    assert.ok(result.output.trim().endsWith('.planning/config.json'), `expected root config path, got: ${result.output}`);
+    // Normalize separators: Windows emits backslashes in the resolved path.
+    assert.ok(result.output.trim().replace(/\\/g, '/').endsWith('.planning/config.json'), `expected root config path, got: ${result.output}`);
     assert.ok(!result.output.includes('workstreams'), 'should not include workstreams in path');
   });
 
   test('returns workstream config path when GSD_WORKSTREAM is set', () => {
     const result = runGsdTools('config-path', tmpDir, { GSD_WORKSTREAM: 'my-stream' });
     assert.ok(result.success, `config-path failed: ${result.error}`);
-    assert.ok(result.output.trim().includes('workstreams/my-stream/config.json'), `expected workstream config path, got: ${result.output}`);
+    assert.ok(result.output.trim().replace(/\\/g, '/').includes('workstreams/my-stream/config.json'), `expected workstream config path, got: ${result.output}`);
   });
 
   test('config-path and config-get agree on the active path', () => {

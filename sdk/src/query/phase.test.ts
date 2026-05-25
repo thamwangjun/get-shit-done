@@ -208,6 +208,48 @@ describe('findPhase', () => {
     expect(data.found).toBe(true);
     expect(data.archived).toBe('v1.0');
   });
+
+  // ── #3816: prefixed-milestone archive dirs (aimpf-v1.1-phases) ─────────
+
+  it('#3816: findPhase finds phase in prefixed-milestone archive dir (aimpf-v1.1-phases)', async () => {
+    // Non-standard milestone prefix: aimpf-v1.1-phases (not matching ^v[\d.]+-phases$)
+    const PREFIXED_MILESTONE_PHASES_DIR = '.planning/milestones/aimpf-v1.1-phases';
+    const archiveDir = join(tmpDir, PREFIXED_MILESTONE_PHASES_DIR, '07-branch-rename');
+    await mkdir(archiveDir, { recursive: true });
+    await writeFile(join(archiveDir, '07-01-PLAN.md'), '---\nphase: 07\nplan: 01\n---\nPlan');
+
+    const result = await findPhase(['7'], tmpDir);
+    const data = result.data as Record<string, unknown>;
+
+    expect(data.found).toBe(true);
+    expect(data.directory).toBe(`${PREFIXED_MILESTONE_PHASES_DIR}/07-branch-rename`);
+  });
+
+  it('#3816: findPhase prefers current-milestone archive dir over stale archives with same phase number', async () => {
+    // Stale archive from a different milestone (v1.1-phases) has Phase 7 "dependency-audit" (Complete)
+    const staleArchiveDir = join(tmpDir, '.planning', 'milestones', 'v1.1-phases', '07-dependency-audit');
+    await mkdir(staleArchiveDir, { recursive: true });
+    await writeFile(join(staleArchiveDir, '07-01-PLAN.md'), '---\nphase: 07\nplan: 01\n---\nStale plan');
+    await writeFile(join(staleArchiveDir, '07-01-SUMMARY.md'), 'Done');
+
+    // Active milestone (aimpf-v1.1-phases) has Phase 7 "branch-rename" (active)
+    const activeArchiveDir = join(tmpDir, '.planning', 'milestones', 'aimpf-v1.1-phases', '07-branch-rename');
+    await mkdir(activeArchiveDir, { recursive: true });
+    await writeFile(join(activeArchiveDir, '07-01-PLAN.md'), '---\nphase: 07\nplan: 01\n---\nActive plan');
+
+    // STATE.md identifies current milestone as aimpf-v1.1
+    await writeFile(
+      join(tmpDir, '.planning', 'STATE.md'),
+      '---\nmilestone: aimpf-v1.1\nstatus: executing\n---\n\n# State\n',
+    );
+
+    const result = await findPhase(['7'], tmpDir);
+    const data = result.data as Record<string, unknown>;
+
+    expect(data.found).toBe(true);
+    // Must return the active milestone's Phase 7, not the stale one
+    expect(data.directory).toBe('.planning/milestones/aimpf-v1.1-phases/07-branch-rename');
+  });
 });
 
 // ─── phasePlanIndex ────────────────────────────────────────────────────────
@@ -305,6 +347,36 @@ describe('phasePlanIndex', () => {
 
     expect(data.error).toBe('Phase not found');
     expect(data.plans).toEqual([]);
+  });
+
+  it('falls back to archived milestone directory when root phases dir has no match (#3469)', async () => {
+    const archiveDir = join(tmpDir, '.planning', 'milestones', 'v2.0-phases', '02-auth');
+    await mkdir(archiveDir, { recursive: true });
+    await writeFile(join(archiveDir, '02-01-PLAN.md'), [
+      '---',
+      'phase: 02',
+      'plan: 01',
+      'wave: 1',
+      'autonomous: true',
+      '---',
+      '<objective>',
+      'Archived milestone plan.',
+      '</objective>',
+      '<tasks>',
+      '<task type=\"auto\">',
+      '  <name>Task 1</name>',
+      '</task>',
+      '</tasks>',
+    ].join('\n'));
+    await writeFile(join(archiveDir, '02-01-SUMMARY.md'), '# Summary\n');
+
+    const result = await phasePlanIndex(['2'], tmpDir);
+    const data = result.data as Record<string, unknown>;
+    const plans = data.plans as Array<Record<string, unknown>>;
+
+    expect(data.error).toBeUndefined();
+    expect(plans.length).toBe(1);
+    expect(plans[0].id).toBe('02-01');
   });
 
   // ── #3266 regression tests ─────────────────────────────────────────────
@@ -504,5 +576,209 @@ describe('phasePlanIndex', () => {
 
     expect(planA!.depends_on).toEqual([]);
     expect(planB!.depends_on).toEqual(['15-01']);
+  });
+
+  it('#3430: native phase-plan-index warns about noncanonical plan-shaped files it cannot index', async () => {
+    const phase16 = join(tmpDir, '.planning', 'phases', '16-warning');
+    await mkdir(phase16, { recursive: true });
+    await writeFile(join(phase16, '16-PLAN-01-eval-harness.md'), [
+      '---',
+      'phase: 16-warning',
+      'plan: 01',
+      'wave: 1',
+      'autonomous: true',
+      'depends_on: []',
+      '---',
+      '<objective>Noncanonical plan filename.</objective>',
+    ].join('\n'));
+
+    const result = await phasePlanIndex(['16'], tmpDir);
+    const data = result.data as Record<string, unknown>;
+
+    expect(data.plans).toEqual([]);
+    expect(data.warnings).toEqual([
+      'Ignored noncanonical plan files: 16-PLAN-01-eval-harness.md',
+    ]);
+  });
+
+  it('#3488: integer-phase short-form depends_on [01] resolves to same-phase plan', async () => {
+    const phase17 = join(tmpDir, '.planning', 'phases', '17-int-short');
+    await mkdir(phase17, { recursive: true });
+    await writeFile(join(phase17, '17-01-PLAN.md'), [
+      '---',
+      'phase: 17',
+      'plan: 01',
+      'wave: 1',
+      'autonomous: true',
+      'depends_on: []',
+      '---',
+      '<objective>Plan A.</objective>',
+    ].join('\n'));
+    await writeFile(join(phase17, '17-02-PLAN.md'), [
+      '---',
+      'phase: 17',
+      'plan: 02',
+      'wave: 2',
+      'autonomous: true',
+      'depends_on: [01]',
+      '---',
+      '<objective>Plan B — short-form dep.</objective>',
+    ].join('\n'));
+
+    const result = await phasePlanIndex(['17'], tmpDir);
+    const data = result.data as Record<string, unknown>;
+    const waves = data.waves as Record<string, string[]>;
+    const warnings = (data.warnings as string[] | undefined) ?? [];
+
+    expect(waves['1']).toEqual(['17-01']);
+    expect(waves['2']).toEqual(['17-02']);
+    expect(warnings).toEqual([]);
+  });
+
+  it('#3488: decimal-phase short-form depends_on [01] resolves to same-phase plan', async () => {
+    const phase18 = join(tmpDir, '.planning', 'phases', '99.9-test');
+    await mkdir(phase18, { recursive: true });
+    await writeFile(join(phase18, '99.9-01-PLAN.md'), [
+      '---',
+      'phase: 99.9-test',
+      'plan: 01',
+      'wave: 1',
+      'autonomous: true',
+      'depends_on: []',
+      '---',
+      '<objective>Plan A.</objective>',
+    ].join('\n'));
+    await writeFile(join(phase18, '99.9-02-PLAN.md'), [
+      '---',
+      'phase: 99.9-test',
+      'plan: 02',
+      'wave: 2',
+      'autonomous: true',
+      'depends_on: [01]',
+      '---',
+      '<objective>Plan B — short-form dep on decimal phase.</objective>',
+    ].join('\n'));
+
+    const result = await phasePlanIndex(['99.9'], tmpDir);
+    const data = result.data as Record<string, unknown>;
+    const waves = data.waves as Record<string, string[]>;
+    const warnings = (data.warnings as string[] | undefined) ?? [];
+
+    expect(waves['1']).toEqual(['99.9-01']);
+    expect(waves['2']).toEqual(['99.9-02']);
+    expect(warnings).toEqual([]);
+  });
+
+  it('#3488: unresolved depends_on reference emits distinct warning (not wave-mismatch)', async () => {
+    const phase19 = join(tmpDir, '.planning', 'phases', '19-unresolved');
+    await mkdir(phase19, { recursive: true });
+    await writeFile(join(phase19, '19-01-PLAN.md'), [
+      '---',
+      'phase: 19',
+      'plan: 01',
+      'wave: 1',
+      'autonomous: true',
+      'depends_on: [does-not-exist]',
+      '---',
+      '<objective>Plan with bogus dep.</objective>',
+    ].join('\n'));
+
+    const result = await phasePlanIndex(['19'], tmpDir);
+    const data = result.data as Record<string, unknown>;
+    const warnings = (data.warnings as string[] | undefined) ?? [];
+
+    // A clear, dedicated warning naming the unresolved reference must surface.
+    expect(warnings.some(w => /unresolved/i.test(w) && w.includes('does-not-exist'))).toBe(true);
+  });
+
+  it('#3785: depends_on resolution is case-insensitive — mixed-case plan ID resolves correctly', async () => {
+    // Regression: planMap / canonicalToId / shortFormToId used strict Map.has() with no
+    // case normalization. A depends_on ref in lowercase against an uppercase-suffix plan
+    // ID dropped the DAG edge, causing the dependent plan to land in wave 1 instead of
+    // wave 2 (wrong ordering).
+    const phase20 = join(tmpDir, '.planning', 'phases', '20-case-insensitive');
+    await mkdir(phase20, { recursive: true });
+    // Plan A: filename uses uppercase suffix (e.g. user named it "Phase-2-FOO")
+    await writeFile(join(phase20, '20-01-Auth-PLAN.md'), [
+      '---',
+      'phase: 20',
+      'plan: 01',
+      'wave: 1',
+      'autonomous: true',
+      'depends_on: []',
+      '---',
+      '<objective>Plan A — uppercase suffix in filename.</objective>',
+    ].join('\n'));
+    // Plan B: depends_on references Plan A using a different case than the plan ID
+    await writeFile(join(phase20, '20-02-PLAN.md'), [
+      '---',
+      'phase: 20',
+      'plan: 02',
+      'wave: 2',
+      'autonomous: true',
+      'depends_on:',
+      '  - 20-01-auth',
+      '---',
+      '<objective>Plan B — lowercase dep ref to mixed-case plan A.</objective>',
+    ].join('\n'));
+
+    const result = await phasePlanIndex(['20'], tmpDir);
+    const data = result.data as Record<string, unknown>;
+    const plans = data.plans as Array<Record<string, unknown>>;
+    const waves = data.waves as Record<string, string[]>;
+    const warnings = (data.warnings as string[] | undefined) ?? [];
+
+    const planA = plans.find(p => (p.id as string).startsWith('20-01'));
+    const planB = plans.find(p => p.id === '20-02');
+    expect(planA).toBeDefined();
+    expect(planB).toBeDefined();
+
+    // Lock canonical casing: plan ID must be preserved as-is from the filename, not lowercased.
+    expect(planA!.id).toBe('20-01-Auth');
+
+    // The DAG edge must resolve: B must be in a later wave than A.
+    expect(planA!.wave).toBeLessThan(planB!.wave as number);
+    // Structurally: A in wave 1, B in wave 2.
+    expect(waves['1']).toBeDefined();
+    expect(waves['2']).toBeDefined();
+    expect((waves['1'] as string[]).some(id => (id as string).startsWith('20-01'))).toBe(true);
+    expect(waves['2']).toContain('20-02');
+    // depends_on output must use canonical plan ID, not the user-typed casing.
+    expect(planB!.depends_on).toEqual(['20-01-Auth']);
+    // No unresolved-dep warning should be emitted.
+    expect(warnings.some(w => /unresolved/i.test(w))).toBe(false);
+  });
+
+  // This test can only run on Linux where the filesystem is case-sensitive.
+  // On macOS/Windows (case-insensitive FS), writing both files silently collapses
+  // them to one file, so the collision scenario cannot be triggered via disk.
+  const itLinuxOnly = process.platform === 'linux' ? it : it.skip;
+  itLinuxOnly('#3785 adversarial: case-insensitive collision — two plan IDs that differ only by case throw a clear error', async () => {
+    // Regression guard: if two plan files produce IDs that are identical when
+    // lowercased, planMap would silently overwrite one entry and route depends_on
+    // edges to whichever plan survived. This must fail fast instead.
+    const phase21 = join(tmpDir, '.planning', 'phases', '21-collision');
+    await mkdir(phase21, { recursive: true });
+    // These two filenames produce IDs '21-01-auth' and '21-01-Auth' — same when lowercased.
+    await writeFile(join(phase21, '21-01-auth-PLAN.md'), [
+      '---',
+      'phase: 21',
+      'plan: 01',
+      'autonomous: true',
+      'depends_on: []',
+      '---',
+      '<objective>Plan lowercase.</objective>',
+    ].join('\n'));
+    await writeFile(join(phase21, '21-01-Auth-PLAN.md'), [
+      '---',
+      'phase: 21',
+      'plan: 01',
+      'autonomous: true',
+      'depends_on: []',
+      '---',
+      '<objective>Plan uppercase.</objective>',
+    ].join('\n'));
+
+    await expect(phasePlanIndex(['21'], tmpDir)).rejects.toThrow(/collision/i);
   });
 });

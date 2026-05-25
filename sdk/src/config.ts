@@ -8,6 +8,11 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { relPlanningPath } from './workstream-utils.js';
+import {
+  CONFIG_DEFAULTS as CANONICAL_CONFIG_DEFAULTS,
+  mergeDefaults as canonicalMergeDefaults,
+  normalizeLegacyKeys,
+} from './configuration/index.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -25,6 +30,18 @@ export interface WorkflowConfig {
   nyquist_validation: boolean;
   /** Mirrors gsd-tools flat `config.tdd_mode` (from `workflow.tdd_mode`). */
   tdd_mode: boolean;
+  /**
+   * Issue #3309. `end-of-phase` (default) suppresses mid-flight
+   * `<task type="checkpoint:human-verify">` task emission; the planner
+   * embeds verification details into the relevant `auto` task's
+   * `<verify><human-check>` block and the verifier harvests them at
+   * end-of-phase into the existing HUMAN-UAT.md path. `mid-flight`
+   * restores the pre-#3309 behavior where the executor halts at each
+   * `checkpoint:human-verify` task and pays a full executor cold-start
+   * cost (CLAUDE.md, MEMORY.md, STATE.md, plan re-read on respawn) per
+   * round-trip.
+   */
+  human_verify_mode: 'mid-flight' | 'end-of-phase';
   auto_advance: boolean;
   /** Internal auto-chain flag used by workflow routing. */
   _auto_chain_active?: boolean;
@@ -47,6 +64,14 @@ export interface WorkflowConfig {
    * verify-phase (validation gate, non-blocking). Set false to disable both.
    */
   context_coverage_gate: boolean;
+  /**
+   * Issue #105. When false, the primary checkout is shared or pinned (concurrent
+   * sessions / deliberate base-branch lock) and the commit handler must NOT
+   * auto-switch HEAD to the strategy branch. String value `"false"` is accepted
+   * for resilience against YAML/JSON parsers that leave boolean-like fields as
+   * strings.
+   */
+  use_worktrees?: boolean | string;
 }
 
 export interface HooksConfig {
@@ -74,47 +99,31 @@ export interface GSDConfig {
 
 // ─── Defaults ────────────────────────────────────────────────────────────────
 
-export const CONFIG_DEFAULTS: GSDConfig = {
-  model_profile: 'balanced',
-  commit_docs: true,
-  parallelization: true,
-  search_gitignored: false,
-  brave_search: false,
-  firecrawl: false,
-  exa_search: false,
-  git: {
-    branching_strategy: 'none',
-    phase_branch_template: 'gsd/phase-{phase}-{slug}',
-    milestone_branch_template: 'gsd/{milestone}-{slug}',
-    quick_branch_template: null,
-  },
-  workflow: {
-    research: true,
-    plan_check: true,
-    verifier: true,
-    nyquist_validation: true,
-    tdd_mode: false,
-    auto_advance: false,
-    node_repair: true,
-    node_repair_budget: 2,
-    ui_phase: true,
-    ui_safety_gate: true,
-    text_mode: false,
-    research_before_questions: false,
-    discuss_mode: 'discuss',
-    skip_discuss: false,
-    max_discuss_passes: 3,
-    subagent_timeout: 300000,
-    context_coverage_gate: true,
-    _auto_chain_active: false,
-  },
-  hooks: {
-    context_warnings: true,
-  },
-  agent_skills: {},
-  project_code: null,
-  mode: 'interactive',
-};
+/**
+ * Canonical CONFIG_DEFAULTS delegated to the Configuration Module (ADR-3524).
+ * Cast to GSDConfig to preserve typed access for existing consumers.
+ * The canonical manifest may include additional keys beyond GSDConfig's
+ * declared fields (e.g. resolve_model_ids, context_window, planning.*,
+ * ship.*, workflow.security_*, workflow.code_review_*); these are accessible
+ * via the [key: string]: unknown index signature on GSDConfig.
+ *
+ * BEHAVIOR CHANGE (Cycle 3, #3536): CONFIG_DEFAULTS now includes all keys from
+ * sdk/shared/config-defaults.manifest.json. Keys added vs old inline literal:
+ *   top-level: resolve_model_ids (false), context_window (200000),
+ *               phase_naming ('sequential'), claude_md_path ('./CLAUDE.md')
+ *   git: create_tag (true), base_branch (null)
+ *   workflow: ai_integration_phase (true), code_review (true),
+ *             code_review_depth ('standard'), code_review_command (null),
+ *             pattern_mapper (true), plan_bounce (false), plan_bounce_script (null),
+ *             plan_bounce_passes (2), auto_prune_state (false),
+ *             post_planning_gaps (true), security_enforcement (true),
+ *             security_asvs_level (1), security_block_on ('high'),
+ *             context_coverage_gate: true (unchanged from old literal)
+ *   planning: { commit_docs: true, search_gitignored: false, sub_repos: [], granularity: 'standard' }
+ *   hooks: workflow_guard (false)
+ *   ship: { pr_body_sections: [] }
+ */
+export const CONFIG_DEFAULTS: GSDConfig = CANONICAL_CONFIG_DEFAULTS as unknown as GSDConfig;
 
 // ─── Loader ──────────────────────────────────────────────────────────────────
 
@@ -173,33 +182,29 @@ export async function loadConfig(projectDir: string, workstream?: string): Promi
 
   // Project config exists — user-level defaults are ignored (CJS parity).
   // `buildNewProjectConfig` already baked them into config.json at /gsd-new-project.
-  return mergeDefaults(parsed);
+  // Normalize legacy top-level keys (branching_strategy → git.branching_strategy, etc.)
+  // before merging with defaults, matching the Configuration Module's loadConfig pipeline.
+  const { parsed: normalized } = normalizeLegacyKeys(parsed);
+  return mergeDefaults(normalized);
 }
 
+/**
+ * Merge config with defaults using the Configuration Module's deep-merge.
+ * Delegates to canonicalMergeDefaults (ADR-3524, Cycle 3, #3536).
+ *
+ * BEHAVIOR CHANGE (Cycle 3, #3536): The old implementation used spread-per-section
+ * (shallow merge for git/workflow/hooks/agent_skills, spread for top-level).
+ * The new implementation uses recursive deep-merge via canonicalMergeDefaults,
+ * which means partial nested objects (e.g. { workflow: { research: false } })
+ * are now deep-merged rather than replacing the entire section's defaults.
+ * The practical difference: deep-merge preserves sibling default keys within
+ * nested sections even when the overlay only specifies one key — which was
+ * already the intended behavior of the old spread-per-section approach.
+ * Legacy branching_strategy top-level → git.branching_strategy normalization
+ * is now handled by normalizeLegacyKeys inside canonicalMergeDefaults's pipeline
+ * (via loadConfig); for the raw mergeDefaults path, legacy key handling is
+ * delegated to the canonical module.
+ */
 function mergeDefaults(parsed: Record<string, unknown>): GSDConfig {
-  const legacyBranchingStrategy = typeof parsed.branching_strategy === 'string'
-    ? parsed.branching_strategy
-    : undefined;
-
-  return {
-    ...structuredClone(CONFIG_DEFAULTS),
-    ...parsed,
-    git: {
-      ...CONFIG_DEFAULTS.git,
-      ...(legacyBranchingStrategy ? { branching_strategy: legacyBranchingStrategy } : {}),
-      ...(parsed.git as Partial<GitConfig> ?? {}),
-    },
-    workflow: {
-      ...CONFIG_DEFAULTS.workflow,
-      ...(parsed.workflow as Partial<WorkflowConfig> ?? {}),
-    },
-    hooks: {
-      ...CONFIG_DEFAULTS.hooks,
-      ...(parsed.hooks as Partial<HooksConfig> ?? {}),
-    },
-    agent_skills: {
-      ...CONFIG_DEFAULTS.agent_skills,
-      ...(parsed.agent_skills as Record<string, unknown> ?? {}),
-    },
-  };
+  return canonicalMergeDefaults(parsed) as unknown as GSDConfig;
 }

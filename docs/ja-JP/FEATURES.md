@@ -442,7 +442,7 @@
 
 ### 12. フリーフォームルーティング
 
-**コマンド:** `/gsd-do`
+**コマンド:** `/gsd-fast`
 
 **目的:** 自由形式のテキストを分析し、適切な GSD コマンドにルーティングします。
 
@@ -456,7 +456,7 @@
 
 ### 13. ノートキャプチャ
 
-**コマンド:** `/gsd-note`
+**コマンド:** `/gsd-capture`
 
 **目的:** ワークフローを中断することなくアイデアを記録する、摩擦ゼロのメモ機能。タイムスタンプ付きメモの追加、全メモの一覧表示、または構造化された Todo へのプロモーションが可能です。
 
@@ -953,7 +953,6 @@ fix(03-01): correct auth token expiry
 
 **生成される成果物:**
 - `USER-PROFILE.md` — 証拠引用付きの完全な行動プロファイル
-- `/gsd-dev-preferences` コマンド — 任意のセッションで好みを読み込み
 - `CLAUDE.md` プロファイルセクション — Claude Code により自動検出
 
 **フラグ:**
@@ -1309,7 +1308,7 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 
 ### 55. マルチランタイムインストーラー選択
 
-**対象:** `npx get-shit-done-cc`
+**対象:** `npx @opengsd/get-shit-done-redux`
 
 **目的:** 1回のインタラクティブなインストールセッションで複数のランタイムを選択します。
 
@@ -1328,7 +1327,7 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 
 ### 56. Windsurf ランタイムサポート
 
-**対象:** `npx get-shit-done-cc`
+**対象:** `npx @opengsd/get-shit-done-redux`
 
 **目的:** Windsurf AI IDE のサポートを追加します。
 
@@ -1569,7 +1568,7 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 
 ### 68. Claude Code スキルマイグレーション
 
-**対象:** `npx get-shit-done-cc`
+**対象:** `npx @opengsd/get-shit-done-redux`
 
 **目的:** GSD コマンドを Claude Code 2.1.88+ のスキル形式に後方互換性を維持してマイグレーションします。
 
@@ -1832,7 +1831,7 @@ Claude が GSD ワークフローコンテキスト外でファイル編集を�
 
 ### 85. 新規ランタイムサポート (Trae, Cline, Augment Code)
 
-**対象:** `npx get-shit-done-cc`
+**対象:** `npx @opengsd/get-shit-done-redux`
 
 **目的:** Trae IDE、Cline、Augment Code ランタイムへの GSD インストールを拡張します。
 

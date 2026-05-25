@@ -442,7 +442,7 @@
 
 ### 12. Freeform Routing
 
-**명령어:** `/gsd-do`
+**명령어:** `/gsd-fast`
 
 **목적:** 자유형 텍스트를 분석하고 적절한 GSD 명령어로 라우팅합니다.
 
@@ -456,7 +456,7 @@
 
 ### 13. Note Capture
 
-**명령어:** `/gsd-note`
+**명령어:** `/gsd-capture`
 
 **목적:** 워크플로우를 방해하지 않고 아이디어를 즉시 캡처합니다. 타임스탬프가 있는 노트를 추가하거나, 모든 노트를 나열하거나, 노트를 구조화된 할 일로 승격합니다.
 
@@ -953,7 +953,6 @@ fix(03-01): correct auth token expiry
 
 **생성 산출물.**
 - `USER-PROFILE.md` — 증거 인용이 포함된 전체 행동 프로파일
-- `/gsd-dev-preferences` 명령어 — 모든 세션에서 선호도 로드
 - `CLAUDE.md` 프로파일 섹션 — Claude Code가 자동으로 검색
 
 **플래그.**
@@ -1309,7 +1308,7 @@ Claude가 GSD 워크플로우 컨텍스트 밖에서 파일 편집을 시도하�
 
 ### 55. Multi-Runtime Installer Selection
 
-**일부:** `npx get-shit-done-cc`
+**일부:** `npx @opengsd/get-shit-done-redux`
 
 **목적:** 단일 대화형 설치 세션에서 여러 런타임을 선택합니다.
 
@@ -1328,7 +1327,7 @@ Claude가 GSD 워크플로우 컨텍스트 밖에서 파일 편집을 시도하�
 
 ### 56. Windsurf 런타임 지원
 
-**대상:** `npx get-shit-done-cc`
+**대상:** `npx @opengsd/get-shit-done-redux`
 
 **목적:** Windsurf AI IDE 지원을 추가합니다.
 
@@ -1569,7 +1568,7 @@ Claude가 GSD 워크플로우 컨텍스트 밖에서 파일 편집을 시도하�
 
 ### 68. Claude Code 스킬 마이그레이션
 
-**대상:** `npx get-shit-done-cc`
+**대상:** `npx @opengsd/get-shit-done-redux`
 
 **목적:** GSD 명령어를 하위 호환성을 유지하면서 Claude Code 2.1.88+ 스킬 형식으로 마이그레이션합니다.
 
@@ -1832,7 +1831,7 @@ Claude가 GSD 워크플로우 컨텍스트 밖에서 파일 편집을 시도하�
 
 ### 85. 신규 런타임 지원 (Trae, Cline, Augment Code)
 
-**대상:** `npx get-shit-done-cc`
+**대상:** `npx @opengsd/get-shit-done-redux`
 
 **목적:** Trae IDE, Cline, Augment Code 런타임으로 GSD 설치를 확장합니다.
 

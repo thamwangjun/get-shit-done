@@ -17,14 +17,17 @@
  * ```
  */
 
-import { join, dirname, relative, resolve, isAbsolute, normalize, parse as parsePath, sep as pathSep } from 'node:path';
+import { join, dirname, relative, resolve, isAbsolute, normalize, sep as pathSep } from 'node:path';
 import { realpath } from 'node:fs/promises';
 import { existsSync, statSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { GSDError, ErrorClassification } from '../errors.js';
-import { relPlanningPath } from '../workstream-utils.js';
 export { SUPPORTED_RUNTIMES, type Runtime } from '../model-catalog.js';
 import { SUPPORTED_RUNTIMES, type Runtime } from '../model-catalog.js';
+import { canonicalizeRuntimeName } from '../runtime-name-policy.js';
+import { workspacePlanningPaths, resolveWorkspaceContext, type PlanningPaths } from './workspace.js';
+export { stateExtractField } from './state-document.js';
+import { relPlanningPath, validateWorkstreamName } from '../workstream-utils.js';
 
 // ─── Runtime-aware agents directory resolution ─────────────────────────────
 
@@ -91,14 +94,12 @@ export function getRuntimeConfigDir(runtime: Runtime): string {
  * stale env values don't hard-block workflows.
  */
 export function detectRuntime(config?: { runtime?: unknown }): Runtime {
-  const envValue = process.env.GSD_RUNTIME;
-  if (envValue && (SUPPORTED_RUNTIMES as readonly string[]).includes(envValue)) {
-    return envValue as Runtime;
-  }
-  const configValue = config?.runtime;
-  if (typeof configValue === 'string' && (SUPPORTED_RUNTIMES as readonly string[]).includes(configValue)) {
-    return configValue as Runtime;
-  }
+  const envRuntime = canonicalizeRuntimeName(process.env.GSD_RUNTIME);
+  if (envRuntime) return envRuntime;
+
+  const configRuntime = canonicalizeRuntimeName(config?.runtime);
+  if (configRuntime) return configRuntime;
+
   return 'claude';
 }
 
@@ -107,28 +108,91 @@ export function detectRuntime(config?: { runtime?: unknown }): Runtime {
  *
  * Precedence:
  *   1. `GSD_AGENTS_DIR` — explicit SDK override (wins over runtime selection)
- *   2. `<getRuntimeConfigDir(runtime)>/agents` — installer-parity default
+ *   2. `<projectDir>/.claude/agents` — project-local install (Claude Code `--local`,
+ *      `npx get-shit-done-cc@latest`); checked first to match Claude Code's own
+ *      local-first agent resolution at spawn (#3799)
+ *   3. `<getRuntimeConfigDir(runtime)>/agents` — global installer-parity default
  *
  * Defaults to Claude when no runtime is passed, matching prior behavior
  * (see `init-runner.ts`, which is Claude-only by design).
+ *
+ * Local-first resolution was introduced for bug #3799: when both a project-local
+ * `.claude/agents/` and a global `~/.claude/agents/` exist (the global may be
+ * auto-created empty by Claude Code), the SDK must resolve to the project-local
+ * directory to match where the agents are actually installed.
+ *
+ * The repo-local fallback itself was added for bug #3751.
  */
-export function resolveAgentsDir(runtime: Runtime = 'claude'): string {
+export function resolveAgentsDir(runtime: Runtime = 'claude', projectDir?: string): string {
   if (process.env.GSD_AGENTS_DIR) return process.env.GSD_AGENTS_DIR;
-  return join(getRuntimeConfigDir(runtime), 'agents');
+  // Project-local first: <projectDir>/.claude/agents for --local / npx installs (#3799).
+  // Only applicable when a projectDir is known; other runtimes don't use .claude/.
+  if (projectDir && runtime === 'claude') {
+    const localDir = join(projectDir, '.claude', 'agents');
+    if (existsSync(localDir)) return localDir;
+  }
+  const globalDir = join(getRuntimeConfigDir(runtime), 'agents');
+  if (existsSync(globalDir)) return globalDir;
+  return globalDir;
+}
+
+/**
+ * Resolve the runtime-global skills base directory.
+ *
+ * Most runtimes store global skills under `<configDir>/skills`.
+ * `cline` is rules-based and has no global skills directory.
+ */
+export function resolveGlobalSkillsBase(runtime: Runtime): string | null {
+  if (runtime === 'cline') return null;
+  return join(getRuntimeConfigDir(runtime), 'skills');
+}
+
+/**
+ * Render a human-readable runtime-global skills base path.
+ * Uses `~` when the path lives under the current home dir.
+ * Returns a displayable string for unsupported runtimes (never null).
+ */
+export function renderGlobalSkillsBaseDisplayPath(runtime: Runtime): string {
+  const base = resolveGlobalSkillsBase(runtime);
+  if (!base) return `(${runtime} does not use a skills directory)`;
+  const home = homedir();
+  const homeWithSep = home.endsWith(pathSep) ? home : `${home}${pathSep}`;
+  return (base === home || base.startsWith(homeWithSep)) ? `~${base.slice(home.length)}` : base;
+}
+
+/** Resolve one runtime-global skill directory, or `null` when unsupported. */
+export function resolveGlobalSkillDir(runtime: Runtime, skillName: string): string | null {
+  const base = resolveGlobalSkillsBase(runtime);
+  if (base === null) return null;
+  const candidate = resolve(base, skillName);
+  const rel = relative(base, candidate);
+  if (!skillName || rel.startsWith('..') || isAbsolute(rel)) return null;
+  return candidate;
+}
+
+/** Resolve the canonical SKILL.md path for one runtime-global skill. */
+export function resolveGlobalSkillMarkdownPath(runtime: Runtime, skillName: string): string | null {
+  const dir = resolveGlobalSkillDir(runtime, skillName);
+  if (dir === null) return null;
+  return join(dir, 'SKILL.md');
+}
+
+/**
+ * Render a human-readable global skill path for warnings.
+ * Uses `~` when the path lives under the current home dir.
+ */
+export function renderGlobalSkillDisplayPath(runtime: Runtime, skillName: string): string {
+  const dir = resolveGlobalSkillDir(runtime, skillName);
+  if (!dir) return `(${runtime} does not use a skills directory)`;
+  const home = homedir();
+  const homeWithSep = home.endsWith(pathSep) ? home : `${home}${pathSep}`;
+  return (dir === home || dir.startsWith(homeWithSep)) ? `~${dir.slice(home.length)}` : dir;
 }
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 /** Paths to common .planning files. */
-export interface PlanningPaths {
-  planning: string;
-  state: string;
-  roadmap: string;
-  project: string;
-  config: string;
-  phases: string;
-  requirements: string;
-}
+export type { PlanningPaths } from './workspace.js';
 
 // ─── escapeRegex ────────────────────────────────────────────────────────────
 
@@ -249,12 +313,17 @@ export function extractPhaseToken(dirName: string): string {
  */
 export function phaseTokenMatches(dirName: string, normalized: string): boolean {
   const token = extractPhaseToken(dirName);
-  if (token.toUpperCase() === normalized.toUpperCase()) return true;
+  // Normalize the extracted token so that single-digit phase numbers compare
+  // correctly against their padded counterparts (e.g. "1" matches "01").
+  // Without this, parsePhasesFromFiles("…/1-setup/file") produces "1" which
+  // normalizePhaseName pads to "01", causing phaseTokenMatches("1-setup","01")
+  // to miss the directory entirely (bug #3749 integration path).
+  if (normalizePhaseName(token).toUpperCase() === normalized.toUpperCase()) return true;
   // Strip optional project_code prefix from dir and retry
   const stripped = dirName.replace(/^[A-Z]{1,6}-(?=\d)/i, '');
   if (stripped !== dirName) {
     const strippedToken = extractPhaseToken(stripped);
-    if (strippedToken.toUpperCase() === normalized.toUpperCase()) return true;
+    if (normalizePhaseName(strippedToken).toUpperCase() === normalized.toUpperCase()) return true;
   }
   return false;
 }
@@ -269,29 +338,6 @@ export function phaseTokenMatches(dirName: string, normalized: string): boolean 
  */
 export function toPosixPath(p: string): string {
   return p.split('\\').join('/');
-}
-
-// ─── stateExtractField ──────────────────────────────────────────────────────
-
-/**
- * Extract a field value from STATE.md content.
- *
- * Supports both **bold:** and plain: formats, case-insensitive.
- *
- * @param content - STATE.md content string
- * @param fieldName - Field name to extract
- * @returns The field value, or null if not found
- */
-export function stateExtractField(content: string, fieldName: string): string | null {
-  const escaped = escapeRegex(fieldName);
-  // Horizontal whitespace only after ':' so YAML blocks like `progress:\n  total:` do not
-  // match as `Progress:` with a multi-line "value" (parity with STATE.md body fields).
-  const boldPattern = new RegExp(`\\*\\*${escaped}:\\*\\*[ \\t]*(.+)`, 'i');
-  const boldMatch = content.match(boldPattern);
-  if (boldMatch) return boldMatch[1].trim();
-  const plainPattern = new RegExp(`^${escaped}:[ \\t]*(.+)`, 'im');
-  const plainMatch = content.match(plainPattern);
-  return plainMatch ? plainMatch[1].trim() : null;
 }
 
 // ─── normalizeMd ───────────────────────────────────────────────────────────
@@ -409,11 +455,23 @@ export function normalizeMd(content: string): string {
  * All paths returned in POSIX format.
  *
  * @param projectDir - Root project directory
- * @param workstream - Optional workstream name (see relPlanningPath)
+ * @param workstream - Optional workstream name
  * @returns Object with paths to common .planning files
  */
 export function planningPaths(projectDir: string, workstream?: string): PlanningPaths {
-  const base = join(projectDir, relPlanningPath(workstream));
+  const envCtx = resolveWorkspaceContext();
+  // Validate env workstream before use: invalid GSD_WORKSTREAM falls back to
+  // root .planning/ (bug-2791 contract — invalid env must not crash or route
+  // to a bad path; silent fallback to root preserves pre-#3269 behaviour).
+  const validEnvWorkstream =
+    envCtx.workstream && validateWorkstreamName(envCtx.workstream) ? envCtx.workstream : null;
+  const effectiveWorkstream = workstream ?? validEnvWorkstream;
+  // Use relPlanningPath(workstream) to scope the base path per workstream policy.
+  const base = join(projectDir, relPlanningPath(effectiveWorkstream ?? undefined));
+  // For env-sourced project scoping (no explicit workstream), delegate to workspace.
+  if (!effectiveWorkstream && envCtx.project) {
+    return workspacePlanningPaths(projectDir, { workstream: null, project: envCtx.project });
+  }
   return {
     planning: toPosixPath(base),
     state: toPosixPath(join(base, 'STATE.md')),
@@ -426,132 +484,9 @@ export function planningPaths(projectDir: string, workstream?: string): Planning
 }
 
 // ─── findProjectRoot (multi-repo .planning resolution) ─────────────────────
-
-/**
- * Maximum number of parent directories to walk when searching for a
- * multi-repo `.planning/` root. Bounded to avoid scanning to the filesystem
- * root in pathological cases.
- */
-const FIND_PROJECT_ROOT_MAX_DEPTH = 10;
-
-/**
- * Walk up from `startDir` to find the project root that owns `.planning/`.
- *
- * Ported from `get-shit-done/bin/lib/core.cjs:findProjectRoot` so that
- * `gsd-sdk query` resolves the same parent `.planning/` root as the legacy
- * `gsd-tools.cjs` CLI when invoked inside a `sub_repos`-listed child repo.
- *
- * Detection strategy (checked in order for each ancestor, up to
- * `FIND_PROJECT_ROOT_MAX_DEPTH` levels):
- *   1. `startDir` itself has `.planning/` — return it unchanged (#1362).
- *   2. Parent has `.planning/config.json` with `sub_repos` listing the
- *      immediate child segment of the starting directory.
- *   3. Parent has `.planning/config.json` with `multiRepo: true` (legacy).
- *   4. Parent has `.planning/` AND an ancestor of `startDir` (up to the
- *      candidate parent) contains `.git` — heuristic fallback.
- *
- * Returns `startDir` unchanged when no ancestor `.planning/` is found
- * (first-run or single-repo projects). Never walks above the user's home
- * directory.
- *
- * All filesystem errors are swallowed — a missing or unparseable
- * `config.json` falls back to the `.git` heuristic, and unreadable
- * directories terminate the walk at that level.
- */
-export function findProjectRoot(startDir: string): string {
-  let resolvedStart: string;
-  try {
-    resolvedStart = resolve(startDir);
-  } catch {
-    return startDir;
-  }
-  const fsRoot = parsePath(resolvedStart).root;
-  const home = homedir();
-
-  // If startDir already contains .planning/, it IS the project root.
-  try {
-    const ownPlanning = join(resolvedStart, '.planning');
-    if (existsSync(ownPlanning) && statSync(ownPlanning).isDirectory()) {
-      return startDir;
-    }
-  } catch {
-    // fall through
-  }
-
-  // Walk upward, mirroring isInsideGitRepo from the CJS reference.
-  function isInsideGitRepo(candidateParent: string): boolean {
-    let d = resolvedStart;
-    while (d !== fsRoot) {
-      try {
-        if (existsSync(join(d, '.git'))) return true;
-      } catch {
-        // ignore
-      }
-      if (d === candidateParent) break;
-      const next = dirname(d);
-      if (next === d) break;
-      d = next;
-    }
-    return false;
-  }
-
-  let dir = resolvedStart;
-  let depth = 0;
-  while (dir !== fsRoot && depth < FIND_PROJECT_ROOT_MAX_DEPTH) {
-    const parent = dirname(dir);
-    if (parent === dir) break;
-    if (parent === home) break;
-
-    const parentPlanning = join(parent, '.planning');
-    let parentPlanningIsDir = false;
-    try {
-      parentPlanningIsDir = existsSync(parentPlanning) && statSync(parentPlanning).isDirectory();
-    } catch {
-      parentPlanningIsDir = false;
-    }
-
-    if (parentPlanningIsDir) {
-      const configPath = join(parentPlanning, 'config.json');
-      let matched = false;
-      try {
-        const raw = readFileSync(configPath, 'utf-8');
-        const config = JSON.parse(raw) as {
-          sub_repos?: unknown;
-          planning?: { sub_repos?: unknown };
-          multiRepo?: unknown;
-        };
-        const subReposValue =
-          (config.sub_repos as unknown) ?? (config.planning && config.planning.sub_repos);
-        const subRepos = Array.isArray(subReposValue) ? (subReposValue as unknown[]) : [];
-
-        if (subRepos.length > 0) {
-          const relPath = relative(parent, resolvedStart);
-          const topSegment = relPath.split(pathSep)[0];
-          if (subRepos.includes(topSegment)) {
-            return parent;
-          }
-        }
-
-        if (config.multiRepo === true && isInsideGitRepo(parent)) {
-          matched = true;
-        }
-      } catch {
-        // config.json missing or unparseable — fall through to .git heuristic.
-      }
-
-      if (matched) return parent;
-
-      // Heuristic: parent has .planning/ and we're inside a git repo.
-      if (isInsideGitRepo(parent)) {
-        return parent;
-      }
-    }
-
-    dir = parent;
-    depth += 1;
-  }
-  return startDir;
-}
+// Implementation lives in sdk/src/project-root/index.ts — re-exported here
+// so that existing consumers of helpers.ts continue to work unchanged.
+export { findProjectRoot } from '../project-root/index.js';
 
 // ─── resolvePathUnderProject ───────────────────────────────────────────────
 
@@ -578,6 +513,26 @@ export async function resolvePathUnderProject(projectDir: string, userPath: stri
     throw new GSDError('path escapes project directory', ErrorClassification.Validation);
   }
   return realCandidate;
+}
+
+/**
+ * Resolve a user-supplied file path the way CJS frontmatter handlers do.
+ *
+ * Mirrors `path.isAbsolute(filePath) ? filePath : path.join(cwd, filePath)`
+ * from get-shit-done/bin/lib/frontmatter.cjs (lines 323, 340, 354, 369).
+ * Does NOT enforce the "under project root" prefix check — frontmatter
+ * verbs accept arbitrary absolute paths (the user is naming a file outside
+ * `.planning/`, often a phase-scoped plan in an external location, or a
+ * tmpdir inside `/var/folders` whose path includes spaces).
+ *
+ * Bug #3509 parity: tests on macOS use `os.tmpdir()` directories that
+ * resolve outside the project root; the project-scoped variant was
+ * rejecting them with "path escapes project directory". Use this helper
+ * for the frontmatter family. Use `resolvePathUnderProject` for commands
+ * that must stay inside the project (e.g. template output, decisions).
+ */
+export function resolveFrontmatterPath(projectDir: string, userPath: string): string {
+  return isAbsolute(userPath) ? normalize(userPath) : resolve(projectDir, userPath);
 }
 
 // ─── sanitizeForDisplay (security.cjs) ───────────────────────────────────────

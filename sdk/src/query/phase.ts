@@ -17,6 +17,7 @@
  * ```
  */
 
+import { existsSync } from 'node:fs';
 import { readFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { GSDError, ErrorClassification } from '../errors.js';
@@ -30,6 +31,71 @@ import {
 } from './helpers.js';
 import { relPlanningPath } from '../workstream-utils.js';
 import type { QueryHandler } from './utils.js';
+
+// ─── Milestone-scoped directory helpers (#3816) ───────────────────────────
+
+/**
+ * Pattern matching any milestone archive directory (ends in `-phases`).
+ * Accepts both the canonical `vX.Y-phases` form AND prefixed variants like
+ * `aimpf-v1.1-phases` that emerged from projects forking milestone names.
+ *
+ * Previous pattern `/^v[\d.]+-phases$/` silently skipped all prefixed dirs,
+ * causing `findPhase` to miss active phases and return stale archive matches.
+ */
+const MILESTONE_PHASES_DIR_RE = /-phases$/;
+
+/**
+ * Read the current milestone identifier from STATE.md so the archive scan
+ * can prefer the active-milestone archive over older archived dirs when two
+ * milestone archives both contain a phase with the same number.
+ *
+ * Returns null on any error (STATE.md absent, unreadable, or no `milestone:`
+ * front-matter field) — callers fall through to the standard sort order.
+ */
+async function readCurrentMilestone(projectDir: string, workstream?: string): Promise<string | null> {
+  try {
+    const statePath = planningPaths(projectDir, workstream).state;
+    const stateContent = await readFile(statePath, 'utf-8');
+    const m = stateContent.match(/^milestone:\s*(.+)$/m);
+    if (!m) return null;
+    return m[1].trim().replace(/^["']|["']$/g, '');
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Return the sorted list of milestone archive directory names from
+ * `.planning/milestones/`, placing the current-milestone dir first.
+ *
+ * Expansion of the previous `/^v[\d.]+-phases$/` filter: now accepts any
+ * directory ending in `-phases` so prefixed milestone names (e.g.
+ * `aimpf-v1.1-phases`) are included in the scan (#3816 fix).
+ */
+async function sortedMilestoneArchiveDirs(
+  milestonesDir: string,
+  currentMilestone: string | null,
+): Promise<string[]> {
+  const entries = await readdir(milestonesDir, { withFileTypes: true });
+  const names = entries
+    .filter(e => e.isDirectory() && MILESTONE_PHASES_DIR_RE.test(e.name))
+    .map(e => e.name);
+
+  // Build expected name for the current-milestone archive dir so it sorts first.
+  const currentArchiveName = currentMilestone ? `${currentMilestone}-phases` : null;
+
+  return names.sort((a, b) => {
+    // Current-milestone dir always first.
+    if (currentArchiveName) {
+      if (a === currentArchiveName) return -1;
+      if (b === currentArchiveName) return 1;
+    }
+    // Remaining dirs in ascending version order (oldest milestone first).
+    // v1.2-phases sorts before v1.10-phases so the earliest archive is
+    // searched first — deterministic and predictable for callers (#3816).
+    return a.localeCompare(b, undefined, { numeric: true });
+  });
+}
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -47,9 +113,53 @@ interface PhaseInfo {
   has_verification: boolean;
   has_reviews: boolean;
   archived?: string;
+  /**
+   * #2893 — non-canonical plan filename warning (singular). Present only when
+   * a plan-shaped file in this phase dir is not the canonical
+   * `{padded_phase}-{NN}-PLAN.md` shape; the executor surfaces this so users
+   * see a loud signal instead of plan_count: 0 with no clue why.
+   */
+  warning?: string;
 }
 
 // ─── Internal helpers ──────────────────────────────────────────────────────
+
+/**
+ * #2893 — canonical plan filename predicate and the diagnostic "looks like a
+ * plan but isn't canonical" net. Centralised so every read site (find-phase,
+ * phase-plan-index, phases list --type plans) emits the same warning message.
+ *
+ * Mirrors get-shit-done/bin/lib/phase.cjs lines 17–52.
+ */
+export const isCanonicalPlanFile = (f: string): boolean => f.endsWith('-PLAN.md') || f === 'PLAN.md';
+
+const PLAN_OUTLINE_RE = /-PLAN-OUTLINE\.md$/i;
+const PLAN_PRE_BOUNCE_RE = /-PLAN.*\.pre-bounce\.md$/i;
+const looksLikePlanFile = (f: string): boolean =>
+  /\.md$/i.test(f)
+  && /PLAN/i.test(f)
+  && !PLAN_OUTLINE_RE.test(f)
+  && !PLAN_PRE_BOUNCE_RE.test(f);
+
+/**
+ * Build the canonical "non-canonical plan files" warning string used by every
+ * SDK read site. Returns null when there are no offenders.
+ *
+ * Format mirrors describeNonCanonicalPlans in phase.cjs so consumers see the
+ * same message regardless of which entry point they call.
+ */
+export function describeNonCanonicalPlans(dirFiles: string[], matchedFiles: string[]): string | null {
+  const matched = new Set(matchedFiles);
+  const offenders = dirFiles.filter((f) => looksLikePlanFile(f) && !matched.has(f));
+  if (offenders.length === 0) return null;
+  return (
+    `Found ${offenders.length} plan-shaped file(s) in this phase that don't match the canonical `
+    + `naming convention "{padded_phase}-{NN}-PLAN.md" (or bare "PLAN.md") and were skipped: `
+    + offenders.map((f) => `"${f}"`).join(', ')
+    + `. Rename to the canonical form (e.g. "01-01-PLAN.md") so the executor can detect them. `
+    + `See agents/gsd-planner.md write_phase_prompt step for the full contract.`
+  );
+}
 
 /**
  * Get file stats for a phase directory.
@@ -63,15 +173,17 @@ async function getPhaseFileStats(phaseDir: string): Promise<{
   hasContext: boolean;
   hasVerification: boolean;
   hasReviews: boolean;
+  allFiles: string[];
 }> {
   const files = await readdir(phaseDir);
   return {
-    plans: files.filter(f => f.endsWith('-PLAN.md') || f === 'PLAN.md'),
+    plans: files.filter(isCanonicalPlanFile),
     summaries: files.filter(f => f.endsWith('-SUMMARY.md') || f === 'SUMMARY.md'),
     hasResearch: files.some(f => f.endsWith('-RESEARCH.md') || f === 'RESEARCH.md'),
     hasContext: files.some(f => f.endsWith('-CONTEXT.md') || f === 'CONTEXT.md'),
     hasVerification: files.some(f => f.endsWith('-VERIFICATION.md') || f === 'VERIFICATION.md'),
     hasReviews: files.some(f => f.endsWith('-REVIEWS.md') || f === 'REVIEWS.md'),
+    allFiles: files,
   };
 }
 
@@ -111,9 +223,12 @@ async function searchPhaseInDir(baseDir: string, relBase: string, normalized: st
     const phaseName = dirMatch && dirMatch[2] ? dirMatch[2] : null;
     const phaseDir = join(baseDir, match);
 
-    const { plans: unsortedPlans, summaries: unsortedSummaries, hasResearch, hasContext, hasVerification, hasReviews } = await getPhaseFileStats(phaseDir);
+    const { plans: unsortedPlans, summaries: unsortedSummaries, hasResearch, hasContext, hasVerification, hasReviews, allFiles } = await getPhaseFileStats(phaseDir);
     const plans = unsortedPlans.sort();
     const summaries = unsortedSummaries.sort();
+    // #2893 parity — emit the same warning shape as cmdPhasePlanIndex when a
+    // plan-shaped file would be skipped by the canonical filter.
+    const planNamingWarning = describeNonCanonicalPlans(allFiles, plans);
 
     const completedPlanIds = new Set(
       summaries.flatMap((s) => {
@@ -128,7 +243,7 @@ async function searchPhaseInDir(baseDir: string, relBase: string, normalized: st
       return !completedPlanIds.has(planId) && !completedPlanIds.has(canonical);
     });
 
-    return {
+    const result: PhaseInfo = {
       found: true,
       directory: toPosixPath(join(relBase, match)),
       phase_number: phaseNumber,
@@ -142,6 +257,8 @@ async function searchPhaseInDir(baseDir: string, relBase: string, normalized: st
       has_verification: hasVerification,
       has_reviews: hasReviews,
     };
+    if (planNamingWarning) result.warning = planNamingWarning;
+    return result;
   } catch {
     return null;
   }
@@ -153,6 +270,64 @@ async function searchPhaseInDir(baseDir: string, relBase: string, normalized: st
 function extractObjective(content: string): string | null {
   const m = content.match(/<objective>\s*\n?\s*(.+)/);
   return m ? m[1].trim() : null;
+}
+
+// ─── Exported internal helper ──────────────────────────────────────────────
+
+/**
+ * Locate a phase by number without the QueryHandler wrapper.
+ *
+ * Returns the PhaseInfo (including phase_number, phase_slug) for the given
+ * phase identifier, or null when the phase cannot be found.  Searches current
+ * phases first, then archived milestone phase directories (newest-first) —
+ * identical logic to the `findPhase` QueryHandler and the CJS
+ * `findPhaseInternal` from core.cjs lines 838-874.
+ *
+ * Exported so that `commit.ts` can call it without going through the full
+ * QueryHandler dispatch stack (which would require a registered query context).
+ *
+ * @param projectDir - Project root directory
+ * @param phase      - Phase identifier string (e.g. "1", "02", "2.1")
+ * @param workstream - Optional workstream scope
+ */
+export async function findPhaseByNumber(
+  projectDir: string,
+  phase: string,
+  workstream?: string,
+): Promise<PhaseInfo | null> {
+  if (!phase) return null;
+
+  const phasesDir = planningPaths(projectDir, workstream).phases;
+  const normalized = normalizePhaseName(phase);
+  const relPhasesDir = relPlanningPath(workstream) + '/phases';
+
+  const current = await searchPhaseInDir(phasesDir, relPhasesDir, normalized);
+  if (current) return current;
+
+  const milestonesDir = join(projectDir, '.planning', 'milestones');
+  try {
+    // #3816: read current milestone so its archive dir is searched first,
+    // preventing a stale archive from shadowing the active phase when two
+    // milestone archives share the same phase number.
+    const currentMilestone = await readCurrentMilestone(projectDir, workstream);
+    const archiveDirs = await sortedMilestoneArchiveDirs(milestonesDir, currentMilestone);
+
+    for (const archiveName of archiveDirs) {
+      // Extract version: strip the trailing `-phases` suffix.
+      // Matches both canonical `v1.1-phases` → `v1.1` and prefixed
+      // `aimpf-v1.1-phases` → `aimpf-v1.1` (#3816).
+      const version = archiveName.replace(/-phases$/, '');
+      const archivePath = join(milestonesDir, archiveName);
+      const relBase = '.planning/milestones/' + archiveName;
+      const result = await searchPhaseInDir(archivePath, relBase, normalized);
+      if (result) {
+        result.archived = version;
+        return result;
+      }
+    }
+  } catch { /* milestones dir doesn't exist — not an error */ }
+
+  return null;
 }
 
 // ─── Exported handlers ─────────────────────────────────────────────────────
@@ -180,7 +355,42 @@ export const findPhase: QueryHandler = async (args, projectDir, workstream) => {
   const phasesDir = planningPaths(projectDir, workstream).phases;
   const normalized = normalizePhaseName(phase);
 
-  const notFound: PhaseInfo = {
+  // Track every directory we actually probed so the not-found payload can
+  // surface them to the caller for diagnostics (#3164 acceptance criterion).
+  const searchedDirectories: string[] = [];
+
+  // Search current phases first
+  const relPhasesDir = relPlanningPath(workstream) + '/phases';
+  if (existsSync(phasesDir)) {
+    searchedDirectories.push(relPhasesDir);
+  }
+  const current = await searchPhaseInDir(phasesDir, relPhasesDir, normalized);
+  if (current) return { data: current };
+
+  // Search archived milestone phases — current-milestone dir first (#3816)
+  const milestonesDir = join(projectDir, '.planning', 'milestones');
+  try {
+    // #3816: include prefixed milestone dirs (e.g. aimpf-v1.1-phases) and
+    // sort the current-milestone archive to the front of the search order.
+    const currentMilestone = await readCurrentMilestone(projectDir, workstream);
+    const archiveDirs = await sortedMilestoneArchiveDirs(milestonesDir, currentMilestone);
+
+    for (const archiveName of archiveDirs) {
+      // Strip trailing `-phases` to derive the version label (#3816: works for
+      // both `v1.1-phases` and prefixed `aimpf-v1.1-phases`).
+      const version = archiveName.replace(/-phases$/, '');
+      const archivePath = join(milestonesDir, archiveName);
+      const relBase = '.planning/milestones/' + archiveName;
+      searchedDirectories.push(relBase);
+      const result = await searchPhaseInDir(archivePath, relBase, normalized);
+      if (result) {
+        result.archived = version;
+        return { data: result };
+      }
+    }
+  } catch { /* milestones dir doesn't exist */ }
+
+  const notFound: PhaseInfo & { searched_directories: string[] } = {
     found: false,
     directory: null,
     phase_number: null,
@@ -193,36 +403,8 @@ export const findPhase: QueryHandler = async (args, projectDir, workstream) => {
     has_context: false,
     has_verification: false,
     has_reviews: false,
+    searched_directories: searchedDirectories,
   };
-
-  // Search current phases first
-  const relPhasesDir = relPlanningPath(workstream) + '/phases';
-  const current = await searchPhaseInDir(phasesDir, relPhasesDir, normalized);
-  if (current) return { data: current };
-
-  // Search archived milestone phases (newest first)
-  const milestonesDir = join(projectDir, '.planning', 'milestones');
-  try {
-    const milestoneEntries = await readdir(milestonesDir, { withFileTypes: true });
-    const archiveDirs = milestoneEntries
-      .filter(e => e.isDirectory() && /^v[\d.]+-phases$/.test(e.name))
-      .map(e => e.name)
-      .sort()
-      .reverse();
-
-    for (const archiveName of archiveDirs) {
-      const versionMatch = archiveName.match(/^(v[\d.]+)-phases$/);
-      const version = versionMatch ? versionMatch[1] : archiveName;
-      const archivePath = join(milestonesDir, archiveName);
-      const relBase = '.planning/milestones/' + archiveName;
-      const result = await searchPhaseInDir(archivePath, relBase, normalized);
-      if (result) {
-        result.archived = version;
-        return { data: result };
-      }
-    }
-  } catch { /* milestones dir doesn't exist */ }
-
   return { data: notFound };
 };
 
@@ -262,6 +444,15 @@ export const phasePlanIndex: QueryHandler = async (args, projectDir, workstream)
   } catch { /* phases dir doesn't exist */ }
 
   if (!phaseDir) {
+    const found = await findPhase([phase], projectDir, workstream);
+    const foundData = found.data as Record<string, unknown> | null;
+    const relDir = foundData?.directory;
+    if (foundData?.found && typeof relDir === 'string' && relDir.trim() !== '') {
+      phaseDir = join(projectDir, relDir);
+    }
+  }
+
+  if (!phaseDir) {
     return {
       data: {
         phase: normalized,
@@ -276,8 +467,20 @@ export const phasePlanIndex: QueryHandler = async (args, projectDir, workstream)
 
   // Get all files in phase directory
   const phaseFiles = await readdir(phaseDir);
-  const planFiles = phaseFiles.filter(f => f.endsWith('-PLAN.md') || f === 'PLAN.md').sort();
+  const planFiles = phaseFiles.filter(isCanonicalPlanFile).sort();
   const summaryFiles = phaseFiles.filter(f => f.endsWith('-SUMMARY.md') || f === 'SUMMARY.md');
+  // #3430 — identify non-canonical plan-shaped files that were skipped so
+  // callers get an explicit warning rather than a silent plan_count: 0.
+  // Uses a concise format ("Ignored noncanonical plan files: <name,...>")
+  // for the warnings[] array; find-phase / phases-list use the verbose
+  // describeNonCanonicalPlans format which includes remediation guidance.
+  const matchedPlanSet = new Set(planFiles);
+  const nonCanonicalPlanFiles = phaseFiles.filter(
+    f => looksLikePlanFile(f) && !matchedPlanSet.has(f),
+  );
+  const planNamingWarning = nonCanonicalPlanFiles.length > 0
+    ? `Ignored noncanonical plan files: ${nonCanonicalPlanFiles.join(', ')}`
+    : null;
 
   // Build set of plan IDs with summaries — match the planId derivation logic
   const completedPlanIds = new Set(
@@ -360,26 +563,96 @@ export const phasePlanIndex: QueryHandler = async (args, projectDir, workstream)
 
   // ── Pass 2: topological level assignment via depends_on DAG ──────────────
 
+  // Guard: detect case-insensitive key collisions before building dependency
+  // maps. Two plan IDs that differ only by case would silently overwrite each
+  // other in planMap, routing depends_on edges to whichever plan survived last.
+  // This is a configuration error — fail fast with the conflicting IDs so the
+  // author can rename one file. (#3785 follow-up from adversarial review)
+  //
+  // This guard catches case-fold collisions on full plan IDs.
+  // Shared-numeric-prefix collisions (e.g. '20-01-Auth' and '20-01' both
+  // producing canonical '20-01') are resolved by first-write-wins ordering
+  // from sorted planFiles — not explicitly guarded here.
+  // seenLower is intentionally separate from planMap — it exists only to detect
+  // collisions before planMap is built, so the error fires before any Map
+  // entry silently overwrites another.
+  const seenLower = new Map<string, string>(); // lowercase key → original id
+  for (const p of rawPlans) {
+    // ASCII plan IDs only — toLowerCase() is correct and locale-safe here.
+    const lower = p.id.toLowerCase();
+    const existing = seenLower.get(lower);
+    if (existing !== undefined) {
+      throw new GSDError(
+        `depends_on index collision in phase ${normalized}: plan IDs '${existing}' and '${p.id}' are identical when case-folded. Rename one file to avoid ambiguous dependency resolution.`,
+        ErrorClassification.Execution,
+      );
+    }
+    seenLower.set(lower, p.id);
+  }
+
   // Build a map from plan ID → RawPlan for fast lookup.
   // Deps that reference plans outside this phase are silently ignored (treated
   // as already-satisfied external deps — the plan becomes a source node).
-  const planMap = new Map<string, RawPlan>(rawPlans.map(p => [p.id, p]));
+  // Keys are lowercased so that depends_on refs with different casing still
+  // resolve to the correct plan (#3785: case-insensitive identifier resolution).
+  const planMap = new Map<string, RawPlan>(rawPlans.map(p => [p.id.toLowerCase(), p]));
   // Secondary index: canonical prefix → full plan ID, so depends_on: ['03-01'] resolves
   // to '03-01-auth-hardening-PLAN.md'-derived ID '03-01-auth-hardening' (k015).
-  const canonicalToId = new Map<string, string>(rawPlans.map(p => [extractCanonicalPlanId(p.id), p.id]));
+  // Keyed lowercase for the same case-insensitive reason (#3785).
+  const canonicalToId = new Map<string, string>(rawPlans.map(p => [extractCanonicalPlanId(p.id).toLowerCase(), p.id]));
+  // Tertiary index: same-phase short-form ('01') → full plan ID, derived from each plan's
+  // canonical '<phase>-<plan>' by splitting on the LAST '-'. The phase segment may
+  // contain dots (e.g. '99.9') or letters (e.g. '02A'); only the trailing '-NN' is the
+  // short form. Same-phase plans share a phase prefix so '01' is unambiguous within a
+  // single phase-plan-index call. (#3488)
+  // Keyed lowercase for the same case-insensitive reason (#3785).
+  const shortFormToId = new Map<string, string>();
+  for (const p of rawPlans) {
+    const canonical = extractCanonicalPlanId(p.id);
+    const lastDash = canonical.lastIndexOf('-');
+    if (lastDash > 0 && lastDash < canonical.length - 1) {
+      const shortForm = canonical.slice(lastDash + 1).toLowerCase();
+      // First write wins — preserve deterministic ordering from sorted planFiles.
+      if (!shortFormToId.has(shortForm)) {
+        shortFormToId.set(shortForm, p.id);
+      }
+    }
+  }
 
   // Kahn's algorithm — compute in-degree and adjacency for plans in this phase only.
   const level = new Map<string, number>();
   const inDeg = new Map<string, number>();
   const adj = new Map<string, string[]>(); // dep → [dependents]
+  const unresolvedDeps: Array<{ planId: string; dep: string }> = [];
 
   for (const p of rawPlans) {
     if (!inDeg.has(p.id)) inDeg.set(p.id, 0);
     if (!adj.has(p.id)) adj.set(p.id, []);
     for (const dep of p.dependsOn) {
-      // Accept both full-stem ('03-01-auth-hardening') and canonical-prefix ('03-01') forms.
-      const resolvedDep = planMap.has(dep) ? dep : canonicalToId.get(dep);
-      if (!resolvedDep) continue; // external dep — ignore
+      // Accept full-stem ('03-01-auth-hardening'), canonical-prefix ('03-01'),
+      // and same-phase short-form ('01') forms. The short-form lookup (#3488)
+      // is keyed off the plan-id suffix so it works for integer ('99'), letter
+      // ('02A'), and decimal ('99.9') phase IDs alike.
+      // All lookups are lowercased so mixed-case depends_on refs resolve
+      // correctly regardless of the case used in the plan filename (#3785).
+      const depLower = dep.toLowerCase();
+      let resolvedDep: string | undefined;
+      if (planMap.has(depLower)) {
+        resolvedDep = planMap.get(depLower)!.id;
+      } else if (canonicalToId.has(depLower)) {
+        resolvedDep = canonicalToId.get(depLower);
+      } else if (shortFormToId.has(depLower)) {
+        resolvedDep = shortFormToId.get(depLower);
+      }
+      if (!resolvedDep) {
+        // Looks like an in-phase short-form / canonical reference that didn't resolve.
+        // Distinguish from genuinely-external deps: if the dep matches the shape
+        // of an in-phase reference (no slash, matches NN / NN-NN / NN-NN-slug),
+        // record it for a dedicated warning so downstream users aren't misled
+        // by the wave-mismatch warning fired against the dropped edge.
+        unresolvedDeps.push({ planId: p.id, dep });
+        continue;
+      }
       if (!adj.has(resolvedDep)) adj.set(resolvedDep, []);
       adj.get(resolvedDep)!.push(p.id);
       inDeg.set(p.id, (inDeg.get(p.id) ?? 0) + 1);
@@ -433,6 +706,14 @@ export const phasePlanIndex: QueryHandler = async (args, projectDir, workstream)
   let hasCheckpoints = false;
   const warnings: string[] = [];
 
+  // Surface unresolved depends_on references from Pass 2 — without this, a dropped
+  // short-form edge silently collapses the dependent plan into wave 1 and the only
+  // signal is a misleading "declared wave: N but depends_on DAG places it in wave 1"
+  // warning that points at the wave declaration rather than the broken reference. (#3488)
+  for (const { planId, dep } of unresolvedDeps) {
+    warnings.push(`Plan ${planId}: unresolved depends_on reference '${dep}' — no matching plan in phase`);
+  }
+
   for (const raw of rawPlans) {
     if (!raw.autonomous) {
       hasCheckpoints = true;
@@ -456,7 +737,13 @@ export const phasePlanIndex: QueryHandler = async (args, projectDir, workstream)
     const plan: Record<string, unknown> = {
       id: raw.id,
       wave: effectiveWave,
-      depends_on: raw.dependsOn,
+      // Resolve each user-typed dep to its canonical plan ID (preserving on-disk casing)
+      // so the output never reflects the user's case typo. Unresolved deps (external
+      // phase refs) are kept as-is since planMap only contains plans in this phase.
+      depends_on: raw.dependsOn.map(dep => {
+        const lower = String(dep).toLowerCase();
+        return planMap.get(lower)?.id ?? dep;
+      }),
       autonomous: raw.autonomous,
       objective: raw.objective,
       files_modified: raw.filesModified,
@@ -471,6 +758,12 @@ export const phasePlanIndex: QueryHandler = async (args, projectDir, workstream)
       waves[waveKey] = [];
     }
     waves[waveKey].push(raw.id);
+  }
+
+  // #3430 — non-canonical plan filename warning flows through the same
+  // `warnings` array as other diagnostics (unresolved deps, wave mismatches).
+  if (planNamingWarning) {
+    warnings.push(planNamingWarning);
   }
 
   const result: Record<string, unknown> = {

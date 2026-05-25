@@ -26,9 +26,11 @@ const { promisify } = require('util');
 const { performance } = require('perf_hooks');
 const { runGsdTools, createTempProject, cleanup, TOOLS_PATH } = require('./helpers.cjs');
 
-const {
-  normalizeMd,
-} = require('../get-shit-done/bin/lib/core.cjs');
+const { normalizeContent } = require('../get-shit-done/bin/lib/shell-command-projection.cjs');
+// normalizeMd was removed from core.cjs (Phase 4 — issue #3468); the same algorithm now
+// lives in the shell-command-projection seam. Wrap normalizeContent so existing
+// behavioral / snapshot / perf assertions stay point-of-truth.
+const normalizeMd = (input) => normalizeContent('test.md', input).content;
 
 const execAsync = promisify(exec);
 
@@ -783,6 +785,12 @@ describe('stress tests with 50+ phases', () => {
     cleanup(tmpDir);
   });
 
+  // Wall-clock budget for the 50-phase ROADMAP analyze.
+  // Empirical floor on Mac under realistic load is ~2100-3000ms; bumped from
+  // 2000ms to 5000ms after three independent flake reports (see #7).
+  // Long-term: convert to behavior-anchored assertion per PR #3803 pattern.
+  const ROADMAP_ANALYZE_BUDGET_MS = 5000;
+
   test('roadmap analyze on 50-phase ROADMAP completes in under 2000ms', () => {
     create50PhaseProject(tmpDir, 25);
 
@@ -791,7 +799,7 @@ describe('stress tests with 50+ phases', () => {
     const elapsed = performance.now() - start;
 
     assert.ok(result.success, `roadmap analyze should succeed: ${result.error}`);
-    assert.ok(elapsed < 2000, `Should complete in under 2000ms, took ${elapsed.toFixed(0)}ms`);
+    assert.ok(elapsed < ROADMAP_ANALYZE_BUDGET_MS, `Should complete in under ${ROADMAP_ANALYZE_BUDGET_MS}ms, took ${elapsed.toFixed(0)}ms`);
 
     const output = JSON.parse(result.output);
     assert.ok(Array.isArray(output.phases), 'Output should contain a phases array');

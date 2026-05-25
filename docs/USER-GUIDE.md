@@ -40,12 +40,12 @@ v1.40 ships six **namespace meta-skills** as the first-stage entry points for hi
 
 | Namespace | Router | Routes to |
 |-----------|--------|-----------|
-| Phase pipeline | `/gsd-ns-workflow` | discuss / plan / execute / verify / phase / progress |
-| Project lifecycle | `/gsd-ns-project` | milestones, audits, summary |
-| Quality gates | `/gsd-ns-review` | code review, debug, audit, security, eval, ui |
-| Codebase intelligence | `/gsd-ns-context` | map, graphify, docs, learnings |
-| Management | `/gsd-ns-manage` | config, workspace, workstreams, thread, update, ship, inbox |
-| Exploration & capture | `/gsd-ns-ideate` | explore, sketch, spike, spec, capture |
+| Phase pipeline | `/gsd-workflow` | discuss / plan / execute / verify / phase / progress |
+| Project lifecycle | `/gsd-project` | milestones, audits, summary |
+| Quality gates | `/gsd-quality` | code review, debug, audit, security, eval, ui |
+| Codebase intelligence | `/gsd-context` | map, graphify, docs, learnings |
+| Management | `/gsd-manage` | config, workspace, workstreams, thread, update, ship, inbox |
+| Exploration & capture | `/gsd-ideate` | explore, sketch, spike, spec, capture |
 
 You almost never need to type a namespace router yourself. Their value is in the routing layer the model uses to discover the right sub-skill — they exist so the system prompt can list 6 entries instead of 86. If you already know the concrete command (e.g. `/gsd-plan-phase`), call it directly.
 
@@ -248,6 +248,10 @@ Once a phase is verified, ship it:
 ```
 /gsd-ship 1          # Creates a PR with auto-generated body
 ```
+
+The PR body always includes the required GSD sections: `Summary`, `Changes`, `Requirements Addressed`, `Verification`, and `Key Decisions`. During `/gsd-new-project`, you can also enable optional PRD-style sections such as user stories, acceptance criteria, risks, release criteria, and stakeholder approval. These are appended through `ship.pr_body_sections` and do not change the required core sections.
+
+For setup examples, field definitions, and troubleshooting, see [Custom PR Body Sections](ship-pr-body-sections.md).
 
 For multi-phase projects, repeat the loop:
 
@@ -721,6 +725,87 @@ The `security.cjs` module scans for known injection patterns (role overrides, in
 
 ---
 
+### Package Legitimacy Gate (v1.42.1)
+
+AI coding tools hallucinate package names. Attackers pre-register those names on npm, PyPI, and crates.io with malicious post-install scripts — a technique called *slopsquatting*. A hallucinated name that passes `npm view` looks legitimate, so it would flow undetected through GSD's research → plan → execute pipeline all the way to `npm install <malicious-pkg>` running on your machine.
+
+v1.42.1 adds a three-layer gate that stops this before it reaches your shell.
+
+#### What you'll see
+
+**In RESEARCH.md** — every phase that recommends external packages now includes a `## Package Legitimacy Audit` table:
+
+```markdown
+## Package Legitimacy Audit
+
+| Package | Registry | Age | Downloads | Source Repo | slopcheck | Disposition |
+|---------|----------|-----|-----------|-------------|-----------|-------------|
+| express | npm | 13 yrs | 100M+/wk | github.com/expressjs/express | [OK] | Approved |
+| some-new-util | npm | 3 days | 47 | none | [SLOP] | REMOVED |
+| api-bridge | npm | 6 mo | 1.2k/wk | github.com/user/api-bridge | [SUS] | Flagged |
+
+**Packages removed due to slopcheck:** some-new-util
+**Packages flagged as suspicious:** api-bridge — planner will require human verification before install
+```
+
+`[SLOP]` packages are removed from RESEARCH.md entirely. They never reach the planner.
+
+**In PLAN.md** — if a package is tagged `[ASSUMED]` (sourced from WebSearch, not registry-verified) or `[SUS]` (slopcheck suspicious), the plan includes a verification checkpoint *before* the install task:
+
+```xml
+<task type="checkpoint:human-verify">
+  <what-built>Package verification required before install</what-built>
+  <how-to-verify>
+    Verify these packages before proceeding:
+    - `api-bridge` [SUS — 6 months old, 1.2k downloads/week, GitHub repo present]
+      Check: https://npmjs.com/package/api-bridge
+      Look for: maintainer history, issue tracker activity, no suspicious install scripts
+  </how-to-verify>
+  <resume-signal>Type "verified" once you've confirmed all packages are legitimate</resume-signal>
+</task>
+```
+
+**During execution** — if an install fails, the executor surfaces a checkpoint and stops. It does not silently try a similarly-named alternative (which could be even more dangerous).
+
+#### Slopcheck verdicts
+
+| Verdict | Meaning | GSD action |
+|---------|---------|------------|
+| `[OK]` | Package passes all legitimacy checks | Proceeds — no checkpoint added |
+| `[SUS]` | Suspicious signals (new, low downloads, no source repo, etc.) | Flagged in Audit table; planner adds `checkpoint:human-verify` before install |
+| `[SLOP]` | High-confidence hallucination or attacker-registered package | Removed from RESEARCH.md; never reaches planner |
+
+#### Claim provenance and WebSearch packages
+
+Package names discovered through WebSearch are always tagged `[ASSUMED]` in RESEARCH.md, regardless of whether `npm view` succeeds. A package that exists on the registry is not the same as a package that's safe to install — `npm view` only proves registration, not legitimacy.
+
+`[ASSUMED]` packages trigger the same `checkpoint:human-verify` gate as `[SUS]` packages. You'll see the checkpoint with a link to the registry page and guidance on what to look for.
+
+#### If slopcheck isn't installed
+
+GSD attempts `pip install slopcheck` at research time. If that fails:
+
+- Every recommended package is tagged `[ASSUMED]`
+- The planner gates every install with a `checkpoint:human-verify` task
+- Research and planning complete normally — nothing hard-fails
+
+This is intentionally stricter than the normal flow: slopcheck unavailability means every package install gets a human checkpoint, which is the safest fallback.
+
+To install slopcheck manually:
+
+```bash
+pip install slopcheck
+# verify: slopcheck install express --json
+```
+
+#### slopcheck dependency
+
+`slopcheck` is a MIT-licensed Python tool maintained by ToxSec (the researcher who documented the slopsquatting attack surface). It checks packages across npm, PyPI, crates.io, RubyGems, Go modules, Maven, and Packagist using multi-signal heuristics: registry age, download count, source-repo linkage, naming distance to popular packages, and registry-specific suspicion patterns.
+
+If `slopcheck` is ever unavailable or abandoned, GSD's `[ASSUMED]`-gate fallback ensures you always get a human checkpoint before any install — the system never silently degrades to the pre-v1.42.1 behavior.
+
+---
+
 ### Execution Wave Coordination
 
 ```
@@ -821,10 +906,10 @@ For queryable codebase insights without reading the entire codebase, enable the 
 Then build the index:
 
 ```bash
-/gsd-intel refresh             # Analyze codebase and write .planning/intel/ files
-/gsd-intel query auth          # Search for a term across all intel files
-/gsd-intel status              # Check freshness of intel files
-/gsd-intel diff                # See what changed since last snapshot
+/gsd-map-codebase --query refresh             # Analyze codebase and write .planning/intel/ files
+/gsd-map-codebase --query auth               # Search for a term across all intel files
+/gsd-map-codebase --query status             # Check freshness of intel files
+/gsd-map-codebase --query diff               # See what changed since last snapshot
 ```
 
 Intel files cover stack, API surface, dependency graph, file roles, and architecture decisions.
@@ -834,9 +919,9 @@ Intel files cover stack, API surface, dependency graph, file roles, and architec
 For a focused assessment without full `/gsd-map-codebase` overhead:
 
 ```bash
-/gsd-scan                      # Quick tech + arch overview
-/gsd-scan --focus quality      # Quality and code health only
-/gsd-scan --focus concerns     # Risk areas and concerns
+/gsd-map-codebase --fast                        # Quick tech + arch overview
+/gsd-map-codebase --fast --focus quality        # Quality and code health only
+/gsd-map-codebase --fast --focus concerns       # Risk areas and concerns
 ```
 
 ---
@@ -1134,6 +1219,12 @@ For the full audit, harness reference, and the composition note with `model_prof
 
 ### Using Non-Claude Runtimes (Codex, OpenCode, Gemini CLI, Kilo)
 
+> **Codex CLI minimum supported version: `0.130.0`** (issue [#3562](https://github.com/open-gsd/get-shit-done-redux/issues/3562)).
+>
+> Codex CLI [0.130.0](https://github.com/openai/codex/releases/tag/rust-v0.130.0) (released 2026-05-08) removed extra-skills-roots discovery via [openai/codex#21485](https://github.com/openai/codex/pull/21485). From that version onward, Codex only discovers commands from `~/.codex/skills/<name>/SKILL.md` (user root), `<project>/.codex/skills/` (cwd root), and registered plugin roots. The GSD installer writes `~/.codex/skills/gsd-<name>/SKILL.md` directly so `$gsd-help`, `$gsd-new-project`, etc. are discoverable after restart.
+>
+> **Earlier Codex CLI versions** (pre-0.130.0) had additional skill-root scanning that discovered the GSD agent/workflow files in alternate locations. GSD still installs the `~/.codex/skills/gsd-*` copies on those versions, which can show a duplicate listing alongside the legacy auto-discovered surface — restart Codex after install and either upgrade to ≥ 0.130.0 or accept the duplicate entries until you do.
+
 If you installed GSD for a non-Claude runtime, the installer already configured model resolution so all agents use the runtime's default model. No manual setup is needed. Specifically, the installer sets `resolve_model_ids: "omit"` in your config, which tells GSD to skip Anthropic model ID resolution and let the runtime choose its own default model.
 
 To assign different models to different agents on a non-Claude runtime, add `model_overrides` to `.planning/config.json` with fully-qualified model IDs that your runtime recognizes:
@@ -1166,16 +1257,54 @@ GSD will resolve each agent's tier (`opus`/`sonnet`/`haiku`) to the Codex-native
 
 See the [Configuration Reference](CONFIGURATION.md#non-claude-runtimes-codex-opencode-gemini-cli-kilo) for the full explanation.
 
+### Manual install / no-Node.js setup
+
+If you cannot run the GSD installer (e.g., Windows machine without Node.js or npm), you cannot use the source files in `agents/` directly. The source files are in Claude Code's native frontmatter format; each supported runtime requires a different shape. Copying them as-is into another runtime's config directory will produce schema validation errors.
+
+> The installer function responsible for OpenCode conversion is `convertClaudeToOpencodeFrontmatter` at `bin/install.js:5208`. It is the canonical reference for what must be transformed.
+
+#### OpenCode — required transformations
+
+OpenCode validates agent frontmatter against its own schema ([opencode.ai/docs/agents](https://opencode.ai/docs/agents)). The GSD source format is incompatible in two ways:
+
+| Field | GSD source format | OpenCode-valid format | Action |
+|---|---|---|---|
+| `tools:` | `Read, Bash, Grep` (comma-string) | Not a frontmatter field in OpenCode | Remove the `tools:` line entirely |
+| `color:` | Plain CSS color name (e.g., `steelblue`) | Hex (`#4682b4`) or semantic name from OpenCode's fixed set | Convert to hex or remove |
+
+The minimum viable manual transformation for a single agent file:
+
+1. Open the `.md` file from `agents/` in a text editor.
+2. Remove any `tools:` line from the YAML frontmatter block.
+3. Change `color:` to a hex value, or remove it.
+4. Save the file into `~/.config/opencode/agents/<agent-name>.md`.
+
+All other frontmatter fields (`description:`, `system:`, `model:`) are accepted by OpenCode without modification.
+
+#### Alternative: use a machine with Node.js to run the installer
+
+If you have access to any machine with Node.js — including WSL, a Linux VM, a CI runner, or a Docker container — you can run:
+
+```bash
+npx @opengsd/get-shit-done-redux@latest --opencode --global
+```
+
+This produces a correctly converted `~/.config/opencode/agents/` directory. Copy that directory to your Windows machine.
+
+#### Other runtimes
+
+The same principle applies to all non-Claude-Code runtimes. Each runtime has its own schema, and the installer handles each conversion. If you are manually installing for a runtime not covered above, review the relevant installer converter in `bin/install.js` (search for `convert*Frontmatter`) for the exact field transformations needed.
+
 ### Installing for Cline
 
 Cline uses a rules-based integration — GSD installs as `.clinerules` rather than slash commands.
 
 ```bash
 # Global install (applies to all projects)
-npx get-shit-done-cc --cline --global
+npx @opengsd/get-shit-done-redux --cline --global
 
 # Local install (this project only)
-npx get-shit-done-cc --cline --local
+npx @opengsd/get-shit-done-redux --cline --local
 ```
 
 Global installs write to `~/.cline/`. Local installs write to `./.cline/`. No custom slash commands are registered — GSD rules are loaded automatically by Cline from the rules file.
@@ -1185,7 +1314,7 @@ Global installs write to `~/.cline/`. Local installs write to `./.cline/`. No cu
 CodeBuddy uses a skills-based integration.
 
 ```bash
-npx get-shit-done-cc --codebuddy --global
+npx @opengsd/get-shit-done-redux --codebuddy --global
 ```
 
 Skills are installed to `~/.codebuddy/skills/gsd-*/SKILL.md`.
@@ -1195,7 +1324,7 @@ Skills are installed to `~/.codebuddy/skills/gsd-*/SKILL.md`.
 Qwen Code uses the same open skills standard as Claude Code 2.1.88+.
 
 ```bash
-npx get-shit-done-cc --qwen --global
+npx @opengsd/get-shit-done-redux --qwen --global
 ```
 
 Skills are installed to `~/.qwen/skills/gsd-*/SKILL.md`. Use the `QWEN_CONFIG_DIR` environment variable to override the default install path.
@@ -1204,12 +1333,12 @@ Skills are installed to `~/.qwen/skills/gsd-*/SKILL.md`. Use the `QWEN_CONFIG_DI
 
 Many supported runtimes ship a prerelease edition alongside their stable release — Windsurf Next, Cursor Nightly, VS Code Insiders, Codex preview channels, JetBrains EAP, and so on. Prerelease editions read from a sibling configuration directory, so the default install path won't reach them.
 
-GSD does not enumerate prerelease editions as separate named runtimes. They are accommodated through the existing `<RUNTIME>_CONFIG_DIR` environment variables and the free-string runtime policy (see [#2517](https://github.com/gsd-build/get-shit-done/issues/2517)) — installs work, paths resolve, GSD operates. Prerelease editions are **best-effort and not separately tested** as part of release CI.
+GSD does not enumerate prerelease editions as separate named runtimes. They are accommodated through the existing `<RUNTIME>_CONFIG_DIR` environment variables and the free-string runtime policy (see [#2517](https://github.com/open-gsd/get-shit-done-redux/issues/2517)) — installs work, paths resolve, GSD operates. Prerelease editions are **best-effort and not separately tested** as part of release CI.
 
 **Pattern.** Set the runtime's `*_CONFIG_DIR` env var to the prerelease directory before running the installer:
 
 ```bash
-WINDSURF_CONFIG_DIR=~/.codeium/windsurf-next npx get-shit-done-cc@latest --windsurf --global
+WINDSURF_CONFIG_DIR=~/.codeium/windsurf-next npx @opengsd/get-shit-done-redux@latest --windsurf --global
 ```
 
 Select the corresponding stable runtime in the installer prompt. Skills land in the prerelease directory; commands appear in the prerelease editor.
@@ -1249,7 +1378,7 @@ Since v1.17, the installer backs up locally modified files to `gsd-local-patches
 
 ### Cannot Update via npm
 
-If `npx get-shit-done-cc` fails due to npm outages or network restrictions, see [docs/manual-update.md](manual-update.md) for a step-by-step manual update procedure that works without npm access.
+If `npx @opengsd/get-shit-done-redux` fails due to npm outages or network restrictions, see [docs/manual-update.md](manual-update.md) for a step-by-step manual update procedure that works without npm access.
 
 ### Surface GSD Update Notifications Without GSD's Statusline
 
@@ -1271,7 +1400,7 @@ GSD update available: 1.39.0 → 1.40.0. Run /gsd-update.
 
 The banner is silent when no update is available. If the cache file is corrupt, GSD emits one diagnostic line (`GSD update check failed.`) and stays silent for 24 hours so a broken cache does not nag every session.
 
-**Opt-out / removal:** delete the SessionStart hook entry that references `gsd-update-banner.js` from your runtime's `settings.json` (Claude Code: `~/.claude/settings.json`; Gemini: `~/.gemini/settings.json`). `npx get-shit-done-cc --uninstall` removes both the script and the registration in one pass.
+**Opt-out / removal:** delete the SessionStart hook entry that references `gsd-update-banner.js` from your runtime's `settings.json` (Claude Code: `~/.claude/settings.json`; Gemini: `~/.gemini/settings.json`). `npx @opengsd/get-shit-done-redux --uninstall` removes both the script and the registration in one pass.
 
 The banner is not offered when GSD's statusline is installed — that channel already surfaces update info, so re-prompting would be noise.
 

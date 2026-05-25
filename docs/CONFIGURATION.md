@@ -39,6 +39,7 @@ GSD stores project settings in `.planning/config.json`. Created during `/gsd-new
     "discuss_mode": "discuss",
     "max_discuss_passes": 3,
     "skip_discuss": false,
+    "human_verify_mode": "end-of-phase",
     "tdd_mode": false,
     "text_mode": false,
     "use_worktrees": true,
@@ -59,9 +60,27 @@ GSD stores project settings in `.planning/config.json`. Created during `/gsd-new
     "build_command": null,
     "test_command": null
   },
+  "code_quality": {
+    "fallow": {
+      "enabled": false,
+      "scope": "phase",
+      "profile": "standard",
+      "mcp": false
+    }
+  },
+  "ship": {
+    "pr_body_sections": []
+  },
   "hooks": {
     "context_warnings": true,
     "workflow_guard": false
+  },
+  "statusline": {
+    "context_position": "end"
+  },
+  "review": {
+    "default_reviewers": null,
+    "models": {}
   },
   "parallelization": {
     "enabled": true,
@@ -73,6 +92,7 @@ GSD stores project settings in `.planning/config.json`. Created during `/gsd-new
   },
   "git": {
     "branching_strategy": "none",
+    "create_tag": true,
     "phase_branch_template": "gsd/phase-{phase}-{slug}",
     "milestone_branch_template": "gsd/{milestone}-{slug}",
     "quick_branch_template": null
@@ -116,11 +136,11 @@ GSD stores project settings in `.planning/config.json`. Created during `/gsd-new
 |---------|------|---------|---------|-------------|
 | `mode` | enum | `interactive`, `yolo` | `interactive` | `yolo` auto-approves decisions; `interactive` confirms at each step |
 | `granularity` | enum | `coarse`, `standard`, `fine` | `standard` | Controls phase count: `coarse` (3-5), `standard` (5-8), `fine` (8-12) |
-| `model_profile` | enum | `quality`, `balanced`, `budget`, `adaptive`, `inherit` | `balanced` | Model tier for each agent (see [Model Profiles](#model-profiles)). `adaptive` was added per [#1713](https://github.com/gsd-build/get-shit-done/issues/1713) / [#1806](https://github.com/gsd-build/get-shit-done/issues/1806) and resolves the same way as the other tiers under runtime-aware profiles. |
-| `runtime` | string | `claude`, `codex`, or any string | (none) | Active runtime for [runtime-aware profile resolution](#runtime-aware-profiles-2517). When set, profile tiers (opus/sonnet/haiku) resolve to runtime-native model IDs. Today only the Codex install path emits per-agent model IDs from this resolver; other runtimes (`opencode`, `gemini`, `qwen`, `copilot`, …) consume the resolver at spawn time and gain dedicated install-path support in [#2612](https://github.com/gsd-build/get-shit-done/issues/2612). When unset (default), behavior is unchanged from prior versions. Added in v1.39 |
+| `model_profile` | enum | `quality`, `balanced`, `budget`, `adaptive`, `inherit` | `balanced` | Model tier for each agent (see [Model Profiles](#model-profiles)). `adaptive` was added per [#1713](https://github.com/open-gsd/get-shit-done-redux/issues/1713) / [#1806](https://github.com/open-gsd/get-shit-done-redux/issues/1806) and resolves the same way as the other tiers under runtime-aware profiles. |
+| `runtime` | string | `claude`, `codex`, or any string | (none) | Active runtime for [runtime-aware profile resolution](#runtime-aware-profiles-2517). When set, profile tiers (opus/sonnet/haiku) resolve to runtime-native model IDs. Today only the Codex install path emits per-agent model IDs from this resolver; other runtimes (`opencode`, `gemini`, `qwen`, `copilot`, …) consume the resolver at spawn time and gain dedicated install-path support in [#2612](https://github.com/open-gsd/get-shit-done-redux/issues/2612). When unset (default), behavior is unchanged from prior versions. Added in v1.39 |
 | `model_profile_overrides.<runtime>.<tier>` | string \| object | per-runtime tier override | (none) | Override the runtime-aware tier mapping for a specific `(runtime, tier)`. Tier is one of `opus`, `sonnet`, `haiku`. Value is either a model ID string (e.g. `"gpt-5-pro"`) or `{ model, reasoning_effort }`. See [Runtime-Aware Profiles](#runtime-aware-profiles-2517). Added in v1.39 |
-| `models.<phase_type>` | enum | `opus`, `sonnet`, `haiku`, `inherit` | (none) | Per-phase-type model tier. Six accepted slots: `planning`, `discuss`, `research`, `execution`, `verification`, `completion`. Lets you tune at the phase level ("Opus for planning, Sonnet for the rest") without learning agent names. Resolves between `model_overrides` (higher) and `model_profile` (lower); see [Per-Phase-Type Models](#per-phase-type-models-models--added-in-v140). Added in v1.40 ([#3023](https://github.com/gsd-build/get-shit-done/pull/3030)) |
-| `dynamic_routing.enabled` | boolean | `true`, `false` | `false` | Master switch for [dynamic routing with failure-tier escalation](#dynamic-routing-with-failure-tier-escalation-dynamic_routing--added-in-v140). When `true`, agents resolve to `tier_models[default_tier]` and escalate one tier up on orchestrator-detected soft failure. Added in v1.40 ([#3024](https://github.com/gsd-build/get-shit-done/pull/3031)) |
+| `models.<phase_type>` | enum | `opus`, `sonnet`, `haiku`, `inherit` | (none) | Per-phase-type model tier. Six accepted slots: `planning`, `discuss`, `research`, `execution`, `verification`, `completion`. Lets you tune at the phase level ("Opus for planning, Sonnet for the rest") without learning agent names. Resolves between `model_overrides` (higher) and `model_profile` (lower); see [Per-Phase-Type Models](#per-phase-type-models-models--added-in-v140). Added in v1.40 ([#3023](https://github.com/open-gsd/get-shit-done-redux/pull/3030)) |
+| `dynamic_routing.enabled` | boolean | `true`, `false` | `false` | Master switch for [dynamic routing with failure-tier escalation](#dynamic-routing-with-failure-tier-escalation-dynamic_routing--added-in-v140). When `true`, agents resolve to `tier_models[default_tier]` and escalate one tier up on orchestrator-detected soft failure. Added in v1.40 ([#3024](https://github.com/open-gsd/get-shit-done-redux/pull/3031)) |
 | `dynamic_routing.tier_models.<tier>` | enum | `opus`, `sonnet`, `haiku` | (none) | Tier alias for `light`, `standard`, or `heavy`. Used when `dynamic_routing.enabled: true`. Added in v1.40 |
 | `dynamic_routing.escalate_on_failure` | boolean | `true`, `false` | `true` | When `false`, escalation is disabled even if `enabled: true` — every attempt uses the default tier. Added in v1.40 |
 | `dynamic_routing.max_escalations` | integer | `0`, `1`, `2`, … | `1` | Hard cap on retries per agent invocation. Beyond the cap the resolver returns the cap-tier model. Added in v1.40 |
@@ -170,6 +190,24 @@ API key fields accept a string value (the key itself). They can also be set to t
 
 The `<cli>` slug is validated against `[a-zA-Z0-9_-]+`. Empty or path-containing slugs are rejected by `config-set`.
 
+### Reviewer defaults for `/gsd-review`
+
+Use `review.default_reviewers` to scope the no-flag `/gsd-review` run to a subset of detected reviewers.
+
+| Setting | Type | Default | Description |
+|---------|------|---------|-------------|
+| `review.default_reviewers` | string[] \| null | `null` (all detected reviewers) | Optional default subset for no-flag `/gsd-review`, e.g. `["gemini","codex"]`. Precedence is: explicit reviewer flags > `--all` > `review.default_reviewers` > all detected. Unknown slugs are ignored with a warning; known-but-undetected slugs are ignored with an info note; empty arrays are rejected by `config-set`. |
+
+Example:
+
+```json
+{
+  "review": {
+    "default_reviewers": ["gemini", "codex"]
+  }
+}
+```
+
 ### Agent-skill injection (dynamic)
 
 `agent_skills.<agent-type>` extends the `agent_skills` map documented below. Slug is validated against `[a-zA-Z0-9_-]+` — no path separators, no whitespace, no shell metacharacters. Configured interactively via `/gsd-config --integrations`.
@@ -209,6 +247,7 @@ All workflow toggles follow the **absent = enabled** pattern. If a key is missin
 | `workflow.plan_chunked` | boolean | `false` | Enable chunked planning mode. When `true` (or when `--chunked` flag is passed to `/gsd-plan-phase`), the orchestrator splits the single long-lived planner Task into a short outline Task followed by N short per-plan Tasks (~3-5 min each). Each plan is committed individually for crash resilience. If a Task hangs and the terminal is force-killed, rerunning with `--chunked` resumes from the last completed plan. Particularly useful on Windows where long-lived Tasks may hang on stdio. Added in v1.38 |
 | `workflow.code_review_command` | string | (none) | Shell command for external code review integration in `/gsd-ship`. Receives changed file paths via stdin. Non-zero exit blocks the ship workflow. Added in v1.36 |
 | `workflow.tdd_mode` | boolean | `false` | Enable TDD pipeline as a first-class execution mode. When `true`, the planner aggressively applies `type: tdd` to eligible tasks (business logic, APIs, validations, algorithms) and the executor enforces RED/GREEN/REFACTOR gate sequence. An end-of-phase collaborative review checkpoint verifies gate compliance. Added in v1.36 |
+| `workflow.human_verify_mode` | string | `'end-of-phase'` | Controls human verification checkpoints. `'end-of-phase'` (default since #3309) suppresses `checkpoint:human-verify` tasks and embeds checks into `<verify><human-check>` blocks for end-of-phase review. `'mid-flight'` restores blocking checkpoint tasks. `checkpoint:decision` and `checkpoint:human-action` are unaffected. See [Checkpoints Reference](../get-shit-done/references/checkpoints.md#checkpoint_types). |
 | `workflow.cross_ai_execution` | boolean | `false` | Delegate phase execution to an external AI CLI instead of spawning local executor agents. Useful for leveraging a different model's strengths for specific phases. Added in v1.36 |
 | `workflow.cross_ai_command` | string | (none) | Shell command template for cross-AI execution. Receives the phase prompt via stdin. Must produce SUMMARY.md-compatible output. Required when `cross_ai_execution` is `true`. Added in v1.36 |
 | `workflow.cross_ai_timeout` | number | `300` | Timeout in seconds for cross-AI execution commands. Prevents runaway external processes. Added in v1.36 |
@@ -219,10 +258,71 @@ All workflow toggles follow the **absent = enabled** pattern. If a key is missin
 | `executor.stall_detect_interval_minutes` | number | `5` | Minutes between executor stall checks while an executor agent is active. The execute-phase orchestrator uses this cadence to inspect recent commits and avoid waiting forever on a silent agent. |
 | `executor.stall_threshold_minutes` | number | `10` | Minutes without executor completion or expected-branch commit activity before execute-phase offers recovery choices for a possible stalled executor. |
 | `workflow.inline_plan_threshold` | number | `3` | Maximum number of tasks in a phase before the planner generates a separate PLAN.md file instead of inlining tasks in the prompt |
-| `workflow.drift_threshold` | number | `3` | Minimum number of new structural elements (new directories, barrel exports, migrations, route modules) introduced during a phase before the post-execute codebase-drift gate takes action. See [#2003](https://github.com/gsd-build/get-shit-done/issues/2003). Added in v1.39 |
+| `workflow.drift_threshold` | number | `3` | Minimum number of new structural elements (new directories, barrel exports, migrations, route modules) introduced during a phase before the post-execute codebase-drift gate takes action. See [#2003](https://github.com/open-gsd/get-shit-done-redux/issues/2003). Added in v1.39 |
 | `workflow.drift_action` | string | `warn` | What to do when `workflow.drift_threshold` is exceeded after `/gsd-execute-phase`. `warn` prints a message suggesting `/gsd-map-codebase --paths …`; `auto-remap` spawns `gsd-codebase-mapper` scoped to the affected paths. Added in v1.39 |
 | `workflow.build_command` | string | (none) | Shell command to build the project in the post-merge build gate (Step A of step 5.6 in execute-phase). When unset, the gate auto-detects: Xcode (`.xcodeproj` present) → `xcodebuild build`, `Makefile` with `build:` target → `make build`, Justfile → `just build`, `Cargo.toml` → `cargo build`, `go.mod` → `go build ./...`, Python → `python -m py_compile`, `package.json` with `build` script → `npm run build`. Runs with a 5-minute timeout; failure increments `WAVE_FAILURE_COUNT`. Added in v1.39 |
 | `workflow.test_command` | string | (none) | Shell command to run the project's test suite in the post-merge test gate (Step B of step 5.6 in execute-phase) and the regression gate. When unset, the gate auto-detects: Xcode (`.xcodeproj` present) → `xcodebuild test`, `Makefile` with `test:` target → `make test`, Justfile → `just test`, `package.json` → `npm test`, `Cargo.toml` → `cargo test`, `go.mod` → `go test ./...`, Python → `python -m pytest`. Runs with a 5-minute timeout; failure increments `WAVE_FAILURE_COUNT`. Added in v1.39 |
+
+## Code Quality Settings
+
+The `code_quality.*` namespace gates optional structural-analysis tooling that augments `/gsd-code-review`. Settings are additive: each tool is independently opt-in and off by default.
+
+| Setting | Type | Default | Description |
+|---------|------|---------|-------------|
+| `code_quality.fallow.enabled` | boolean | `false` | Enables fallow structural pre-pass for `/gsd-code-review`. When `false`, no fallow binary probe or JSON artifact is produced. |
+| `code_quality.fallow.scope` | string | `phase` | Scope for fallow analysis: `phase` (current review file scope) or `repo` (entire repository). |
+| `code_quality.fallow.profile` | string | `standard` | Fallow profile selector passed to the pre-pass runner (`minimal`, `standard`, `strict`). |
+| `code_quality.fallow.mcp` | boolean | `false` | **Reserved — not yet implemented.** When `true`, enables MCP-backed structural findings mode for runtimes that support MCP server routing. Setting this to `true` is currently a no-op and emits a runtime warning. |
+
+## Ship Settings
+
+`ship.pr_body_sections` adds additional PR body sections for project-specific PRD/PR body content in `/gsd-ship` without editing `get-shit-done/workflows/ship.md`.
+
+For a user guide with onboarding examples and troubleshooting, see [Custom PR Body Sections](ship-pr-body-sections.md).
+
+This list is append-only: configured entries are added after the core `Summary`, `Changes`, `Requirements Addressed`, `Verification`, and `Key Decisions` sections. They cannot replace, remove, or reorder required sections.
+
+Recommended lean/agile PRD uses include user stories, acceptance criteria, Definition of Done or release criteria, risks and dependencies, success metrics, and stakeholder review notes. Keep these sections short and evidence-oriented so the PR body remains a living release artifact rather than a static requirements dump.
+
+Each entry supports:
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `heading` | string | required | Markdown section heading rendered as `## {heading}`. Must be a single line. |
+| `enabled` | boolean | `true` | When `false`, onboarding can keep a candidate section in config without rendering it in generated PR bodies. |
+| `source` | string | (none) | Optional fallback chain of planning artifact headings, such as `PLAN.md ## Risks \|\| VERIFICATION.md ## Manual Checks`. Allowed artifacts are `ROADMAP.md`, `PLAN.md`, `SUMMARY.md`, `VERIFICATION.md`, `STATE.md`, `REQUIREMENTS.md`, and `CONTEXT.md`. |
+| `template` | string | (none) | Literal Markdown with closed tokens: `{phase_number}`, `{phase_name}`, `{phase_dir}`, `{base_branch}`, `{padded_phase}`. |
+| `fallback` | string | (none) | Literal Markdown used when `source` yields no content and no `template` is provided. |
+
+At least one of `source`, `template`, or `fallback` is required for each section. The default is `[]`, so existing projects keep their current `/gsd-ship` output until onboarding adds enabled entries.
+
+Example:
+
+```json
+{
+  "ship": {
+    "pr_body_sections": [
+      {
+        "heading": "User Stories & Acceptance Criteria",
+        "enabled": true,
+        "source": "REQUIREMENTS.md ## User Stories || REQUIREMENTS.md ## Acceptance Criteria",
+        "fallback": "- Acceptance criteria are covered by the linked requirements and verification evidence."
+      },
+      {
+        "heading": "Risks & Rollback",
+        "enabled": true,
+        "source": "PLAN.md ## Risks || PLAN.md ## Rollback",
+        "fallback": "- Rollback: revert this PR."
+      },
+      {
+        "heading": "Stakeholder Sign-off",
+        "enabled": false,
+        "template": "- Product owner: pending for {phase_name}"
+      }
+    ]
+  }
+}
+```
 
 ### Recommended Presets
 
@@ -266,6 +366,7 @@ If `.planning/` is in `.gitignore`, `commit_docs` is automatically `false` regar
 | `hooks.context_warnings` | boolean | `true` | Show context window usage warnings via context monitor hook |
 | `hooks.workflow_guard` | boolean | `false` | Warn when file edits happen outside GSD workflow context (advises using `/gsd-quick` or `/gsd-fast`) |
 | `statusline.show_last_command` | boolean | `false` | Append `last: /<cmd>` suffix to the statusline showing the most recently invoked slash command. Opt-in; reads the active session transcript to extract the latest `<command-name>` tag (closes #2538) |
+| `statusline.context_position` | string | `"end"` | Position of the context-window meter. `"end"` (default) renders at line tail; `"front"` renders immediately after the model name so the meter stays visible in narrow terminals. Closes #2937 |
 
 The prompt injection guard hook (`gsd-prompt-guard.js`) is always active and cannot be disabled — it's a security feature, not a workflow toggle.
 
@@ -363,6 +464,7 @@ Toggle optional capabilities via the `features.*` config namespace. Feature flag
 |---------|------|---------|-------------|
 | `graphify.enabled` | boolean | `false` | Enable the project knowledge graph. When `true`, `/gsd-graphify` builds and queries a graph in `.planning/graphs/`. Added in v1.36 |
 | `graphify.build_timeout` | number (seconds) | `300` | Maximum seconds allowed for a `/gsd-graphify build` run before it aborts. Added in v1.36 |
+| `graphify.auto_update` | boolean | `false` | **Opt-in (issue #3347).** When `true` (and `graphify.enabled` is also `true`), the bundled PostToolUse hook `hooks/gsd-graphify-update.sh` auto-rebuilds the project knowledge graph in a detached background process after `git commit/merge/pull/rebase --continue/cherry-pick` on the default branch (`git.base_branch` override, else `main`/`master`/`trunk`). Hook returns instantly; the rebuild updates `.planning/graphs/{graph.json,graph.html,GRAPH_REPORT.md}` and writes `.planning/graphs/.last-build-status.json` (`{ts, status: "running"\|"ok"\|"failed", exit_code, duration_ms, head_at_build}`). PID-locked, CI-aware (`$CI` env suppresses), bails silently if `graphify` is not on `PATH`. Default `false` so existing behaviour is unchanged after upgrade. |
 
 #### Multi-developer setup
 
@@ -447,6 +549,7 @@ All four fields are **optional and additive** — STATE.md files without them ke
 |---------|------|---------|-------------|
 | `git.branching_strategy` | enum | `none` | `none`, `phase`, or `milestone` |
 | `git.base_branch` | string | `main` | The integration branch that phase/milestone branches are created from and merged back into. Override when your repo uses `master` or a release branch |
+| `git.create_tag` | boolean | `true` | Create a git tag (`v[X.Y]`) on milestone completion. Set to `false` for projects with their own release flow |
 | `git.phase_branch_template` | string | `gsd/phase-{phase}-{slug}` | Branch name template for phase strategy |
 | `git.milestone_branch_template` | string | `gsd/{milestone}-{slug}` | Branch name template for milestone strategy |
 | `git.quick_branch_template` | string or null | `null` | Optional branch name template for `/gsd-quick` tasks |
@@ -596,9 +699,16 @@ Configure per-CLI model selection for `/gsd-review`. When set, overrides the CLI
 | `review.models.ollama` | string | (server default) | Model name passed to Ollama when `--ollama` reviewer is invoked. If unset, the first available model reported by the server is used (e.g. `llama3`). Set to a specific tag: `gsd config-set review.models.ollama codellama` |
 | `review.models.lm_studio` | string | (server default) | Model name passed to LM Studio when `--lm-studio` reviewer is invoked. If unset, the first available model reported by the server is used. |
 | `review.models.llama_cpp` | string | (server default) | Model name passed to llama.cpp when `--llama-cpp` reviewer is invoked. If unset, the first model reported by `/v1/models` is used. |
+| `review.default_reviewers` | string[] \| null | (all detected reviewers) | Default reviewer subset for no-flag `/gsd-review`. Example: `["gemini","codex"]`. Explicit flags and `--all` override this setting. |
+| `review.max_prompt_tokens` | number\|null | null | Default maximum estimated tokens for the assembled review prompt. When set, the prompt is deterministically trimmed before being sent to each reviewer. Per-reviewer overrides via `review.max_prompt_tokens_per_reviewer` take precedence. null = no trim (current behavior). |
+| `review.max_prompt_tokens_per_reviewer` | object | {} | Per-reviewer token budget overrides. Keys are reviewer slugs (ollama, llama_cpp, lm_studio, gemini, claude, codex, opencode, qwen, cursor). Values override `review.max_prompt_tokens` for that reviewer. Recommended for local model servers. |
 | `review.ollama_host` | string | `http://localhost:11434` | Base URL of the Ollama server. Override when running Ollama on a non-default port or remote host: `gsd config-set review.ollama_host http://192.168.1.10:11434` |
 | `review.lm_studio_host` | string | `http://localhost:1234` | Base URL of the LM Studio local server. Override when using a non-default port. |
 | `review.llama_cpp_host` | string | `http://localhost:8080` | Base URL of the llama.cpp server (`llama-server`). Override when using a non-default port. |
+
+### Prompt budgets for small-context reviewers
+
+Local model servers (Ollama, llama.cpp, LM Studio) typically accept far fewer tokens than cloud APIs. Setting `review.max_prompt_tokens_per_reviewer` (or the global `review.max_prompt_tokens` fallback) triggers deterministic prompt trimming before the prompt is sent to that reviewer: CONTEXT is dropped first, then RESEARCH, then REQUIREMENTS; PROJECT.md is head-shrunk to the first 40 lines; PLANs are tail-truncated proportionally — instructions and roadmap are always preserved. When a reviewer is trimmed, a disclosure note is injected at the top of the prompt and trim metadata (budget, omitted sections, truncation percentage) is recorded in the REVIEWS.md frontmatter under `trimmed_reviewers`. If even the minimum review set (instructions + roadmap + plan stubs) exceeds the budget, the reviewer is skipped with a warning rather than sending a truncated prompt that would produce misleading feedback.
 
 ### Example
 
@@ -649,28 +759,28 @@ Invalid flag tokens are sanitized and logged as warnings. Only recognized GSD fl
 
 ### Profile Definitions
 
-| Agent | `quality` | `balanced` | `budget` | `inherit` |
-|-------|-----------|------------|----------|-----------|
-| gsd-planner | Opus | Opus | Sonnet | Inherit |
-| gsd-roadmapper | Opus | Sonnet | Sonnet | Inherit |
-| gsd-executor | Opus | Sonnet | Sonnet | Inherit |
-| gsd-phase-researcher | Opus | Sonnet | Haiku | Inherit |
-| gsd-project-researcher | Opus | Sonnet | Haiku | Inherit |
-| gsd-research-synthesizer | Sonnet | Sonnet | Haiku | Inherit |
-| gsd-debugger | Opus | Sonnet | Sonnet | Inherit |
-| gsd-codebase-mapper | Sonnet | Haiku | Haiku | Inherit |
-| gsd-verifier | Sonnet | Sonnet | Haiku | Inherit |
-| gsd-plan-checker | Sonnet | Sonnet | Haiku | Inherit |
-| gsd-integration-checker | Sonnet | Sonnet | Haiku | Inherit |
-| gsd-nyquist-auditor | Sonnet | Sonnet | Haiku | Inherit |
-| gsd-pattern-mapper | Sonnet | Sonnet | Haiku | Inherit |
-| gsd-ui-researcher | Opus | Sonnet | Haiku | Inherit |
-| gsd-ui-checker | Sonnet | Sonnet | Haiku | Inherit |
-| gsd-ui-auditor | Sonnet | Sonnet | Haiku | Inherit |
-| gsd-doc-writer | Opus | Sonnet | Haiku | Inherit |
-| gsd-doc-verifier | Sonnet | Sonnet | Haiku | Inherit |
+| Agent | `quality` | `balanced` | `budget` | `adaptive` | `inherit` |
+|-------|-----------|------------|----------|------------|-----------|
+| gsd-planner | Opus | Opus | Sonnet | Opus | Inherit |
+| gsd-roadmapper | Opus | Sonnet | Sonnet | Opus | Inherit |
+| gsd-executor | Opus | Sonnet | Sonnet | Sonnet | Inherit |
+| gsd-phase-researcher | Opus | Sonnet | Haiku | Sonnet | Inherit |
+| gsd-project-researcher | Opus | Sonnet | Haiku | Sonnet | Inherit |
+| gsd-research-synthesizer | Sonnet | Sonnet | Haiku | Haiku | Inherit |
+| gsd-debugger | Opus | Sonnet | Sonnet | Opus | Inherit |
+| gsd-codebase-mapper | Sonnet | Haiku | Haiku | Haiku | Inherit |
+| gsd-verifier | Sonnet | Sonnet | Haiku | Sonnet | Inherit |
+| gsd-plan-checker | Sonnet | Sonnet | Haiku | Haiku | Inherit |
+| gsd-integration-checker | Sonnet | Sonnet | Haiku | Haiku | Inherit |
+| gsd-nyquist-auditor | Sonnet | Sonnet | Haiku | Haiku | Inherit |
+| gsd-pattern-mapper | Sonnet | Sonnet | Haiku | Haiku | Inherit |
+| gsd-ui-researcher | Opus | Sonnet | Haiku | Sonnet | Inherit |
+| gsd-ui-checker | Sonnet | Sonnet | Haiku | Haiku | Inherit |
+| gsd-ui-auditor | Sonnet | Sonnet | Haiku | Haiku | Inherit |
+| gsd-doc-writer | Opus | Sonnet | Haiku | Sonnet | Inherit |
+| gsd-doc-verifier | Sonnet | Sonnet | Haiku | Haiku | Inherit |
 
-> **Fallback semantics for unlisted agents.** The profiles table above covers 18 of 31 shipped agents. Agents without an explicit profile row (`gsd-advisor-researcher`, `gsd-assumptions-analyzer`, `gsd-security-auditor`, `gsd-user-profiler`, and the nine advanced agents — `gsd-ai-researcher`, `gsd-domain-researcher`, `gsd-eval-planner`, `gsd-eval-auditor`, `gsd-framework-selector`, `gsd-code-reviewer`, `gsd-code-fixer`, `gsd-debug-session-manager`, `gsd-intel-updater`) inherit the runtime default model for the selected profile. To pin a specific model for any of these agents, use `model_overrides` (next section) — `model_overrides` accepts any shipped agent name regardless of whether it has a profile row here. The authoritative profile table lives in `get-shit-done/bin/lib/model-profiles.cjs`; the authoritative 31-agent roster lives in [`docs/INVENTORY.md`](INVENTORY.md).
+> **All 33 shipped agents have explicit per-profile tier assignments** in the catalog (`sdk/shared/model-catalog.json`). The table above shows a representative subset of the most-used agents. For agents not listed here, `model_overrides` accepts any shipped agent name. The authoritative profile data is derived from `sdk/shared/model-catalog.json` via `get-shit-done/bin/lib/model-catalog.cjs` and `sdk/src/model-catalog.ts`.
 
 ### Per-Agent Overrides
 
@@ -699,9 +809,9 @@ OpenCode's `task` interface do not accept an inline `model` parameter, so
 running `gsd install <runtime>` after editing `model_overrides` is required
 for the change to take effect. See issue #2256.
 
-### Per-Phase-Type Models (`models`) — added in v1.40
+### Per-Phase-Type Models (`models`) — added in v1.41
 
-> Express tuning at the **phase** level (planning, research, execution, verification) without learning the agent taxonomy. Added in [#3023](https://github.com/gsd-build/get-shit-done/pull/3030).
+> Express tuning at the **phase** level (planning, research, execution, verification) without learning the agent taxonomy. Added in [#3023](https://github.com/open-gsd/get-shit-done-redux/pull/3030).
 
 `model_overrides` is per-**agent** (precise but verbose; you have to know that `gsd-codebase-mapper` is research and `gsd-doc-writer` is execution). The `models` block lets you say "Opus for planning and execution, Sonnet for the rest" in two lines:
 
@@ -783,9 +893,9 @@ $ gsd config-set models.research sonnet
 
 Direct edits to `.planning/config.json` are looser — the resolver simply ignores values it doesn't recognize and falls through to the profile tier — so a typo doesn't silently break tier resolution.
 
-### Dynamic Routing with Failure-Tier Escalation (`dynamic_routing`) — added in v1.40
+### Dynamic Routing with Failure-Tier Escalation (`dynamic_routing`) — added in v1.41
 
-> Start cheap, escalate only when the agent fails the gate. Added in [#3024](https://github.com/gsd-build/get-shit-done/pull/3031).
+> Start cheap, escalate only when the agent fails the gate. Added in [#3024](https://github.com/open-gsd/get-shit-done-redux/pull/3031).
 
 `dynamic_routing` lets you pay for the cheap tier by default and only escalate to the more expensive tier when the orchestrator detects a soft failure (verification inconclusive, plan-check FLAG, etc.).
 
@@ -810,9 +920,9 @@ Each agent in `MODEL_PROFILES` declares one of three default tiers. The resolver
 
 | Tier | Agents | Use case |
 |---|---|---|
-| `light` | gsd-codebase-mapper, gsd-pattern-mapper, gsd-research-synthesizer, gsd-plan-checker, gsd-integration-checker, gsd-nyquist-auditor, gsd-ui-checker, gsd-ui-auditor, gsd-doc-verifier | Cheap/fast — pure mappers, scanners, low-stakes audits |
-| `standard` | gsd-executor, gsd-phase-researcher, gsd-project-researcher, gsd-verifier, gsd-doc-writer, gsd-ui-researcher | Default workhorse — research, writing, primary verification |
-| `heavy` | gsd-planner, gsd-roadmapper, gsd-debugger | Deep reasoning — already at top, can't escalate further |
+| `light` | gsd-codebase-mapper, gsd-doc-classifier, gsd-doc-verifier, gsd-integration-checker, gsd-intel-updater, gsd-nyquist-auditor, gsd-pattern-mapper, gsd-plan-checker, gsd-research-synthesizer, gsd-ui-auditor, gsd-ui-checker | Cheap/fast — pure mappers, scanners, low-stakes audits |
+| `standard` | gsd-advisor-researcher, gsd-ai-researcher, gsd-code-fixer, gsd-code-reviewer, gsd-doc-synthesizer, gsd-doc-writer, gsd-domain-researcher, gsd-eval-auditor, gsd-executor, gsd-phase-researcher, gsd-project-researcher, gsd-ui-researcher, gsd-verifier | Default workhorse — research, writing, primary verification |
+| `heavy` | gsd-assumptions-analyzer, gsd-debug-session-manager, gsd-debugger, gsd-eval-planner, gsd-framework-selector, gsd-planner, gsd-roadmapper, gsd-security-auditor, gsd-user-profiler | Deep reasoning — already at top, can't escalate further |
 
 #### Escalation flow
 
@@ -864,6 +974,10 @@ The `dynamic_routing` block is **disabled by default** — `enabled: false` (or 
 
 ### Non-Claude Runtimes (Codex, OpenCode, Gemini CLI, Kilo)
 
+> **Codex CLI minimum supported version: `0.130.0`** (issue [#3562](https://github.com/open-gsd/get-shit-done-redux/issues/3562)).
+>
+> [Codex CLI 0.130.0](https://github.com/openai/codex/releases/tag/rust-v0.130.0) (released 2026-05-08) removed extra-skills-roots discovery via [openai/codex#21485](https://github.com/openai/codex/pull/21485). From this version forward, Codex CLI only scans `~/.codex/skills/<name>/SKILL.md`, `<project>/.codex/skills/`, and registered plugin roots for invocable skills. GSD installs the `$gsd-*` surface as `~/.codex/skills/gsd-<name>/SKILL.md` so commands resolve after a Codex restart. Earlier Codex CLI versions can show a duplicate listing (the legacy extra-roots scan plus the user-root copies) — restart Codex and either upgrade to ≥ 0.130.0 or accept the duplicates until you do.
+
 When GSD is installed for a non-Claude runtime, the installer automatically sets `resolve_model_ids: "omit"` in `~/.gsd/defaults.json`. This causes GSD to return an empty model parameter for all agents, so each agent uses whatever model the runtime is configured with. No additional setup is needed for the default case.
 
 If you want different agents to use different models, use `model_overrides` with fully-qualified model IDs that your runtime recognizes:
@@ -896,12 +1010,14 @@ The intent is the same as the Claude profile tiers -- use a stronger model for p
 | Value | Behavior | Use When |
 |-------|----------|----------|
 | `false` (default) | Returns Claude aliases (`opus`, `sonnet`, `haiku`) | Claude Code with native Anthropic API |
-| `true` | Maps aliases to full Claude model IDs (`claude-opus-4-6`) | Claude Code with API that requires full IDs |
+| `true` | Maps aliases to full Claude model IDs (`claude-opus-4-7`) | Claude Code with API that requires full IDs |
 | `"omit"` | Returns empty string (runtime picks its default) | Non-Claude runtimes (Codex, OpenCode, Gemini CLI, Kilo) |
 
 ### Runtime-Aware Profiles (#2517)
 
 When `runtime` is set, profile tiers (`opus`/`sonnet`/`haiku`) resolve to runtime-native model IDs instead of Claude aliases. This lets a single shared `.planning/config.json` work cleanly across Claude and Codex.
+
+`resolve-model` JSON output includes `reasoning_effort` when the runtime tier resolved for the agent (after phase-type overrides) defines a `reasoning_effort`. Runtime adapters may pass that value to child-agent launch calls that support it; runtimes without explicit support omit it.
 
 **Built-in tier maps:**
 

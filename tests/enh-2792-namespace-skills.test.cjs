@@ -14,7 +14,7 @@ const COMMANDS_DIR = path.join(__dirname, '..', 'commands', 'gsd');
 const NAMESPACE_SKILLS = [
   { file: 'ns-workflow.md', name: 'gsd-workflow' },
   { file: 'ns-project.md',  name: 'gsd-project' },
-  { file: 'ns-review.md',   name: 'gsd-review' },
+  { file: 'ns-review.md',   name: 'gsd-quality' },
   { file: 'ns-context.md',  name: 'gsd-context' },
   { file: 'ns-manage.md',   name: 'gsd-manage' },
   { file: 'ns-ideate.md',   name: 'gsd-ideate' },
@@ -197,9 +197,10 @@ describe('gsd-health --context flag is wired into command + workflow', () => {
     const stepMatch = raw.match(/<step name="context_check">([\s\S]*?)<\/step>/);
     assert.ok(stepMatch, 'context_check step must be a closed <step>...</step> block');
     const stepBody = stepMatch[1];
+    // After #3797 architectural fix, callsites use $GSD_SDK — accept either form
     assert.match(
       stepBody,
-      /gsd-sdk\s+query\s+validate\.context/,
+      /(?:\$GSD_SDK|gsd-sdk)\s+query\s+validate\.context/,
       'context_check must call `gsd-sdk query validate.context`',
     );
     assert.match(stepBody, /--tokens-used/, 'context_check must pass --tokens-used');

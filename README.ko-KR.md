@@ -1,3 +1,5 @@
+> ⚠️ This is an active fork. See the [English README](README.md) for the full notice about the original repo.
+
 <div align="center">
 
 # GET SHIT DONE - Wang Jun's Opinionated Edition
@@ -16,19 +18,17 @@
 
 **컨텍스트 rot를 해결합니다 — Claude의 컨텍스트 창이 채워질수록 품질이 저하되는 문제.**
 
-[![npm version](https://img.shields.io/npm/v/get-shit-done-cc?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/get-shit-done-cc)
-[![npm downloads](https://img.shields.io/npm/dm/get-shit-done-cc?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/get-shit-done-cc)
-[![Tests](https://img.shields.io/github/actions/workflow/status/gsd-build/get-shit-done/test.yml?branch=main&style=for-the-badge&logo=github&label=Tests)](https://github.com/gsd-build/get-shit-done/actions/workflows/test.yml)
+[![npm version](https://img.shields.io/npm/v/%40opengsd%2Fget-shit-done-redux?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/@opengsd/get-shit-done-redux)
+[![npm downloads](https://img.shields.io/npm/dm/%40opengsd%2Fget-shit-done-redux?style=for-the-badge&logo=npm&logoColor=white&color=CB3837)](https://www.npmjs.com/package/@opengsd/get-shit-done-redux)
+[![Tests](https://img.shields.io/github/actions/workflow/status/open-gsd/get-shit-done-redux/test.yml?branch=main&style=for-the-badge&logo=github&label=Tests)](https://github.com/open-gsd/get-shit-done-redux/actions/workflows/test.yml)
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/mYgfVNfA2r)
-[![X (Twitter)](https://img.shields.io/badge/X-@gsd__foundation-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/gsd_foundation)
-[![$GSD Token](https://img.shields.io/badge/$GSD-Dexscreener-1C1C1C?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMCIgZmlsbD0iIzAwRkYwMCIvPjwvc3ZnPg==&logoColor=00FF00)](https://dexscreener.com/solana/dwudwjvan7bzkw9zwlbyv6kspdlvhwzrqy6ebk8xzxkv)
-[![GitHub stars](https://img.shields.io/github/stars/gsd-build/get-shit-done?style=for-the-badge&logo=github&color=181717)](https://github.com/gsd-build/get-shit-done)
+[![GitHub stars](https://img.shields.io/github/stars/open-gsd/get-shit-done-redux?style=for-the-badge&logo=github&color=181717)](https://github.com/open-gsd/get-shit-done-redux)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](LICENSE)
 
 <br>
 
 ```bash
-npx get-shit-done-cc@latest
+npx @opengsd/get-shit-done-redux@latest
 ```
 
 **Mac, Windows, Linux 모두 지원.**
@@ -85,14 +85,14 @@ GSD가 그걸 고칩니다. Claude Code를 신뢰할 수 있게 만드는 컨텍
 
 ### v1.39.0 하이라이트
 
-전체 목록은 [v1.39.0 릴리스 노트](https://github.com/gsd-build/get-shit-done/releases/tag/v1.39.0)를 참고하세요.
+전체 목록은 [v1.39.0 릴리스 노트](https://github.com/open-gsd/get-shit-done-redux/releases/tag/v1.39.0)를 참고하세요.
 
 - **`--minimal` 설치 프로파일** — 별칭 `--core-only`. 메인 루프 6개 스킬(`new-project`, `discuss-phase`, `plan-phase`, `execute-phase`, `help`, `update`)만 설치하고 `gsd-*` 서브에이전트는 설치하지 않음. 콜드 스타트 시스템 프롬프트 오버헤드를 ~12k 토큰에서 ~700 토큰으로 축소(≥94% 감소). 32K–128K 컨텍스트의 로컬 LLM이나 토큰 과금 API에 유용.
 - **`/gsd-phase --edit`** — `ROADMAP.md`에 있는 기존 단계의 임의 필드를 그 자리에서 수정(번호와 위치는 변경되지 않음). `--force`는 확인 diff를 건너뛰고, `depends_on` 참조를 검증하며 쓰기 시 `STATE.md`도 갱신.
 - **머지 후 빌드 & 테스트 게이트** — `execute-phase` 5.6 단계가 `workflow.build_command` 설정을 우선 자동 감지하고, 없으면 Xcode(`.xcodeproj`), Makefile, Justfile, Cargo, Go, Python, npm 순으로 폴백. Xcode/iOS 프로젝트는 `xcodebuild build` 및 `xcodebuild test`를 자동 실행. 병렬·직렬 모드 모두에서 동작.
 - **런타임별 리뷰 모델 선택** — `review.models.<cli>`로 각 외부 리뷰 CLI(codex, gemini 등)가 플래너/실행 프로파일과 독립적으로 자체 모델을 선택할 수 있음.
 - **워크스트림 설정 상속** — `GSD_WORKSTREAM`이 설정되면 루트 `.planning/config.json`을 먼저 로드한 뒤 워크스트림 설정을 딥 머지(충돌 시 워크스트림 우선). 워크스트림 설정에서 명시적 `null`은 루트 값을 덮어씀.
-- **수동 카나리 릴리스 워크플로** — `.github/workflows/canary.yml`이 `workflow_dispatch`로 `dev` 브랜치에서 `{base}-canary.{N}` 빌드를 `@canary` dist-tag로 수동 게시(`get-shit-done-cc`와 `@gsd-build/sdk`).
+- **수동 카나리 릴리스 워크플로** — `.github/workflows/canary.yml`이 `workflow_dispatch`로 `dev` 브랜치에서 `{base}-canary.{N}` 빌드를 `@canary` dist-tag로 수동 게시(`@opengsd/get-shit-done-redux`와 `@opengsd/gsd-sdk`).
 - **스킬 통합: 86 → 59** — 4개의 새로운 그룹 스킬(`capture`, `phase`, `config`, `workspace`)이 31개의 마이크로 스킬을 흡수. 기존 6개의 부모 스킬은 래퍼업/하위 동작을 플래그로 흡수: `update --sync/--reapply`, `sketch --wrap-up`, `spike --wrap-up`, `map-codebase --fast/--query`, `code-review --fix`, `progress --do/--next`. 기능 손실 없음.
 
 ---
@@ -100,7 +100,7 @@ GSD가 그걸 고칩니다. Claude Code를 신뢰할 수 있게 만드는 컨텍
 ## 시작하기
 
 ```bash
-npx get-shit-done-cc@latest
+npx @opengsd/get-shit-done-redux@latest
 ```
 
 설치 중에 다음을 선택합니다:
@@ -124,7 +124,7 @@ npx get-shit-done-cc@latest
 GSD는 빠르게 발전합니다. 주기적으로 업데이트하세요:
 
 ```bash
-npx get-shit-done-cc@latest
+npx @opengsd/get-shit-done-redux@latest
 ```
 
 <details>
@@ -132,49 +132,49 @@ npx get-shit-done-cc@latest
 
 ```bash
 # Claude Code
-npx get-shit-done-cc --claude --global   # ~/.claude/에 설치
-npx get-shit-done-cc --claude --local    # ./.claude/에 설치
+npx @opengsd/get-shit-done-redux --claude --global   # ~/.claude/에 설치
+npx @opengsd/get-shit-done-redux --claude --local    # ./.claude/에 설치
 
 # OpenCode
-npx get-shit-done-cc --opencode --global # ~/.config/opencode/에 설치
+npx @opengsd/get-shit-done-redux --opencode --global # ~/.config/opencode/에 설치
 
 # Gemini CLI
-npx get-shit-done-cc --gemini --global   # ~/.gemini/에 설치
+npx @opengsd/get-shit-done-redux --gemini --global   # ~/.gemini/에 설치
 
 # Kilo
-npx get-shit-done-cc --kilo --global     # ~/.config/kilo/에 설치
-npx get-shit-done-cc --kilo --local      # ./.kilo/에 설치
+npx @opengsd/get-shit-done-redux --kilo --global     # ~/.config/kilo/에 설치
+npx @opengsd/get-shit-done-redux --kilo --local      # ./.kilo/에 설치
 
 # Codex
-npx get-shit-done-cc --codex --global    # ~/.codex/에 설치
-npx get-shit-done-cc --codex --local     # ./.codex/에 설치
+npx @opengsd/get-shit-done-redux --codex --global    # ~/.codex/에 설치
+npx @opengsd/get-shit-done-redux --codex --local     # ./.codex/에 설치
 
 # Copilot
-npx get-shit-done-cc --copilot --global  # ~/.github/에 설치
-npx get-shit-done-cc --copilot --local   # ./.github/에 설치
+npx @opengsd/get-shit-done-redux --copilot --global  # ~/.github/에 설치
+npx @opengsd/get-shit-done-redux --copilot --local   # ./.github/에 설치
 
 # Cursor CLI
-npx get-shit-done-cc --cursor --global      # ~/.cursor/에 설치
-npx get-shit-done-cc --cursor --local       # ./.cursor/에 설치
+npx @opengsd/get-shit-done-redux --cursor --global      # ~/.cursor/에 설치
+npx @opengsd/get-shit-done-redux --cursor --local       # ./.cursor/에 설치
 
 # Antigravity
-npx get-shit-done-cc --antigravity --global # ~/.gemini/antigravity/에 설치
-npx get-shit-done-cc --antigravity --local  # ./.agent/에 설치
+npx @opengsd/get-shit-done-redux --antigravity --global # ~/.gemini/antigravity/에 설치
+npx @opengsd/get-shit-done-redux --antigravity --local  # ./.agent/에 설치
 
 # Augment
-npx get-shit-done-cc --augment --global     # ~/.augment/에 설치
-npx get-shit-done-cc --augment --local      # ./.augment/에 설치
+npx @opengsd/get-shit-done-redux --augment --global     # ~/.augment/에 설치
+npx @opengsd/get-shit-done-redux --augment --local      # ./.augment/에 설치
 
 # Trae
-npx get-shit-done-cc --trae --global        # ~/.trae/에 설치
-npx get-shit-done-cc --trae --local         # ./.trae/에 설치
+npx @opengsd/get-shit-done-redux --trae --global        # ~/.trae/에 설치
+npx @opengsd/get-shit-done-redux --trae --local         # ./.trae/에 설치
 
 # Cline
-npx get-shit-done-cc --cline --global       # ~/.cline/에 설치
-npx get-shit-done-cc --cline --local        # ./.clinerules에 설치
+npx @opengsd/get-shit-done-redux --cline --global       # ~/.cline/에 설치
+npx @opengsd/get-shit-done-redux --cline --local        # ./.clinerules에 설치
 
 # 전체 런타임
-npx get-shit-done-cc --all --global      # 모든 디렉터리에 설치
+npx @opengsd/get-shit-done-redux --all --global      # 모든 디렉터리에 설치
 ```
 
 위치 프롬프트 건너뛰기: `--global` (`-g`) 또는 `--local` (`-l`).
@@ -188,7 +188,7 @@ npx get-shit-done-cc --all --global      # 모든 디렉터리에 설치
 저장소를 클론하고 설치 프로그램을 로컬에서 실행합니다:
 
 ```bash
-git clone https://github.com/gsd-build/get-shit-done.git
+git clone https://github.com/open-gsd/get-shit-done-redux.git
 cd get-shit-done
 node bin/install.js --claude --local
 ```
@@ -784,18 +784,18 @@ GSD의 코드베이스 매핑 및 분석 명령어는 프로젝트를 이해하�
 
 **명령어가 예상대로 작동하지 않나요?**
 - `/gsd-help`를 실행해 설치 확인
-- `npx get-shit-done-cc`를 다시 실행해 재설치
+- `npx @opengsd/get-shit-done-redux`를 다시 실행해 재설치
 
 **최신 버전으로 업데이트하나요?**
 ```bash
-npx get-shit-done-cc@latest
+npx @opengsd/get-shit-done-redux@latest
 ```
 
 **Docker 또는 컨테이너 환경을 사용하나요?**
 
 파일 읽기가 틸드 경로(`~/.claude/...`)로 실패하면 설치 전에 `CLAUDE_CONFIG_DIR`를 설정하세요:
 ```bash
-CLAUDE_CONFIG_DIR=/home/youruser/.claude npx get-shit-done-cc --global
+CLAUDE_CONFIG_DIR=/home/youruser/.claude npx @opengsd/get-shit-done-redux --global
 ```
 컨테이너에서 올바르게 확장되지 않을 수 있는 `~` 대신 절대 경로가 사용됩니다.
 
@@ -805,26 +805,26 @@ GSD를 완전히 제거하려면:
 
 ```bash
 # 전역 설치
-npx get-shit-done-cc --claude --global --uninstall
-npx get-shit-done-cc --opencode --global --uninstall
-npx get-shit-done-cc --gemini --global --uninstall
-npx get-shit-done-cc --kilo --global --uninstall
-npx get-shit-done-cc --codex --global --uninstall
-npx get-shit-done-cc --copilot --global --uninstall
-npx get-shit-done-cc --cursor --global --uninstall
-npx get-shit-done-cc --antigravity --global --uninstall
-npx get-shit-done-cc --trae --global --uninstall
+npx @opengsd/get-shit-done-redux --claude --global --uninstall
+npx @opengsd/get-shit-done-redux --opencode --global --uninstall
+npx @opengsd/get-shit-done-redux --gemini --global --uninstall
+npx @opengsd/get-shit-done-redux --kilo --global --uninstall
+npx @opengsd/get-shit-done-redux --codex --global --uninstall
+npx @opengsd/get-shit-done-redux --copilot --global --uninstall
+npx @opengsd/get-shit-done-redux --cursor --global --uninstall
+npx @opengsd/get-shit-done-redux --antigravity --global --uninstall
+npx @opengsd/get-shit-done-redux --trae --global --uninstall
 
 # 로컬 설치 (현재 프로젝트)
-npx get-shit-done-cc --claude --local --uninstall
-npx get-shit-done-cc --opencode --local --uninstall
-npx get-shit-done-cc --gemini --local --uninstall
-npx get-shit-done-cc --kilo --local --uninstall
-npx get-shit-done-cc --codex --local --uninstall
-npx get-shit-done-cc --copilot --local --uninstall
-npx get-shit-done-cc --cursor --local --uninstall
-npx get-shit-done-cc --antigravity --local --uninstall
-npx get-shit-done-cc --trae --local --uninstall
+npx @opengsd/get-shit-done-redux --claude --local --uninstall
+npx @opengsd/get-shit-done-redux --opencode --local --uninstall
+npx @opengsd/get-shit-done-redux --gemini --local --uninstall
+npx @opengsd/get-shit-done-redux --kilo --local --uninstall
+npx @opengsd/get-shit-done-redux --codex --local --uninstall
+npx @opengsd/get-shit-done-redux --copilot --local --uninstall
+npx @opengsd/get-shit-done-redux --cursor --local --uninstall
+npx @opengsd/get-shit-done-redux --antigravity --local --uninstall
+npx @opengsd/get-shit-done-redux --trae --local --uninstall
 ```
 
 다른 설정은 그대로 유지하면서 GSD의 모든 명령어, 에이전트, 훅, 설정을 제거합니다.
@@ -833,7 +833,7 @@ npx get-shit-done-cc --trae --local --uninstall
 
 ## 커뮤니티 포트
 
-OpenCode, Gemini CLI, Kilo, Codex는 이제 `npx get-shit-done-cc`를 통해 기본 지원됩니다.
+OpenCode, Gemini CLI, Kilo, Codex는 이제 `npx @opengsd/get-shit-done-redux`를 통해 기본 지원됩니다.
 
 이 커뮤니티 포트들이 멀티 런타임 지원의 선구자였습니다:
 
@@ -846,11 +846,11 @@ OpenCode, Gemini CLI, Kilo, Codex는 이제 `npx get-shit-done-cc`를 통해 기
 
 ## 스타 히스토리
 
-<a href="https://star-history.com/#gsd-build/get-shit-done&Date">
+<a href="https://star-history.com/#open-gsd/get-shit-done-redux&Date">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=gsd-build/get-shit-done&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=gsd-build/get-shit-done&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=gsd-build/get-shit-done&type=Date" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=open-gsd/get-shit-done-redux&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=open-gsd/get-shit-done-redux&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=open-gsd/get-shit-done-redux&type=Date" />
  </picture>
 </a>
 
