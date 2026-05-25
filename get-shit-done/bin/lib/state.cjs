@@ -23,32 +23,6 @@ const {
 // hasn't changed within the same gsd-tools invocation.
 const _diskScanCache = new Map();
 
-/**
- * Compute the canonical progress percent for STATE.md frontmatter and body.
- *
- * Uses min(plan_fraction, phase_fraction) when both denominators are > 0.
- * This prevents a false "100%" when ROADMAP declares future phases that have no
- * disk dirs yet — all plans summarised only means 100% of *realized* work done,
- * not 100% of the declared milestone (#3242 Bug B).
- *
- * @param {number|null} completedPlans
- * @param {number|null} totalPlans
- * @param {number|null} completedPhases
- * @param {number|null} totalPhases  - ROADMAP-declared count (>= realised dirs)
- * @returns {number|null}  0–100, or null when there is no data
- */
-function computeProgressPercent(completedPlans, totalPlans, completedPhases, totalPhases) {
-  const hasPlanData = totalPlans !== null && totalPlans > 0 && completedPlans !== null;
-  const hasPhaseData = totalPhases !== null && totalPhases > 0 && completedPhases !== null;
-
-  if (!hasPlanData && !hasPhaseData) return null;
-
-  const planFraction = hasPlanData ? completedPlans / totalPlans : 1;
-  const phaseFraction = hasPhaseData ? completedPhases / totalPhases : 1;
-
-  return Math.min(100, Math.round(Math.min(planFraction, phaseFraction) * 100));
-}
-
 /** Shorthand — every state command needs this path */
 function getStatePath(cwd) {
   return planningPaths(cwd).state;
