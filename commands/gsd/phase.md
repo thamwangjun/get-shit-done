@@ -31,10 +31,10 @@ Mode routing:
 </routing>
 
 <execution_context>
-! `cat $HOME/.claude/get-shit-done/workflows/add-phase.md`
-! `cat $HOME/.claude/get-shit-done/workflows/insert-phase.md`
-! `cat $HOME/.claude/get-shit-done/workflows/remove-phase.md`
-! `cat $HOME/.claude/get-shit-done/workflows/edit-phase.md`
+!`cat $HOME/.claude/get-shit-done/workflows/add-phase.md`
+!`cat $HOME/.claude/get-shit-done/workflows/insert-phase.md`
+!`cat $HOME/.claude/get-shit-done/workflows/remove-phase.md`
+!`cat $HOME/.claude/get-shit-done/workflows/edit-phase.md`
 </execution_context>
 
 <context>

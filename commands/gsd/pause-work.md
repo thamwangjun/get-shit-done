@@ -21,7 +21,7 @@ Routes to the pause-work workflow which handles:
 </objective>
 
 <execution_context>
-! `cat $HOME/.claude/get-shit-done/workflows/pause-work.md`
+!`cat $HOME/.claude/get-shit-done/workflows/pause-work.md`
 </execution_context>
 
 <context>

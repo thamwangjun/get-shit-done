@@ -26,14 +26,14 @@ Output: Test files committed with message `test(phase-{N}): add unit and E2E tes
 </objective>
 
 <execution_context>
-! `cat $HOME/.claude/get-shit-done/workflows/add-tests.md`
+!`cat $HOME/.claude/get-shit-done/workflows/add-tests.md`
 </execution_context>
 
 <context>
 Phase: $ARGUMENTS
 
-! `cat .planning/STATE.md`
-! `cat .planning/ROADMAP.md`
+!`cat .planning/STATE.md`
+!`cat .planning/ROADMAP.md`
 </context>
 
 <process>

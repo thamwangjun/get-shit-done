@@ -365,10 +365,10 @@ describe('workspace command files', () => {
         if (t.startsWith('@')) {
           // Legacy @ notation: @~/.claude/get-shit-done/...
           rel = t.replace(/^@~?\/?(?:\.claude\/)?(?:get-shit-done\/)?/, '');
-        } else if (t.startsWith('! `cat ')) {
-          // Shell-cat notation: ! `cat $HOME/.claude/get-shit-done/...`
+        } else if (t.startsWith('!`cat ')) {
+          // Shell-cat notation: !`cat $HOME/.claude/get-shit-done/...`
           rel = t
-            .replace(/^! `cat /, '')
+            .replace(/^!`cat /, '')
             .replace(/`$/, '')
             .replace(/^\$HOME\/(?:\.claude\/)?(?:get-shit-done\/)?/, '')
             .replace(/^~\/(?:\.claude\/)?(?:get-shit-done\/)?/, '');

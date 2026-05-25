@@ -22,7 +22,7 @@ Routes to the resume-project workflow which handles:
   </objective>
 
 <execution_context>
-! `cat $HOME/.claude/get-shit-done/workflows/resume-project.md`
+!`cat $HOME/.claude/get-shit-done/workflows/resume-project.md`
 </execution_context>
 
 <process>

@@ -21,10 +21,10 @@ Import external plan files into the GSD planning system with conflict detection 
 </objective>
 
 <execution_context>
-! `cat $HOME/.claude/get-shit-done/workflows/import.md`
-! `cat $HOME/.claude/get-shit-done/references/ui-brand.md`
-! `cat $HOME/.claude/get-shit-done/references/gate-prompts.md`
-! `cat $HOME/.claude/get-shit-done/references/doc-conflict-engine.md`
+!`cat $HOME/.claude/get-shit-done/workflows/import.md`
+!`cat $HOME/.claude/get-shit-done/references/ui-brand.md`
+!`cat $HOME/.claude/get-shit-done/references/gate-prompts.md`
+!`cat $HOME/.claude/get-shit-done/references/doc-conflict-engine.md`
 </execution_context>
 
 <context>

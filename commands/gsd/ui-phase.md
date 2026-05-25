@@ -21,8 +21,8 @@ Flow: Validate → Research UI → Verify UI-SPEC → Done
 </objective>
 
 <execution_context>
-! `cat $HOME/.claude/get-shit-done/workflows/ui-phase.md`
-! `cat $HOME/.claude/get-shit-done/references/ui-brand.md`
+!`cat $HOME/.claude/get-shit-done/workflows/ui-phase.md`
+!`cat $HOME/.claude/get-shit-done/references/ui-brand.md`
 </execution_context>
 
 <context>

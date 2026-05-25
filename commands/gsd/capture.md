@@ -36,12 +36,12 @@ Mode routing:
 </routing>
 
 <execution_context>
-! `cat $HOME/.claude/get-shit-done/workflows/add-todo.md`
-! `cat $HOME/.claude/get-shit-done/workflows/note.md`
-! `cat $HOME/.claude/get-shit-done/workflows/add-backlog.md`
-! `cat $HOME/.claude/get-shit-done/workflows/plant-seed.md`
-! `cat $HOME/.claude/get-shit-done/workflows/check-todos.md`
-! `cat $HOME/.claude/get-shit-done/references/ui-brand.md`
+!`cat $HOME/.claude/get-shit-done/workflows/add-todo.md`
+!`cat $HOME/.claude/get-shit-done/workflows/note.md`
+!`cat $HOME/.claude/get-shit-done/workflows/add-backlog.md`
+!`cat $HOME/.claude/get-shit-done/workflows/plant-seed.md`
+!`cat $HOME/.claude/get-shit-done/workflows/check-todos.md`
+!`cat $HOME/.claude/get-shit-done/references/ui-brand.md`
 </execution_context>
 
 <context>

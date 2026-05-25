@@ -19,8 +19,8 @@ Output: {phase_num}-UI-REVIEW.md
 </objective>
 
 <execution_context>
-! `cat $HOME/.claude/get-shit-done/workflows/ui-review.md`
-! `cat $HOME/.claude/get-shit-done/references/ui-brand.md`
+!`cat $HOME/.claude/get-shit-done/workflows/ui-review.md`
+!`cat $HOME/.claude/get-shit-done/references/ui-brand.md`
 </execution_context>
 
 <context>

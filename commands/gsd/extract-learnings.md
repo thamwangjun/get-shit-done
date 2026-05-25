@@ -17,7 +17,7 @@ Extract structured learnings from completed phase artifacts (PLAN.md, SUMMARY.md
 </objective>
 
 <execution_context>
-! `cat $HOME/.claude/get-shit-done/workflows/extract-learnings.md`
+!`cat $HOME/.claude/get-shit-done/workflows/extract-learnings.md`
 </execution_context>
 
 Execute the extract-learnings workflow from @~/.claude/get-shit-done/workflows/extract-learnings.md end-to-end.

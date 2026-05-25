@@ -32,9 +32,9 @@ Mode routing:
 </routing>
 
 <execution_context>
-! `cat $HOME/.claude/get-shit-done/workflows/settings.md`
-! `cat $HOME/.claude/get-shit-done/workflows/settings-advanced.md`
-! `cat $HOME/.claude/get-shit-done/workflows/settings-integrations.md`
+!`cat $HOME/.claude/get-shit-done/workflows/settings.md`
+!`cat $HOME/.claude/get-shit-done/workflows/settings-advanced.md`
+!`cat $HOME/.claude/get-shit-done/workflows/settings-integrations.md`
 </execution_context>
 
 <context>

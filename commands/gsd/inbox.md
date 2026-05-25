@@ -21,7 +21,7 @@ and optionally applies labels or closes non-compliant submissions.
 </objective>
 
 <execution_context>
-! `cat $HOME/.claude/get-shit-done/workflows/inbox.md`
+!`cat $HOME/.claude/get-shit-done/workflows/inbox.md`
 </execution_context>
 
 <context>

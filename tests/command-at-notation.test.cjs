@@ -4,7 +4,7 @@
 
 /**
  * Ensures all @ file-reference notation in commands/gsd/ has been converted
- * to shell-cat form: `! \`cat $HOME/...\`` or `! \`cat relative/path\``.
+ * to shell-cat form: `!`cat $HOME/...`` or `!`cat relative/path``.
  *
  * @ notation (e.g. @~/.claude/..., @$HOME/..., @.planning/...) is the legacy
  * Claude Code "mention file" syntax. The canonical form is the shell-cat
@@ -60,7 +60,7 @@ describe('commands/gsd @ notation conversion', () => {
       const lines = content.split('\n');
       for (let i = 0; i < lines.length; i++) {
         // Collect lines that look like shell-cat conversions
-        if (/^! `cat /.test(lines[i])) {
+        if (/^!`cat /.test(lines[i])) {
           catLines.push({ file: path.basename(filePath), line: i + 1, text: lines[i] });
         }
       }
@@ -70,7 +70,7 @@ describe('commands/gsd @ notation conversion', () => {
     for (const { file, line, text } of catLines) {
       assert.match(
         text,
-        /^! `cat (?:\$HOME\/|\.)/,
+        /^!`cat (?:\$HOME\/|\.)/,
         `${file}:${line}: shell-cat line must start with $HOME/ or relative path: ${text}`,
       );
     }
