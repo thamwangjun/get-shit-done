@@ -10,7 +10,7 @@
  *   3. Expected file set construction (dynamic scan + hardcoded entries)
  *   4. Correct commit message string
  *   5. Subset verification logic
- *   6. Branch guard for thamw-main
+ *   6. Branch guard for main
  *   7. Missing-file detection
  *   8. Duplicate commit detection exits 0
  *
@@ -300,10 +300,10 @@ describe('stage-batch-4.cjs', () => {
 
   // ── 6. Branch guard ──────────────────────────────────────────
 
-  test('branch guard checks for thamw-main', () => {
+  test('branch guard checks for main', () => {
     assert.ok(
-      scriptSrc.includes("'thamw-main'") || scriptSrc.includes('"thamw-main"'),
-      'Must check for thamw-main branch'
+      scriptSrc.includes("'main'") || scriptSrc.includes('"main"'),
+      'Must check for main branch'
     );
   });
 
@@ -449,11 +449,11 @@ describe('stage-batch-4.cjs', () => {
 
   test('script exits 0 without side effects when commit already exists', function () {
     // This test runs the script on the current repo where Batch 4 is already committed.
+    // ALLOW_ANY_BRANCH=1 bypasses the branch guard (dev branch during development).
     // The duplicate commit detection should cause it to exit 0 without doing anything.
     // We validate exit code and check that it prints the expected message.
-    const result = runNodeScript(SCRIPT_PATH);
-    // On this branch, Batch 4 is already committed, so the script should detect
-    // the duplicate and exit 0.
+    const result = runNodeScript(SCRIPT_PATH, { ALLOW_ANY_BRANCH: '1' });
+    // Batch 4 is already committed, so the script should detect the duplicate and exit 0.
     assert.strictEqual(result.exitCode, 0,
       `Script should exit 0 when Batch 4 is already committed. stdout: ${result.stdout}, stderr: ${result.stderr}`);
     assert.ok(
@@ -464,18 +464,15 @@ describe('stage-batch-4.cjs', () => {
 
   // ── 13. Branch guard behavioral test ─────────────────────────
 
-  test('branch guard blocks execution on wrong branch (ALLOW_ANY_BRANCH not set)', function () {
-    // Simulate running on a different branch by setting GIT_* env to trick git
-    // Actually we test this structurally above. For a quick behavioral check,
-    // we verify the script on the current branch passes the branch guard
-    // (it should, since we are on thamw-main).
-    const result = runNodeScript(SCRIPT_PATH);
-    // Should either pass branch guard and hit duplicate commit detection,
-    // or exit from branch guard. Both are exit 0 or exit 1 respectively.
-    // On thamw-main, it should pass branch guard.
+  test('branch guard bypassed with ALLOW_ANY_BRANCH=1 reaches duplicate-commit check', function () {
+    // Development runs on the dev branch; use ALLOW_ANY_BRANCH=1 to bypass the
+    // guard and verify the script proceeds to duplicate-commit detection.
+    const result = runNodeScript(SCRIPT_PATH, { ALLOW_ANY_BRANCH: '1' });
+    // Script should exit 0 (already committed) or fail on missing files — either way
+    // the branch-guard error must not appear.
     assert.ok(
-      !result.stderr.includes('Current branch is') || result.exitCode === 0,
-      `Branch guard should pass on thamw-main. stderr: "${result.stderr}"`
+      !result.stderr.includes('Current branch is'),
+      `Branch guard should be bypassed with ALLOW_ANY_BRANCH=1. stderr: "${result.stderr}"`
     );
   });
 });

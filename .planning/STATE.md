@@ -21,7 +21,7 @@ progress:
 
 See: .planning/PROJECT.md (updated 2026-05-25 after v2.1.0-a milestone start)
 
-**Core value:** Every agent, command, and workflow file on `thamw-main` meets the fork's prompt engineering quality bar before it ships
+**Core value:** Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships
 **Current focus:** v2.1.0-a — SHA Versioning Reimplementation
 
 ## Current Position

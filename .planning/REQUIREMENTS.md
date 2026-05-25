@@ -1,7 +1,7 @@
 # Requirements: GSD — SHA Versioning Reimplementation (v2.1.0-a)
 
 **Defined:** 2026-05-25
-**Core Value:** Every agent, command, and workflow file on `thamw-main` meets the fork's prompt engineering quality bar before it ships
+**Core Value:** Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships
 
 ## v1 Requirements
 

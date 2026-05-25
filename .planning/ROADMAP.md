@@ -58,7 +58,7 @@ Full details: `.planning/milestones/v1.36.0.a-ROADMAP.md`
 <details>
 <summary>✓ v1.37.1 Files (Phases 7–12) — SHIPPED 2026-04-22</summary>
 
-**Goal:** Merge upstream v1.37.1 into thamw-main, sync CATALOGUE.json, apply the fork's positive framing and XML structure standards to all new and modified prompt files, and keep the test suite green.
+**Goal:** Merge upstream v1.37.1 into main, sync CATALOGUE.json, apply the fork's positive framing and XML structure standards to all new and modified prompt files, and keep the test suite green.
 
 - [x] Phase 7: Merge and Conflict Resolution (2/2 plans) — completed 2026-04-17
 - [x] Phase 8: CATALOGUE Sync (1/1 plans) — completed 2026-04-17
@@ -144,7 +144,7 @@ Full details: `.planning/milestones/v1.38.6-ROADMAP.md`
 <details>
 <summary>✅ v1.41.3 Upstream v1.41.2 Fork Compliance (Phases 32–34) — SHIPPED 2026-05-19</summary>
 
-**Milestone Goal:** Resolve all known test failures on thamw-v1.41.2, pass the negative-framing scanner across all upstream-introduced files, fix any new violations, and fast-forward thamw-main to thamw-v1.41.3.
+**Milestone Goal:** Resolve all known test failures on thamw-v1.41.2, pass the negative-framing scanner across all upstream-introduced files, fix any new violations, and fast-forward main to thamw-v1.41.3.
 
 - [x] Phase 32: Quick Test Fixes (1/1 plans) — completed 2026-05-13
 - [x] Phase 33: Positive Framing Pass (2/2 plans) — completed 2026-05-14

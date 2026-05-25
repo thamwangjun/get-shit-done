@@ -6,7 +6,7 @@ An opinionated fork of the GSD (Get Shit Done) framework that applies systematic
 
 ## Core Value
 
-Every agent, command, and workflow file on `thamw-main` meets the fork's prompt engineering quality bar before it ships — upstream content additions are modified, not accepted verbatim.
+Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships — upstream content additions are modified, not accepted verbatim.
 
 ## Current Milestone: v2.1.0-a SHA Versioning Reimplementation
 
@@ -94,11 +94,11 @@ Every agent, command, and workflow file on `thamw-main` meets the fork's prompt 
 
 ## Context
 
-- **Branch**: `thamw-main` (fork branch); merges from `upstream/main` via `git merge upstream/main`
+- **Branch**: `main` (fork branch); merges from `upstream/main` via `git merge upstream/main`
 - **Fork standards references** (`.planning/references/`):
   - `.planning/references/PROMPT_ENGINEERING_GUIDE_V09.md` — comprehensive prompt engineering principles that define the fork's quality bar across structure, context, XML, CoT, and constraint patterns
   - `.planning/references/PROMPT_IMPROVEMENT_GUIDE_V01.md` — condensed improvement checklist used during review and modification passes on upstream files
-  - `.planning/references/UPSTREAM_TO_FORK_CHANGES_GUIDE.md` — authoritative record of every category of change between `thamw-main` and upstream, with an upstream merge checklist and fork-owned files list
+  - `.planning/references/UPSTREAM_TO_FORK_CHANGES_GUIDE.md` — authoritative record of every category of change between `main` and upstream, with an upstream merge checklist and fork-owned files list
 - **Plans playbook** (`plans/`): canonical plan for each recurring work type:
   - `.planning/fork_plans/A0-MERGE_UPSTREAM_CONFLICTS_V01.md` — full upstream merge lifecycle template
   - `.planning/fork_plans/B0-SYNC_CATALOGUE_V01.md` — CATALOGUE.json sync process
