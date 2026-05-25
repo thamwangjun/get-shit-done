@@ -1,190 +1,136 @@
 # Coding Conventions
 
-**Analysis Date:** 2026-04-15
+**Analysis Date:** 2026-05-25
 
 ## Naming Patterns
 
 **Files:**
-- Source lib modules: `kebab-case.cjs` (e.g., `core.cjs`, `model-profiles.cjs`, `profile-pipeline.cjs`)
-- Test files: `kebab-case.test.cjs` — one test file per lib module plus many integration/regression tests
-- Bug regression tests: `bug-<issue-number>-<description>.test.cjs` (e.g., `bug-1891-file-resolution.test.cjs`)
-- Helper scripts: `kebab-case.cjs` in `scripts/`
+- Source lib modules: `kebab-case.cjs` — e.g., `core.cjs`, `model-profiles.cjs`, `profile-pipeline.cjs`
+- Generated CJS modules: `kebab-case.generated.cjs` — e.g., `phase-lifecycle.generated.cjs`, `configuration.generated.cjs`
+- Test files: `kebab-case.test.cjs` — one test file per lib module plus integration/regression tests
+- Bug regression tests: `bug-<issue-number>-<description>.test.cjs` — e.g., `bug-1891-file-resolution.test.cjs`
+- Helper scripts in `scripts/`: `kebab-case.cjs`
+- Suite-labeled test files: `<name>.<suite>.test.cjs` — e.g., `release-tarball-smoke.install.test.cjs`
 
 **Functions:**
-- All functions use `camelCase` (e.g., `findProjectRoot`, `atomicWriteFileSync`, `comparePhaseNum`)
-- CLI command handler functions are prefixed with `cmd` (e.g., `cmdPhasesList`, `cmdStateLoad`, `cmdStatePatch`)
-- Internal-only helpers are suffixed with `Internal` (e.g., `findPhaseInternal`, `generateSlugInternal`, `resolveModelInternal`)
-- Boolean predicates use `is`/`has`/`can` prefix implicitly via natural English (e.g., `stateExists`, `configExists`)
+- All functions use `camelCase` — e.g., `findProjectRoot`, `atomicWriteFileSync`, `comparePhaseNum`
+- CLI command handler functions prefixed with `cmd` — e.g., `cmdPhasesList`, `cmdStateLoad`, `cmdStatePatch`
+- Internal-only helpers suffixed with `Internal` — e.g., `findPhaseInternal`, `generateSlugInternal`, `resolveModelInternal`
 
 **Variables:**
 - `camelCase` for local variables
-- `SCREAMING_SNAKE_CASE` for module-level constants (e.g., `CONFIG_DEFAULTS`, `WORKSTREAM_SESSION_ENV_KEYS`, `TEST_ENV_BASE`)
-- Temporary directory variables named `tmpDir`
+- `SCREAMING_SNAKE_CASE` for module-level constants — e.g., `CONFIG_DEFAULTS`, `WORKSTREAM_SESSION_ENV_KEYS`, `TEST_ENV_BASE`
+- Temporary directory variables named `tmpDir` (tests)
+- Working directory parameter always named `cwd`
 
-**Types / Constants:**
-- No TypeScript; runtime type checks only
-- Module-level constant objects with `SCREAMING_SNAKE_CASE` keys
-- `tsconfig.json` and `vitest.config.ts` exist for tooling but the runtime code is all CommonJS
+**Types:**
+- No TypeScript in runtime code; CommonJS with runtime type checks only
+- Module-level constant objects with `SCREAMING_SNAKE_CASE` keys (e.g., `ERROR_REASON` frozen enum in `core.cjs`)
 
 ## Code Style
 
 **Formatting:**
-- No Prettier or ESLint config detected in the repository root — formatting is maintained by convention
+- No Prettier or ESLint config detected — formatting is maintained by convention
 - 2-space indentation (consistent across all `get-shit-done/bin/lib/*.cjs` files)
 - Single quotes for string literals in most places
 - Template literals used for multi-token string construction
 
-**Module format:**
+**Language constraints:**
 - CommonJS only (`require`, `module.exports`) — no ES modules in lib or test code
-- All lib files: `'use strict'` is implied but not always declared explicitly
-- `scripts/run-tests.cjs` uses `'use strict';` explicitly
-
-## Section Organization Within Files
-
-Files organize code using ASCII banner comments as section separators:
-
-```javascript
-// ─── Path helpers ─────────────────────────────────────────────────────────────
-
-// ─── File & Config utilities ──────────────────────────────────────────────────
-
-// ─── Atomic file writes ───────────────────────────────────────────────────────
-```
-
-Each lib file starts with a JSDoc block comment naming the module:
-
-```javascript
-/**
- * Core — Shared utilities, constants, and internal helpers
- */
-```
+- `'use strict'` used explicitly in scripts (e.g., `scripts/run-tests.cjs`) and some test files
+- The SDK layer at `sdk/src/*.ts` uses TypeScript with ES2022 modules; these are a separate compilation target
 
 ## Import Organization
 
-**Order:**
-1. Node built-ins (`fs`, `path`, `os`, `crypto`, `child_process`)
-2. Internal lib modules via relative paths (`./core.cjs`, `./frontmatter.cjs`, `./state.cjs`)
+**Order (within lib files):**
+1. Node.js built-ins — `fs`, `path`, `os`, `child_process`
+2. Internal lib modules — `require('./core.cjs')`, `require('./planning-workspace.cjs')`
+3. Generated modules — `require('./configuration.generated.cjs')`
 
 **Pattern:**
-```javascript
-const fs = require('fs');
-const path = require('path');
-const { execSync, execFileSync } = require('child_process');
-const { escapeRegex, loadConfig, planningDir, output, error } = require('./core.cjs');
-const { extractFrontmatter } = require('./frontmatter.cjs');
-```
-
-Destructured imports are used when consuming multiple named exports from internal modules.
-
-**No path aliases** — all imports use relative paths.
+- Destructured imports are the norm: `const { output, error, ERROR_REASON } = require('./core.cjs')`
+- Path-based requires only — no package aliases used in CJS lib files
+- Tests use `require('node:test')` and `require('node:assert/strict')` (explicit node: protocol prefix)
 
 ## Error Handling
 
-**Strategy:** Fail-fast with process exit for unrecoverable errors; return structured results for expected failures.
+**Patterns:**
+- `error(msg, ERROR_REASON.CODE)` in `get-shit-done/bin/lib/core.cjs` calls `process.exit(1)` — all lib modules use this
+- Internal helpers return `null` for not-found rather than throwing
+- CLI command handlers write to stdout via `output()` and return `undefined`
+- Error codes are typed enum values in frozen object `ERROR_REASON` (`core.cjs:155`) — e.g., `ERROR_REASON.PHASE_NOT_FOUND`
+- Lock files tracked in `_heldStateLocks` / `_heldPlanningLocks` Sets, removed on `process.on('exit')`
+- Plan revision loop (max 3 iterations) in `plan-phase.md` workflow when `gsd-plan-checker` fails
+
+**Output strategy:**
+- In raw mode: writes `String(rawValue)` directly via `fs.writeSync(1, data)` (synchronous, avoids pipe teardown race)
+- In JSON mode: serializes `result` as pretty-printed JSON
+- For large payloads (>50KB): writes to a temp file and outputs `@file:/path/to/file.json` prefix
+- Always uses `fs.writeSync(1, data)` — never `console.log` in lib code
+
+## Logging
+
+**Framework:** No logging framework — `console.error` for diagnostic messages to stderr only in scripts/tests
 
 **Patterns:**
-
-The `error()` helper in `get-shit-done/bin/lib/core.cjs` writes to stderr and exits:
-```javascript
-function error(message) {
-  fs.writeSync(2, 'Error: ' + message + '\n');
-  process.exit(1);
-}
-```
-
-Silent swallow with empty catch blocks is used for non-critical operations (file cleanup, lock release):
-```javascript
-try { fs.unlinkSync(lockPath); } catch { /* already gone */ }
-```
-
-`safeReadFile` pattern — returns `null` on read failure rather than throwing:
-```javascript
-function safeReadFile(filePath) {
-  try {
-    return fs.readFileSync(filePath, 'utf-8');
-  } catch {
-    return null;
-  }
-}
-```
-
-Structured error returns in CLI output — commands return JSON with an `error` field rather than throwing:
-```javascript
-output({ files: [], count: 0, phase_dir: null, error: 'Phase not found' }, raw, '');
-```
-
-## Output
-
-**Pattern:** All CLI commands output via the `output(result, raw, rawValue)` helper in `get-shit-done/bin/lib/core.cjs`. This function:
-- In raw mode: writes `String(rawValue)` directly
-- In JSON mode: serializes `result` as pretty-printed JSON
-- For large payloads (>50KB): writes to a temp file and outputs `@file:/path/to/file.json`
-- Always uses `fs.writeSync(1, data)` (synchronous, avoids pipe teardown race)
-
-```javascript
-function output(result, raw, rawValue) {
-  // ... writes to stdout via fs.writeSync(1, data)
-}
-```
-
-## Concurrency Primitives
-
-Use `withPlanningLock(cwd, fn)` from `get-shit-done/bin/lib/core.cjs` for any write to `.planning/` files. Use `atomicWriteFileSync(filePath, content)` for writes that must survive process crashes:
-
-```javascript
-function atomicWriteFileSync(filePath, content, encoding = 'utf-8') {
-  const tmpPath = filePath + '.tmp.' + process.pid;
-  try {
-    fs.writeFileSync(tmpPath, content, encoding);
-    fs.renameSync(tmpPath, filePath);
-  } catch (renameErr) {
-    try { fs.unlinkSync(tmpPath); } catch { }
-    fs.writeFileSync(filePath, content, encoding);
-  }
-}
-```
+- Lib modules never use `console.log` — use `output()` from `core.cjs` for stdout
+- Scripts use `console.error()` for user-facing messages (goes to stderr, not captured by callers)
+- Issue numbers cited inline: `// (#1916)`, `// fix #1967`
 
 ## Comments
 
 **When to Comment:**
 - Module-level JSDoc block at the top of every lib file naming the module and its purpose
-- Section separator banners (`// ─── Section Name ───`) to group related functions
-- Inline comments for non-obvious logic, especially around concurrency, OS edge cases, and issue references
-- Issue numbers cited inline: `// (#1916)`, `// fix #1967`
+- Section separator banners (`// ─── Section Name ───`) to group related functions within a file
+- Inline comments for non-obvious logic — concurrency, OS edge cases, issue references
+- Issue numbers cited inline when fixing a specific bug: `// (#1916)`, `// fix #1967`
+- `@param` and `@returns` tags used on helper functions and exported APIs
 
-**JSDoc usage:**
-- Used on public/exported functions that are called by many consumers
-- `@param` and `@returns` tags used on helper functions
-
-**Example:**
+**Example module header:**
 ```javascript
 /**
- * Acquire a file-based lock for .planning/ writes.
- * Prevents concurrent worktrees from corrupting shared planning files.
- * Lock is auto-released after the callback completes.
+ * State — STATE.md operations and progression engine
  */
-function withPlanningLock(cwd, fn) { ... }
+```
+
+**Example section banner:**
+```javascript
+// ─── Configuration Module (generated CJS mirror) ────────────────────────────
 ```
 
 ## Function Design
 
-**Size:** Functions are medium-sized (20–100 lines typical); large state/init modules have some functions exceeding 100 lines for command handlers that parse complex structured data.
-
 **Parameters:**
-- `cwd` (working directory string) is the first parameter for all functions that touch `.planning/`
-- `raw` (boolean) is last parameter on CLI-facing functions that control output format
-- Options objects used when a command has 3+ optional args (e.g., `cmdPhasesList(cwd, options, raw)`)
+- `cwd` (working directory string) is the **first** parameter for all functions that touch `.planning/`
+- `raw` (boolean) is **last** parameter on CLI-facing functions that control output format
+- Options objects used when a command has 3+ optional args: `cmdPhasesList(cwd, options, raw)`
 
 **Return Values:**
 - Internal helpers return plain values or `null` for not-found
 - CLI command handlers write to stdout via `output()` and return `undefined`
-- Functions that can fail return `null` rather than throwing
+- Functions that can fail return `null` rather than throwing (exception: `error()` calls `process.exit(1)`)
 
 ## Module Design
 
 **Exports:**
 - Single `module.exports = { ... }` block at the end of each lib file listing all exported names
 - Internal helpers not needed by other modules are not exported (not prefixed, not in exports block)
+
+**Entry Point:**
 - `get-shit-done/bin/gsd-tools.cjs` is the CLI entry point that requires lib modules and dispatches commands
 
-**No barrel files** — each module is imported directly by path.
+**Generated Modules:**
+- Files ending in `.generated.cjs` are machine-generated from TypeScript SDK sources
+- `scripts/gen-*.mjs` scripts regenerate them — do not edit by hand
+- Comments at top of generated files note source file and regeneration command
+
+## Concurrency Primitives
+
+- File-locking via lock files (`.planning/STATE.md.lock`) for parallel-safe writes during wave execution
+- Lock sets tracked in process-scoped `Set` instances (`_heldStateLocks`, `_heldPlanningLocks`)
+- `process.on('exit')` cleanup registered to remove stale locks even on `process.exit(1)`
+- Synchronous Atomics-based sleep in tests: `Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms)` — used only in retry helpers, never in lib code
+
+---
+
+*Convention analysis: 2026-05-25*

@@ -1,74 +1,68 @@
 # Testing Patterns
 
-**Analysis Date:** 2026-04-15
+**Analysis Date:** 2026-05-25
 
 ## Test Framework
 
 **Runner:**
-- Node.js built-in `node:test` runner (no external test framework)
-- Requires Node.js >= 22.0.0
-- Config: `scripts/run-tests.cjs` — custom runner that globs `tests/*.test.cjs` and invokes `node --test --test-concurrency=4`
+- Node.js built-in `--test` runner (no external test framework)
+- Requires Node.js >=20; CI matrix: Node 22 and 24 on ubuntu-latest, Node 24 on macos-latest
+- Test dispatch: `scripts/run-tests.cjs` — resolves globs via Node, propagates `NODE_V8_COVERAGE` for c8
 
 **Assertion Library:**
-- `node:assert/strict` — strict mode assertions only (`assert.strictEqual`, `assert.deepStrictEqual`, `assert.ok`)
+- `node:assert/strict` — always imported as strict mode assertions
 
-**Coverage:**
-- `c8` v11+ for code coverage
-- Coverage target: ≥70% line coverage
-- Coverage scope: `get-shit-done/bin/lib/*.cjs` only (excludes `tests/`, installer, hooks)
+**Coverage Tool:**
+- `c8` ^11.0.0
+- Scope: `get-shit-done/bin/lib/*.cjs` only — not SDK or scripts
+- Target: ≥70% line coverage
 
 **Run Commands:**
 ```bash
-npm test                  # Run all tests (concurrency=4)
-node --test tests/phase.test.cjs   # Run a single test file
-npm run test:coverage     # Run with c8 coverage, require ≥70% lines
-TEST_CONCURRENCY=8 npm test        # Override concurrency
+node scripts/run-tests.cjs              # Run all tests (all suites)
+node scripts/run-tests.cjs --suite unit        # Unit tests only (no suite marker)
+node scripts/run-tests.cjs --suite integration # Integration tests
+node scripts/run-tests.cjs --suite install     # Install smoke tests
+node scripts/run-tests.cjs --suite security    # Security tests
+node --test tests/phase.test.cjs               # Run a single test file
+npm run test:coverage                          # Run with c8 coverage gate
 ```
 
 ## Test File Organization
 
 **Location:**
-- All test files live in `tests/` at the project root — not co-located with source
-- One corresponding test file per lib module (e.g., `tests/core.test.cjs` → `get-shit-done/bin/lib/core.cjs`)
-- Additional integration tests per feature/command (e.g., `tests/config.test.cjs`, `tests/state.test.cjs`)
-- Bug regression tests: `tests/bug-<issue>-<slug>.test.cjs`
+- All test files in `tests/` directory at repo root
+- Flat structure — no subdirectories within `tests/`
+- Total: 588+ test files as of 2026-05-25
 
 **Naming:**
-- All test files: `kebab-case.test.cjs`
-- Bug regression tests: `bug-<issue-number>-<short-description>.test.cjs`
+- Unit tests: `kebab-case.test.cjs` — e.g., `state.test.cjs`, `phase.test.cjs`, `roadmap.test.cjs`
+- Suite-labeled tests: `<name>.<suite>.test.cjs` — e.g., `release-tarball-smoke.install.test.cjs`
+- Bug regression tests: `bug-<issue-number>-<description>.test.cjs` — e.g., `bug-1891-file-resolution.test.cjs`, `bug-1826-phases-clear-confirm.test.cjs`
+- Feature tests: `feat-<number>-<description>.test.cjs`
 
-**Structure:**
-```
-tests/
-├── helpers.cjs                         # Shared test utilities (NOT a test file)
-├── core.test.cjs                       # Unit tests for lib/core.cjs
-├── state.test.cjs                      # Integration tests for lib/state.cjs
-├── phase.test.cjs                      # Integration tests for lib/phase.cjs
-├── config.test.cjs                     # Integration tests for lib/config.cjs
-├── frontmatter.test.cjs                # Unit tests for lib/frontmatter.cjs (pure functions)
-├── template.test.cjs                   # Integration tests for lib/template.cjs
-├── atomic-write.test.cjs               # Unit tests for atomicWriteFileSync
-├── concurrency-safety.test.cjs         # Multi-process stress tests
-├── agent-frontmatter.test.cjs          # Static analysis: validates all agent .md files
-├── bug-1891-file-resolution.test.cjs   # Bug regression: #1891
-└── ...
-```
+**Suite grouping convention:**
+- `<name>.test.cjs` — `unit` suite (default, no marker)
+- `<name>.integration.test.cjs` — `integration` suite
+- `<name>.install.test.cjs` — `install` suite
+- `<name>.security.test.cjs` — `security` suite
+- `<name>.slow.test.cjs` — `slow` suite
+
+**Concurrency:**
+- Default: 4 parallel processes on Linux/macOS, 2 on Windows
+- Override: `TEST_CONCURRENCY=<n>` env var
 
 ## Test Structure
 
 **Suite Organization:**
 ```javascript
-/**
- * GSD Tools Tests - Phase
- */
-
 const { test, describe, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
 const { runGsdTools, createTempProject, cleanup } = require('./helpers.cjs');
 
-describe('phases list command', () => {
+describe('command name', () => {
   let tmpDir;
 
   beforeEach(() => {
@@ -79,212 +73,207 @@ describe('phases list command', () => {
     cleanup(tmpDir);
   });
 
-  test('empty phases directory returns empty array', () => {
-    const result = runGsdTools('phases list', tmpDir);
-    assert.ok(result.success, `Command failed: ${result.error}`);
+  test('what it does when condition', () => {
+    // arrange: write fixture files to tmpDir
+    fs.writeFileSync(path.join(tmpDir, '.planning', 'STATE.md'), '...');
 
+    // act: invoke CLI via runGsdTools
+    const result = runGsdTools('state-snapshot', tmpDir);
+
+    // assert: on structured JSON output, not raw text
+    assert.ok(result.success, `Command failed: ${result.error}`);
     const output = JSON.parse(result.output);
-    assert.deepStrictEqual(output.directories, [], 'directories should be empty');
-    assert.strictEqual(output.count, 0, 'count should be 0');
+    assert.strictEqual(output.current_phase, '03', 'current phase extracted');
   });
 });
 ```
 
 **Patterns:**
-- `beforeEach` creates a fresh `tmpDir` via `createTempProject()` or `createTempDir()`
-- `afterEach` always calls `cleanup(tmpDir)` — no persistent temp files
-- Test names describe expected behavior: `'lists phase directories sorted numerically'`
-- Failure messages included in every assertion: `assert.ok(result.success, \`Command failed: ${result.error}\`)`
-- JSON output from CLI is always parsed with `JSON.parse(result.output)` before asserting fields
+- `beforeEach` creates a fresh temp project via `createTempProject()` or `createTempDir()`
+- `afterEach` calls `cleanup(tmpDir)` to remove the temp directory
+- Test bodies follow arrange-act-assert structure
+- Assertion messages always included as the second arg to assert calls: `assert.strictEqual(x, y, 'message')`
 
-## Test Helpers (`tests/helpers.cjs`)
+## Key Test Helpers
 
-All test files import shared utilities from `tests/helpers.cjs`. Use these — do not reimplement.
+All helpers are in `tests/helpers.cjs`:
 
-**`runGsdTools(args, cwd, env)`** — Runs `get-shit-done/bin/gsd-tools.cjs` as a subprocess:
-```javascript
-// String form: shell-style parsing
-const result = runGsdTools('phases list --type plans', tmpDir);
+**`runGsdTools(args, cwd, env)`** — Invokes `gsd-tools.cjs` as a child process.
+- `args`: string (shell-split) or `string[]` (bypasses shell — safe for JSON and dollar signs)
+- Returns `{ success, output, error, exitCode }`
+- Strips session env vars to isolate test from developer's active session
 
-// Array form: bypasses shell (safe for JSON, dollar signs)
-const result = runGsdTools(['config-set', 'key', JSON.stringify(value)], tmpDir);
+**`createTempProject(prefix?)`** — Creates `os.tmpdir()/gsd-test-XXXXX/` with `.planning/phases/` structure.
 
-// Returns: { success: boolean, output: string, error?: string }
-```
+**`createTempDir(prefix?)`** — Creates bare temp directory with no `.planning/` structure.
 
-**`createTempProject(prefix?)`** — Creates a temp dir with `.planning/phases/` structure:
-```javascript
-const tmpDir = createTempProject();
-// tmpDir/.planning/phases/ exists
-```
+**`createTempGitProject(prefix?)`** — Creates temp project with initialized git repo and initial commit.
 
-**`createTempGitProject(prefix?)`** — Creates a temp dir with `.planning/` + initialized git repo + initial commit:
-```javascript
-const tmpDir = createTempGitProject();
-// Has git history, config user.email, commit.gpgsign=false
-```
+**`cleanup(tmpDir)`** — `fs.rmSync` with `maxRetries: 20, retryDelay: 250` for Windows EBUSY resilience.
 
-**`createTempDir(prefix?)`** — Bare temp directory, no `.planning/` structure:
-```javascript
-const tmpDir = createTempDir();
-```
+**`parseFrontmatter(content)`** — Parses YAML frontmatter block into `Record<string, string>`. Tests use this instead of `.includes('key: value')` to follow "tests parse, never grep" convention.
 
-**`cleanup(tmpDir)`** — Recursively deletes the temp directory:
-```javascript
-cleanup(tmpDir);
-```
+**`captureConsole(fn)`** — Captures `console.log/warn/error` output, strips ANSI colors, re-throws exceptions. Used for testing code that writes to console rather than stdout.
 
-**Environment isolation:** `runGsdTools` clears all session env vars (`GSD_SESSION_KEY`, `CLAUDE_SESSION_ID`, etc.) to prevent CI environment bleed. Pass `{ HOME: tmpDir }` as env to sandbox `~/.gsd/defaults.json` lookups.
+**`toPosixPath(p)`** — Normalizes path separators to `/` for cross-platform path comparisons.
+
+**`runNpm(args, options?)`** — Cross-platform npm invocation with isolated HOME to prevent ~/.npm contamination.
+
+## Anti-Patterns (Enforced by Linter)
+
+`scripts/lint-no-source-grep.cjs` runs as part of `npm test` (`pretest` hook) and rejects:
+
+1. **Source-grep theater**: `readFileSync` on `.cjs` source files to assert string presence. Proves a literal exists in source, not runtime behavior. Example violation:
+   ```javascript
+   // BANNED: reading .cjs source and asserting text
+   const src = fs.readFileSync('../lib/core.cjs', 'utf-8');
+   assert.ok(src.includes('someFunction'));
+   ```
+
+2. **Raw text matching on CLI output**: `assert.match` or `.includes()` on `.stdout`/`.stderr`. Tests must parse JSON from the SUT and assert on typed fields.
+   ```javascript
+   // BANNED:
+   assert.match(result.stdout, /some text/);
+   result.output.includes('some string');
+
+   // CORRECT: parse JSON, assert on typed fields
+   const output = JSON.parse(result.output);
+   assert.strictEqual(output.phase_name, 'Foundation');
+   ```
+
+**Escape hatch:** Add `// allow-test-rule: <reason>` as the first line of the file to suppress enforcement. Valid reasons include:
+- `source-text-is-the-product` — the `.md`/`.json`/`.yml` product files ARE what the runtime loads; testing their text IS testing the deployed contract
+- `pending-migration-to-typed-ir [#issue]` — acknowledged violation tracked for future migration
+- `structural-implementation-guard` — structural check required (e.g., wiring verification) that cannot be expressed as behavioral output assertion
 
 ## Mocking
 
-**Framework:** None — no mocking library used.
+**Framework:** None — no mocking library used in the test suite.
 
-**Pattern:** Tests rely on filesystem state in `tmpDir` rather than mocking:
+**Patterns:**
+- Tests exercise the CLI through `runGsdTools()` as black-box subprocess calls — no internal mocking
+- Isolation provided by `createTempProject()` / `createTempDir()` giving each test a fresh filesystem state
+- Session env vars cleared via `TEST_ENV_BASE` in `helpers.cjs` to prevent developer session state leaking
+- `captureConsole(fn)` used when testing code that calls `console.log` directly (not CLI output)
+
+**What to NOT mock:**
+- Filesystem I/O — tests write real files to temp directories and read real output
+- `gsd-tools.cjs` internals — test only via the CLI subprocess interface
+
+## Fixtures and Factories
+
+**Test Data — Inline fixture construction:**
 ```javascript
-// Write fixture files instead of mocking fs
+// Write STATE.md fixture
 fs.writeFileSync(
   path.join(tmpDir, '.planning', 'STATE.md'),
   `# Project State\n\n**Current Phase:** 03\n**Status:** In progress\n`
 );
 
-const result = runGsdTools('state-snapshot', tmpDir);
-const output = JSON.parse(result.output);
-assert.strictEqual(output.current_phase, '03');
+// Build PLAN.md with frontmatter
+function validPlanContent({ wave = 1, dependsOn = '[]', autonomous = 'true' } = {}) {
+  return [
+    '---',
+    'phase: 01-test',
+    `wave: ${wave}`,
+    `depends_on: ${dependsOn}`,
+    '---',
+    '<tasks>...</tasks>',
+  ].join('\n');
+}
 ```
 
-**Mock these:** Nothing — use real filesystem via `createTempProject()`/`createTempDir()`.
-
-**Do not mock these:** `fs`, `path`, `child_process` — tests execute real CLI commands as subprocesses.
-
-## Fixtures and Test Data
-
-**Test Data Pattern:**
+**Local test helper functions** are defined at the top of each test file for repeated fixture patterns:
 ```javascript
-// Write fixture files inline in test body or beforeEach
-function writeConfig(tmpDir, obj) {
-  const configPath = path.join(tmpDir, '.planning', 'config.json');
-  fs.writeFileSync(configPath, JSON.stringify(obj, null, 2), 'utf-8');
-}
-
-function writeMinimalRoadmap(tmpDir, phases = ['1']) {
-  const lines = phases.map(n => `### Phase ${n}: Phase ${n} Description`).join('\n');
-  fs.writeFileSync(
-    path.join(tmpDir, '.planning', 'ROADMAP.md'),
-    `# Roadmap\n\n${lines}\n`
-  );
-}
+function writeState(tmpDir, extra = '') { ... }
+function writeRoadmap(tmpDir, content) { ... }
+function mkPhaseDir(tmpDir, name, opts = {}) { ... }
 ```
 
-**No fixture files on disk** — all fixture data is written inline in tests. Local helper functions at the top of each test file prepare state before tests run.
-
-**Location:** Fixture helpers are either in `tests/helpers.cjs` (shared) or defined at the top of the individual test file (file-local).
+**Location:**
+- No separate fixtures directory — all fixture data is constructed inline in test files
+- Shared helpers only in `tests/helpers.cjs`
 
 ## Coverage
 
-**Requirements:** ≥70% line coverage enforced by `npm run test:coverage`
-
-**Scope:** Only `get-shit-done/bin/lib/*.cjs` is measured — the installer (`bin/install.js`), hooks, and agents are excluded.
+**Requirements:** ≥70% line coverage on `get-shit-done/bin/lib/*.cjs`
 
 **View Coverage:**
 ```bash
 npm run test:coverage
-# Runs c8 with --reporter text, outputs table to stdout
-# Fails if lines < 70%
+# or
+c8 --check-coverage --lines 70 --reporter text --include 'get-shit-done/bin/lib/*.cjs' node scripts/run-tests.cjs
 ```
+
+**Exclusions:**
+- `tests/**` excluded from coverage measurement
+- SDK TypeScript files covered by `sdk/vitest.config.ts` separately
 
 ## Test Types
 
-**Unit Tests:**
-- Pure function tests that `require` lib modules directly (no subprocess)
-- Examples: `tests/frontmatter.test.cjs`, `tests/atomic-write.test.cjs`, `tests/core.test.cjs`
-- Pattern: import named exports, call directly, assert return values
+**Unit Tests** (`*.test.cjs` — the `unit` suite):
+- The majority of the 588 test files
+- Each exercises one or a small group of CLI subcommands through `runGsdTools()`
+- Isolated via temp directories; no network access required
 
-```javascript
-const { extractFrontmatter } = require('../get-shit-done/bin/lib/frontmatter.cjs');
+**Regression Tests** (`bug-*.test.cjs`):
+- Named after the bug issue number
+- Verify the exact behavior that was broken
+- Same structure as unit tests — `describe` + `test` + `runGsdTools`
 
-test('parses simple key-value pairs', () => {
-  const content = '---\nname: foo\ntype: execute\n---\nbody';
-  const result = extractFrontmatter(content);
-  assert.strictEqual(result.name, 'foo');
-});
-```
+**Install Tests** (`*.install.test.cjs`):
+- `release-tarball-smoke.install.test.cjs` — packs and installs from tarball, verifies the installed CLI works
+- Requires npm access; slower than unit tests
 
-**Integration Tests (CLI subprocess):**
-- Most tests invoke `runGsdTools()` which spawns `gsd-tools.cjs` as a subprocess
-- Tests assert on parsed JSON output from the CLI command
-- Each test gets a fresh `tmpDir` via `createTempProject()`
-
-**Static Analysis Tests:**
-- `tests/agent-frontmatter.test.cjs` reads all agent `.md` files from `agents/` and validates frontmatter structure
-- No subprocess, no filesystem fixtures — reads the actual source files
-- Used for enforcing structural invariants across all agent files
-
-**Regression Tests:**
-- Files named `bug-<issue>-<description>.test.cjs` or referencing issue numbers in comments
-- Each regression test documents the original bug and asserts the specific behavior that was fixed
-- Example: `tests/bug-1891-file-resolution.test.cjs`, `tests/bug-2015-worktree-base-branch.test.cjs`
-
-**Stress / Concurrency Tests:**
-- `tests/concurrency-safety.test.cjs` runs multi-process concurrent writes and 50-phase stress tests
-- Uses `execAsync` (promisified `exec`) to spawn parallel subprocesses
-- Performance benchmarks use `perf_hooks.performance` for timing assertions
+**Security Tests** (`*.security.test.cjs`):
+- `security-scan.test.cjs`, `security-prompt-injection.test.cjs`, `security.test.cjs`
+- Assert security properties of the system (no secret leakage, injection resistance)
 
 ## Common Patterns
 
 **Async Testing:**
 ```javascript
-// Most tests are synchronous (execFileSync in runGsdTools)
-// Async tests use promisified exec for parallel subprocess spawning
-const { promisify } = require('util');
-const execAsync = promisify(exec);
-
-test('concurrent writes do not corrupt state', async () => {
-  const promises = Array.from({ length: 5 }, () =>
-    execAsync(`node ${TOOLS_PATH} state-advance-plan`, { cwd: tmpDir })
-  );
-  await Promise.all(promises);
-  // assert final state
+// Tests are synchronous — runGsdTools uses execFileSync
+// No async/await needed in most tests
+test('does the thing', () => {
+  const result = runGsdTools('state-snapshot', tmpDir);
+  assert.ok(result.success);
 });
 ```
 
-**Error Testing:**
+**Error Path Testing:**
 ```javascript
 test('missing STATE.md returns error', () => {
   const result = runGsdTools('state-snapshot', tmpDir);
+  // Command still succeeds (exit 0) but output contains error field
   assert.ok(result.success, `Command should succeed: ${result.error}`);
-
   const output = JSON.parse(result.output);
-  assert.strictEqual(output.error, 'STATE.md not found');
-});
-
-// For commands expected to fail (non-zero exit):
-test('invalid args cause failure', () => {
-  const result = runGsdTools('unknown-command', tmpDir);
-  assert.strictEqual(result.success, false);
-  assert.ok(result.error.includes('Unknown command'));
+  assert.strictEqual(output.error, 'STATE.md not found', 'should report missing file');
 });
 ```
 
-**Idempotency Testing:**
+**Frontmatter Testing:**
 ```javascript
-test('is idempotent — returns already_exists on second call', () => {
-  const first = runGsdTools('config-ensure-section', tmpDir);
-  assert.ok(first.success);
-  assert.strictEqual(JSON.parse(first.output).created, true);
-
-  const second = runGsdTools('config-ensure-section', tmpDir);
-  assert.ok(second.success);
-  assert.strictEqual(JSON.parse(second.output).created, false);
-  assert.strictEqual(JSON.parse(second.output).reason, 'already_exists');
-});
+// Use parseFrontmatter() instead of .includes() checks
+const { parseFrontmatter } = require('./helpers.cjs');
+const content = fs.readFileSync(path.join(agentsDir, 'gsd-planner.md'), 'utf-8');
+const fm = parseFrontmatter(content);
+assert.strictEqual(fm.name, 'gsd-planner');
 ```
 
-**JSON Output Assertions:**
+**Structural Guards (with allow-test-rule):**
 ```javascript
-// Always parse output before asserting — never match raw strings
-const output = JSON.parse(result.output);
-assert.strictEqual(output.current_phase, '03', 'current phase extracted');
-assert.strictEqual(output.total_phases, 6, 'total phases extracted');
-assert.deepStrictEqual(output.directories, ['01-foundation', '02-api', '10-final']);
+// allow-test-rule: structural-implementation-guard
+// When wiring cannot be tested behaviorally, read source text
+// but annotate the file with allow-test-rule at line 1
+
+const src = fs.readFileSync(GSD_TOOLS_SRC, 'utf-8');
+assert.ok(
+  src.includes("captured.startsWith('@file:')"),
+  'main() should check for @file: prefix'
+);
 ```
+
+---
+
+*Testing analysis: 2026-05-25*

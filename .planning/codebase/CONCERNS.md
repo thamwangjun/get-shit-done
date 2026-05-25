@@ -1,198 +1,143 @@
 # Codebase Concerns
 
-**Analysis Date:** 2026-04-15
+**Analysis Date:** 2026-05-25
 
 ## Tech Debt
 
-**Monolithic installer (6,676 lines):**
-- Issue: `bin/install.js` is a single 6,676-line file with 152 functions, handling detection, transformation, file copying, and hook registration for 10+ runtimes in one flat namespace.
+**Duplicated dotted-command parser between CJS and SDK:**
+- Issue: The dotted-command-to-argv split (e.g., `state.load` → `['state', 'load']`) is implemented twice — once inline in `gsd-tools.cjs` (line 437) and once in `sdk/src/query/query-fallback-bridge-adapter.ts`. A `TODO` comment in `gsd-tools.cjs:437` acknowledges this.
+- Files: `get-shit-done/bin/gsd-tools.cjs:430-449`, `sdk/src/query/query-fallback-bridge-adapter.ts`
+- Impact: Divergence between the two parsers produces different routing behavior depending on whether the SDK or CJS path handles a command.
+- Fix approach: Extract shared logic to a helper in `get-shit-done/bin/lib/` and require it from both call sites. The comment already identifies this as the goal.
+
+**`scanForInjection` is exported but never called from `gsd-tools.cjs` or any router:**
+- Issue: `security.cjs` exports `scanForInjection` (line 581) and the function exists with comprehensive pattern matching (lines 254–321), but no command router or CLI entrypoint calls it. `sanitizeForPrompt` is called in `commands.cjs:262` only for Brave Search queries; user-supplied text in `state patch`, `roadmap add`, `phase create` etc. is not scanned.
+- Files: `get-shit-done/bin/lib/security.cjs:254`, `get-shit-done/bin/lib/commands.cjs:262`, `get-shit-done/bin/gsd-tools.cjs`
+- Impact: The injection guard infrastructure exists but is not applied to the majority of user-supplied text that flows into `.planning/` files.
+- Fix approach: Call `scanForInjection` in `gsd-tools.cjs` router entry for subcommands that accept free-text args (`state patch`, `state add-blocker`, `roadmap add`, `phase create`).
+
+**`bin/install.js` is a 11,496-line monolith:**
+- Issue: The installer is a single file (lines counted: 11,496) with 241 function definitions handling runtime detection, file transformation, path generation, template substitution, migration, and hook bundling. There is no test file covering `bin/install.js` directly — integration smoke tests cover it indirectly via tarball smoke (`tests/release-tarball-smoke.install.test.cjs`).
 - Files: `bin/install.js`
-- Impact: Any new runtime addition requires reading the entire file to understand context; cross-runtime regressions are hard to isolate; tests cover specific behaviors via string-scanning rather than unit testing individual install logic.
-- Fix approach: Extract per-runtime install handlers into `bin/runtimes/<name>.js` modules, keeping `install.js` as a dispatcher.
+- Impact: Any change to one runtime's install path risks breaking another. Hard to trace regressions; the smoke test surface is thin.
+- Fix approach: Decompose by extracting per-runtime transformer objects and a shared file-copy pipeline into separate modules under `bin/lib/`. This is a multi-phase refactor; the existing regression tests provide a safety net.
 
-**Largest lib modules lack decomposition:**
-- Issue: `get-shit-done/bin/lib/init.cjs` (1,711 lines, 26 functions) and `get-shit-done/bin/lib/core.cjs` (1,637 lines) combine unrelated concerns. `core.cjs` mixes path utilities, git wrappers, lock primitives, config loading, output helpers, temp file management, markdown normalization, and phase search.
-- Files: `get-shit-done/bin/lib/init.cjs`, `get-shit-done/bin/lib/core.cjs`
-- Impact: High cognitive load for contributors; any change to a low-level utility requires reading past unrelated functions; import lists from `core.cjs` are already 20+ symbols wide.
-- Fix approach: Split `core.cjs` into `path-utils.cjs`, `git-utils.cjs`, `lock.cjs`, and `output.cjs`. Split `init.cjs` into `init-execute.cjs`, `init-plan.cjs`, and `init-workspace.cjs`.
+**Generated `.cjs` files tracked in git without a `gen:command-aliases` script in root:**
+- Issue: `get-shit-done/bin/lib/command-aliases.generated.cjs` (823 lines) is committed to the repo. The SDK has `gen-command-aliases.ts` in `sdk/scripts/` and a `check:alias-drift` npm script, but no `gen:command-aliases` script is listed in `sdk/package.json`. Other generated files (`secrets`, `decisions`, `phase`, etc.) each have explicit `gen:*` scripts in `sdk/package.json`.
+- Files: `get-shit-done/bin/lib/command-aliases.generated.cjs`, `sdk/scripts/gen-command-aliases.ts`
+- Impact: Contributors cannot regenerate command aliases without reverse-engineering the gen script invocation. Stale aliases cause silent routing failures.
+- Fix approach: Add `"gen:command-aliases": "npm run build && npx tsx scripts/gen-command-aliases.ts"` to `sdk/package.json` scripts alongside the other `gen:*` entries.
 
-**Silent `catch {}` blocks throughout lib layer:**
-- Issue: `core.cjs` has 31 bare `catch {}` blocks, `state.cjs` has 15, `init.cjs` has 31. Most are intentional for best-effort operations, but there is no convention distinguishing "this failure is truly ignorable" from "we suppressed a real error."
-- Files: `get-shit-done/bin/lib/core.cjs`, `get-shit-done/bin/lib/state.cjs`, `get-shit-done/bin/lib/init.cjs`
-- Impact: Bugs that corrupt state silently (e.g., config write failures at line 314 in `core.cjs`, workstream STATE.md write at line 154 in `workstream.cjs`) are invisible without debug logging.
-- Fix approach: Add a structured `SILENT_FAILURE` comment pattern like `catch { /* SILENT: <reason> */ }` and introduce a debug env flag `GSD_DEBUG=1` that routes these to stderr.
-
-**Legacy config formats kept alive indefinitely:**
-- Issue: `core.cjs` `loadConfig()` still migrates `multiRepo: true` (boolean) to `sub_repos` array and `depth` to `granularity` on every load. Migration code writes back to disk, mutating user config silently. Both deprecated keys are also allowlisted in `KNOWN_TOP_LEVEL`.
-- Files: `get-shit-done/bin/lib/core.cjs` (lines 276–330)
-- Impact: Migration logic triggers on every `gsd-tools` invocation for any user who hasn't cleaned up their config; extra disk writes on hot path.
-- Fix approach: Add a migration version stamp to `config.json`. Run migration once, stamp it, skip on subsequent loads.
-
-**Non-atomic writes in `workstream.cjs`, `intel.cjs`, `learnings.cjs`, and `milestone.cjs`:**
-- Issue: Several modules use raw `fs.writeFileSync` instead of `atomicWriteFileSync` for files that could be written concurrently during wave execution. Specifically: `workstream.cjs` line 154 (STATE.md creation), `intel.cjs` lines 366 and 506 (snapshot and data files), `learnings.cjs` line 128 (learning records), `milestone.cjs` lines 157 and 164 (archive files).
-- Files: `get-shit-done/bin/lib/workstream.cjs`, `get-shit-done/bin/lib/intel.cjs`, `get-shit-done/bin/lib/learnings.cjs`, `get-shit-done/bin/lib/milestone.cjs`
-- Impact: Parallel agent waves can produce truncated files if two processes write simultaneously; milestone archiving is not crash-safe.
-- Fix approach: Replace `fs.writeFileSync` with `atomicWriteFileSync` from `core.cjs` in all these locations. The infrastructure already exists.
-
-**Lazy `require()` calls inside hot functions:**
-- Issue: `state.cjs` calls `require('./security.cjs')` inside `cmdStateGet`, `cmdStatePatch`, and `cmdStateUpdate` rather than at module load time. `init.cjs` calls `require('./state.cjs')` and `require('os')` inside functions.
-- Files: `get-shit-done/bin/lib/state.cjs` (lines 134, 149, 194), `get-shit-done/bin/lib/init.cjs` (lines 156, 161, 308, 329, 1353)
-- Impact: Each call site re-evaluates the require cache lookup; minor performance overhead; makes static analysis of module dependencies inaccurate.
-- Fix approach: Move all `require` calls to the top of each module.
+**API key file detection duplicated across modules:**
+- Issue: The pattern of probing `~/.gsd/brave_api_key`, `~/.gsd/firecrawl_api_key`, and `~/.gsd/exa_api_key` via `fs.existsSync` is duplicated in both `init.cjs:463-472` and `config.cjs:129-134`.
+- Files: `get-shit-done/bin/lib/init.cjs:463-472`, `get-shit-done/bin/lib/config.cjs:129-134`
+- Impact: Adding a new optional API key integration requires updating two places. One being missed creates inconsistent feature detection between `init` and `config` subcommands.
+- Fix approach: Extract a `detectOptionalApiKeys(homedir)` helper into `core.cjs` or a new `api-key-detection.cjs` and call it from both modules.
 
 ## Known Bugs
 
-**`Atomics.wait` behavior differs across environments:**
-- Symptoms: Lock retry logic in `core.cjs` and `state.cjs` uses `Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, delayMs)` as a cross-platform sleep. In environments where `SharedArrayBuffer` is unavailable (some CI runners, worker threads), the wait silently falls through immediately, causing spin-loops rather than actual backoff.
-- Files: `get-shit-done/bin/lib/core.cjs` (line 655), `get-shit-done/bin/lib/state.cjs` (line 903)
-- Trigger: Any parallel-agent execution in an environment where `SharedArrayBuffer` is restricted (CSP or cross-origin isolation missing).
-- Workaround: None; the function degrades to a busy-wait.
+**Lock acquisition for transient filesystem errors is an unbounded tight loop:**
+- Symptoms: When `fs.openSync` throws an errno in `ACQUIRE_LOCK_RETRY_ERRNOS` (`EPERM`, `EBUSY`, `EAGAIN`, `EINTR`, `EINVAL`, `EIO`, `ENOENT`, `ESTALE`), the catch block hits `continue` immediately — no sleep and no `maxWaitMs` check. On Docker overlay-fs or NFS with a persistent transient error, this spins the CPU until the process is killed.
+- Files: `get-shit-done/bin/lib/state.cjs:972-976`
+- Trigger: Persistent `EINVAL`/`EIO`/`ENOENT` from a Docker overlay-fs or NFS mount where the `.planning/` directory lives.
+- Workaround: None at runtime. Move `.planning/` to a local filesystem.
+- Fix approach: Insert `if (Date.now() - startedAt >= maxWaitMs) throw ...` and a short `Atomics.wait(...)` before `continue` in the `ACQUIRE_LOCK_RETRY_ERRNOS` branch, matching the pattern already used in the `EEXIST` branch (lines 988–995).
 
-**`atomicWriteFileSync` fallback to direct write on rename failure loses atomicity guarantee:**
-- Symptoms: When `fs.renameSync` fails (e.g., on network drives or cross-filesystem temp dirs), the function silently falls back to `fs.writeFileSync`, which is non-atomic. This defeats the purpose of the function.
-- Files: `get-shit-done/bin/lib/core.cjs` (lines 1551–1560)
-- Trigger: Users with `.planning/` on a network mount or Docker volume where the OS temp dir is a different filesystem.
-- Workaround: None; the write succeeds but without atomicity.
-
-**`output()` 50KB threshold is undocumented and brittle:**
-- Symptoms: When JSON output exceeds 50,000 bytes, `core.cjs` writes to a temp file and emits `@file:<path>` instead. Callers in workflow/agent `.md` files must detect and handle this path prefix. If a caller does not handle `@file:`, it silently processes the literal string `@file:/tmp/gsd/gsd-<ts>.json` as JSON, producing cryptic parse errors.
-- Files: `get-shit-done/bin/lib/core.cjs` (lines 205–212)
-- Trigger: Large projects with many phases, long ROADMAP.md entries, or many agents can push `init` payloads past 50KB.
-- Workaround: Agents that use `--raw` or `--pick` flags avoid the large payload path.
+**Lock files are not cleaned up on SIGINT/SIGTERM:**
+- Symptoms: If a user Ctrl-C's an agent mid-write, `STATE.md.lock` is left on disk. The stale-lock removal in `acquireStateLock` (10-second threshold) handles the next caller, but the 10-second window blocks parallel agents.
+- Files: `get-shit-done/bin/lib/state.cjs:35-38`, `get-shit-done/bin/lib/planning-workspace.cjs:37`
+- Trigger: Ctrl-C during any STATE.md write operation.
+- Workaround: Delete `.planning/STATE.md.lock` manually if parallel agents stall.
+- Fix approach: Register `process.on('SIGINT')` and `process.on('SIGTERM')` handlers in `state.cjs` alongside the existing `process.on('exit')` handler at line 35, the same way `install-profiles.cjs:286-295` handles `CLEANUP_SIGNALS` for staged skills.
 
 ## Security Considerations
 
-**`sanitizeForPrompt` is called in only one location:**
-- Risk: User-supplied text that flows into STATE.md fields, phase plans, or roadmap entries is a potential indirect prompt injection vector. The security module documents this threat model explicitly. However, `sanitizeForPrompt` from `security.cjs` is only imported and called at one location (`commands.cjs` line 259) — in the git commit message path.
-- Files: `get-shit-done/bin/lib/security.cjs`, `get-shit-done/bin/lib/commands.cjs` (line 259)
-- Current mitigation: `security.cjs` has `validateFieldName` and `validatePath` used in state writes, and `scanForPromptInjection` is available but not called outside tests.
-- Recommendations: Apply `sanitizeForPrompt` to user-supplied values written to STATE.md (`cmdStateUpdate`, `cmdStatePatch`), to phase names and slugs derived from user input, and to any PRD content written to `.planning/` files.
+**Prompt injection guard infrastructure exists but is not applied at the CLI boundary:**
+- Risk: User-supplied free-text arguments (blockers, phase titles, roadmap entries, config values) flow from CLI args into `.planning/` Markdown files without injection scanning. An agent that later reads these files and processes them as instructions is exposed to indirect prompt injection.
+- Files: `get-shit-done/bin/lib/security.cjs:254-321` (scanner), `get-shit-done/bin/gsd-tools.cjs` (router — no scan call)
+- Current mitigation: `sanitizeForPrompt` is called for Brave Search query text (`commands.cjs:262`). `validatePath` and `requireSafePath` are applied to file path arguments. The injection patterns themselves are comprehensive (Unicode tag block detection, `<system>` tag stripping, etc.).
+- Recommendations: Wire `scanForInjection` at the gsd-tools router for free-text subcommand arguments. At minimum apply it to `state add-blocker`, `state patch`, `phase create --title`, and `roadmap add` text inputs.
 
-**`execSync('git diff --cached --name-only', ...)` uses shell interpolation:**
-- Risk: `commands.cjs` line 987 uses `execSync` with a string command rather than `execFileSync` with array args. The `cwd` argument is controlled by caller, not the command string, so direct injection is not possible. However, the inconsistency with the rest of the codebase (which explicitly uses `execFileSync` to prevent shell interpretation, per the comment at `core.cjs` line 438) creates a maintenance trap where future edits could introduce interpolated variables.
-- Files: `get-shit-done/bin/lib/commands.cjs` (line 987)
-- Current mitigation: The `cwd` option scopes the command; command string itself has no interpolated variables currently.
-- Recommendations: Replace with `execFileSync('git', ['diff', '--cached', '--name-only'], { cwd, encoding: 'utf-8' })` for consistency.
-
-**API keys stored in plaintext files under `~/.gsd/`:**
-- Risk: `config.cjs` checks for `~/.gsd/brave_api_key`, `~/.gsd/firecrawl_api_key`, and `~/.gsd/exa_api_key` as filesystem alternatives to env vars.
-- Files: `get-shit-done/bin/lib/config.cjs` (lines 113–117)
-- Current mitigation: Keys are in the user's home directory. No key is logged or emitted in output.
-- Recommendations: Document that key files should have `chmod 600` permissions. The installer does not set permissions on these files.
+**API keys stored as plaintext files in `~/.gsd/`:**
+- Risk: `~/.gsd/brave_api_key`, `~/.gsd/firecrawl_api_key`, and `~/.gsd/exa_api_key` are plaintext files on disk. If the home directory is world-readable (common misconfiguration) or backed up without access controls, keys are exposed.
+- Files: `get-shit-done/bin/lib/init.cjs:463-472`, `get-shit-done/bin/lib/config.cjs:129-134`
+- Current mitigation: `secrets.cjs` module correctly masks secret values in output (`maskSecret`, `maskIfSecret`). Key presence is detected by `fs.existsSync` only — contents are not logged.
+- Recommendations: Document `chmod 600 ~/.gsd/*_api_key` in setup guidance. Consider preferring environment variables as primary source (already supported) with the file as fallback, and emit a one-time warning if a key file has world-readable permissions.
 
 ## Performance Bottlenecks
 
-**`buildStateFrontmatter` disk scan — cached per process but not across processes:**
-- Problem: `state.cjs` scans all phase directories to build YAML frontmatter on every `STATE.md` write. A `_diskScanCache` Map caches results per `cwd` per process (added in fix #1967), but each `gsd-tools` invocation is a new process, so every wave agent re-scans disk.
-- Files: `get-shit-done/bin/lib/state.cjs` (lines 10–13)
-- Cause: Multi-agent wave execution spawns many short-lived `gsd-tools` processes in parallel; each does its own disk scan for frontmatter.
-- Improvement path: Persist the frontmatter cache to a temp file stamped with a directory mtime hash, invalidated on filesystem change.
+**`_diskScanCache` in `state.cjs` has no eviction policy:**
+- Problem: `_diskScanCache` is a module-level `Map` that grows without bound over the lifetime of a process. For long-running SDK processes (e.g., multi-phase wave execution) that touch many different `cwd` values, the cache accumulates all previously computed disk scan results.
+- Files: `get-shit-done/bin/lib/state.cjs:24`, `state.cjs:807-856`
+- Cause: The cache is only invalidated on explicit write (`_diskScanCache.delete(cwd)` at line 1015). No TTL, no max-size, no LRU.
+- Improvement path: Add a max-size eviction (e.g., keep only the 20 most-recently-used entries) or a TTL of ~5 seconds. The cache is already correctly invalidated on write; the only gap is unbounded growth across `cwd` keys.
 
-**`findProjectRoot` walks the entire ancestor chain on every invocation:**
-- Problem: Every `gsd-tools` call invokes `findProjectRoot` which stats `.planning/` existence and reads `config.json` at every ancestor directory up to `$HOME`.
-- Files: `get-shit-done/bin/lib/core.cjs` (lines 86–150)
-- Cause: No process-level cache; each invocation re-walks.
-- Improvement path: Cache result in an env var set by the installer or hook, or memoize using a process-level singleton.
-
-**`loadConfig` detects and syncs `sub_repos` on every load:**
-- Problem: `loadConfig` calls `detectSubRepos` (which does `readdirSync` + `existsSync` per child dir) and potentially writes `config.json` on every invocation when `sub_repos` drift from disk.
-- Files: `get-shit-done/bin/lib/core.cjs` (lines 299–315)
-- Cause: The sync check runs unconditionally for any project with sub_repos configured.
-- Improvement path: Guard the sync with a mtime check on `config.json` vs. directory mtime.
+**`Atomics.wait` busy-polling in three synchronous lock paths:**
+- Problem: `state.cjs` (line 995), `planning-workspace.cjs` (lines 283, 297), and `installer-migrations.cjs` (lines 222-223) all use `Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms)` as a synchronous sleep. Allocating a new `SharedArrayBuffer` and `Int32Array` on every retry iteration is wasteful.
+- Files: `get-shit-done/bin/lib/state.cjs:994-995`, `get-shit-done/bin/lib/planning-workspace.cjs:283`, `get-shit-done/bin/lib/installer-migrations.cjs:222-223`
+- Cause: Node.js has no synchronous `sleep()` without `Atomics.wait` in the main thread. The per-iteration allocation is the concern.
+- Improvement path: Hoist the `SharedArrayBuffer` and `Int32Array` to module-level constants so they are allocated once per process, not once per retry.
 
 ## Fragile Areas
 
-**STATE.md regex-based field editing:**
-- Files: `get-shit-done/bin/lib/state.cjs` (lines 33–40, 100–127, 163–174, 206–214)
-- Why fragile: State fields are located and updated via dynamically constructed `RegExp` objects using `escapeRegex`-protected field names. The code supports two format variants (`**bold:**` and `plain:`). If STATE.md is reformatted by a user or an LLM into a third format variant (e.g., `### Field\nvalue`), updates silently fail and `results.failed` is returned — callers may not check this array.
-- Safe modification: Always use `cmdStateUpdate` or `readModifyWriteStateMd`; never write STATE.md directly. Add a test asserting failed-field counts are zero in the success path.
-- Test coverage: `tests/state.test.cjs` covers both format variants, but does not test the silent-failure path where a field exists in an unexpected format.
+**`init.cjs` (2,096 lines) — project context assembly:**
+- Files: `get-shit-done/bin/lib/init.cjs`
+- Why fragile: This is the largest lib module. It assembles the JSON context blob that every workflow reads at startup. It contains multiple regex-based Markdown parsers for ROADMAP.md, STATE.md, and phase plans. Regex-based Markdown parsing is brittle against edge cases (nested headings, Windows line endings, YAML frontmatter with unusual values).
+- Safe modification: Always run `npm test` after any change to `init.cjs`. The `tests/init.test.cjs` covers core paths. Regression tests `bug-1736`, `bug-2388`, `bug-2638`, `bug-3096` guard previously broken paths.
+- Test coverage: `tests/init.test.cjs` exists; integration coverage via `tests/init-manager.test.cjs`. The regex parsers lack adversarial fuzz tests.
 
-**Lock timeout forces acquisition after 10 seconds:**
-- Files: `get-shit-done/bin/lib/core.cjs` (lines 661–663), `get-shit-done/bin/lib/state.cjs` (lines 898–900)
-- Why fragile: Both `withPlanningLock` and `acquireStateLock` force-acquire the lock after a timeout by deleting it. If the lock holder is slow (large STATE.md write, slow network volume) rather than dead, force acquisition can cause a split-brain write where both processes write concurrently.
-- Safe modification: Use PID liveness check (via `process.kill(pid, 0)`) before force-acquiring, rather than relying purely on age.
-- Test coverage: `tests/locking-bugs-1909-1916-1925-1927.test.cjs` tests specific scenarios but not the force-acquire race.
+**`state.cjs` (1,981 lines) — single point of failure for STATE.md writes:**
+- Files: `get-shit-done/bin/lib/state.cjs`
+- Why fragile: All STATE.md writes flow through `writeStateMd`. The read-modify-write cycle inside `withStateLock` (lines 1017-1043) is non-atomic at the application level — the lock is advisory. A process that reads outside the lock and then writes inside it can still produce stale-read overwrites.
+- Safe modification: Any change to `writeStateMd`, `syncStateFrontmatter`, or `buildStateFrontmatter` requires verifying the concurrency tests: `tests/concurrency-safety.test.cjs`, `tests/locking-bugs-1909-1916-1925-1927.test.cjs`.
+- Test coverage: Locking tests exist and are comprehensive; the main gap is an adversarial concurrent-write test under Docker overlay-fs conditions.
 
-**`@file:` protocol for large outputs is undocumented in agent specs:**
-- Files: `get-shit-done/bin/lib/core.cjs` (lines 205–212), `get-shit-done/get-shit-done/workflows/*.md`
-- Why fragile: Agents that call `gsd-tools init` must detect the `@file:` prefix and read the temp file rather than parsing stdout directly. This protocol is implemented in the workflow Bash steps but is not documented as a contract. Any new workflow or agent that calls a gsd-tools command returning large payloads will silently receive an unparse-able string.
-- Safe modification: When adding a new workflow that calls `gsd-tools`, always implement `@file:` detection using the pattern present in existing workflows.
-- Test coverage: No dedicated test for the `@file:` output path; covered only implicitly by large-project integration paths.
-
-**`normalizeMd` applied universally can corrupt non-markdown content:**
-- Files: `get-shit-done/bin/lib/core.cjs` (lines 465–545)
-- Why fragile: `normalizeMd` enforces blank lines around headings, fenced code blocks, and lists. It is called on every STATE.md, ROADMAP.md, and PLAN.md write. If a file contains intentional dense formatting (e.g., a compact checklist), normalization expands it. The function is correct for standard markdown but could produce unexpected results for files with non-standard structures like YAML-heavy frontmatter followed by dense tables.
-- Safe modification: Do not call `normalizeMd` on JSON files or on content that should not be reformatted. The function is already guarded against non-string input.
-- Test coverage: `tests/core.test.cjs` has normalization tests, but edge cases with deeply nested or non-standard list structures are not covered.
+**`core.cjs` silent `catch {}` blocks (251 total across lib):**
+- Files: `get-shit-done/bin/lib/core.cjs` (multiple), `get-shit-done/bin/lib/audit.cjs` (highest density — 30+ blocks)
+- Why fragile: Silent catch blocks swallow errors without logging. When a file operation fails silently (e.g., `try { platformWriteSync(...) } catch {}`), the caller receives no indication of failure and continues with stale state.
+- Safe modification: Before adding new `catch {}` blocks, consider whether a `process.stderr.write('[gsd] warning: ...')` is appropriate. The pattern is intentional for non-critical paths (lock cleanup, cache invalidation) but over-applied in audit scanning.
+- Test coverage: The error paths are largely untested; `tests/feat-3595-fs-fault-injection-atomic-write.test.cjs` covers atomic write failures but not broader silent-catch scenarios.
 
 ## Scaling Limits
 
-**`context_window` default of 200K tokens:**
-- Current capacity: 200,000 tokens per agent context window (default). Configurable to 1,000,000 for supported models.
-- Limit: Large monorepos with many phases, extensive REQUIREMENTS.md, and multi-milestone history can push `init` context payloads past what can be efficiently summarized. The 50KB JSON temp-file workaround in `output()` is a symptom.
-- Scaling path: Implement selective context loading — only load phases relevant to the current operation rather than the full planning state.
-
-**Wave parallelism creates N simultaneous `gsd-tools` processes:**
-- Current capacity: Unbounded; determined by plan wave size.
-- Limit: Each parallel wave agent spawns its own `gsd-tools` process; all compete for the `STATE.md.lock`. With >10 concurrent agents, lock contention increases retry latency (10 retries × 200ms = 2s max wait per agent).
-- Scaling path: Batch state updates via a single `state patch` call per wave rather than one `state update` call per agent.
+**Wave execution parallelism is limited by file-based locking:**
+- Current capacity: `STATE.md` is locked per-write with a 200ms retry and 30-second timeout. Parallel agents writing to `STATE.md` during a wave serialize at the lock.
+- Limit: Beyond ~10 parallel agents writing at similar intervals, the 30-second `maxWaitMs` budget in `acquireStateLock` may be exceeded, causing a thrown error that aborts the agent.
+- Scaling path: No architectural change is planned. The lock timeout is configurable at code level in `state.cjs:958-959`. Increasing `maxWaitMs` is a safe stop-gap.
 
 ## Dependencies at Risk
 
-**`c8` used only for `test:coverage` — not part of the production CLI:**
-- Risk: `c8` is a devDependency with a `^11.0.0` range. Not a production risk. The 70% line coverage floor is the main enforcement mechanism; branch coverage is not checked.
-- Impact: Modules like `get-shit-done/bin/lib/docs.cjs` and `get-shit-done/bin/lib/schema-detect.cjs` may have low branch coverage that `c8 --lines 70` does not surface.
-- Migration plan: Add `--branches 60` flag to `test:coverage` to enforce branch coverage incrementally.
-
-**No lockfile for devDependencies version pinning:**
-- Risk: `package.json` uses `^` ranges for `c8`, `esbuild`, and `vitest`. `vitest` is listed as a devDependency but the test runner is Node's built-in `--test`; `vitest` appears to be unused in active scripts.
-- Files: `package.json` (lines 41–44)
-- Impact: `npm install` in CI could pick up a breaking minor version of `esbuild` (used by `build:hooks`).
-- Migration plan: Run `npm install --save-exact` for devDependencies, or add `package-lock.json` to the published `files` array for reproducible CI installs.
+**`@anthropic-ai/claude-agent-sdk` at `^0.2.84` — semver minor is pinned too loosely:**
+- Risk: The `^` range allows any `0.x.y` patch/minor update. The SDK is the sole runtime dependency and its `query()` API is what `sdk/src/session-runner.ts` wraps. A breaking change in a `0.x` release (pre-1.0 semver stability) would silently update on `npm install`.
+- Impact: Breakage in `sdk/src/session-runner.ts:8` and all downstream SDK paths without a lockfile violation.
+- Migration plan: Pin to an exact version `"0.2.84"` or add a `overrides` lockfile check. The `package-lock.json` (lockfileVersion 3) mitigates this for exact-install scenarios but not for fresh `npm install` without the lock.
 
 ## Missing Critical Features
 
-**No structured error codes from `gsd-tools`:**
-- Problem: All errors exit with `process.exit(1)` and a plain string message to stderr. Callers in workflow `.md` files cannot distinguish "STATE.md not found" from "field not found" from "lock timeout" without string-matching stderr.
-- Blocks: Automated recovery workflows that need to branch on specific error conditions.
-
-**No per-invocation debug logging:**
-- Problem: There is no `GSD_DEBUG` or `--verbose` flag. Silent `catch {}` blocks, temp-file fallbacks, lock retries, and config migrations all happen invisibly. Diagnosing issues in CI or on user machines requires adding temporary `console.error` calls.
-- Blocks: Self-serve debugging by users experiencing state corruption or unexpected tool behavior.
+**No TypeScript coverage thresholds for the SDK layer:**
+- Problem: `npm run test:coverage` enforces ≥70% line coverage only over `get-shit-done/bin/lib/*.cjs`. The SDK in `sdk/src/` has no coverage threshold configured in `sdk/vitest.config.ts` or `sdk/package.json`.
+- Blocks: Silent coverage regressions in `sdk/src/session-runner.ts`, `sdk/src/phase-runner.ts`, and `sdk/src/query/` as new features are added.
 
 ## Test Coverage Gaps
 
-**`get-shit-done/bin/lib/docs.cjs` — no dedicated unit tests:**
-- What's not tested: `cmdDocsScan` directory walking, file inclusion/exclusion logic, output shape.
-- Files: `get-shit-done/bin/lib/docs.cjs`
-- Risk: Changes to the docs-update workflow break silently; covered only by integration test in `tests/docs-update.test.cjs` which tests string presence, not correctness.
-- Priority: Low (docs-update is a maintenance command, not in the critical path).
+**21 lib modules have no dedicated test file:**
+- What's not tested: `artifacts.cjs`, `audit.cjs`, `cjs-command-router-adapter.cjs`, `cjs-sdk-bridge.cjs`, `clusters.cjs`, `decisions.cjs`, `docs.cjs`, `drift.cjs`, `fallow-runner.cjs`, `gap-checker.cjs`, `model-catalog.cjs`, `plan-scan.cjs`, `review-reviewer-selection.cjs`, `runtime-homes.cjs`, `runtime-name-policy.cjs`, `runtime-slash.cjs`, `schema-detect.cjs`, `secrets.cjs`, `shell-command-projection.cjs`, `surface.cjs`, `validate-command-router.cjs`
+- Files: `get-shit-done/bin/lib/audit.cjs`, `get-shit-done/bin/lib/drift.cjs`, `get-shit-done/bin/lib/shell-command-projection.cjs`, etc.
+- Risk: Changes to these modules produce no immediate test signal. `audit.cjs` and `shell-command-projection.cjs` are high-traffic — `audit.cjs` is called by the `gsd-audit-open` workflow; `shell-command-projection.cjs` wraps all git subprocess calls.
+- Priority: High for `audit.cjs` and `shell-command-projection.cjs`; Medium for the rest.
 
-**`get-shit-done/bin/lib/schema-detect.cjs` — no dedicated unit tests:**
-- What's not tested: Schema file detection heuristics, drift detection logic, edge cases with schema files in unusual locations.
-- Files: `get-shit-done/bin/lib/schema-detect.cjs`
-- Risk: Schema drift detection reports false positives or misses actual drift silently.
-- Priority: Medium (used in `verify` which gates phase completion).
-
-**Non-atomic write paths in `intel.cjs`, `workstream.cjs`, `learnings.cjs`:**
-- What's not tested: Concurrent write behavior; all tests run single-threaded so the race condition is not exercised.
-- Files: `get-shit-done/bin/lib/intel.cjs` (lines 366, 506), `get-shit-done/bin/lib/workstream.cjs` (line 154), `get-shit-done/bin/lib/learnings.cjs` (line 128)
-- Risk: Data loss under parallel wave execution that targets intel or learning files.
-- Priority: Medium (intel and learnings are used in multi-agent flows).
-
-**`bin/install.js` runtime transformation logic — tested by string scanning, not unit tests:**
-- What's not tested: Transformation correctness for each runtime (tool name mapping, hook event names, agent frontmatter conversion) is tested by reading the install.js source and asserting string presence (`tests/copilot-install.test.cjs`, `tests/kilo-install.test.cjs`). The actual transformation output is not exercised against a real file copy.
-- Files: `bin/install.js`, `tests/copilot-install.test.cjs`, `tests/kilo-install.test.cjs`
-- Risk: A refactor that changes how transformations are applied can pass string-presence tests while breaking actual installs.
-- Priority: High (install correctness is user-facing; regressions cause silent misconfiguration).
-
-**`output()` `@file:` large-payload path — no dedicated test:**
-- What's not tested: The code path that writes to `gsd-<ts>.json` and returns `@file:...` when JSON exceeds 50KB.
-- Files: `get-shit-done/bin/lib/core.cjs` (lines 205–212)
-- Risk: A change to the threshold or path format breaks all large-project workflows without a failing test.
+**`fallow-audit.ts` SDK normalization function has no TS test:**
+- What's not tested: `normalizeFallowReport()` in `sdk/src/query/fallow-audit.ts` has no TypeScript-level unit test. The `TODO(parity)` comment at line 41 acknowledges this; CJS-side coverage exists in `tests/feat-3210-fallow-integration.test.cjs`.
+- Files: `sdk/src/query/fallow-audit.ts:41-44`
+- Risk: TypeScript refactors or type changes in `FallowReport` can break normalization silently at the SDK level.
 - Priority: Medium.
+
+**`bin/install.js` has no direct unit tests:**
+- What's not tested: The 11,496-line installer has no `tests/install.js.test.cjs`. Coverage flows only through smoke tests (`tests/release-tarball-smoke.install.test.cjs`, `tests/install.test.cjs` which tests runtime artifact layout, not the installer logic directly).
+- Files: `bin/install.js`
+- Risk: Runtime-specific transformation bugs (wrong tool name mapping, missing hook event translation, path prefix errors) are caught only if they produce a broken install rather than a subtly wrong one.
+- Priority: High.
 
 ---
 
-*Concerns audit: 2026-04-15*
+*Concerns audit: 2026-05-25*
