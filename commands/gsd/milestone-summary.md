@@ -19,7 +19,7 @@ Output: MILESTONE_SUMMARY written to `.planning/reports/`, presented inline, opt
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/milestone-summary.md
+! `cat $HOME/.claude/get-shit-done/workflows/milestone-summary.md`
 </execution_context>
 
 <context>

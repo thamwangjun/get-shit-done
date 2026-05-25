@@ -22,7 +22,7 @@ Validate `.planning/` directory integrity and report actionable issues. Checks f
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/health.md
+! `cat $HOME/.claude/get-shit-done/workflows/health.md`
 </execution_context>
 
 <process>

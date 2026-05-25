@@ -61,7 +61,7 @@ describe('plan-review-convergence command source (#2306)', () => {
 
   test('command references the workflow file via execution_context', () => {
     assert.ok(
-      command.includes('@$HOME/.claude/get-shit-done/workflows/plan-review-convergence.md'),
+      command.includes('get-shit-done/workflows/plan-review-convergence.md'),
       'execution_context must reference the workflow file'
     );
   });

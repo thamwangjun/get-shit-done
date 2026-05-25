@@ -57,7 +57,7 @@ describe('ultraplan-phase command references', () => {
 
   test('references the ultraplan-phase workflow', () => {
     assert.ok(
-      content.includes('@~/.claude/get-shit-done/workflows/ultraplan-phase.md'),
+      content.includes('get-shit-done/workflows/ultraplan-phase.md'),
       'command should reference ultraplan-phase workflow'
     );
   });

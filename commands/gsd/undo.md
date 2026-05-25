@@ -21,9 +21,9 @@ Three modes:
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/undo.md
-@~/.claude/get-shit-done/references/ui-brand.md
-@~/.claude/get-shit-done/references/gate-prompts.md
+! `cat $HOME/.claude/get-shit-done/workflows/undo.md`
+! `cat $HOME/.claude/get-shit-done/references/ui-brand.md`
+! `cat $HOME/.claude/get-shit-done/references/gate-prompts.md`
 </execution_context>
 
 <context>

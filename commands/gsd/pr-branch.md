@@ -18,7 +18,7 @@ changes that are irrelevant to code review.
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/pr-branch.md
+! `cat $HOME/.claude/get-shit-done/workflows/pr-branch.md`
 </execution_context>
 
 <process>

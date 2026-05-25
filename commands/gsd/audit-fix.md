@@ -26,7 +26,7 @@ Flags:
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/audit-fix.md
+! `cat $HOME/.claude/get-shit-done/workflows/audit-fix.md`
 </execution_context>
 
 <process>

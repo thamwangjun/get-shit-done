@@ -6,7 +6,7 @@ current_phase: 41
 status: archived
 stopped_at: v1.41.5 milestone archived 2026-05-24
 last_updated: "2026-05-24T00:00:00.000Z"
-last_activity: 2026-05-24
+last_activity: 2026-05-25
 progress:
   total_phases: 7
   completed_phases: 7
@@ -68,9 +68,10 @@ None.
 | 260522-loh | Create phase 35 artifacts retroactively | 2026-05-22 | 32be3ec2 | [260522-loh-create-phase-35-artifacts-retroactively](./quick/260522-loh-create-phase-35-artifacts-retroactively/) |
 | 260525-cjp | Fix SyntaxError from duplicate computeProgressPercent declaration in state.cjs | 2026-05-25 | 996ec0dc | [260525-cjp-fix-state-duplicate-declaration](./quick/260525-cjp-fix-state-duplicate-declaration/) |
 | 260525-msv | Merge upstream/main into thamw-main — revert semver migration, keep SHA versioning (inline isNewer) | 2026-05-25 | e773e485 | [260525-msv-merge-upstream-main-revert-semver-migration](./quick/260525-msv-merge-upstream-main-revert-semver-migration/) |
+| 260525-o1n | Convert @ file-reference notation in commands/gsd/ to shell-cat form (117 occurrences, 54 files) | 2026-05-25 | — | [260525-o1n-convert-commands-at-notation](./quick/260525-o1n-convert-commands-at-notation/) |
 
 ## Session Continuity
 
-Last session: 2026-05-24
-Stopped at: v1.41.5 milestone archived
+Last session: 2026-05-25
+Stopped at: Quick task 260525-o1n complete — @ notation converted in commands/gsd/
 Resume: Start `/gsd-new-milestone` to define next milestone

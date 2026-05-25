@@ -24,9 +24,9 @@ Phase 1 of the vertical-mvp-slice PRD shipped the planner-side machinery; this c
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/mvp-phase.md
-@~/.claude/get-shit-done/references/spidr-splitting.md
-@~/.claude/get-shit-done/references/user-story-template.md
+! `cat $HOME/.claude/get-shit-done/workflows/mvp-phase.md`
+! `cat $HOME/.claude/get-shit-done/references/spidr-splitting.md`
+! `cat $HOME/.claude/get-shit-done/references/user-story-template.md`
 </execution_context>
 
 <runtime_note>

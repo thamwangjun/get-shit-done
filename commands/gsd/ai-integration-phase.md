@@ -22,9 +22,9 @@ Flow: Select Framework → Research Docs → Research Domain → Design Eval Str
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/ai-integration-phase.md
-@~/.claude/get-shit-done/references/ai-frameworks.md
-@~/.claude/get-shit-done/references/ai-evals.md
+! `cat $HOME/.claude/get-shit-done/workflows/ai-integration-phase.md`
+! `cat $HOME/.claude/get-shit-done/references/ai-frameworks.md`
+! `cat $HOME/.claude/get-shit-done/references/ai-evals.md`
 </execution_context>
 
 <context>

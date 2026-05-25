@@ -25,7 +25,7 @@ Routes to the update workflow which handles:
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/update.md
+! `cat $HOME/.claude/get-shit-done/workflows/update.md`
 </execution_context>
 
 <flags>
@@ -43,6 +43,6 @@ Parse the first token of $ARGUMENTS:
 </process>
 
 <execution_context_extended>
-@~/.claude/get-shit-done/workflows/sync-skills.md
-@~/.claude/get-shit-done/workflows/reapply-patches.md
+! `cat $HOME/.claude/get-shit-done/workflows/sync-skills.md`
+! `cat $HOME/.claude/get-shit-done/workflows/reapply-patches.md`
 </execution_context_extended>

@@ -361,10 +361,22 @@ describe('workspace command files', () => {
     for (const blk of blocks) {
       for (const line of blk.split('\n')) {
         const t = line.trim();
-        if (!t.startsWith('@')) continue;
+        let rel;
+        if (t.startsWith('@')) {
+          // Legacy @ notation: @~/.claude/get-shit-done/...
+          rel = t.replace(/^@~?\/?(?:\.claude\/)?(?:get-shit-done\/)?/, '');
+        } else if (t.startsWith('! `cat ')) {
+          // Shell-cat notation: ! `cat $HOME/.claude/get-shit-done/...`
+          rel = t
+            .replace(/^! `cat /, '')
+            .replace(/`$/, '')
+            .replace(/^\$HOME\/(?:\.claude\/)?(?:get-shit-done\/)?/, '')
+            .replace(/^~\/(?:\.claude\/)?(?:get-shit-done\/)?/, '');
+        } else {
+          continue;
+        }
         // Normalize away the home-prefix and the `.claude/get-shit-done/` root
         // so the test only cares about the workflow path tail.
-        const rel = t.replace(/^@~?\/?(?:\.claude\/)?(?:get-shit-done\/)?/, '');
         targets.push(rel);
       }
     }

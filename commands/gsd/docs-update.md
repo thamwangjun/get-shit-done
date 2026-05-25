@@ -26,7 +26,7 @@ Flag handling rule:
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/docs-update.md
+! `cat $HOME/.claude/get-shit-done/workflows/docs-update.md`
 </execution_context>
 
 <context>

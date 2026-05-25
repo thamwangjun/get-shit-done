@@ -21,8 +21,8 @@ Requirements: Claude Code v2.1.91+, claude.ai account, GitHub repository.
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/ultraplan-phase.md
-@~/.claude/get-shit-done/references/ui-brand.md
+! `cat $HOME/.claude/get-shit-done/workflows/ultraplan-phase.md`
+! `cat $HOME/.claude/get-shit-done/references/ui-brand.md`
 </execution_context>
 
 <context>

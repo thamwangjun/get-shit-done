@@ -30,10 +30,10 @@ Three modes:
 </flags>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/progress.md
-@~/.claude/get-shit-done/workflows/next.md
-@~/.claude/get-shit-done/workflows/do.md
-@~/.claude/get-shit-done/references/ui-brand.md
+! `cat $HOME/.claude/get-shit-done/workflows/progress.md`
+! `cat $HOME/.claude/get-shit-done/workflows/next.md`
+! `cat $HOME/.claude/get-shit-done/workflows/do.md`
+! `cat $HOME/.claude/get-shit-done/references/ui-brand.md`
 </execution_context>
 
 <process>
