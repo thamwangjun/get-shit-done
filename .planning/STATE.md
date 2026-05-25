@@ -67,6 +67,7 @@ None.
 | 260521-mw4 | git pull from origin. let me know of conflicts, for me to decide how to resolve them. | 2026-05-21 | cd19c6be | [260521-mw4-git-pull-from-origin-let-me-know-of-conf](./quick/260521-mw4-git-pull-from-origin-let-me-know-of-conf/) |
 | 260522-loh | Create phase 35 artifacts retroactively | 2026-05-22 | 32be3ec2 | [260522-loh-create-phase-35-artifacts-retroactively](./quick/260522-loh-create-phase-35-artifacts-retroactively/) |
 | 260525-cjp | Fix SyntaxError from duplicate computeProgressPercent declaration in state.cjs | 2026-05-25 | 996ec0dc | [260525-cjp-fix-state-duplicate-declaration](./quick/260525-cjp-fix-state-duplicate-declaration/) |
+| 260525-msv | Merge upstream/main into thamw-main — revert semver migration, keep SHA versioning (inline isNewer) | 2026-05-25 | e773e485 | [260525-msv-merge-upstream-main-revert-semver-migration](./quick/260525-msv-merge-upstream-main-revert-semver-migration/) |
 
 ## Session Continuity
 
