@@ -51,7 +51,7 @@ describe('commands/gsd @ notation conversion', () => {
     );
   });
 
-  test('no ! notation has a space before the backtick', () => {
+  test('all ! notation lines use !`...` form (no space, closes with backtick)', () => {
     const files = getCommandFiles();
     const violations = [];
 
@@ -59,9 +59,11 @@ describe('commands/gsd @ notation conversion', () => {
       const content = fs.readFileSync(filePath, 'utf8');
       const lines = content.split('\n');
       for (let i = 0; i < lines.length; i++) {
-        // Catch `! ` followed by a backtick — the space is wrong
-        if (/^! `/.test(lines[i])) {
-          violations.push(`${path.basename(filePath)}:${i + 1}: ${lines[i].trim()}`);
+        const t = lines[i];
+        if (/^! `/.test(t)) {
+          violations.push(`${path.basename(filePath)}:${i + 1}: has space before backtick: ${t.trim()}`);
+        } else if (/^!`/.test(t) && !t.trimEnd().endsWith('`')) {
+          violations.push(`${path.basename(filePath)}:${i + 1}: missing closing backtick: ${t.trim()}`);
         }
       }
     }
@@ -69,7 +71,7 @@ describe('commands/gsd @ notation conversion', () => {
     assert.strictEqual(
       violations.length,
       0,
-      `Found ${violations.length} ! notation line(s) with a space before the backtick (must be !\`...\`, not ! \`...\`):\n${violations.join('\n')}`,
+      `Found ${violations.length} malformed !\` notation line(s):\n${violations.join('\n')}`,
     );
   });
 
