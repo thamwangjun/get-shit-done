@@ -11,26 +11,33 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execFileSync } = require('child_process');
+const https = require('https');
 
 const cacheFile = process.env.GSD_CACHE_FILE;
 const projectVersionFile = process.env.GSD_PROJECT_VERSION_FILE;
 const globalVersionFile = process.env.GSD_GLOBAL_VERSION_FILE;
 
-// Compare semver: true if a > b (a is strictly newer than b)
-// Strips pre-release suffixes (e.g. '3-beta.1' → '3') to avoid NaN from Number()
-function isNewer(a, b) {
-  const pa = (a || '').split('.').map(s => Number(s.replace(/-.*/, '')) || 0);
-  const pb = (b || '').split('.').map(s => Number(s.replace(/-.*/, '')) || 0);
-  for (let i = 0; i < 3; i++) {
-    if (pa[i] > pb[i]) return true;
-    if (pa[i] < pb[i]) return false;
+// SHA-based comparison: true if latest is a non-null SHA differing from installed (first 7 chars)
+function isNewer(latest, installed) {
+  return !!latest && latest.slice(0, 7) !== installed;
+}
+
+// Write result object to cache file
+function writeResult(latest) {
+  const result = {
+    update_available: isNewer(latest, installed),
+    installed,
+    latest: latest || 'unknown',
+    checked: Math.floor(Date.now() / 1000),
+    stale_hooks: staleHooks.length > 0 ? staleHooks : undefined,
+  };
+  if (cacheFile) {
+    try { fs.writeFileSync(cacheFile, JSON.stringify(result)); } catch (e) {}
   }
-  return false;
 }
 
 // Check project directory first (local install), then global
-let installed = '0.0.0';
+let installed = 'unknown';
 let configDir = '';
 try {
   if (fs.existsSync(projectVersionFile)) {
@@ -88,30 +95,28 @@ if (configDir) {
   } catch (e) {}
 }
 
-let latest = null;
-try {
-  latest = execFileSync('npm', ['view', 'get-shit-done-redux', 'version'], {
-    encoding: 'utf8',
-    timeout: 10000,
-    windowsHide: true,
-    // On Windows, 'npm' is distributed as npm.cmd. Node's execFileSync does
-    // not apply PATHEXT resolution and looks for a literal 'npm' binary,
-    // failing with ENOENT. Setting shell:true on Windows routes through
-    // cmd.exe which resolves npm.cmd via PATHEXT.
-    // POSIX (Linux/macOS) is left untouched — no shell spawn, no extra
-    // signal/exit-code semantics, no overhead.
-    shell: process.platform === 'win32',
-  }).trim();
-} catch (e) {}
+// Fetch latest commit SHA from the fork's GitHub Commits API
+// {{GSD_REPO}} and {{GSD_BRANCH}} are replaced at install time
+// Full URL: https://api.github.com/repos/{{GSD_REPO}}/commits/{{GSD_BRANCH}}
+const req = https.get({
+  host: 'api.github.com',
+  path: '/repos/{{GSD_REPO}}/commits/{{GSD_BRANCH}}',
+  headers: { 'User-Agent': 'gsd-check-update' },
+}, (res) => {
+  if (res.statusCode !== 200) {
+    writeResult(null);
+    return;
+  }
+  let data = '';
+  res.on('data', chunk => { data += chunk; });
+  res.on('end', () => {
+    try {
+      writeResult(JSON.parse(data).sha);
+    } catch (e) {
+      writeResult(null);
+    }
+  });
+});
 
-const result = {
-  update_available: latest && isNewer(latest, installed),
-  installed,
-  latest: latest || 'unknown',
-  checked: Math.floor(Date.now() / 1000),
-  stale_hooks: staleHooks.length > 0 ? staleHooks : undefined,
-};
-
-if (cacheFile) {
-  try { fs.writeFileSync(cacheFile, JSON.stringify(result)); } catch (e) {}
-}
+req.setTimeout(10000, () => req.destroy());
+req.on('error', () => writeResult(null));
