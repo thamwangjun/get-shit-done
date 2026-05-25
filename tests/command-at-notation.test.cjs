@@ -51,6 +51,28 @@ describe('commands/gsd @ notation conversion', () => {
     );
   });
 
+  test('no ! notation has a space before the backtick', () => {
+    const files = getCommandFiles();
+    const violations = [];
+
+    for (const filePath of files) {
+      const content = fs.readFileSync(filePath, 'utf8');
+      const lines = content.split('\n');
+      for (let i = 0; i < lines.length; i++) {
+        // Catch `! ` followed by a backtick — the space is wrong
+        if (/^! `/.test(lines[i])) {
+          violations.push(`${path.basename(filePath)}:${i + 1}: ${lines[i].trim()}`);
+        }
+      }
+    }
+
+    assert.strictEqual(
+      violations.length,
+      0,
+      `Found ${violations.length} ! notation line(s) with a space before the backtick (must be !\`...\`, not ! \`...\`):\n${violations.join('\n')}`,
+    );
+  });
+
   test('converted lines use shell-cat form', () => {
     const files = getCommandFiles();
     const catLines = [];
