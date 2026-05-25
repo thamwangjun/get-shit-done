@@ -8,9 +8,15 @@ An opinionated fork of the GSD (Get Shit Done) framework that applies systematic
 
 Every agent, command, and workflow file on `thamw-main` meets the fork's prompt engineering quality bar before it ships — upstream content additions are modified, not accepted verbatim.
 
-## Current Milestone
+## Current Milestone: v2.1.0-a SHA Versioning Reimplementation
 
-Awaiting next upstream GSD release. Run `/gsd-new-milestone` to begin next milestone planning.
+**Goal:** Replace semver version tracking with 7-char SHA versioning of the fork's GitHub repo (`thamwangjun/get-shit-done` main branch) across all installation and update-checking logic.
+
+**Target features:**
+- Background hook reimplemented with SHA `isNewer()`, `function writeResult()`, and GitHub Commits API fetch
+- Installation writes 7-char SHA to VERSION file via `git rev-parse --short=7 HEAD` with `'no-network'` sentinel fallback
+- Statusline stale-hooks dev-install semver check removed
+- Update workflow and `check-latest-version.cjs` migrated from npm registry to GitHub Commits API + SHA comparison
 
 ## Requirements
 
@@ -61,7 +67,20 @@ Awaiting next upstream GSD release. Run `/gsd-new-milestone` to begin next miles
 
 ### Active
 
-(None — start `/gsd-new-milestone` to define next milestone requirements)
+- [ ] HOOK-01: `hooks/gsd-check-update-worker.js` uses SHA `isNewer()` and `function writeResult()`
+- [ ] HOOK-02: Worker fetches latest SHA from `api.github.com/repos/{{GSD_REPO}}/commits/{{GSD_BRANCH}}` via `https.get`
+- [ ] HOOK-03: Worker contains `{{GSD_REPO}}` and `{{GSD_BRANCH}}` template placeholders replaced at install time to `thamwangjun/get-shit-done` / `main`
+- [ ] INST-01: `bin/install.js` writes 7-char SHA to VERSION file via `git rev-parse --short=7 HEAD`
+- [ ] INST-02: `bin/install.js` uses `'no-network'` sentinel fallback when git is unavailable
+- [ ] INST-03: `{{GSD_REPO}}` and `{{GSD_BRANCH}}` template replacements added for hook files in install.js
+- [ ] INST-04: `{{GSD_VERSION}}` in hook headers filled with SHA (not `pkg.version`) at install time
+- [ ] STAT-01: `hooks/gsd-statusline.js` semver `parseV()` dev-install check removed; SHA mismatch → "stale hooks — run /gsd:update"
+- [ ] UPD-01: `get-shit-done/bin/check-latest-version.cjs` fetches latest SHA from GitHub Commits API instead of npm registry
+- [ ] UPD-02: `get-shit-done/workflows/update.md` compares installed SHA vs latest SHA; changelog extraction simplified for SHA versioning
+- [ ] TEST-01: `tests/semver-compare.test.cjs` all 17/17 pass
+- [ ] TEST-02: `tests/version-detection.test.cjs` all 4/4 pass
+- [ ] TEST-03: `tests/bug-2992-check-latest-version.test.cjs` updated for SHA-based behavior and passing
+- [ ] GATE-01: Full `npm test` suite passes with 0 regressions
 
 ### Out of Scope
 
@@ -85,8 +104,8 @@ Awaiting next upstream GSD release. Run `/gsd-new-milestone` to begin next miles
   - `.planning/fork_plans/B0-SYNC_CATALOGUE_V01.md` — CATALOGUE.json sync process
   - `.planning/fork_plans/C0-POSITIVE_FRAMING_PASS_V01.md` — positive framing pass across all prompt content files
 
-- **Current state**: v1.41.5 shipped 2026-05-24. 5-batch commit history refactor complete — thamw-main squashed from ~70 fine-grained commits to 5 coherent batches. Parity audit confirmed zero content divergence (10 allowlisted files in diff, all within D-03). npm test: 8392 pass, 2 pre-existing failures in unchanged ai-evals.test.cjs, negative-framing scanner 99/99. Historical milestone delivery records and validated requirements are in `.planning/PROJECT_HISTORY.md`. Next milestone: awaiting next upstream release.
-- **Test suite**: `npm test` runs Node.js built-in test runner. `agent-frontmatter.test.cjs` is the critical gate — all agent YAML frontmatter is validated there. Fork-side tests: negative-framing-scan (99/99 — agent+command+workflow corpus all green, prohibited+forbidden branches added in v1.38.6), ios-scaffold-safety (6/6), bug-1924-ensure-hooks-dist-on-demand (8/8), agent-frontmatter (155/155), execute-phase-wave (15/15), execute-phase-active-flags (upstream v1.37.1), semver-compare (17/17), debug-session-management (HDOC subtest intentionally skipped — fork standard overrides upstream assertion), qwen-install (16/16), read-injection-scanner (19/19). Full suite: 8306/8307 pass, 0 fail, 1 intentional skip (v1.41.3).
+- **Current state**: v1.41.5 shipped 2026-05-24. v2.1.0-a started 2026-05-25. SHA versioning was previously implemented in the fork (v1.36.0.a) but lost during upstream merges that introduced semver (`1.1.0` versioning). As of v2.1.0-a start: 7 tests are failing because `tests/semver-compare.test.cjs` and `tests/version-detection.test.cjs` already describe the SHA-based implementation. Historical milestone delivery records and validated requirements are in `.planning/PROJECT_HISTORY.md`.
+- **Test suite**: `npm test` runs Node.js built-in test runner. `agent-frontmatter.test.cjs` is the critical gate — all agent YAML frontmatter is validated there. Fork-side tests: negative-framing-scan (99/99), ios-scaffold-safety (6/6), bug-1924-ensure-hooks-dist-on-demand (8/8), agent-frontmatter (155/155), execute-phase-wave (15/15), semver-compare (12/17 — 5 failing: HOOK-03 writeResult, HOOK-04 GitHub API), version-detection (2/4 — 2 failing: INST-01 git rev-parse, INST-02 no-network sentinel), debug-session-management (HDOC subtest intentionally skipped), qwen-install (16/16), read-injection-scanner (19/19).
 - **File-writing agents** (those with `Write` in their tools list) must retain the string `Only use the Write tool` in their prompt body. Dynamic `FILE_WRITING_AGENTS` list used (WR-04: no longer hardcoded).
 - **Scanner precedence**: When tests conflict with fork standards (e.g., test asserts for upstream negative-framing strings), modify the test to reflect fork behavior — established precedent in v1.36.0 Phase 3.
 - **Tech debt note**: MERGE-02 verification command (`grep thamwangjun`) is now stale — Phase 12 WR-04 replaced the hardcoded fork URL with `{{GSD_REPO}}/{{GSD_BRANCH}}` templates. Functional intent (SHA equality check) remains satisfied. Verification should use `grep -i isNewer hooks/gsd-check-update-worker.js` going forward.
@@ -139,4 +158,4 @@ This document evolves at phase transitions and milestone boundaries.
 ---
 ---
 ---
-*Last updated: 2026-05-24 after v1.41.5 milestone close*
+*Last updated: 2026-05-25 after v2.1.0-a milestone start*

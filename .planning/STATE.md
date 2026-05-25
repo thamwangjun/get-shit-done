@@ -1,34 +1,35 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.41.5
-milestone_name: Refactor Git Commit History
-current_phase: 41
-status: archived
-stopped_at: v1.41.5 milestone archived 2026-05-24
-last_updated: "2026-05-24T00:00:00.000Z"
+milestone: v2.1.0-a
+milestone_name: SHA Versioning Reimplementation
+current_phase: 0
+status: planning
+stopped_at: ""
+last_updated: "2026-05-25T00:00:00.000Z"
 last_activity: 2026-05-25
 progress:
-  total_phases: 7
-  completed_phases: 7
-  total_plans: 7
-  completed_plans: 7
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-05-24 after v1.41.5 milestone)
+See: .planning/PROJECT.md (updated 2026-05-25 after v2.1.0-a milestone start)
 
 **Core value:** Every agent, command, and workflow file on `thamw-main` meets the fork's prompt engineering quality bar before it ships
-**Current focus:** v1.41.5 archived — start `/gsd-new-milestone` for next milestone
+**Current focus:** v2.1.0-a — SHA Versioning Reimplementation
 
 ## Current Position
 
-Phase: 41 (final-verification-parity-audit) — COMPLETE
-Status: Milestone archived (v1.41.5)
-Last activity: 2026-05-24
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-05-25 — Milestone v2.1.0-a started
 
 ## Performance Metrics
 
@@ -45,10 +46,11 @@ Decisions are logged in PROJECT.md Key Decisions table.
 
 - [Phase 31]: All prompt content files pass expanded scanner at 0 violations, 0 warnings (v1.38.6 baseline)
 - [260513-kzj]: Upstream v1.41.2 merged into thamw-v1.41.2; 9 conflicts resolved; 11 test failures identified
+- [260525-msv]: Upstream new-upstream/release/1.1.0 merged; upstream migrated to semver (1.1.0); fork reverted semver migration in worker keeping inline SHA isNewer() — full SHA reimplementation deferred to v2.1.0-a
 
 ### Prompt Content File State
 
-All prompt content files (agents, commands, workflows) pass the expanded negative framing scanner at 0 violations, 0 warnings as of v1.38.6 (2026-05-03). Scanner at 99/99 subtests passing. Two upstream-verbatim workflow files (`debug.md`, `reapply-patches.md`) introduced in v1.41.2 are known to have framing violations — addressed in Phase 33.
+All prompt content files (agents, commands, workflows) pass the expanded negative framing scanner at 0 violations, 0 warnings as of v1.38.6 (2026-05-03). Scanner at 99/99 subtests passing.
 
 ### Pending Todos
 
@@ -56,7 +58,9 @@ None.
 
 ### Blockers/Concerns
 
-None.
+7 tests currently failing due to SHA versioning gap:
+- `tests/semver-compare.test.cjs`: 5 failing (HOOK-03 writeResult, HOOK-04 GitHub API endpoint)
+- `tests/version-detection.test.cjs`: 2 failing (INST-01 git rev-parse, INST-02 no-network sentinel)
 
 ### Quick Tasks Completed
 
@@ -73,5 +77,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-05-25
-Stopped at: Quick task 260525-o1n complete — @ notation converted in commands/gsd/
-Resume: Start `/gsd-new-milestone` to define next milestone
+Stopped at: v2.1.0-a milestone started — defining requirements and roadmap
+Resume: `/gsd-plan-phase 42` to plan the first phase
