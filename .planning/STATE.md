@@ -73,6 +73,7 @@ None.
 | 260525-cjp | Fix SyntaxError from duplicate computeProgressPercent declaration in state.cjs | 2026-05-25 | 996ec0dc | [260525-cjp-fix-state-duplicate-declaration](./quick/260525-cjp-fix-state-duplicate-declaration/) |
 | 260525-msv | Merge upstream/main into thamw-main — revert semver migration, keep SHA versioning (inline isNewer) | 2026-05-25 | e773e485 | [260525-msv-merge-upstream-main-revert-semver-migration](./quick/260525-msv-merge-upstream-main-revert-semver-migration/) |
 | 260525-o1n | Convert @ file-reference notation in commands/gsd/ to shell-cat form (117 occurrences, 54 files) | 2026-05-25 | 4ba5dde1 | [260525-o1n-convert-commands-at-notation](./quick/260525-o1n-convert-commands-at-notation/) |
+| 260525-i50 | Update branch name thamw-main → main; remove CLAUDE.md from .gitignore | 2026-05-25 | b960ed06 | [260525-i50-update-branch-name-thamw-main-to-main](./quick/260525-i50-update-branch-name-thamw-main-to-main/) |
 
 ## Session Continuity
 
