@@ -2,11 +2,9 @@
 gsd_state_version: 1.0
 milestone: v2.1.0-a
 milestone_name: SHA Versioning Reimplementation
-current_phase: 42
 status: planning
-stopped_at: ""
-last_updated: "2026-05-25T00:00:00.000Z"
-last_activity: 2026-05-25
+last_updated: "2026-05-25T13:21:20.218Z"
+last_activity: 2026-05-25 — Roadmap created for v2.1.0-a (2 phases)
 progress:
   total_phases: 2
   completed_phases: 0
@@ -59,6 +57,7 @@ None.
 ### Blockers/Concerns
 
 7 tests currently failing due to SHA versioning gap:
+
 - `tests/semver-compare.test.cjs`: 5 failing (HOOK-03 writeResult, HOOK-04 GitHub API endpoint)
 - `tests/version-detection.test.cjs`: 2 failing (INST-01 git rev-parse, INST-02 no-network sentinel)
 
@@ -74,6 +73,7 @@ None.
 | 260525-msv | Merge upstream/main into thamw-main — revert semver migration, keep SHA versioning (inline isNewer) | 2026-05-25 | e773e485 | [260525-msv-merge-upstream-main-revert-semver-migration](./quick/260525-msv-merge-upstream-main-revert-semver-migration/) |
 | 260525-o1n | Convert @ file-reference notation in commands/gsd/ to shell-cat form (117 occurrences, 54 files) | 2026-05-25 | 4ba5dde1 | [260525-o1n-convert-commands-at-notation](./quick/260525-o1n-convert-commands-at-notation/) |
 | 260525-i50 | Update branch name thamw-main → main; remove CLAUDE.md from .gitignore | 2026-05-25 | b960ed06 | [260525-i50-update-branch-name-thamw-main-to-main](./quick/260525-i50-update-branch-name-thamw-main-to-main/) |
+| 260525-igz | Update CLAUDE.md architecture counts to reflect current project state (67 cmds, 90 workflows, 33 agents, 79 lib modules) | 2026-05-25 | e55d6831 | [260525-update-claude-md](./quick/260525-update-claude-md/) |
 
 ## Session Continuity
 
