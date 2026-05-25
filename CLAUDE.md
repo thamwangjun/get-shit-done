@@ -29,10 +29,10 @@ User → /gsd-command → commands/gsd/*.md → workflows/*.md → agents/*.md �
 
 **Four layers:**
 
-1. **Command layer** (`commands/gsd/*.md`) — 46 user-facing slash commands that read a workflow and forward to it.
-2. **Workflow layer** (`get-shit-done/workflows/*.md`) — 52 thin orchestrators. They call `gsd-tools.cjs init <workflow>` to load context, then spawn specialized agents in parallel or sequence.
-3. **Agent layer** (`agents/*.md`) — 16 agent definitions with scoped tool permissions. Each agent is spawned with a fresh 200K-token context window.
-4. **CLI tools layer** (`get-shit-done/bin/gsd-tools.cjs` + `get-shit-done/bin/lib/*.cjs`) — 14 Node.js CommonJS modules handling state, phase, roadmap, config, frontmatter, templates, etc. These are called by agents via Bash to read/write `.planning/` files.
+1. **Command layer** (`commands/gsd/*.md`) — 67 user-facing slash commands that read a workflow and forward to it.
+2. **Workflow layer** (`get-shit-done/workflows/*.md`) — 90 thin orchestrators. They call `gsd-tools.cjs init <workflow>` to load context, then spawn specialized agents in parallel or sequence.
+3. **Agent layer** (`agents/*.md`) — 33 agent definitions with scoped tool permissions. Each agent is spawned with a fresh 200K-token context window.
+4. **CLI tools layer** (`get-shit-done/bin/gsd-tools.cjs` + `get-shit-done/bin/lib/*.cjs`) — 79 Node.js CommonJS modules handling state, phase, roadmap, config, frontmatter, templates, etc. These are called by agents via Bash to read/write `.planning/` files.
 
 **State** lives entirely in `.planning/` as human-readable Markdown and JSON. `STATE.md` is file-locked (`.planning/STATE.md.lock`) for parallel-safe writes during **wave execution** — where independent plans are grouped into waves and run in parallel.
 
@@ -253,7 +253,7 @@ An opinionated fork of the GSD (Get Shit Done) framework that applies systematic
 - Depends on: CLI tools layer (`gsd-tools.cjs init <workflow>`) and Agent layer (via `Task(subagent_type=...)`)
 - Used by: Command layer (commands read and execute workflows)
 - Purpose: Specialized task executors, each spawned with a fresh context window
-- Location: `agents/*.md` (31 agents), `sdk/prompts/agents/` (SDK variants)
+- Location: `agents/*.md` (33 agents), `sdk/prompts/agents/` (SDK variants)
 - Contains: YAML frontmatter (`name`, `description`, `tools`, `color`, optional `hooks`) + role instructions
 - Depends on: CLI tools layer via Bash calls to `gsd-tools.cjs`, file-based state in `.planning/`
 - Used by: Workflow layer orchestrators
