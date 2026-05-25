@@ -9,23 +9,23 @@ Requirements for v2.1.0-a. Each maps to roadmap phases.
 
 ### Background Hook (Update Check Worker)
 
-- [ ] **HOOK-01**: `hooks/gsd-check-update-worker.js` contains SHA-based `isNewer()` function using `latest.slice(0, 7) !== installed` comparison (not semver)
-- [ ] **HOOK-02**: Worker fetches the latest SHA via `https.get` to `api.github.com/repos/{{GSD_REPO}}/commits/{{GSD_BRANCH}}`
-- [ ] **HOOK-03**: Worker contains `function writeResult()` that calls `isNewer()` and writes the result cache file
-- [ ] **HOOK-04**: Worker source contains `{{GSD_REPO}}` and `{{GSD_BRANCH}}` template placeholders (not hardcoded values)
-- [ ] **HOOK-05**: Worker does not contact `npmjs.com` and does not reference `get-shit-done-cc` or `get-shit-done-redux` as a runtime lookup target
+- [x] **HOOK-01**: `hooks/gsd-check-update-worker.js` contains SHA-based `isNewer()` function using `latest.slice(0, 7) !== installed` comparison (not semver)
+- [x] **HOOK-02**: Worker fetches the latest SHA via `https.get` to `api.github.com/repos/{{GSD_REPO}}/commits/{{GSD_BRANCH}}`
+- [x] **HOOK-03**: Worker contains `function writeResult()` that calls `isNewer()` and writes the result cache file
+- [x] **HOOK-04**: Worker source contains `{{GSD_REPO}}` and `{{GSD_BRANCH}}` template placeholders (not hardcoded values)
+- [x] **HOOK-05**: Worker does not contact `npmjs.com` and does not reference `get-shit-done-cc` or `get-shit-done-redux` as a runtime lookup target
 
 ### Installation
 
-- [ ] **INST-01**: `bin/install.js` uses `git rev-parse --short=7 HEAD` to obtain the 7-char SHA for the VERSION file
-- [ ] **INST-02**: `bin/install.js` uses `'no-network'` as the initial/fallback `gsdVersion` value when git is unavailable (not `pkg.version`)
-- [ ] **INST-03**: `bin/install.js` replaces `{{GSD_REPO}}` with `thamwangjun/get-shit-done` and `{{GSD_BRANCH}}` with `main` in hook files during installation
-- [ ] **INST-04**: `{{GSD_VERSION}}` in hook file headers is populated with the SHA (not `pkg.version`) at install time
+- [x] **INST-01**: `bin/install.js` uses `git rev-parse --short=7 HEAD` to obtain the 7-char SHA for the VERSION file
+- [x] **INST-02**: `bin/install.js` uses `'no-network'` as the initial/fallback `gsdVersion` value when git is unavailable (not `pkg.version`)
+- [x] **INST-03**: `bin/install.js` replaces `{{GSD_REPO}}` with `thamwangjun/get-shit-done` and `{{GSD_BRANCH}}` with `main` in hook files during installation
+- [x] **INST-04**: `{{GSD_VERSION}}` in hook file headers is populated with the SHA (not `pkg.version`) at install time
 
 ### Statusline
 
-- [ ] **STAT-01**: `hooks/gsd-statusline.js` removes the semver `parseV()` dev-install detection block
-- [ ] **STAT-02**: Any stale-hooks condition (hook SHA ≠ installed SHA) displays "stale hooks — run /gsd:update" without the semver-based "dev install" divergence path
+- [x] **STAT-01**: `hooks/gsd-statusline.js` removes the semver `parseV()` dev-install detection block
+- [x] **STAT-02**: Any stale-hooks condition (hook SHA ≠ installed SHA) displays "stale hooks — run /gsd:update" without the semver-based "dev install" divergence path
 
 ### Update Workflow
 
@@ -34,8 +34,8 @@ Requirements for v2.1.0-a. Each maps to roadmap phases.
 
 ### Tests
 
-- [ ] **TEST-01**: `tests/semver-compare.test.cjs` all 17/17 subtests pass (currently 5 failing: HOOK-03 writeResult, HOOK-04 GitHub API)
-- [ ] **TEST-02**: `tests/version-detection.test.cjs` all 4/4 subtests pass (currently 2 failing: INST-01 git rev-parse, INST-02 no-network sentinel)
+- [x] **TEST-01**: `tests/semver-compare.test.cjs` all 17/17 subtests pass (currently 5 failing: HOOK-03 writeResult, HOOK-04 GitHub API)
+- [x] **TEST-02**: `tests/version-detection.test.cjs` all 4/4 subtests pass (currently 2 failing: INST-01 git rev-parse, INST-02 no-network sentinel)
 - [ ] **TEST-03**: `tests/bug-2992-check-latest-version.test.cjs` updated for SHA-based behavior and passing
 - [ ] **GATE-01**: Full `npm test` suite passes with 0 regressions beyond pre-existing 2 failures in `ai-evals.test.cjs`
 
@@ -52,21 +52,21 @@ Requirements for v2.1.0-a. Each maps to roadmap phases.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| HOOK-01 | Phase 42 | Pending |
-| HOOK-02 | Phase 42 | Pending |
-| HOOK-03 | Phase 42 | Pending |
-| HOOK-04 | Phase 42 | Pending |
-| HOOK-05 | Phase 42 | Pending |
-| INST-01 | Phase 42 | Pending |
-| INST-02 | Phase 42 | Pending |
-| INST-03 | Phase 42 | Pending |
-| INST-04 | Phase 42 | Pending |
-| STAT-01 | Phase 42 | Pending |
-| STAT-02 | Phase 42 | Pending |
+| HOOK-01 | Phase 42 | Complete |
+| HOOK-02 | Phase 42 | Complete |
+| HOOK-03 | Phase 42 | Complete |
+| HOOK-04 | Phase 42 | Complete |
+| HOOK-05 | Phase 42 | Complete |
+| INST-01 | Phase 42 | Complete |
+| INST-02 | Phase 42 | Complete |
+| INST-03 | Phase 42 | Complete |
+| INST-04 | Phase 42 | Complete |
+| STAT-01 | Phase 42 | Complete |
+| STAT-02 | Phase 42 | Complete |
 | UPD-01 | Phase 43 | Pending |
 | UPD-02 | Phase 43 | Pending |
-| TEST-01 | Phase 42 | Pending |
-| TEST-02 | Phase 42 | Pending |
+| TEST-01 | Phase 42 | Complete |
+| TEST-02 | Phase 42 | Complete |
 | TEST-03 | Phase 43 | Pending |
 | GATE-01 | Phase 43 | Pending |
 
