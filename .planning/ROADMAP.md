@@ -192,7 +192,9 @@ Full details: `.planning/milestones/v1.41.5-ROADMAP.md`
   2. `tests/bug-2992-check-latest-version.test.cjs` passes with SHA-based assertions
   3. `get-shit-done/workflows/update.md` SHA comparison and simplified changelog step in place
   4. Full `npm test` passes with 0 regressions beyond the 2 pre-existing `ai-evals.test.cjs` failures
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+- [ ] 43-01-PLAN.md — Migrate check-latest-version.cjs, update update.md, update bug-2992 test, pass npm test gate
 
 ---
 
