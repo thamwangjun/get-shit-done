@@ -1,5 +1,5 @@
 <purpose>
-Check for GSD updates via npm, display changelog for versions between installed and latest, obtain user confirmation, and execute clean installation with cache clearing.
+Check for GSD updates via the GitHub Commits API, compare current installed SHA against the latest commit SHA on the fork's main branch, obtain user confirmation, and execute clean installation with cache clearing.
 </purpose>
 
 <required_reading>
@@ -574,12 +574,12 @@ Format completion message (changelog was already shown in confirmation step):
 
 ```
 ╔═══════════════════════════════════════════════════════════╗
-║  GSD Updated: v1.5.10 → v1.5.15                           ║
+║  GSD Updated: abc1234 → def5678                           ║
 ╚═══════════════════════════════════════════════════════════╝
 
 ⚠️  Restart your runtime to pick up the new commands.
 
-[View full changelog](https://github.com/open-gsd/get-shit-done-redux/blob/main/CHANGELOG.md)
+[View recent commits](https://github.com/thamwangjun/get-shit-done/commits/main)
 ```
 </step>
 
@@ -602,9 +602,9 @@ Run `/gsd:update --reapply` to merge your modifications into the new version.
 
 <success_criteria>
 - [ ] Installed version read correctly
-- [ ] Latest version checked via npm
+- [ ] Latest commit SHA fetched via GitHub Commits API
 - [ ] Update skipped if already current
-- [ ] Changelog fetched and displayed BEFORE update
+- [ ] SHA comparison performed and displayed BEFORE update
 - [ ] Clean install warning shown
 - [ ] User confirmation obtained
 - [ ] Update executed successfully
