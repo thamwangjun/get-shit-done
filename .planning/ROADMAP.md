@@ -194,14 +194,14 @@ Full details: `.planning/milestones/v1.41.5-ROADMAP.md`
   4. Full `npm test` passes with 0 regressions beyond the 2 pre-existing `ai-evals.test.cjs` failures
 **Plans**: 1 plan
 Plans:
-- [ ] 43-01-PLAN.md — Migrate check-latest-version.cjs, update update.md, update bug-2992 test, pass npm test gate
+- [x] 43-01-PLAN.md — Migrate check-latest-version.cjs, update update.md, update bug-2992 test, pass npm test gate
 
 ---
 
 ## Active Milestone: v2.1.0-a SHA Versioning Reimplementation
 
 - [ ] **Phase 42: SHA Hook and Install Reimplementation** — Reimplement SHA versioning in the background update-check hook, install.js VERSION writing, and statusline
-- [ ] **Phase 43: Update Workflow SHA Migration + Full Gate** — Migrate update workflow and check-latest-version.cjs to GitHub Commits API + SHA comparison; full gate
+- [x] **Phase 43: Update Workflow SHA Migration + Full Gate** — Migrate update workflow and check-latest-version.cjs to GitHub Commits API + SHA comparison; full gate (completed 2026-05-26)
 
 ## Progress
 
@@ -251,7 +251,7 @@ Plans:
 | 40. Stage and Commit Maintenance, Logs, & State | v1.41.5 | 1/1 | Complete | 2026-05-23 |
 | 41. Final Verification & Parity Audit | v1.41.5 | 1/1 | Complete | 2026-05-23 |
 | 42. SHA Hook and Install Reimplementation | v2.1.0-a | 0/0 | Not started | - |
-| 43. Update Workflow SHA Migration + Full Gate | v2.1.0-a | 0/0 | Not started | - |
+| 43. Update Workflow SHA Migration + Full Gate | v2.1.0-a | 1/1 | Complete   | 2026-05-26 |
 
 *v1.41.3 shipped 2026-05-19 — see `.planning/milestones/v1.41.3-ROADMAP.md`*
 *v1.41.5 shipped 2026-05-24 — see `.planning/milestones/v1.41.5-ROADMAP.md`*
