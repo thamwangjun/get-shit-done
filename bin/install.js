@@ -8782,7 +8782,9 @@ function install(isGlobal, runtime = 'claude', options = {}) {
               content = content.replace(/CLAUDE\.md/g, 'HERMES.md');
               content = content.replace(/\bClaude Code\b/g, 'Hermes Agent');
             }
-            content = content.replace(/\{\{GSD_VERSION\}\}/g, pkg.version);
+            content = content.replace(/\{\{GSD_VERSION\}\}/g, gsdVersion);
+            content = content.replace(/\{\{GSD_REPO\}\}/g, 'thamwangjun/get-shit-done');
+            content = content.replace(/\{\{GSD_BRANCH\}\}/g, 'main');
             fs.writeFileSync(destFile, content);
             // Ensure hook files are executable (fixes #1162 — missing +x permission)
             try { fs.chmodSync(destFile, 0o755); } catch (e) { /* Windows doesn't support chmod */ }
@@ -8791,7 +8793,9 @@ function install(isGlobal, runtime = 'claude', options = {}) {
             // detect staleness after updates — stamp the version just like .js hooks.
             if (entry.endsWith('.sh')) {
               let content = fs.readFileSync(srcFile, 'utf8');
-              content = content.replace(/\{\{GSD_VERSION\}\}/g, pkg.version);
+              content = content.replace(/\{\{GSD_VERSION\}\}/g, gsdVersion);
+              content = content.replace(/\{\{GSD_REPO\}\}/g, 'thamwangjun/get-shit-done');
+              content = content.replace(/\{\{GSD_BRANCH\}\}/g, 'main');
               fs.writeFileSync(destFile, content);
               try { fs.chmodSync(destFile, 0o755); } catch (e) { /* Windows doesn't support chmod */ }
             } else {
@@ -8812,7 +8816,9 @@ function install(isGlobal, runtime = 'claude', options = {}) {
             const subDestFile = path.join(subDest, subEntry);
             if (subEntry.endsWith('.sh')) {
               let content = fs.readFileSync(subSrcFile, 'utf8');
-              content = content.replace(/\{\{GSD_VERSION\}\}/g, pkg.version);
+              content = content.replace(/\{\{GSD_VERSION\}\}/g, gsdVersion);
+              content = content.replace(/\{\{GSD_REPO\}\}/g, 'thamwangjun/get-shit-done');
+              content = content.replace(/\{\{GSD_BRANCH\}\}/g, 'main');
               fs.writeFileSync(subDestFile, content);
               try { fs.chmodSync(subDestFile, 0o755); } catch (e) { /* Windows */ }
             } else {
@@ -9128,7 +9134,9 @@ function install(isGlobal, runtime = 'claude', options = {}) {
           content = content.replace(/'\.claude'/g, configDirReplacement);
           content = content.replace(/\/\.claude\//g, `/${getDirName(runtime)}/`);
           content = content.replace(/\.claude\//g, `${getDirName(runtime)}/`);
-          content = content.replace(/\{\{GSD_VERSION\}\}/g, pkg.version);
+          content = content.replace(/\{\{GSD_VERSION\}\}/g, gsdVersion);
+          content = content.replace(/\{\{GSD_REPO\}\}/g, 'thamwangjun/get-shit-done');
+          content = content.replace(/\{\{GSD_BRANCH\}\}/g, 'main');
           fs.writeFileSync(destFile, content);
           try { fs.chmodSync(destFile, 0o755); } catch (e) { /* Windows */ }
         } else if (entry.endsWith('.sh')) {
@@ -9139,7 +9147,9 @@ function install(isGlobal, runtime = 'claude', options = {}) {
           // is defensive — it preserves the invariant if the allowlist is
           // extended later (e.g. to ship gsd-graphify-update.sh for Codex).
           let content = fs.readFileSync(srcFile, 'utf8');
-          content = content.replace(/\{\{GSD_VERSION\}\}/g, pkg.version);
+          content = content.replace(/\{\{GSD_VERSION\}\}/g, gsdVersion);
+          content = content.replace(/\{\{GSD_REPO\}\}/g, 'thamwangjun/get-shit-done');
+          content = content.replace(/\{\{GSD_BRANCH\}\}/g, 'main');
           fs.writeFileSync(destFile, content);
           try { fs.chmodSync(destFile, 0o755); } catch (e) { /* Windows */ }
         }
