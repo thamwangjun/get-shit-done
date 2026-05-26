@@ -1,96 +1,197 @@
 'use strict';
 process.env.GSD_TEST_MODE = '1';
 
-const { test, describe, before, after } = require('node:test');
+const { test, describe } = require('node:test');
 const assert = require('node:assert/strict');
 const path = require('node:path');
-const cp = require('node:child_process');
 
 const ROOT = path.join(__dirname, '..');
-const { checkLatestVersion, CHECK_REASON, PACKAGE_NAME } = require(
+const { checkLatestVersion, CHECK_REASON, GITHUB_API_URL } = require(
   path.join(ROOT, 'get-shit-done', 'bin', 'check-latest-version.cjs'),
 );
 
-// checkLatestVersion is a pure-ish function: it spawns one fixed npm
-// command, validates the output, and returns { ok, version | reason }.
-// The package name is HARDCODED — not a free choice for the caller.
-// Tests use a pluggable spawn so no real npm process is invoked.
+// checkLatestVersion is a pure-ish async function: it fetches the latest
+// commit SHA from GitHub API, validates the output, and returns
+// { ok, sha | reason }. Tests use a pluggable request fn so no real
+// network request is made.
 
-describe('Bug #2992: deterministic latest-version check', () => {
-  test('PACKAGE_NAME is the constant @opengsd/get-shit-done-redux (no callers can override)', () => {
-    assert.equal(PACKAGE_NAME, '@opengsd/get-shit-done-redux');
+/**
+ * Creates a fake https.get-style request function.
+ *
+ * @param {number} statusCode - HTTP status code to simulate
+ * @param {object} bodyObj - Response body to serialize as JSON
+ * @param {object} [opts]
+ * @param {boolean} [opts.errorOnRequest] - If true, emit an error on the request
+ */
+function makeFakeRequest(statusCode, bodyObj, opts = {}) {
+  return function fakeRequest(url, options, callback) {
+    const handlers = {};
+    const mockReq = {
+      setTimeout(ms, cb) { /* no-op */ },
+      destroy(err) {
+        if (handlers.error) handlers.error(err || new Error('destroyed'));
+      },
+      on(event, handler) {
+        handlers[event] = handler;
+        return mockReq;
+      },
+    };
+
+    if (opts.errorOnRequest) {
+      // Emit error asynchronously so the caller has time to attach .on('error')
+      process.nextTick(() => {
+        if (handlers.error) {
+          handlers.error(new Error('simulated network error'));
+        }
+      });
+      return mockReq;
+    }
+
+    const responseHandlers = {};
+    const mockRes = {
+      statusCode,
+      on(event, handler) {
+        responseHandlers[event] = handler;
+        return mockRes;
+      },
+    };
+
+    // Invoke callback with mock response
+    process.nextTick(() => {
+      callback(mockRes);
+      // Emit data and end
+      process.nextTick(() => {
+        if (responseHandlers.data) {
+          responseHandlers.data(Buffer.from(JSON.stringify(bodyObj)));
+        }
+        if (responseHandlers.end) {
+          responseHandlers.end();
+        }
+      });
+    });
+
+    return mockReq;
+  };
+}
+
+/**
+ * Creates a fake request that emits a raw string body (no JSON.stringify).
+ *
+ * @param {number} statusCode
+ * @param {string} rawBody
+ */
+function makeFakeRawRequest(statusCode, rawBody) {
+  return function fakeRequest(url, options, callback) {
+    const handlers = {};
+    const mockReq = {
+      setTimeout(ms, cb) { /* no-op */ },
+      destroy(err) {
+        if (handlers.error) handlers.error(err || new Error('destroyed'));
+      },
+      on(event, handler) {
+        handlers[event] = handler;
+        return mockReq;
+      },
+    };
+
+    const responseHandlers = {};
+    const mockRes = {
+      statusCode,
+      on(event, handler) {
+        responseHandlers[event] = handler;
+        return mockRes;
+      },
+    };
+
+    process.nextTick(() => {
+      callback(mockRes);
+      process.nextTick(() => {
+        if (responseHandlers.data && rawBody) {
+          responseHandlers.data(Buffer.from(rawBody));
+        }
+        if (responseHandlers.end) {
+          responseHandlers.end();
+        }
+      });
+    });
+
+    return mockReq;
+  };
+}
+
+describe('Bug #2992: SHA-based latest-version check — constants', () => {
+  test('GITHUB_API_URL is the constant GitHub Commits API endpoint', () => {
+    assert.equal(
+      GITHUB_API_URL,
+      'https://api.github.com/repos/thamwangjun/get-shit-done/commits/main',
+    );
   });
 
   test('CHECK_REASON enum exposes the documented codes', () => {
     assert.deepEqual(
       Object.keys(CHECK_REASON).sort(),
-      ['FAIL_INVALID_OUTPUT', 'FAIL_NPM_FAILED', 'OK'].sort(),
+      ['FAIL_FETCH_FAILED', 'FAIL_INVALID_SHA', 'OK'].sort(),
     );
-  });
-
-  test('returns { ok: true, version } when npm prints a valid semver', () => {
-    const fakeSpawn = () => ({ status: 0, stdout: '1.39.1\n', stderr: '' });
-    const r = checkLatestVersion({ spawn: fakeSpawn });
-    assert.deepEqual(r, { ok: true, version: '1.39.1', reason: CHECK_REASON.OK });
   });
 });
 
-describe('Bug #2992: error paths', () => {
-  const { checkLatestVersion, CHECK_REASON } = require(require('node:path').join(__dirname, '..', 'get-shit-done', 'bin', 'check-latest-version.cjs'));
+describe('Bug #2992: SHA-based latest-version check — success paths', () => {
+  test('returns { ok: true, sha } when GitHub API returns a valid SHA', async () => {
+    const r = await checkLatestVersion({
+      request: makeFakeRequest(200, { sha: 'abc1234abcdef' }),
+    });
+    assert.deepEqual(r, { ok: true, sha: 'abc1234', reason: CHECK_REASON.OK });
+  });
 
-  test('FAIL_NPM_FAILED when npm exits non-zero (e.g. offline, 404)', () => {
-    const r = checkLatestVersion({
-      spawn: () => ({ status: 1, stdout: '', stderr: 'npm ERR! 404\n' }),
+  test('truncates full 40-char SHA to 7 chars in result', async () => {
+    const fullSha = 'abc1234' + 'a'.repeat(33);
+    const r = await checkLatestVersion({
+      request: makeFakeRequest(200, { sha: fullSha }),
+    });
+    assert.equal(r.ok, true);
+    assert.equal(r.sha, 'abc1234');
+  });
+});
+
+describe('Bug #2992: SHA-based latest-version check — error paths', () => {
+  test('FAIL_FETCH_FAILED when GitHub API returns non-200', async () => {
+    const r = await checkLatestVersion({
+      request: makeFakeRequest(404, { message: 'Not Found' }),
     });
     assert.equal(r.ok, false);
-    assert.equal(r.reason, CHECK_REASON.FAIL_NPM_FAILED);
-    assert.equal(r.detail, 'npm ERR! 404',
-      'detail should be the trimmed stderr when npm reports a real error');
+    assert.equal(r.reason, CHECK_REASON.FAIL_FETCH_FAILED);
   });
 
-  // #2993 CR: distinguish timeout from genuine npm failure in `detail`.
-  // spawnSync sets status=null and signal='SIGTERM' on timeout; stderr is
-  // typically empty. Without the signal-first branch, both shape as
-  // 'npm exited non-zero' and the operator cannot tell timeout from failure.
-  test('FAIL_NPM_FAILED detail names the signal when spawn times out', () => {
-    const r = checkLatestVersion({
-      spawn: () => ({ status: null, signal: 'SIGTERM', stdout: '', stderr: '' }),
+  test('FAIL_FETCH_FAILED detail names the error when request throws', async () => {
+    const r = await checkLatestVersion({
+      request: makeFakeRequest(200, {}, { errorOnRequest: true }),
     });
     assert.equal(r.ok, false);
-    assert.equal(r.reason, CHECK_REASON.FAIL_NPM_FAILED);
-    assert.equal(r.detail, 'npm timed out (signal: SIGTERM)',
-      'detail should explicitly name the signal when status is null and signal is set');
+    assert.equal(r.reason, CHECK_REASON.FAIL_FETCH_FAILED);
+    assert.ok(r.detail, 'detail should be set when request errors');
   });
 
-  test('FAIL_NPM_FAILED detail falls back to generic when neither stderr nor signal is present', () => {
-    const r = checkLatestVersion({
-      spawn: () => ({ status: 1, stdout: '', stderr: '' }),
-    });
-    assert.equal(r.detail, 'npm exited non-zero');
-  });
-
-  test('FAIL_INVALID_OUTPUT when npm prints something that is not a semver', () => {
-    // E.g. if a future npm version changes the output format, or if the
-    // network returns an HTML error page captured as stdout.
-    const r = checkLatestVersion({
-      spawn: () => ({ status: 0, stdout: '<html>not a version</html>\n', stderr: '' }),
+  test('FAIL_INVALID_SHA when response body has no sha field', async () => {
+    const r = await checkLatestVersion({
+      request: makeFakeRequest(200, { version: '1.0.0' }),
     });
     assert.equal(r.ok, false);
-    assert.equal(r.reason, CHECK_REASON.FAIL_INVALID_OUTPUT);
+    assert.equal(r.reason, CHECK_REASON.FAIL_INVALID_SHA);
   });
 
-  test('FAIL_INVALID_OUTPUT when stdout is empty', () => {
-    const r = checkLatestVersion({
-      spawn: () => ({ status: 0, stdout: '', stderr: '' }),
+  test('FAIL_INVALID_SHA when response body is empty', async () => {
+    const r = await checkLatestVersion({
+      request: makeFakeRawRequest(200, ''),
     });
     assert.equal(r.ok, false);
-    assert.equal(r.reason, CHECK_REASON.FAIL_INVALID_OUTPUT);
+    assert.equal(r.reason, CHECK_REASON.FAIL_INVALID_SHA);
   });
 
-  test('accepts pre-release semver (e.g. 1.40.0-rc.1)', () => {
-    const r = checkLatestVersion({
-      spawn: () => ({ status: 0, stdout: '1.40.0-rc.1\n', stderr: '' }),
+  test('FAIL_INVALID_SHA when sha field is shorter than 7 chars', async () => {
+    const r = await checkLatestVersion({
+      request: makeFakeRequest(200, { sha: 'abc12' }),
     });
-    assert.deepEqual(r, { ok: true, version: '1.40.0-rc.1', reason: CHECK_REASON.OK });
+    assert.equal(r.ok, false);
+    assert.equal(r.reason, CHECK_REASON.FAIL_INVALID_SHA);
   });
 });

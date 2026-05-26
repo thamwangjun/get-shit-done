@@ -4,95 +4,112 @@
 /**
  * Deterministic latest-version check for /gsd-update (#2992).
  *
- * The /gsd-update workflow's check_latest_version step was previously
- * prescribed in LLM-driven prose ("run `npm view get-shit-done-redux
- * version`"). The executing model could shortcut the prescription and
- * invent npm queries against wrong-shaped names (`@get-shit-done/cli`,
- * `get-shit-done-cli`, `gsd`), all of which 404 or — worse — return an
- * unrelated typosquat package.
- *
- * This script makes the package name a CONSTANT in code, not a free
- * choice at execution time. The workflow calls it via `npm run
- * check-latest-version -- --json` and parses the structured response.
+ * Fetches the latest commit SHA from the GitHub Commits API.
+ * The API endpoint is a CONSTANT in code, not a free choice at
+ * execution time. The workflow calls it via `node check-latest-version.cjs
+ * --json` and parses the structured response.
  *
  * Tests assert on the typed CHECK_REASON enum and the structured result
- * record, never on console prose. See CONTRIBUTING.md "Prohibited: Raw
- * Text Matching on Test Outputs".
+ * record, never on console prose.
  */
 
-const { execNpm } = require('./lib/shell-command-projection.cjs');
+const https = require('https');
 
 // Hardcoded. Do not parameterise — the whole point of this script is that
-// the package name is not a runtime choice for the caller.
-const PACKAGE_NAME = '@opengsd/get-shit-done-redux';
+// the API endpoint is not a runtime choice for the caller.
+const GITHUB_API_URL = 'https://api.github.com/repos/thamwangjun/get-shit-done/commits/main';
 
 const CHECK_REASON = Object.freeze({
   OK: 'ok',
-  FAIL_NPM_FAILED: 'fail_npm_failed',
-  FAIL_INVALID_OUTPUT: 'fail_invalid_output',
+  FAIL_FETCH_FAILED: 'fail_fetch_failed',
+  FAIL_INVALID_SHA: 'fail_invalid_sha',
 });
 
-const SEMVER_RE = /^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/;
-
 /**
- * Pure-ish: takes an injected spawn function so tests don't actually run npm.
- * In production, defaults to execNpm() from the shell-projection seam.
+ * Pure-ish: takes an injected request function so tests don't actually
+ * hit the network. In production, defaults to https.get.
+ *
+ * @param {object} [opts]
+ * @param {Function} [opts.request] - Injectable seam for testing
+ * @returns {Promise<{ok: boolean, sha?: string, reason: string, detail?: string}>}
  */
-function checkLatestVersion(opts = {}) {
-  // Default path routes through the shell-projection seam (execNpm owns the
-  // Windows shell-flag policy and timeout default). The injection point
-  // remains spawnSync-shaped for test compatibility — the adapter below
-  // translates { exitCode } → { status } so the consumer logic is unchanged.
-  // Bounded at 15s so a hung registry doesn't block /gsd-update (#2993 CR).
-  const defaultSpawn = () => {
-    const r = execNpm(['view', PACKAGE_NAME, 'version'], { timeout: 15_000 });
-    return {
-      status: r.exitCode,
-      stdout: r.stdout,
-      stderr: r.stderr,
-      signal: r.signal,
-      error: r.error,
-    };
-  };
-  const spawn = opts.spawn || defaultSpawn;
+async function checkLatestVersion(opts = {}) {
+  const requestFn = opts.request || https.get;
 
-  const r = spawn();
-  if (!r || r.status !== 0) {
-    // Distinguish timeout (status null, signal set, stderr empty) from a
-    // genuine npm failure. Without this, both surfaced as "npm exited
-    // non-zero" and the operator couldn't tell which (#2993 CR).
-    let detail;
-    if (r && r.signal) {
-      detail = `npm timed out (signal: ${r.signal})`;
-    } else if (r && r.stderr) {
-      detail = r.stderr.trim();
-    } else {
-      detail = 'npm exited non-zero';
+  return new Promise((resolve) => {
+    let req;
+    try {
+      req = requestFn(
+        GITHUB_API_URL,
+        { headers: { 'User-Agent': 'gsd-check-latest-version' } },
+        (res) => {
+          if (res.statusCode !== 200) {
+            resolve({
+              ok: false,
+              reason: CHECK_REASON.FAIL_FETCH_FAILED,
+              detail: `HTTP ${res.statusCode}`,
+            });
+            return;
+          }
+          const chunks = [];
+          res.on('data', (chunk) => chunks.push(chunk));
+          res.on('end', () => {
+            let sha;
+            try {
+              const body = Buffer.concat(chunks.map(c => Buffer.isBuffer(c) ? c : Buffer.from(c))).toString('utf8');
+              const parsed = JSON.parse(body);
+              sha = parsed && parsed.sha;
+            } catch (e) {
+              resolve({
+                ok: false,
+                reason: CHECK_REASON.FAIL_INVALID_SHA,
+                detail: 'failed to parse response JSON',
+              });
+              return;
+            }
+            if (!sha || !/^[0-9a-f]{7}/i.test(sha)) {
+              resolve({
+                ok: false,
+                reason: CHECK_REASON.FAIL_INVALID_SHA,
+                detail: sha ? `sha too short or invalid: ${sha}` : 'sha field missing or empty',
+              });
+              return;
+            }
+            resolve({
+              ok: true,
+              sha: sha.slice(0, 7),
+              reason: CHECK_REASON.OK,
+            });
+          });
+        },
+      );
+    } catch (err) {
+      resolve({
+        ok: false,
+        reason: CHECK_REASON.FAIL_FETCH_FAILED,
+        detail: err.message,
+      });
+      return;
     }
-    return {
-      ok: false,
-      reason: CHECK_REASON.FAIL_NPM_FAILED,
-      detail,
-    };
-  }
-  const version = (r.stdout || '').trim();
-  if (!SEMVER_RE.test(version)) {
-    return {
-      ok: false,
-      reason: CHECK_REASON.FAIL_INVALID_OUTPUT,
-      detail: version || '(empty)',
-    };
-  }
-  return { ok: true, version, reason: CHECK_REASON.OK };
+
+    req.setTimeout(15_000, () => req.destroy(new Error('fetch timed out')));
+    req.on('error', (err) => {
+      resolve({
+        ok: false,
+        reason: CHECK_REASON.FAIL_FETCH_FAILED,
+        detail: err.message,
+      });
+    });
+  });
 }
 
-function main() {
+async function main() {
   const json = process.argv.includes('--json');
-  const r = checkLatestVersion();
+  const r = await checkLatestVersion();
   if (json) {
     process.stdout.write(JSON.stringify(r) + '\n');
   } else if (r.ok) {
-    process.stdout.write(r.version + '\n');
+    process.stdout.write(r.sha + '\n');
   } else {
     process.stderr.write(`check-latest-version: ${r.reason}: ${r.detail}\n`);
   }
@@ -101,4 +118,4 @@ function main() {
 
 if (require.main === module) main();
 
-module.exports = { checkLatestVersion, CHECK_REASON, PACKAGE_NAME };
+module.exports = { checkLatestVersion, CHECK_REASON, GITHUB_API_URL };
