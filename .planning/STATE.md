@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v2.1.0-a
 milestone_name: SHA Versioning Reimplementation
-status: executing
-last_updated: "2026-05-26T07:10:20.358Z"
-last_activity: 2026-05-26 — Phase 43 planned (1 plan, Wave 1)
+status: complete
+last_updated: "2026-05-26T08:00:00.000Z"
+last_activity: 2026-05-26 — Phase 43 complete (1/1 plans, 0 regressions)
 progress:
   total_phases: 2
   completed_phases: 2
@@ -26,8 +26,8 @@ See: .planning/PROJECT.md (updated 2026-05-25 after v2.1.0-a milestone start)
 
 Phase: 43 — Update Workflow SHA Migration + Full Gate
 Plan: 43-01 — SHA migration (check-latest-version.cjs + update.md + bug-2992 test)
-Status: Planned (ready to execute)
-Last activity: 2026-05-26 — Phase 43 planned (1 plan, Wave 1)
+Status: Complete
+Last activity: 2026-05-26 — Phase 43 complete (1/1 plans, 0 regressions)
 
 ## Performance Metrics
 
@@ -58,7 +58,7 @@ None.
 
 Phase 42 resolved: `semver-compare.test.cjs` (17/17) and `version-detection.test.cjs` (4/4) now pass.
 
-Remaining: `tests/bug-2992-check-latest-version.test.cjs` still uses npm/semver assertions — Phase 43 (43-01) fixes this.
+Resolved: `tests/bug-2992-check-latest-version.test.cjs` rewritten for SHA-based assertions (Phase 43-01). All 9 tests pass. No open blockers.
 
 ### Quick Tasks Completed
 
@@ -76,6 +76,6 @@ Remaining: `tests/bug-2992-check-latest-version.test.cjs` still uses npm/semver 
 
 ## Session Continuity
 
-Last session: 2026-05-26T07:10:20.346Z
-Stopped at: Phase 43 planned — 43-01-PLAN.md written and verified
-Resume: `/gsd-execute-phase 43` to execute Phase 43
+Last session: 2026-05-26
+Stopped at: Phase 43 complete — v2.1.0-a milestone all phases done
+Resume: `/gsd-complete-milestone` to archive v2.1.0-a and prepare next milestone
