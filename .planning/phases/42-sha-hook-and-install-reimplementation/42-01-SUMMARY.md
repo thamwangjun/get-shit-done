@@ -26,6 +26,7 @@ decisions:
 metrics:
   duration: "~20 minutes"
   completed: "2026-05-25"
+requirements_completed: [HOOK-01, HOOK-02, HOOK-03, HOOK-04, HOOK-05, INST-01, INST-02, INST-03, INST-04, STAT-01, STAT-02, TEST-01, TEST-02]
 ---
 
 # Phase 42 Plan 01: SHA Hook and Install Reimplementation Summary
@@ -48,8 +49,8 @@ SHA-based versioning replacing semver across worker, statusline, and install.js 
 
 ## Tests
 
-- `tests/semver-compare.test.cjs`: 21 tests (9 isNewer + 3 HOOK-03 + 4 HOOK-04 static) — all pass
-- `tests/version-detection.test.cjs`: 2 tests (INST-01 + INST-02 static assertions) — all pass
+- `tests/semver-compare.test.cjs`: 17 tests (9 isNewer + 3 HOOK-03 + 4 HOOK-04 static) — all pass
+- `tests/version-detection.test.cjs`: 9 tests — all pass
 - Full suite: 28 pre-existing failures (ai-evals, bug-2136, changeset-cli, etc.) — none caused by this plan
 
 ## Deviations from Plan

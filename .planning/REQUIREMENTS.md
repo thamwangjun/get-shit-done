@@ -29,15 +29,15 @@ Requirements for v2.1.0-a. Each maps to roadmap phases.
 
 ### Update Workflow
 
-- [ ] **UPD-01**: `get-shit-done/bin/check-latest-version.cjs` fetches the latest SHA from the GitHub Commits API (`api.github.com/repos/thamwangjun/get-shit-done/commits/main`) instead of npm registry
-- [ ] **UPD-02**: `get-shit-done/workflows/update.md` `check_latest_version` step handles SHA-based comparison and simplified changelog display (no semver `--from`/`--to` changelog extraction)
+- [x] **UPD-01**: `get-shit-done/bin/check-latest-version.cjs` fetches the latest SHA from the GitHub Commits API (`api.github.com/repos/thamwangjun/get-shit-done/commits/main`) instead of npm registry
+- [x] **UPD-02**: `get-shit-done/workflows/update.md` `check_latest_version` step handles SHA-based comparison and simplified changelog display (no semver `--from`/`--to` changelog extraction)
 
 ### Tests
 
 - [x] **TEST-01**: `tests/semver-compare.test.cjs` all 17/17 subtests pass (currently 5 failing: HOOK-03 writeResult, HOOK-04 GitHub API)
 - [x] **TEST-02**: `tests/version-detection.test.cjs` all 4/4 subtests pass (currently 2 failing: INST-01 git rev-parse, INST-02 no-network sentinel)
-- [ ] **TEST-03**: `tests/bug-2992-check-latest-version.test.cjs` updated for SHA-based behavior and passing
-- [ ] **GATE-01**: Full `npm test` suite passes with 0 regressions beyond pre-existing 2 failures in `ai-evals.test.cjs`
+- [x] **TEST-03**: `tests/bug-2992-check-latest-version.test.cjs` updated for SHA-based behavior and passing
+- [x] **GATE-01**: Full `npm test` suite passes with 0 regressions beyond pre-existing 2 failures in `ai-evals.test.cjs`
 
 ## Out of Scope
 
@@ -63,12 +63,12 @@ Requirements for v2.1.0-a. Each maps to roadmap phases.
 | INST-04 | Phase 42 | Complete |
 | STAT-01 | Phase 42 | Complete |
 | STAT-02 | Phase 42 | Complete |
-| UPD-01 | Phase 43 | Pending |
-| UPD-02 | Phase 43 | Pending |
+| UPD-01 | Phase 43 | Complete |
+| UPD-02 | Phase 43 | Complete |
 | TEST-01 | Phase 42 | Complete |
 | TEST-02 | Phase 42 | Complete |
-| TEST-03 | Phase 43 | Pending |
-| GATE-01 | Phase 43 | Pending |
+| TEST-03 | Phase 43 | Complete |
+| GATE-01 | Phase 43 | Complete |
 
 **Coverage:**
 - v1 requirements: 17 total

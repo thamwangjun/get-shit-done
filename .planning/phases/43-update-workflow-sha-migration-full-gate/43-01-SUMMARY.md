@@ -12,6 +12,7 @@ decisions:
 tech_stack:
   added: []
   patterns: [injectable-request-seam, sha-based-versioning]
+requirements_completed: [UPD-01, UPD-02, TEST-03, GATE-01]
 key_files:
   created: []
   modified:
