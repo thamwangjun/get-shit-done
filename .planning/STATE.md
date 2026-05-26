@@ -2,8 +2,8 @@
 gsd_state_version: 1.0
 milestone: v2.1.0-a
 milestone_name: SHA Versioning Reimplementation
-status: complete
-last_updated: "2026-05-26T08:00:00.000Z"
+status: completed
+last_updated: "2026-05-26T10:57:45.697Z"
 last_activity: 2026-05-26 — Phase 43 complete (1/1 plans, 0 regressions)
 progress:
   total_phases: 2
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-05-25 after v2.1.0-a milestone start)
 
 Phase: 43 — Update Workflow SHA Migration + Full Gate
 Plan: 43-01 — SHA migration (check-latest-version.cjs + update.md + bug-2992 test)
-Status: Complete
+Status: complete
 Last activity: 2026-05-26 — Phase 43 complete (1/1 plans, 0 regressions)
 
 ## Performance Metrics
@@ -73,6 +73,7 @@ Resolved: `tests/bug-2992-check-latest-version.test.cjs` rewritten for SHA-based
 | 260525-o1n | Convert @ file-reference notation in commands/gsd/ to shell-cat form (117 occurrences, 54 files) | 2026-05-25 | 4ba5dde1 | [260525-o1n-convert-commands-at-notation](./quick/260525-o1n-convert-commands-at-notation/) |
 | 260525-i50 | Update branch name thamw-main → main; remove CLAUDE.md from .gitignore | 2026-05-25 | b960ed06 | [260525-i50-update-branch-name-thamw-main-to-main](./quick/260525-i50-update-branch-name-thamw-main-to-main/) |
 | 260525-igz | Update CLAUDE.md architecture counts to reflect current project state (67 cmds, 90 workflows, 33 agents, 79 lib modules) | 2026-05-25 | e55d6831 | [260525-update-claude-md](./quick/260525-update-claude-md/) |
+| 260526-enb | Fix 8 v2.1.0-a tech debt items — stale update.md metadata and tracking inconsistencies | 2026-05-26 | a62f5357 | [20260526-v2-1-0-a-tech-debt-cleanup](./quick/20260526-v2-1-0-a-tech-debt-cleanup/) |
 
 ## Session Continuity
 
