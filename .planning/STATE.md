@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v2.1.0-a
 milestone_name: SHA Versioning Reimplementation
 status: planning
-last_updated: "2026-05-26T06:11:01.438Z"
-last_activity: 2026-05-25 — Roadmap created for v2.1.0-a (2 phases)
+last_updated: "2026-05-26T06:21:56.151Z"
+last_activity: 2026-05-26 — Phase 43 planned (1 plan, Wave 1)
 progress:
   total_phases: 2
   completed_phases: 1
-  total_plans: 1
+  total_plans: 2
   completed_plans: 1
   percent: 50
 ---
@@ -24,10 +24,10 @@ See: .planning/PROJECT.md (updated 2026-05-25 after v2.1.0-a milestone start)
 
 ## Current Position
 
-Phase: 42 — SHA Hook and Install Reimplementation
-Plan: —
-Status: Planning (roadmap created, ready to plan Phase 42)
-Last activity: 2026-05-25 — Roadmap created for v2.1.0-a (2 phases)
+Phase: 43 — Update Workflow SHA Migration + Full Gate
+Plan: 43-01 — SHA migration (check-latest-version.cjs + update.md + bug-2992 test)
+Status: Planned (ready to execute)
+Last activity: 2026-05-26 — Phase 43 planned (1 plan, Wave 1)
 
 ## Performance Metrics
 
@@ -56,10 +56,9 @@ None.
 
 ### Blockers/Concerns
 
-7 tests currently failing due to SHA versioning gap:
+Phase 42 resolved: `semver-compare.test.cjs` (17/17) and `version-detection.test.cjs` (4/4) now pass.
 
-- `tests/semver-compare.test.cjs`: 5 failing (HOOK-03 writeResult, HOOK-04 GitHub API endpoint)
-- `tests/version-detection.test.cjs`: 2 failing (INST-01 git rev-parse, INST-02 no-network sentinel)
+Remaining: `tests/bug-2992-check-latest-version.test.cjs` still uses npm/semver assertions — Phase 43 (43-01) fixes this.
 
 ### Quick Tasks Completed
 
@@ -77,6 +76,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-05-26T06:11:01.429Z
-Stopped at: Phase 43 context gathered
-Resume: `/gsd-plan-phase 42` to plan Phase 42
+Last session: 2026-05-26
+Stopped at: Phase 43 planned — 43-01-PLAN.md written and verified
+Resume: `/gsd-execute-phase 43` to execute Phase 43
