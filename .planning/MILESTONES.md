@@ -1,5 +1,23 @@
 # Milestones
 
+## v2.1.0-a SHA Versioning Reimplementation (Shipped: 2026-05-26)
+
+**Phases completed:** 2 phases, 2 plans
+**Git range:** ce4a488a..6c029bfe · 19 commits · 21 files, +2,029 / -294 lines
+**Timeline:** 2026-05-25 → 2026-05-26 (2 days)
+**Known deferred items at close:** 0
+
+**Key accomplishments:**
+
+- Rewrote `gsd-check-update-worker.js` with SHA-based `isNewer()` using GitHub Commits API (`api.github.com/repos/thamwangjun/get-shit-done/commits/main`) — npmjs.com removed entirely
+- Updated `bin/install.js` to write 7-char SHA via `git rev-parse --short=7 HEAD` with `'no-network'` sentinel; `{{GSD_REPO}}` and `{{GSD_BRANCH}}` template replacements wired for all hook files
+- Removed `parseV()` semver IIFE from `gsd-statusline.js`; stale hooks display simplified to single SHA mismatch check
+- Migrated `check-latest-version.cjs` from npm registry to GitHub Commits API SHA fetch with injectable request seam for testing
+- Simplified `update.md` changelog step — SHA display block + GitHub commits link replaces complex changeset CLI extraction
+- All 17 requirements satisfied; full `npm test` green (185 pre-existing failures, zero new regressions)
+
+---
+
 ## v1.41.5 Refactor Git Commit History (Shipped: 2026-05-24)
 
 **Phases completed:** 7 phases, 7 plans

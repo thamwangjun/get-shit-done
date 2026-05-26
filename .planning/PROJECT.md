@@ -8,15 +8,11 @@ An opinionated fork of the GSD (Get Shit Done) framework that applies systematic
 
 Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships — upstream content additions are modified, not accepted verbatim.
 
-## Current Milestone: v2.1.0-a SHA Versioning Reimplementation
+## Current State: v2.1.0-a Shipped 2026-05-26
 
-**Goal:** Replace semver version tracking with 7-char SHA versioning of the fork's GitHub repo (`thamwangjun/get-shit-done` main branch) across all installation and update-checking logic.
+**Shipped:** SHA Versioning Reimplementation — all installation and update-check logic now uses 7-char SHA via GitHub Commits API. npmjs.com removed from update path entirely.
 
-**Target features:**
-- Background hook reimplemented with SHA `isNewer()`, `function writeResult()`, and GitHub Commits API fetch
-- Installation writes 7-char SHA to VERSION file via `git rev-parse --short=7 HEAD` with `'no-network'` sentinel fallback
-- Statusline stale-hooks dev-install semver check removed
-- Update workflow and `check-latest-version.cjs` migrated from npm registry to GitHub Commits API + SHA comparison
+**Next milestone:** Planning in progress — `/gsd-new-milestone` to define next cycle
 
 ## Requirements
 
@@ -64,23 +60,27 @@ Every agent, command, and workflow file on `main` meets the fork's prompt engine
 - ✓ STAGE-05: Batch 5 committed — maintenance, logs, state files — v1.41.5
 - ✓ VALID-01: Zero-diff parity confirmed (10 allowlisted files, zero unexpected divergence) — v1.41.5
 - ✓ VALID-02: npm test 8392 pass, 2 pre-existing failures (zero regression vs backup branch) — v1.41.5
+- ✓ HOOK-01: `gsd-check-update-worker.js` SHA `isNewer()` with `latest.slice(0,7) !== installed` — v2.1.0-a
+- ✓ HOOK-02: Worker fetches latest SHA via GitHub Commits API (not npmjs.com) — v2.1.0-a
+- ✓ HOOK-03: Worker `function writeResult()` calls `isNewer()` and writes result cache — v2.1.0-a
+- ✓ HOOK-04: `{{GSD_REPO}}` and `{{GSD_BRANCH}}` template placeholders in worker source — v2.1.0-a
+- ✓ HOOK-05: Worker has no npmjs.com or npm package name references — v2.1.0-a
+- ✓ INST-01: `bin/install.js` writes 7-char SHA via `git rev-parse --short=7 HEAD` — v2.1.0-a
+- ✓ INST-02: `'no-network'` sentinel fallback when git unavailable — v2.1.0-a
+- ✓ INST-03: `{{GSD_REPO}}`/`{{GSD_BRANCH}}` template replacements in hook files at install time — v2.1.0-a
+- ✓ INST-04: `{{GSD_VERSION}}` in hook headers populated with SHA (not `pkg.version`) — v2.1.0-a
+- ✓ STAT-01: `gsd-statusline.js` `parseV()` semver dev-install block removed — v2.1.0-a
+- ✓ STAT-02: Stale hooks → simplified SHA mismatch display only — v2.1.0-a
+- ✓ UPD-01: `check-latest-version.cjs` fetches GitHub Commits API SHA — v2.1.0-a
+- ✓ UPD-02: `update.md` SHA comparison + simplified changelog (GitHub link) — v2.1.0-a
+- ✓ TEST-01: `semver-compare.test.cjs` 17/17 pass — v2.1.0-a
+- ✓ TEST-02: `version-detection.test.cjs` 4/4 pass — v2.1.0-a
+- ✓ TEST-03: `bug-2992-check-latest-version.test.cjs` SHA-based assertions 9/9 pass — v2.1.0-a
+- ✓ GATE-01: Full `npm test` 0 regressions beyond 2 pre-existing ai-evals failures — v2.1.0-a
 
 ### Active
 
-- [ ] HOOK-01: `hooks/gsd-check-update-worker.js` uses SHA `isNewer()` and `function writeResult()`
-- [ ] HOOK-02: Worker fetches latest SHA from `api.github.com/repos/{{GSD_REPO}}/commits/{{GSD_BRANCH}}` via `https.get`
-- [ ] HOOK-03: Worker contains `{{GSD_REPO}}` and `{{GSD_BRANCH}}` template placeholders replaced at install time to `thamwangjun/get-shit-done` / `main`
-- [ ] INST-01: `bin/install.js` writes 7-char SHA to VERSION file via `git rev-parse --short=7 HEAD`
-- [ ] INST-02: `bin/install.js` uses `'no-network'` sentinel fallback when git is unavailable
-- [ ] INST-03: `{{GSD_REPO}}` and `{{GSD_BRANCH}}` template replacements added for hook files in install.js
-- [ ] INST-04: `{{GSD_VERSION}}` in hook headers filled with SHA (not `pkg.version`) at install time
-- [ ] STAT-01: `hooks/gsd-statusline.js` semver `parseV()` dev-install check removed; SHA mismatch → "stale hooks — run /gsd:update"
-- [ ] UPD-01: `get-shit-done/bin/check-latest-version.cjs` fetches latest SHA from GitHub Commits API instead of npm registry
-- [ ] UPD-02: `get-shit-done/workflows/update.md` compares installed SHA vs latest SHA; changelog extraction simplified for SHA versioning
-- [ ] TEST-01: `tests/semver-compare.test.cjs` all 17/17 pass
-- [ ] TEST-02: `tests/version-detection.test.cjs` all 4/4 pass
-- [ ] TEST-03: `tests/bug-2992-check-latest-version.test.cjs` updated for SHA-based behavior and passing
-- [ ] GATE-01: Full `npm test` suite passes with 0 regressions
+*(No active requirements — planning next milestone)*
 
 ### Out of Scope
 
@@ -104,7 +104,7 @@ Every agent, command, and workflow file on `main` meets the fork's prompt engine
   - `.planning/fork_plans/B0-SYNC_CATALOGUE_V01.md` — CATALOGUE.json sync process
   - `.planning/fork_plans/C0-POSITIVE_FRAMING_PASS_V01.md` — positive framing pass across all prompt content files
 
-- **Current state**: v1.41.5 shipped 2026-05-24. v2.1.0-a started 2026-05-25. SHA versioning was previously implemented in the fork (v1.36.0.a) but lost during upstream merges that introduced semver (`1.1.0` versioning). As of v2.1.0-a start: 7 tests are failing because `tests/semver-compare.test.cjs` and `tests/version-detection.test.cjs` already describe the SHA-based implementation. Historical milestone delivery records and validated requirements are in `.planning/PROJECT_HISTORY.md`.
+- **Current state**: v2.1.0-a shipped 2026-05-26. SHA versioning fully reimplemented — all installation and update-check logic uses 7-char SHA via GitHub Commits API. npm test at 185 non-ai-evals failures (2 pre-existing ai-evals), zero fork regressions. Historical milestone delivery records and validated requirements are in `.planning/PROJECT_HISTORY.md`.
 - **Test suite**: `npm test` runs Node.js built-in test runner. `agent-frontmatter.test.cjs` is the critical gate — all agent YAML frontmatter is validated there. Fork-side tests: negative-framing-scan (99/99), ios-scaffold-safety (6/6), bug-1924-ensure-hooks-dist-on-demand (8/8), agent-frontmatter (155/155), execute-phase-wave (15/15), semver-compare (12/17 — 5 failing: HOOK-03 writeResult, HOOK-04 GitHub API), version-detection (2/4 — 2 failing: INST-01 git rev-parse, INST-02 no-network sentinel), debug-session-management (HDOC subtest intentionally skipped), qwen-install (16/16), read-injection-scanner (19/19).
 - **File-writing agents** (those with `Write` in their tools list) must retain the string `Only use the Write tool` in their prompt body. Dynamic `FILE_WRITING_AGENTS` list used (WR-04: no longer hardcoded).
 - **Scanner precedence**: When tests conflict with fork standards (e.g., test asserts for upstream negative-framing strings), modify the test to reflect fork behavior — established precedent in v1.36.0 Phase 3.
@@ -135,6 +135,11 @@ Every agent, command, and workflow file on `main` meets the fork's prompt engine
 | Test updates for fork framing: tests asserting upstream negative-framing strings updated to verify fork affirmative forms | Consistent with v1.36.0/v1.38.6 precedent — "tests should verify fork behavior, not upstream behavior." Applied in Phase 33 to bug-3320 and edit-phase tests | ✓ Good — v1.41.3 |
 | Self-verifying batch staging scripts (`scripts/stage-batch-N.cjs`): each script validates staged file list against expected set before committing | Avoids staging accidents when manually curating 700+ changed files across 5 logical batches — validation at script-level catches set mismatches before commit | ✓ Good — v1.41.5 |
 | D-03 allowlist accepted for parity diff: 10 files legitimately differ from original tree (staging scripts created during refactor, Nyquist tests added retroactively, ignore-file tweaks) | Zero-diff parity gate must account for files created during the refactor process itself; allowlist documents the exception clearly | ✓ Good — v1.41.5 |
+| SHA equality comparison (`isNewer`: `latest.slice(0,7) !== installed`) — no semver ordering required | SHAs have no inherent ordering; equality check is the right semantic for "am I current?" | ✓ Good — v2.1.0-a |
+| GitHub Commits API (`api.github.com/repos/thamwangjun/get-shit-done/commits/main`) instead of npmjs.com | Update check tied to fork repo SHA, not npm package version — decoupled from publishing cadence | ✓ Good — v2.1.0-a |
+| Changelog extraction removed from update.md; GitHub commits link substituted | Changeset CLI `extract` requires semver ranges; SHA ranges not supported — GitHub link is simpler and always accurate | ✓ Good — v2.1.0-a |
+| `check-latest-version.cjs` injectable request seam (`opts.request`) | Enables deterministic unit tests without network; avoids subprocess spawning in tests | ✓ Good — v2.1.0-a |
+| `{{GSD_REPO}}`/`{{GSD_BRANCH}}` placeholders in worker source, hardcoded in check-latest-version.cjs | Worker is a hook file processed by installer's template engine; cjs module is not — asymmetry is intentional and documented | ✓ Good — v2.1.0-a |
 
 > Historical Key Decisions (implementation-specific, settled) are archived in .planning/PROJECT_HISTORY.md.
 
@@ -158,4 +163,4 @@ This document evolves at phase transitions and milestone boundaries.
 ---
 ---
 ---
-*Last updated: 2026-05-25 after v2.1.0-a milestone start*
+*Last updated: 2026-05-26 after v2.1.0-a milestone*

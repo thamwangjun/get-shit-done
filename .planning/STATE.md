@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v2.1.0-a
 milestone_name: SHA Versioning Reimplementation
-status: completed
-last_updated: "2026-05-26T10:57:45.697Z"
-last_activity: 2026-05-26 — Phase 43 complete (1/1 plans, 0 regressions)
+status: archived
+last_updated: "2026-05-26T16:30:00.000Z"
+last_activity: 2026-05-26 — v2.1.0-a milestone archived
 progress:
   total_phases: 2
   completed_phases: 2
@@ -17,17 +17,16 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-05-25 after v2.1.0-a milestone start)
+See: .planning/PROJECT.md (updated 2026-05-26 after v2.1.0-a milestone)
 
 **Core value:** Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships
-**Current focus:** v2.1.0-a — SHA Versioning Reimplementation
+**Current focus:** Planning next milestone — run `/gsd-new-milestone`
 
 ## Current Position
 
-Phase: 43 — Update Workflow SHA Migration + Full Gate
-Plan: 43-01 — SHA migration (check-latest-version.cjs + update.md + bug-2992 test)
-Status: complete
-Last activity: 2026-05-26 — Phase 43 complete (1/1 plans, 0 regressions)
+Milestone: v2.1.0-a — SHA Versioning Reimplementation
+Status: archived (shipped 2026-05-26)
+Next: `/gsd-new-milestone` to start next milestone cycle
 
 ## Performance Metrics
 
@@ -78,5 +77,5 @@ Resolved: `tests/bug-2992-check-latest-version.test.cjs` rewritten for SHA-based
 ## Session Continuity
 
 Last session: 2026-05-26
-Stopped at: Phase 43 complete — v2.1.0-a milestone all phases done
-Resume: `/gsd-complete-milestone` to archive v2.1.0-a and prepare next milestone
+Stopped at: v2.1.0-a milestone archived — all phases complete, all docs updated
+Resume: `/gsd-new-milestone` to define next milestone

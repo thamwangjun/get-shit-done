@@ -1,6 +1,7 @@
 ---
 phase: quick-260505-kh6
 plan: "01"
+status: complete
 subsystem: workflows
 tags: [fix, shell-invocation, gsd-tools]
 dependency_graph:

@@ -13,7 +13,7 @@
 - ✅ **v1.38.6 Positive Framing Pass** — Phases 28–31 (shipped 2026-05-03)
 - ✅ **v1.41.3 Upstream v1.41.2 Fork Compliance** — Phases 32–34 (shipped 2026-05-19)
 - ✅ **v1.41.5 Refactor Git Commit History** — Phases 35–41 (shipped 2026-05-24)
-- [ ] **v2.1.0-a SHA Versioning Reimplementation** — Phases 42–43 (active)
+- ✅ **v2.1.0-a SHA Versioning Reimplementation** — Phases 42–43 (shipped 2026-05-26)
 
 ## Phases
 
@@ -169,39 +169,15 @@ Full details: `.planning/milestones/v1.41.5-ROADMAP.md`
 
 </details>
 
-## Phase Details
+<details>
+<summary>✅ v2.1.0-a SHA Versioning Reimplementation (Phases 42–43) — SHIPPED 2026-05-26</summary>
 
-### Phase 42: SHA Hook and Install Reimplementation
-**Goal**: The hook worker and install pipeline use SHA-based versioning end-to-end — 7 currently-failing tests pass
-**Depends on**: Nothing (first phase of milestone)
-**Requirements**: HOOK-01, HOOK-02, HOOK-03, HOOK-04, HOOK-05, INST-01, INST-02, INST-03, INST-04, STAT-01, STAT-02, TEST-01, TEST-02
-**Success Criteria** (what must be TRUE):
-  1. `tests/semver-compare.test.cjs` runs with 17/17 subtests passing (was 5 failing)
-  2. `tests/version-detection.test.cjs` runs with 4/4 subtests passing (was 2 failing)
-  3. `hooks/gsd-check-update-worker.js` contains `function isNewer` (SHA-based), `function writeResult`, `https.get`, `{{GSD_REPO}}`, and `{{GSD_BRANCH}}`
-  4. `hooks/gsd-statusline.js` contains no `parseV` semver function
-  5. VERSION file written by `bin/install.js` via `git rev-parse --short=7 HEAD` with `'no-network'` sentinel fallback
-**Plans**: TBD
+- [x] Phase 42: SHA Hook and Install Reimplementation (1/1 plans) — completed 2026-05-25
+- [x] Phase 43: Update Workflow SHA Migration + Full Gate (1/1 plans) — completed 2026-05-26
 
-### Phase 43: Update Workflow SHA Migration + Full Gate
-**Goal**: The update workflow and check-latest-version.cjs use SHA comparison via GitHub Commits API, and the full npm test suite passes
-**Depends on**: Phase 42
-**Requirements**: UPD-01, UPD-02, TEST-03, GATE-01
-**Success Criteria** (what must be TRUE):
-  1. `get-shit-done/bin/check-latest-version.cjs` fetches from `api.github.com/repos/thamwangjun/get-shit-done/commits/main`
-  2. `tests/bug-2992-check-latest-version.test.cjs` passes with SHA-based assertions
-  3. `get-shit-done/workflows/update.md` SHA comparison and simplified changelog step in place
-  4. Full `npm test` passes with 0 regressions beyond the 2 pre-existing `ai-evals.test.cjs` failures
-**Plans**: 1 plan
-Plans:
-- [x] 43-01-PLAN.md — Migrate check-latest-version.cjs, update update.md, update bug-2992 test, pass npm test gate
+Full details: `.planning/milestones/v2.1.0-a-ROADMAP.md`
 
----
-
-## Active Milestone: v2.1.0-a SHA Versioning Reimplementation
-
-- [x] **Phase 42: SHA Hook and Install Reimplementation** — Reimplement SHA versioning in the background update-check hook, install.js VERSION writing, and statusline (completed 2026-05-25)
-- [x] **Phase 43: Update Workflow SHA Migration + Full Gate** — Migrate update workflow and check-latest-version.cjs to GitHub Commits API + SHA comparison; full gate (completed 2026-05-26)
+</details>
 
 ## Progress
 
@@ -251,7 +227,8 @@ Plans:
 | 40. Stage and Commit Maintenance, Logs, & State | v1.41.5 | 1/1 | Complete | 2026-05-23 |
 | 41. Final Verification & Parity Audit | v1.41.5 | 1/1 | Complete | 2026-05-23 |
 | 42. SHA Hook and Install Reimplementation | v2.1.0-a | 1/1 | Complete | 2026-05-25 |
-| 43. Update Workflow SHA Migration + Full Gate | v2.1.0-a | 1/1 | Complete   | 2026-05-26 |
+| 43. Update Workflow SHA Migration + Full Gate | v2.1.0-a | 1/1 | Complete | 2026-05-26 |
 
 *v1.41.3 shipped 2026-05-19 — see `.planning/milestones/v1.41.3-ROADMAP.md`*
 *v1.41.5 shipped 2026-05-24 — see `.planning/milestones/v1.41.5-ROADMAP.md`*
+*v2.1.0-a shipped 2026-05-26 — see `.planning/milestones/v2.1.0-a-ROADMAP.md`*
