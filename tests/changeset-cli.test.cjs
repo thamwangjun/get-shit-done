@@ -320,29 +320,28 @@ describe('changeset cli extract: version-range changelog extraction (#3496)', ()
     assert.ok(!versions.includes('1.0.0.1'), '1.0.0.1 (4-part) must be excluded from range');
   });
 
-  // F1: workflows/update.md must reference the extract subcommand invocation.
+  // F1: workflows/update.md must use SHA-based update display (phase 43 migration).
+  // Changelog extraction via cli.cjs extract was removed in favour of a direct link
+  // to https://github.com/thamwangjun/get-shit-done/commits/main (#2992 full gate).
   // allow-test-rule: reads a product workflow .md file (not CJS source) to verify
   // the user-facing instruction was wired; there is no behavioural runtime to invoke.
-  test('F1: workflows/update.md contains concrete extract subcommand invocation', (t) => {
+  test('F1: workflows/update.md uses SHA-based update display (not cli.cjs extract)', (t) => {
     const workflowPath = path.join(ROOT, 'get-shit-done', 'workflows', 'update.md');
     const workflowText = fs.readFileSync(workflowPath, 'utf8');
-    // The invocation is: node "$GSD_DIR/get-shit-done/scripts/changeset/cli.cjs" extract
-    // so the literal substring is 'cli.cjs" extract' (quote between script path and subcommand)
+    // SHA-based display: LATEST_SHA variable set from jq -r '.sha // empty'
     assert.ok(
-      workflowText.includes('cli.cjs" extract') || workflowText.includes('cli.cjs extract'),
-      'update.md must invoke cli.cjs extract (fix for #3496 BLOCKER 1)',
+      workflowText.includes('LATEST_SHA'),
+      'update.md must use LATEST_SHA for SHA-based comparison (phase 43 migration)',
     );
+    // Link to GitHub commits for "what changed"
     assert.ok(
-      workflowText.includes('--from') && workflowText.includes('--to'),
-      'update.md extract invocation must include --from and --to flags',
+      workflowText.includes('github.com/thamwangjun/get-shit-done/commits/main'),
+      'update.md must link to GitHub commits/main for the change history',
     );
+    // Changelog extraction via changeset cli.cjs must be removed
     assert.ok(
-      workflowText.includes('--json'),
-      'update.md extract invocation must use --json for structured output',
-    );
-    assert.ok(
-      workflowText.includes('EXTRACT_EXIT') || workflowText.includes('EXTRACT_JSON'),
-      'update.md must capture exit code or JSON output from extract',
+      !workflowText.includes('cli.cjs" extract') && !workflowText.includes('cli.cjs extract'),
+      'update.md must NOT invoke cli.cjs extract after SHA migration (#2992 full gate)',
     );
   });
 });

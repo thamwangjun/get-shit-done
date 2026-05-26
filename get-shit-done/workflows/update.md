@@ -109,7 +109,7 @@ if [ -n "$PREFERRED_CONFIG_DIR" ] && { [ -f "$PREFERRED_CONFIG_DIR/get-shit-done
     fi
   done
 
-  if [ -f "$PREFERRED_CONFIG_DIR/get-shit-done/VERSION" ] && grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+' "$PREFERRED_CONFIG_DIR/get-shit-done/VERSION"; then
+  if [ -f "$PREFERRED_CONFIG_DIR/get-shit-done/VERSION" ] && grep -Eq '^[0-9a-f]{7}|no-network' "$PREFERRED_CONFIG_DIR/get-shit-done/VERSION"; then
     INSTALLED_VERSION="$(cat "$PREFERRED_CONFIG_DIR/get-shit-done/VERSION")"
   else
     INSTALLED_VERSION="0.0.0"
@@ -226,7 +226,7 @@ fi
 
 # Only treat as LOCAL if the resolved paths differ (prevents misdetection when CWD=$HOME)
 IS_LOCAL=false
-if [ -n "$LOCAL_VERSION_FILE" ] && [ -f "$LOCAL_VERSION_FILE" ] && [ -f "$LOCAL_MARKER_FILE" ] && grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+' "$LOCAL_VERSION_FILE"; then
+if [ -n "$LOCAL_VERSION_FILE" ] && [ -f "$LOCAL_VERSION_FILE" ] && [ -f "$LOCAL_MARKER_FILE" ] && grep -Eq '^[0-9a-f]{7}|no-network' "$LOCAL_VERSION_FILE"; then
   if [ -z "$GLOBAL_DIR" ] || [ "$LOCAL_DIR" != "$GLOBAL_DIR" ]; then
     IS_LOCAL=true
   fi
@@ -237,7 +237,7 @@ if [ "$IS_LOCAL" = true ]; then
   INSTALL_SCOPE="LOCAL"
   TARGET_RUNTIME="$LOCAL_RUNTIME"
   RESOLVED_GSD_DIR="$LOCAL_DIR"
-elif [ -n "$GLOBAL_VERSION_FILE" ] && [ -f "$GLOBAL_VERSION_FILE" ] && [ -f "$GLOBAL_MARKER_FILE" ] && grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+' "$GLOBAL_VERSION_FILE"; then
+elif [ -n "$GLOBAL_VERSION_FILE" ] && [ -f "$GLOBAL_VERSION_FILE" ] && [ -f "$GLOBAL_MARKER_FILE" ] && grep -Eq '^[0-9a-f]{7}|no-network' "$GLOBAL_VERSION_FILE"; then
   INSTALLED_VERSION="$(cat "$GLOBAL_VERSION_FILE")"
   INSTALL_SCOPE="GLOBAL"
   TARGET_RUNTIME="$GLOBAL_RUNTIME"
@@ -290,11 +290,11 @@ Proceed to install step (treat as version 0.0.0 for comparison).
 </step>
 
 <step name="check_latest_version">
-Check npm for latest version via the deterministic script. **Do NOT run `npm view` or `npm search` directly** — the package name must come from the script, not from a free choice at execution time. (#2992: LLM-driven prescriptions of npm package names produced wrong-package queries; moving the package name into a script constant closes that gap.)
+Check the latest commit SHA via the deterministic script. **Do NOT run `npm view` or query GitHub directly** — the API endpoint is hardcoded in the script, not a free choice at execution time. (#2992: moving the endpoint into a script constant closes the gap where LLM-driven package-name prescriptions produced wrong-package queries.)
 
 The `GSD_DIR` value emitted by `get_installed_version` (line 4) resolves to the runtime-specific config dir (`~/.claude/`, `~/.gemini/`, `~/.codex/`, etc.), so the script invocation works for every runtime — not just Claude. If `GSD_DIR` is empty (scope `UNKNOWN`), skip this step and go directly to install.
 
-`LATEST_RESULT` is a JSON document with the documented shape `{ ok: bool, version: string, reason: string, detail?: string }`. Parse via `jq` ONLY when the script actually ran. When `GSD_DIR` is empty (scope `UNKNOWN`), skip the check entirely and seed the parsed fields with their no-op values so downstream logic does not mistake an unset `LATEST_RESULT` for a failed network check (#2993 CR feedback):
+`LATEST_RESULT` is a JSON document with the documented shape `{ ok: bool, sha: string, reason: string, detail?: string }`. Parse via `jq` ONLY when the script actually ran. When `GSD_DIR` is empty (scope `UNKNOWN`), skip the check entirely and seed the parsed fields with their no-op values so downstream logic does not mistake an unset `LATEST_RESULT` for a failed network check (#2993 CR feedback):
 
 ```bash
 if [ -z "$GSD_DIR" ]; then
@@ -302,7 +302,7 @@ if [ -z "$GSD_DIR" ]; then
   LATEST_RESULT=""
   LATEST_STATUS=0
   LATEST_OK=false
-  LATEST_VERSION=""
+  LATEST_SHA=""
   LATEST_REASON="no_install_detected"
 else
   LATEST_RESULT="$(node "$GSD_DIR/get-shit-done/bin/check-latest-version.cjs" --json 2>/dev/null)"
@@ -313,11 +313,11 @@ else
   # meaningful reason instead of a blank diagnostic.
   if [ -n "$LATEST_RESULT" ]; then
     LATEST_OK="$(printf '%s' "$LATEST_RESULT" | jq -r '.ok // false')"
-    LATEST_VERSION="$(printf '%s' "$LATEST_RESULT" | jq -r '.version // empty')"
+    LATEST_SHA="$(printf '%s' "$LATEST_RESULT" | jq -r '.sha // empty')"
     LATEST_REASON="$(printf '%s' "$LATEST_RESULT" | jq -r '.reason // empty')"
   else
     LATEST_OK=false
-    LATEST_VERSION=""
+    LATEST_SHA=""
     LATEST_REASON="script_not_found_or_node_unavailable"
   fi
 fi
@@ -328,96 +328,43 @@ fi
 ```text
 Couldn't check for updates (reason: {LATEST_REASON}, exit: {LATEST_STATUS}).
 
-To update manually: `npx -y --package=@opengsd/get-shit-done-redux@latest -- get-shit-done-redux --global`
+To update manually: `npx get-shit-done-cc`
 ```
 
 Exit.
 </step>
 
 <step name="compare_versions">
-Compare installed vs latest:
+Compare installed SHA vs latest SHA (binary equality — SHA comparison has no ordering):
 
-**If installed == latest:**
+**If `INSTALLED_VERSION` == `LATEST_SHA`:**
 ```
 ## GSD Update
 
-**Installed:** X.Y.Z
-**Latest:** X.Y.Z
+**Installed SHA:** {INSTALLED_VERSION}
+**Latest SHA:**    {LATEST_SHA}
 
 You're already on the latest version.
 ```
 
 Exit.
 
-**If installed > latest:**
-```
-## GSD Update
-
-**Installed:** X.Y.Z
-**Latest:** A.B.C
-
-You're ahead of the latest release — this looks like a dev install.
-
-If you see a "⚠ dev install — re-run installer to sync hooks" warning in
-your statusline, your hook files are older than your VERSION file. Fix it
-by re-running the local installer from your dev branch:
-
-    node bin/install.js --global --claude
-
-Running /gsd:update would install the npm release (A.B.C) and downgrade
-your dev version — do NOT use it to resolve this warning.
-```
-
-Exit.
+**Otherwise:** Proceed to show_changes_and_confirm.
 </step>
 
 <step name="show_changes_and_confirm">
-**If update available**, fetch and show what's new BEFORE updating:
+**If update available**, show what has changed and confirm before updating:
 
-1. Fetch changelog from GitHub raw URL and save to a temp file, e.g. `/tmp/gsd-changelog-$$.md`.
-2. Extract entries between installed and latest versions using the deterministic range helper (fix for #3496 — do NOT use ad-hoc grep/awk extraction which silently skips intermediate versions):
-
-```bash
-CHANGELOG_TMP="/tmp/gsd-changelog-$$.md"
-curl -fsSL "https://raw.githubusercontent.com/open-gsd/get-shit-done-redux/main/CHANGELOG.md" -o "$CHANGELOG_TMP" 2>/dev/null \
-  || wget -qO "$CHANGELOG_TMP" "https://raw.githubusercontent.com/open-gsd/get-shit-done-redux/main/CHANGELOG.md" 2>/dev/null
-
-EXTRACT_JSON=$(node "$GSD_DIR/get-shit-done/scripts/changeset/cli.cjs" extract \
-  --from "$INSTALLED_VERSION" \
-  --to "$LATEST_VERSION" \
-  --changelog "$CHANGELOG_TMP" \
-  --json 2>/dev/null)
-EXTRACT_EXIT=$?
-rm -f "$CHANGELOG_TMP"
-
-if [ "$EXTRACT_EXIT" -eq 2 ]; then
-  # Exit 2 = no releases in range (e.g. versions are equal or changelog is sparse)
-  CHANGELOG_PREVIEW="No changelog updates between v${INSTALLED_VERSION} and v${LATEST_VERSION}."
-elif [ "$EXTRACT_EXIT" -ne 0 ] || [ -z "$EXTRACT_JSON" ]; then
-  CHANGELOG_PREVIEW="(Could not extract changelog — update will still proceed)"
-else
-  # Re-run without --json to get the human-readable markdown for display
-  CHANGELOG_PREVIEW=$(node "$GSD_DIR/get-shit-done/scripts/changeset/cli.cjs" extract \
-    --from "$INSTALLED_VERSION" \
-    --to "$LATEST_VERSION" \
-    --changelog "$CHANGELOG_TMP" 2>/dev/null || echo "(changelog unavailable)")
-fi
-```
-
-3. Display preview and ask for confirmation, using `$CHANGELOG_PREVIEW` from the extract step above:
+Display the installed vs latest SHA and a link to the commit history:
 
 ```
 ## GSD Update Available
 
-**Installed:** {INSTALLED_VERSION}
-**Latest:** {LATEST_VERSION}
+**Installed SHA:** {INSTALLED_VERSION}
+**Latest SHA:**    {LATEST_SHA}
 
-### What's New
-────────────────────────────────────────────────────────────
-
-{CHANGELOG_PREVIEW}
-
-────────────────────────────────────────────────────────────
+View commits since your install:
+  https://github.com/thamwangjun/get-shit-done/commits/main
 
 ⚠️  **Note:** The installer performs a clean install of GSD folders:
 - `commands/gsd/` will be wiped and replaced
@@ -436,7 +383,6 @@ Your custom files in other locations are preserved:
 
 If you've modified any GSD files directly, they'll be automatically backed up to `gsd-local-patches/` and can be reapplied with `/gsd:update --reapply` after the update.
 ```
-
 
 **Text mode (`workflow.text_mode: true` in config or `--text` flag):** Set `TEXT_MODE=true` if `--text` is present in `$ARGUMENTS` OR `text_mode` from init JSON is `true`. When TEXT_MODE is active, replace every `AskUserQuestion` call with a plain-text numbered list and ask the user to type their choice number. This is required for non-Claude runtimes (OpenAI Codex, Gemini CLI, etc.) where `AskUserQuestion` is not available.
 Use AskUserQuestion:
