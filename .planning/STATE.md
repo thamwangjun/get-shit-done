@@ -2,9 +2,8 @@
 gsd_state_version: 1.0
 milestone: v2.1.0-a
 milestone_name: SHA Versioning Reimplementation
-status: archived
-last_updated: "2026-05-26T16:30:00.000Z"
-last_activity: 2026-05-26 — v2.1.0-a milestone archived
+status: archived (shipped 2026-05-26)
+last_updated: "2026-05-27T11:37:12.935Z"
 progress:
   total_phases: 2
   completed_phases: 2
@@ -73,6 +72,7 @@ Resolved: `tests/bug-2992-check-latest-version.test.cjs` rewritten for SHA-based
 | 260525-i50 | Update branch name thamw-main → main; remove CLAUDE.md from .gitignore | 2026-05-25 | b960ed06 | [260525-i50-update-branch-name-thamw-main-to-main](./quick/260525-i50-update-branch-name-thamw-main-to-main/) |
 | 260525-igz | Update CLAUDE.md architecture counts to reflect current project state (67 cmds, 90 workflows, 33 agents, 79 lib modules) | 2026-05-25 | e55d6831 | [260525-update-claude-md](./quick/260525-update-claude-md/) |
 | 260526-enb | Fix 8 v2.1.0-a tech debt items — stale update.md metadata and tracking inconsistencies | 2026-05-26 | a62f5357 | [20260526-v2-1-0-a-tech-debt-cleanup](./quick/20260526-v2-1-0-a-tech-debt-cleanup/) |
+| 260527-g3f | Fix installer banner to display 7-char SHA via gsdVersion instead of semver pkg.version | 2026-05-27 | 44ad13c1 | [260527-g3f-fix-install-banner-sha-instead-of-semver](./quick/260527-g3f-fix-install-banner-sha-instead-of-semver/) |
 
 ## Session Continuity
 
