@@ -3,8 +3,7 @@ gsd_state_version: 1.0
 milestone: v2.1.0-c
 milestone_name: Install-Time Content Materialization
 status: executing
-stopped_at: Phase 44 context gathered
-last_updated: "2026-05-28T10:18:11.604Z"
+last_updated: "2026-05-28T10:57:30.421Z"
 last_activity: 2026-05-28
 progress:
   total_phases: 4
@@ -79,6 +78,6 @@ Resolved: `tests/bug-2992-check-latest-version.test.cjs` rewritten for SHA-based
 
 ## Session Continuity
 
-Last session: 2026-05-28T09:38:22.482Z
-Stopped at: Phase 44 context gathered
+Last session: 2026-05-28T10:57:30.411Z
+Stopped at: Phase 45 context gathered
 Resume: `/gsd-plan-phase 44` to plan the Resolver Core phase
