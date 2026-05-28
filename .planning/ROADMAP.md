@@ -14,7 +14,8 @@
 - ✅ **v1.41.3 Upstream v1.41.2 Fork Compliance** — Phases 32–34 (shipped 2026-05-19)
 - ✅ **v1.41.5 Refactor Git Commit History** — Phases 35–41 (shipped 2026-05-24)
 - ✅ **v2.1.0-a SHA Versioning Reimplementation** — Phases 42–43 (shipped 2026-05-26)
-- 🚧 **v2.1.0-b Workflow Compliance Reinforcement** — Phases 44–48 (in progress)
+- ✗ **v2.1.0-b Workflow Compliance Reinforcement** — Phases 44–48 (abandoned 2026-05-28, 0/5 phases complete)
+- 🚧 **v2.1.0-c Install-Time Content Materialization** — Phases 44– (in progress)
 
 ## Phases
 

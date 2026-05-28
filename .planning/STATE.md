@@ -1,12 +1,12 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.1.0-b
-milestone_name: Workflow Compliance Reinforcement
-status: Not started
-last_updated: "2026-05-28T08:34:48.840Z"
-last_activity: 2026-05-28 — Roadmap created for v2.1.0-b
+milestone: v2.1.0-c
+milestone_name: Install-Time Content Materialization
+status: planning
+last_updated: "2026-05-28T08:58:06.945Z"
+last_activity: 2026-05-28
 progress:
-  total_phases: 5
+  total_phases: 0
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -24,10 +24,10 @@ See: .planning/PROJECT.md (updated 2026-05-26 after v2.1.0-a milestone)
 
 ## Current Position
 
-Phase: 44 — Investigation
+Phase: Not started (defining requirements)
 Plan: —
-Status: Not started
-Last activity: 2026-05-28 — Roadmap created for v2.1.0-b
+Status: Defining requirements
+Last activity: 2026-05-28 — Milestone v2.1.0-c started
 
 ## Performance Metrics
 

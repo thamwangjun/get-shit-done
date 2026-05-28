@@ -8,15 +8,16 @@ An opinionated fork of the GSD (Get Shit Done) framework that applies systematic
 
 Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships — upstream content additions are modified, not accepted verbatim.
 
-## Current Milestone: v2.1.0-b Workflow Compliance Reinforcement
+## Current Milestone: v2.1.0-c Install-Time Content Materialization
 
-**Goal:** Investigate why Claude consistently fails to comply with GSD workflow instructions and apply targeted prompt engineering fixes across all command and workflow files.
+**Goal:** Replace runtime `@` and `!cat` content injection with install-time template substitution so every installed file is fully self-contained — no reliance on Claude to inject referenced content at runtime.
 
 **Target features:**
-- Root cause investigation of subagent spawning and step-omission failure modes
-- Command layer hardening (67 files) — strengthen `<process>` and `<objective>` blocks
-- Workflow layer hardening (93 files) — orchestrator persona, reframe patterns, spawn mandates
-- Scanner gate — confirm zero negative-framing regressions after all changes
+- Research: audit current reference map + recommend template engine within zero-dependency constraint
+- Revert `!cat` changes from quick task 260525-o1n (commands/gsd/, 54 files)
+- Introduce unified template notation across commands, workflows, agents, and references
+- Extend `bin/install.js` to resolve and inline all template references at install time
+- Verification: installed files contain no `@` or `!cat` references — all content self-contained
 
 ## Requirements
 
@@ -84,7 +85,7 @@ Every agent, command, and workflow file on `main` meets the fork's prompt engine
 
 ### Active
 
-*(Defining for v2.1.0-b — requirements being scoped)*
+*(Defining for v2.1.0-c — requirements being scoped)*
 
 ### Out of Scope
 
@@ -167,4 +168,4 @@ This document evolves at phase transitions and milestone boundaries.
 ---
 ---
 ---
-*Last updated: 2026-05-26 after v2.1.0-a milestone*
+*Last updated: 2026-05-28 after v2.1.0-b abandoned, v2.1.0-c started*
