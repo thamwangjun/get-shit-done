@@ -92,6 +92,8 @@ describe('few-shot calibration examples', () => {
       const content = readFile(path.join(REFS_DIR, 'plan-checker.md'));
       const exampleCount = countPattern(content, /^### Example \d+/gm);
       const whyCount = countPattern(content, /^\*\*Why this is (good|bad):\*\*/gm);
+      assert.ok(exampleCount >= 1,
+        `plan-checker.md must contain at least one '### Example N' heading`);
       assert.strictEqual(whyCount, exampleCount,
         `expected ${exampleCount} WHY annotations, found ${whyCount}`);
     });
