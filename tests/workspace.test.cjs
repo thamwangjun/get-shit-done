@@ -232,7 +232,7 @@ describe('workspace worktree integration', () => {
     execSync('git config user.email "test@test.com"', { cwd: sourceRepo, stdio: 'pipe' });
     execSync('git config user.name "Test"', { cwd: sourceRepo, stdio: 'pipe' });
     fs.writeFileSync(path.join(sourceRepo, 'README.md'), '# Test Repo\n');
-    execSync('git add -A', { cwd: sourceRepo, stdio: 'pipe' });
+    execSync('git add README.md', { cwd: sourceRepo, stdio: 'pipe' });
     execSync('git commit -m "initial"', { cwd: sourceRepo, stdio: 'pipe' });
   });
 
