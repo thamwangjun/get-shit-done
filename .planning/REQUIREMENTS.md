@@ -10,13 +10,15 @@ Requirements for the Workflow Compliance Reinforcement milestone. Each maps to r
 ### Investigation
 
 - [ ] **INVEST-01**: Root cause analysis of compliance failures produces a structured findings document with evidence drawn from actual files across all three layers (commands, workflows, agents)
-- [ ] **INVEST-02**: Failure mode taxonomy categorizes findings into distinct types: (a) subagent spawning failures, (b) step omission, (c) premature inline fallback loopholes, (d) buried critical instructions lost to the "lost in the middle" effect
+- [ ] **INVEST-02**: Failure mode taxonomy categorizes findings into distinct types: (a) subagent spawning failures, (b) step omission, (c) premature inline fallback loopholes, (d) buried critical instructions lost to the "lost in the middle" effect, (e) `!cat` workflow injection truncation where Claude receives only a ~2KiB preview of large workflow files and ignores the "Full output saved to: …" read instruction
+- [ ] **INVEST-03**: Audit all 72 command files that use `!cat` to inject workflow content — document which commands are affected, confirm the truncation threshold, and record the exact truncation notice pattern so the Phase 45 fix can be verified
 
 ### Command Layer
 
 - [ ] **CMD-01**: All 67 command files contain an explicit orchestrator identity or spawn mandate at a high-attention position (start of `<objective>` or `<process>` block)
 - [ ] **CMD-02**: `<process>` blocks in commands that use subagents explicitly restate the spawn mandate rather than deferring entirely to the loaded workflow file
 - [ ] **CMD-03**: Command files that invoke subagent workflows do not grant inline execution as a default fallback without a user-supplied flag (e.g., `--interactive`)
+- [ ] **CMD-04**: All 72 command files that inline workflow content via `!cat` are converted so Claude receives the full workflow — either by replacing `!cat` with an explicit `Read` instruction or by an `@`-reference so the file is loaded in full rather than truncated at ~2KiB
 
 ### Workflow Layer
 
@@ -54,9 +56,11 @@ Requirements for the Workflow Compliance Reinforcement milestone. Each maps to r
 |-------------|-------|--------|
 | INVEST-01 | Phase 44 | Pending |
 | INVEST-02 | Phase 44 | Pending |
+| INVEST-03 | Phase 44 | Pending |
 | CMD-01 | Phase 45 | Pending |
 | CMD-02 | Phase 45 | Pending |
 | CMD-03 | Phase 45 | Pending |
+| CMD-04 | Phase 45 | Pending |
 | WF-01 | Phase 46 | Pending |
 | WF-02 | Phase 46 | Pending |
 | WF-03 | Phase 46 | Pending |
@@ -67,7 +71,7 @@ Requirements for the Workflow Compliance Reinforcement milestone. Each maps to r
 | GATE-02 | Phase 48 | Pending |
 
 **Coverage:**
-- v2.1.0-b requirements: 13 total
+- v2.1.0-b requirements: 15 total
 - Mapped to phases: 13
 - Unmapped: 0 ✓
 

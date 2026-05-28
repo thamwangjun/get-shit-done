@@ -14,6 +14,7 @@
 - ✅ **v1.41.3 Upstream v1.41.2 Fork Compliance** — Phases 32–34 (shipped 2026-05-19)
 - ✅ **v1.41.5 Refactor Git Commit History** — Phases 35–41 (shipped 2026-05-24)
 - ✅ **v2.1.0-a SHA Versioning Reimplementation** — Phases 42–43 (shipped 2026-05-26)
+- 🚧 **v2.1.0-b Workflow Compliance Reinforcement** — Phases 44–48 (in progress)
 
 ## Phases
 
@@ -179,6 +180,74 @@ Full details: `.planning/milestones/v2.1.0-a-ROADMAP.md`
 
 </details>
 
+### 🚧 v2.1.0-b Workflow Compliance Reinforcement (In Progress)
+
+**Milestone Goal:** Investigate why Claude consistently fails to comply with GSD workflow instructions and apply targeted prompt engineering fixes across all command and workflow files.
+
+- [ ] **Phase 44: Investigation** — Root cause analysis of compliance failures across all three layers
+- [ ] **Phase 45: Command Layer Fixes** — Harden spawn mandates and remove inline-fallback loopholes in 67 command files
+- [ ] **Phase 46: Workflow Layer Fixes** — Apply orchestrator reframe, high-attention placement, and required-step markers to 93 workflow files
+- [ ] **Phase 47: Agent Layer Fixes** — Audit 33 agent files for step-omission patterns and apply PEG V10 fixes
+- [ ] **Phase 48: Quality Gate** — npm test green, negative-framing scanner at 99/99
+
+## Phase Details
+
+### Phase 44: Investigation
+**Goal**: Produce a structured root cause analysis of compliance failures, with evidence from actual files, that classifies failure modes and gives the next phases a concrete target list
+**Depends on**: Nothing (first phase of milestone)
+**Requirements**: INVEST-01, INVEST-02
+**Success Criteria** (what must be TRUE):
+  1. A findings document exists with at least one concrete file:line example per identified failure mode drawn from commands, workflows, and agents
+  2. Failure modes are classified into the five taxonomy categories: subagent spawning failures, step omission, premature inline fallback loopholes, buried critical instructions, and `!cat` truncation (Claude receives only ~2KiB of a large workflow file and ignores the "Full output saved to:" read instruction)
+  3. All 72 command files using `!cat` workflow injection are enumerated with their workflow target and approximate workflow line count
+  4. The findings document is specific enough that Phase 45 and 46 implementers can look up which files need changes without additional investigation
+**Plans**: TBD
+
+### Phase 45: Command Layer Fixes
+**Goal**: All 67 command files carry an explicit spawn mandate at a high-attention position, none grant silent inline fallbacks, and all 72 `!cat` workflow injections are replaced so Claude receives the full workflow file rather than a ~2KiB truncated preview
+**Depends on**: Phase 44
+**Requirements**: CMD-01, CMD-02, CMD-03, CMD-04
+**Success Criteria** (what must be TRUE):
+  1. Every command file that delegates to a subagent workflow restates the spawn mandate explicitly at the start of its `<objective>` or `<process>` block — a reviewer scanning each file can see the mandate without reading the loaded workflow
+  2. No command file that invokes a subagent workflow offers inline execution as a silent default fallback — the only inline path requires an explicit user-supplied flag
+  3. All 72 `!cat` workflow injection lines are replaced with a mechanism that delivers the full file to Claude (explicit Read instruction or `@`-reference)
+  4. The negative-framing scanner still passes at 99/99 after all command file edits
+**Plans**: TBD
+**UI hint**: no
+
+### Phase 46: Workflow Layer Fixes
+**Goal**: All workflows that spawn subagents open with an orchestrator reframe, place critical spawn instructions at high-attention positions, guard inline-fallback blocks, and mark mandatory steps so the model cannot silently skip them
+**Depends on**: Phase 44
+**Requirements**: WF-01, WF-02, WF-03, WF-04
+**Success Criteria** (what must be TRUE):
+  1. Every subagent-spawning workflow opens with an orchestrator reframe statement per PEG V10 Section 6 — a reviewer can find it at the top of each workflow file without reading past the first screen
+  2. Critical spawn instructions appear at the start or end of each workflow file, not buried in middle sections
+  3. Every `<runtime_compatibility>` inline-fallback block is guarded by an explicit user-supplied flag check — inline execution is not the default path
+  4. Workflows with mandatory step sequences carry `required_steps universal="true"` markers (per PEG V10 Section 16) on every non-skippable step
+**Plans**: TBD
+**UI hint**: no
+
+### Phase 47: Agent Layer Fixes
+**Goal**: All 33 agent files have been audited for step-omission patterns and every agent with an identified compliance issue carries PEG V10 fixes: required step anchors, adversarial probe mandates, or explicit completion criteria
+**Depends on**: Phase 44
+**Requirements**: AGENT-01, AGENT-02
+**Success Criteria** (what must be TRUE):
+  1. An audit record exists confirming each of the 33 agent files was examined for step-omission patterns (executor short-circuiting, verifier probe-skipping, planner read-skipping)
+  2. Every agent file with an identified compliance issue has been updated — the update is observable as a new required-step anchor, adversarial probe mandate, or explicit completion criterion in the file
+  3. The negative-framing scanner still passes at 99/99 after all agent file edits
+**Plans**: TBD
+**UI hint**: no
+
+### Phase 48: Quality Gate
+**Goal**: All changes from Phases 45–47 pass the full test suite with zero new regressions and the negative-framing scanner holds at 99/99
+**Depends on**: Phase 45, Phase 46, Phase 47
+**Requirements**: GATE-01, GATE-02
+**Success Criteria** (what must be TRUE):
+  1. `npm test` completes with 0 failures beyond the pre-existing baseline established at v2.1.0-a (185 non-ai-evals failures)
+  2. The negative-framing scanner runs across all agents, commands, and workflows and reports 99/99 subtests passing with 0 violations and 0 warnings
+**Plans**: TBD
+**UI hint**: no
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -228,6 +297,11 @@ Full details: `.planning/milestones/v2.1.0-a-ROADMAP.md`
 | 41. Final Verification & Parity Audit | v1.41.5 | 1/1 | Complete | 2026-05-23 |
 | 42. SHA Hook and Install Reimplementation | v2.1.0-a | 1/1 | Complete | 2026-05-25 |
 | 43. Update Workflow SHA Migration + Full Gate | v2.1.0-a | 1/1 | Complete | 2026-05-26 |
+| 44. Investigation | v2.1.0-b | 0/TBD | Not started | - |
+| 45. Command Layer Fixes | v2.1.0-b | 0/TBD | Not started | - |
+| 46. Workflow Layer Fixes | v2.1.0-b | 0/TBD | Not started | - |
+| 47. Agent Layer Fixes | v2.1.0-b | 0/TBD | Not started | - |
+| 48. Quality Gate | v2.1.0-b | 0/TBD | Not started | - |
 
 *v1.41.3 shipped 2026-05-19 — see `.planning/milestones/v1.41.3-ROADMAP.md`*
 *v1.41.5 shipped 2026-05-24 — see `.planning/milestones/v1.41.5-ROADMAP.md`*
