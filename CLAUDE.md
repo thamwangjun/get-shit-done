@@ -21,6 +21,10 @@ node --test tests/phase.test.cjs
 
 Tests use Node.js built-in `--test` runner (no external test framework). Coverage is measured only against `get-shit-done/bin/lib/*.cjs`. Requires Node.js >=20.
 
+## Reading Files
+
+When a file is truncated in tool output, a reference path to the full file is provided (e.g. `@file:/path/to/file`). Always read the full file at that path before continuing — never act on truncated content.
+
 ## Architecture
 
 ```
