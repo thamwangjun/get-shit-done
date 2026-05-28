@@ -1,15 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.1.0-a
-milestone_name: SHA Versioning Reimplementation
-status: archived (shipped 2026-05-26)
-last_updated: "2026-05-27T11:37:12.935Z"
+milestone: v2.1.0-b
+milestone_name: Workflow Compliance Reinforcement
+status: planning
+last_updated: "2026-05-28T07:54:15.222Z"
+last_activity: 2026-05-28
 progress:
-  total_phases: 2
-  completed_phases: 2
-  total_plans: 2
-  completed_plans: 2
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -23,9 +24,10 @@ See: .planning/PROJECT.md (updated 2026-05-26 after v2.1.0-a milestone)
 
 ## Current Position
 
-Milestone: v2.1.0-a — SHA Versioning Reimplementation
-Status: archived (shipped 2026-05-26)
-Next: `/gsd-new-milestone` to start next milestone cycle
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-05-28 — Milestone v2.1.0-b started
 
 ## Performance Metrics
 

@@ -8,11 +8,15 @@ An opinionated fork of the GSD (Get Shit Done) framework that applies systematic
 
 Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships — upstream content additions are modified, not accepted verbatim.
 
-## Current State: v2.1.0-a Shipped 2026-05-26
+## Current Milestone: v2.1.0-b Workflow Compliance Reinforcement
 
-**Shipped:** SHA Versioning Reimplementation — all installation and update-check logic now uses 7-char SHA via GitHub Commits API. npmjs.com removed from update path entirely.
+**Goal:** Investigate why Claude consistently fails to comply with GSD workflow instructions and apply targeted prompt engineering fixes across all command and workflow files.
 
-**Next milestone:** Planning in progress — `/gsd-new-milestone` to define next cycle
+**Target features:**
+- Root cause investigation of subagent spawning and step-omission failure modes
+- Command layer hardening (67 files) — strengthen `<process>` and `<objective>` blocks
+- Workflow layer hardening (93 files) — orchestrator persona, reframe patterns, spawn mandates
+- Scanner gate — confirm zero negative-framing regressions after all changes
 
 ## Requirements
 
@@ -80,7 +84,7 @@ Every agent, command, and workflow file on `main` meets the fork's prompt engine
 
 ### Active
 
-*(No active requirements — planning next milestone)*
+*(Defining for v2.1.0-b — requirements being scoped)*
 
 ### Out of Scope
 
