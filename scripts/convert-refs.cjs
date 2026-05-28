@@ -141,6 +141,12 @@ function transformLine(line) {
     return `${indent}{%~ include('get-shit-done/${m[1]}') %}`;
   }
 
+  // D-07: Eta include tags for .planning/ paths should never exist (only D-06 generates Eta tags)
+  if (/^\{%~?\s+include\('\.planning\//.test(trimmed)) {
+    process.stderr.write(`WARN: unexpected Eta include for .planning/ path — review manually: ${trimmed}\n`);
+    return null;
+  }
+
   // D-07 idempotent: already !`cat .planning/X` — retain
   if (RE_CAT_PLANNING.test(trimmed)) return null;
 
