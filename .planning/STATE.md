@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v2.1.0-c
 milestone_name: Install-Time Content Materialization
 status: planning
-last_updated: "2026-05-28T09:23:44.698Z"
-last_activity: 2026-05-28 — Roadmap created for v2.1.0-c (4 phases)
+last_updated: "2026-05-28T09:38:22.491Z"
+last_activity: "2026-05-28 — v2.1.0-c roadmap created (4 phases: 44 Resolver Core, 45 Pipeline Integration, 46 Regression Test Suite, 47 Full Runtime Matrix)"
 progress:
   total_phases: 4
   completed_phases: 0
@@ -78,6 +78,6 @@ Resolved: `tests/bug-2992-check-latest-version.test.cjs` rewritten for SHA-based
 
 ## Session Continuity
 
-Last session: 2026-05-28
-Stopped at: v2.1.0-c roadmap defined (4 phases)
+Last session: 2026-05-28T09:38:22.482Z
+Stopped at: Phase 44 context gathered
 Resume: `/gsd-plan-phase 44` to plan the Resolver Core phase
