@@ -48,7 +48,7 @@ The result: every installed file is fully self-contained — no surviving `@~/.c
 
   | Layer | Files | Lines |
   |-------|-------|-------|
-  | `commands/gsd/` | 55 files | 115 `` !`cat` `` lines |
+  | `commands/gsd/` | 55 files | 115 `` !`cat $HOME/.claude/...` `` lines |
   | `agents/` | 7 files | 26 bare-line `@~` lines + any `@.planning/` lines |
   | `get-shit-done/workflows/` | 19 files | 38 bare-line `@~` lines |
   | `get-shit-done/references/` | 1 file | 1 bare-line `@~` line |
