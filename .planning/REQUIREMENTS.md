@@ -9,22 +9,24 @@ Requirements for the Install-Time Content Materialization milestone. Each maps t
 
 ### Resolver
 
-- [x] **RESV-01**: `resolveIncludes(content, sourceRoot, seen)` function exists in `bin/install.js` and inlines `@~/.claude/` bare-line references by reading and substituting the referenced file content at source repo paths
-- [x] **RESV-02**: `resolveIncludes` also inlines `` !`cat $HOME/.claude/...` `` and `` !`cat ~/.claude/...` `` bare-line references (the full backtick-wrapped shell injection form)
-- [x] **RESV-03**: Resolver detects and preserves the conditional `@~` expression in `execute-phase.md:619` (`` ${...? '' : '@~/.claude/...'} ``) — only bare-line `@~` references on their own line are expanded
-- [x] **RESV-04**: Resolver skips `@~` and `` !`...` `` patterns inside fenced code blocks and `${...}` template expressions
-- [x] **RESV-05**: Resolver detects circular include chains via a `seen` Set and aborts with a clear error naming the full include chain rather than recursing infinitely
-- [x] **RESV-06**: Resolver aborts with a clear error naming the source file and unresolvable path when a referenced file does not exist
-- [x] **RESV-07**: Resolver supports nested includes up to depth 3 (handles the confirmed two-hop chain `model-profile-resolution.md` → `model-profiles.md`); aborts with a descriptive error at depth 4+
+> **Superseded by Eta pivot (Phase 45).** Phase 44 implemented a custom `resolveIncludes()` resolver; Phase 45 replaces it with Eta v4. These requirements are satisfied and then superseded — the implementation they describe no longer exists in the codebase.
+
+- [~] **RESV-01**: `resolveIncludes(content, sourceRoot, seen)` function exists in `bin/install.js` and inlines `@~/.claude/` bare-line references by reading and substituting the referenced file content at source repo paths
+- [~] **RESV-02**: `resolveIncludes` also inlines `` !`cat $HOME/.claude/...` `` and `` !`cat ~/.claude/...` `` bare-line references (the full backtick-wrapped shell injection form)
+- [~] **RESV-03**: Resolver detects and preserves the conditional `@~` expression in `execute-phase.md:619` (`` ${...? '' : '@~/.claude/...'} ``) — only bare-line `@~` references on their own line are expanded
+- [~] **RESV-04**: Resolver skips `@~` and `` !`...` `` patterns inside fenced code blocks and `${...}` template expressions
+- [~] **RESV-05**: Resolver detects circular include chains via a `seen` Set and aborts with a clear error naming the full include chain rather than recursing infinitely
+- [~] **RESV-06**: Resolver aborts with a clear error naming the source file and unresolvable path when a referenced file does not exist
+- [~] **RESV-07**: Resolver supports nested includes up to depth 3 (handles the confirmed two-hop chain `model-profile-resolution.md` → `model-profiles.md`); aborts with a descriptive error at depth 4+
 
 ### Integration
 
-- [ ] **INTG-01**: Quick task 260525-o1n is reverted — all 117 `` !`cat` `` references introduced in `commands/gsd/` (55 files) are removed and restored to `@~` form
-- [ ] **INTG-02**: Three mixed-notation command files (`extract-learnings.md`, `mvp-phase.md`, `ship.md`) are cleaned — duplicate `@` + `` !`cat` `` references for the same target are reduced to a single `@~` reference
-- [ ] **INTG-03**: `resolveIncludes()` is wired into `copyWithPathReplacement()` (~line 6432 in `bin/install.js`) as the first transform step — before path substitution and all runtime converters
-- [ ] **INTG-04**: `resolveIncludes()` is wired into the agent install loop (~line 8646 in `bin/install.js`) as the first transform step
-- [ ] **INTG-05**: Dynamic `.planning/` runtime references in `add-tests.md` (STATE.md, ROADMAP.md) are excluded from resolution
-- [ ] **INTG-06**: The `applyRuntimeContentRewritesInPlace` skills path is audited — if skills are staged after command resolution, they inherit inlined content automatically; if staged before, a third resolver call is added
+- [ ] **INTG-01**: `eta` v4 added to `dependencies` in `package.json`; a module-level Eta instance configured with `{%`/`%}` delimiters, `autoEscape: false`, `useWith: true`, and `views` = repo root exists in `bin/install.js`
+- [ ] **INTG-02**: All install-time GSD static refs across `commands/gsd/` (55 files), `agents/` (7 files), `get-shit-done/workflows/` (19 files), and `get-shit-done/references/` (1 file) converted to `{%~ include('get-shit-done/X') %}` Eta tags — a post-conversion grep for bare-line `@~/.claude/get-shit-done/` and `` !`cat $HOME/.claude/get-shit-done/` `` returns 0 results
+- [ ] **INTG-03**: Runtime `.planning/` bare-line refs in the agents layer (notably `agents/gsd-planner.md` lines 465-467) converted to `` !`cat .planning/X` `` form — cross-runtime compatible; `grep -n '@\.planning/' agents/gsd-planner.md` returns 0 results
+- [ ] **INTG-04**: Eta renderer wired into `copyWithPathReplacement()` as the first transform step — `content = eta.renderString(content, {})` called immediately after `fs.readFileSync(srcPath, 'utf8')` at line ~6572, before path-substitution regexes
+- [ ] **INTG-05**: Eta renderer wired into the agent install loop as the first transform step — `content = eta.renderString(content, {})` called immediately after `fs.readFileSync(path.join(agentsSrc, entry.name), 'utf8')` at line ~8786, before path-substitution regexes
+- [ ] **INTG-06**: Skills path (`applyRuntimeContentRewritesInPlace`) confirmed as not requiring a renderer call — `SKILL.md` files contain 0 install-time include refs; no Eta rendering needed on that code path
 
 ### Tests
 
@@ -50,7 +52,7 @@ Requirements for the Install-Time Content Materialization milestone. Each maps t
 | Feature | Reason |
 |---------|--------|
 | Variable substitution (`{{ var }}`) or conditional blocks in source files | Not needed for current scope — only file includes are being replaced |
-| External template engine (Nunjucks, LiquidJS, Eta) | Custom `resolveIncludes()` function covers the bounded use case; Eta noted as future option if variable/conditional needs arise |
+| External template engine (Nunjucks, LiquidJS) | Eta v4 is now the implemented solution (see INTG-01); Nunjucks and LiquidJS remain out of scope |
 | Inlining dynamic `.planning/` runtime references | These are project-specific files that vary per session — must stay as runtime references |
 | Auditing 8 unreferenced files in `references/` | Determine orphaned vs prose-loaded after main inlining ships |
 | Applying changes to `get-shit-done/templates/` | Out of scan scope per established fork policy |
