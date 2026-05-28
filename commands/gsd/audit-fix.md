@@ -26,7 +26,7 @@ Flags:
 </objective>
 
 <execution_context>
-!`cat $HOME/.claude/get-shit-done/workflows/audit-fix.md`
+{%~ include('get-shit-done/workflows/audit-fix.md') %}
 </execution_context>
 
 <process>

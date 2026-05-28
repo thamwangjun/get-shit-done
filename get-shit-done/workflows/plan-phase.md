@@ -5,11 +5,11 @@ Create executable phase prompts (PLAN.md files) for a roadmap phase with integra
 <required_reading>
 Read all files referenced by the invoking prompt's execution_context before starting.
 
-@~/.claude/get-shit-done/references/ui-brand.md
-@~/.claude/get-shit-done/references/revision-loop.md
-@~/.claude/get-shit-done/references/gate-prompts.md
-@~/.claude/get-shit-done/references/agent-contracts.md
-@~/.claude/get-shit-done/references/gates.md
+{%~ include('get-shit-done/references/ui-brand.md') %}
+{%~ include('get-shit-done/references/revision-loop.md') %}
+{%~ include('get-shit-done/references/gate-prompts.md') %}
+{%~ include('get-shit-done/references/agent-contracts.md') %}
+{%~ include('get-shit-done/references/gates.md') %}
 </required_reading>
 
 <available_agent_types>

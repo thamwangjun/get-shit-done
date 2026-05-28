@@ -25,9 +25,9 @@ via filesystem and git state.
 
 <required_reading>
 Read STATE.md before any operation to load project context.
-@~/.claude/get-shit-done/references/agent-contracts.md
-@~/.claude/get-shit-done/references/context-budget.md
-@~/.claude/get-shit-done/references/gates.md
+{%~ include('get-shit-done/references/agent-contracts.md') %}
+{%~ include('get-shit-done/references/context-budget.md') %}
+{%~ include('get-shit-done/references/gates.md') %}
 </required_reading>
 
 <available_agent_types>
@@ -611,11 +611,11 @@ increases monotonically across waves. `{status}` is `complete` (success),
        </parallel_execution>
 
        <execution_context>
-       @~/.claude/get-shit-done/workflows/execute-plan.md
-       @~/.claude/get-shit-done/templates/summary.md
-       @~/.claude/get-shit-done/references/checkpoints.md
-       @~/.claude/get-shit-done/references/tdd.md
-       @~/.claude/get-shit-done/references/worktree-path-safety.md
+       {%~ include('get-shit-done/workflows/execute-plan.md') %}
+       {%~ include('get-shit-done/templates/summary.md') %}
+       {%~ include('get-shit-done/references/checkpoints.md') %}
+       {%~ include('get-shit-done/references/tdd.md') %}
+       {%~ include('get-shit-done/references/worktree-path-safety.md') %}
        ${CONTEXT_WINDOW < 200000 ? '' : '@~/.claude/get-shit-done/references/executor-examples.md'}
        </execution_context>
 

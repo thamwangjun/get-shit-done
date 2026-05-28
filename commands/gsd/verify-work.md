@@ -21,8 +21,8 @@ Output: {phase_num}-UAT.md tracking all test results. If issues found: diagnosed
 </objective>
 
 <execution_context>
-!`cat $HOME/.claude/get-shit-done/workflows/verify-work.md`
-!`cat $HOME/.claude/get-shit-done/templates/UAT.md`
+{%~ include('get-shit-done/workflows/verify-work.md') %}
+{%~ include('get-shit-done/templates/UAT.md') %}
 </execution_context>
 
 <context>

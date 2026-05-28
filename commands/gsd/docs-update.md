@@ -26,7 +26,7 @@ Flag handling rule:
 </objective>
 
 <execution_context>
-!`cat $HOME/.claude/get-shit-done/workflows/docs-update.md`
+{%~ include('get-shit-done/workflows/docs-update.md') %}
 </execution_context>
 
 <context>

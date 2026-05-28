@@ -21,7 +21,7 @@ No Pass/Fail buttons. No severity questions. Just: "Here's what should happen. D
 </philosophy>
 
 <template>
-@~/.claude/get-shit-done/templates/UAT.md
+{%~ include('get-shit-done/templates/UAT.md') %}
 </template>
 
 <process>

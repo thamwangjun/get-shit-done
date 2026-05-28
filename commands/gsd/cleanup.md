@@ -15,7 +15,7 @@ Use when `.planning/phases/` has accumulated directories from past milestones.
 </objective>
 
 <execution_context>
-!`cat $HOME/.claude/get-shit-done/workflows/cleanup.md`
+{%~ include('get-shit-done/workflows/cleanup.md') %}
 </execution_context>
 
 <process>

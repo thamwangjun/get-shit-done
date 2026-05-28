@@ -333,11 +333,17 @@ describe('reapply-patches workflow contract (#1469)', () => {
       ...content.matchAll(/<execution_context(?:_extended)?>([\s\S]*?)<\/execution_context(?:_extended)?>/g),
     ].map((m) => m[1]);
     assert.ok(blocks.length > 0, 'update.md must define at least one <execution_context> block');
-    const includes = blocks
-      .flatMap((blk) => blk.split('\n'))
-      .map((l) => l.trim())
-      .filter((l) => l.startsWith('@'))
-      .map((l) => l.replace(/^@/, ''));
+    const rawLines = blocks.flatMap((blk) => blk.split('\n')).map((l) => l.trim());
+    const includes = [];
+    for (const l of rawLines) {
+      if (l.startsWith('@')) {
+        includes.push(l.replace(/^@/, ''));
+      } else if (/^\{%~?\s+include\('get-shit-done\//.test(l)) {
+        // Eta include tag: {%~ include('get-shit-done/X') %}
+        const m = /include\('get-shit-done\/([^']+)'\)/.exec(l);
+        if (m) includes.push(m[1]);
+      }
+    }
     const declaresReapply = includes.some((p) => /(^|\/)workflows\/reapply-patches\.md$/.test(p));
     assert.ok(
       declaresReapply,

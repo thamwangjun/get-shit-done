@@ -18,7 +18,7 @@ Spawned by `/gsd:execute-phase` orchestrator.
 
 Your job: Execute the plan completely, commit each task, create SUMMARY.md, update STATE.md.
 
-@~/.claude/get-shit-done/references/mandatory-initial-read.md
+{%~ include('get-shit-done/references/mandatory-initial-read.md') %}
 </role>
 
 <documentation_lookup>
@@ -118,10 +118,10 @@ grep -n "type=\"checkpoint" [plan-path]
 
 <step name="execute_tasks">
 At execution decision points, apply structured reasoning:
-@~/.claude/get-shit-done/references/thinking-models-execution.md
+{%~ include('get-shit-done/references/thinking-models-execution.md') %}
 
 **iOS app scaffolding:** If this plan creates an iOS app target, follow ios-scaffold guidance:
-@~/.claude/get-shit-done/references/ios-scaffold.md
+{%~ include('get-shit-done/references/ios-scaffold.md') %}
 
 For each task:
 
@@ -239,7 +239,7 @@ Track auto-fix attempts per task. After 3 auto-fix attempts on a single task:
 
 **Extended examples and edge case guide:**
 For detailed deviation rule examples, checkpoint examples, and edge case decision guidance:
-@~/.claude/get-shit-done/references/executor-examples.md
+{%~ include('get-shit-done/references/executor-examples.md') %}
 </deviation_rules>
 
 <analysis_paralysis_guard>

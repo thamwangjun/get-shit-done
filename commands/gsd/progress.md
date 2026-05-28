@@ -30,10 +30,10 @@ Three modes:
 </flags>
 
 <execution_context>
-!`cat $HOME/.claude/get-shit-done/workflows/progress.md`
-!`cat $HOME/.claude/get-shit-done/workflows/next.md`
-!`cat $HOME/.claude/get-shit-done/workflows/do.md`
-!`cat $HOME/.claude/get-shit-done/references/ui-brand.md`
+{%~ include('get-shit-done/workflows/progress.md') %}
+{%~ include('get-shit-done/workflows/next.md') %}
+{%~ include('get-shit-done/workflows/do.md') %}
+{%~ include('get-shit-done/references/ui-brand.md') %}
 </execution_context>
 
 <process>

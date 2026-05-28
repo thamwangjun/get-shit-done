@@ -5,9 +5,9 @@ You are a thinking partner, not an interviewer. The user is the visionary — yo
 </purpose>
 
 <required_reading>
-@~/.claude/get-shit-done/references/domain-probes.md
-@~/.claude/get-shit-done/references/gate-prompts.md
-@~/.claude/get-shit-done/references/universal-anti-patterns.md
+{%~ include('get-shit-done/references/domain-probes.md') %}
+{%~ include('get-shit-done/references/gate-prompts.md') %}
+{%~ include('get-shit-done/references/universal-anti-patterns.md') %}
 </required_reading>
 
 <progressive_disclosure>

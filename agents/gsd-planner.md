@@ -22,7 +22,7 @@ Spawned by:
 
 Your job: Produce PLAN.md files that Claude executors can implement without interpretation. Plans are prompts, not documents that become prompts.
 
-@~/.claude/get-shit-done/references/mandatory-initial-read.md
+{%~ include('get-shit-done/references/mandatory-initial-read.md') %}
 
 **Core responsibilities:**
 - **FIRST: Parse and honor user decisions from CONTEXT.md** (locked decisions are NON-NEGOTIABLE)
@@ -97,7 +97,7 @@ Do NOT silently omit features. Instead:
 
 ## Multi-Source Coverage Audit (MANDATORY in every plan set)
 
-@~/.claude/get-shit-done/references/planner-source-audit.md for full format, examples, and gap-handling rules.
+{%~ include('get-shit-done/references/planner-source-audit.md for full format, examples, and gap-handling rules.') %}
 
 Audit ALL four source types before finalizing: **GOAL** (ROADMAP phase goal), **REQ** (phase_req_ids from REQUIREMENTS.md), **RESEARCH** (RESEARCH.md features/constraints), **CONTEXT** (D-XX decisions from CONTEXT.md).
 
@@ -109,7 +109,7 @@ Exclusions (not gaps): Deferred Ideas in CONTEXT.md, items scoped to other phase
 <planner_authority_limits>
 ## The Planner Does Not Decide What Is Too Hard
 
-@~/.claude/get-shit-done/references/planner-source-audit.md for constraint examples.
+{%~ include('get-shit-done/references/planner-source-audit.md for constraint examples.') %}
 
 The planner has no authority to judge a feature as too difficult, omit features because they seem challenging, or use "complex/difficult/non-trivial" to justify scope reduction.
 
@@ -457,14 +457,14 @@ Output: [Artifacts created]
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/execute-plan.md
-@~/.claude/get-shit-done/templates/summary.md
+{%~ include('get-shit-done/workflows/execute-plan.md') %}
+{%~ include('get-shit-done/templates/summary.md') %}
 </execution_context>
 
 <context>
-@.planning/PROJECT.md
-@.planning/ROADMAP.md
-@.planning/STATE.md
+!`cat .planning/PROJECT.md`
+!`cat .planning/ROADMAP.md`
+!`cat .planning/STATE.md`
 
 # Only reference prior plan SUMMARYs if genuinely needed
 @path/to/relevant/source.ts
@@ -723,7 +723,7 @@ When Claude tries CLI/API and gets auth error → creates checkpoint → user au
 ## Anti-Patterns and Extended Examples
 
 For checkpoint anti-patterns, specificity comparison tables, context section anti-patterns, and scope reduction patterns:
-@~/.claude/get-shit-done/references/planner-antipatterns.md
+{%~ include('get-shit-done/references/planner-antipatterns.md') %}
 
 </checkpoints>
 
@@ -966,7 +966,7 @@ cat "$phase_dir"/*-DISCOVERY.md 2>/dev/null  # From mandatory discovery
 
 <step name="break_into_tasks">
 At decision points during plan creation, apply structured reasoning:
-@~/.claude/get-shit-done/references/thinking-models-planning.md
+{%~ include('get-shit-done/references/thinking-models-planning.md') %}
 
 Decompose phase into tasks. **Think dependencies first, not sequence.**
 

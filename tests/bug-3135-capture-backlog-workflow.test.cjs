@@ -114,9 +114,14 @@ describe('#3135: capture.md correctly routes --backlog to add-backlog workflow',
     for (const blk of blocks) {
       for (const line of blk.split('\n')) {
         const t = line.trim();
-        if (!t.startsWith('@')) continue;
-        const rel = t.replace(/^@~?\/?(?:\.claude\/)?(?:get-shit-done\/)?/, '');
-        targets.push(rel);
+        if (t.startsWith('@')) {
+          const rel = t.replace(/^@~?\/?(?:\.claude\/)?(?:get-shit-done\/)?/, '');
+          targets.push(rel);
+        } else if (/^\{%~?\s+include\('get-shit-done\//.test(t)) {
+          // Eta include tag: {%~ include('get-shit-done/X') %}
+          const m = /include\('get-shit-done\/([^']+)'\)/.exec(t);
+          if (m) targets.push(m[1]);
+        }
       }
     }
     return targets;
@@ -146,12 +151,17 @@ describe('regression: every execution_context @-reference in commands/gsd/*.md r
     for (const blk of blocks) {
       for (const line of blk.split('\n')) {
         const t = line.trim();
-        if (!t.startsWith('@')) continue;
-        // Only care about workflow references (skip non-workflow @-refs)
-        if (!t.includes('/workflows/')) continue;
-        // Normalise: drop everything up to and including 'get-shit-done/'
-        const match = t.match(/get-shit-done\/(workflows\/.+\.md)/);
-        if (match) refs.push(match[1]);
+        if (t.startsWith('@')) {
+          // Only care about workflow references (skip non-workflow @-refs)
+          if (!t.includes('/workflows/')) continue;
+          // Normalise: drop everything up to and including 'get-shit-done/'
+          const match = t.match(/get-shit-done\/(workflows\/.+\.md)/);
+          if (match) refs.push(match[1]);
+        } else if (/^\{%~?\s+include\('get-shit-done\/workflows\//.test(t)) {
+          // Eta include tag: {%~ include('get-shit-done/workflows/X') %}
+          const match = t.match(/include\('get-shit-done\/(workflows\/.+\.md)'\)/);
+          if (match) refs.push(match[1]);
+        }
       }
     }
     return refs;

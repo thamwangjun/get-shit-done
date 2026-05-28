@@ -16,7 +16,7 @@ Output ONLY the reference content of the chosen tier. Do NOT add:
 </objective>
 
 <execution_context>
-!`cat $HOME/.claude/get-shit-done/workflows/help.md`
+{%~ include('get-shit-done/workflows/help.md') %}
 </execution_context>
 
 <context>

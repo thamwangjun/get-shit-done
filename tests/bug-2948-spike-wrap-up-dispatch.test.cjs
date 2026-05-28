@@ -75,15 +75,23 @@ function extractSection(body, tag) {
 }
 
 /**
- * Parse the @-prefixed workflow references out of an execution_context section.
- * Returns an array of resolved reference strings (@ stripped).
+ * Parse workflow references out of an execution_context section.
+ * Handles @-prefixed refs, !`cat`-prefixed refs, and Eta include tags.
+ * Returns an array of resolved reference strings (prefix stripped).
  */
 function parseExecutionContextRefs(section) {
-  return section
-    .split(/\r?\n/)
-    .map(l => l.trim())
-    .filter(l => l.startsWith('@'))
-    .map(l => l.slice(1).trim());
+  const refs = [];
+  for (const line of section.split(/\r?\n/)) {
+    const t = line.trim();
+    if (t.startsWith('@')) {
+      refs.push(t.slice(1).trim());
+    } else if (/^\{%~?\s+include\('get-shit-done\//.test(t)) {
+      // Eta include tag: {%~ include('get-shit-done/X') %}
+      const m = /include\('get-shit-done\/([^']+)'\)/.exec(t);
+      if (m) refs.push(m[1]);
+    }
+  }
+  return refs;
 }
 
 describe('bug-2948: /gsd:spike --wrap-up dispatch wiring', () => {
