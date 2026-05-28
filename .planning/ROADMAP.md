@@ -199,8 +199,8 @@ Full details: `.planning/milestones/v2.1.0-a-ROADMAP.md`
 
 **Milestone Goal:** Replace runtime `@` and `` !`<bash>` `` content injection with install-time template substitution so every installed file is fully self-contained — no reliance on Claude to inject referenced content at runtime.
 
-- [x] **Phase 44: Resolver Core** — Build and unit-test `resolveIncludes()` in isolation before wiring into the install pipeline (completed 2026-05-28)
-- [ ] **Phase 45: Pipeline Integration** — Revert 260525-o1n, clean 3 mixed-notation files, wire `resolveIncludes()` into both `install.js` insertion points, audit skills path
+- [x] **Phase 44: Resolver Core** — Build and unit-test `resolveIncludes()` in isolation before wiring into the install pipeline; pivoted in Phase 45 to Eta v4 (completed 2026-05-28)
+- [ ] **Phase 45: Pipeline Integration** — Wire Eta v4 into install.js; convert ~180 static ref lines to {%~ include() %} tags across 82 files; remove resolveIncludes()
 - [ ] **Phase 46: Regression Test Suite** — 6 targeted tests running against installed output (not source files)
 - [ ] **Phase 47: Full Runtime Matrix + Verification** — Validate all supported runtimes produce zero unresolved references; `npm test` green
 
@@ -218,19 +218,21 @@ Full details: `.planning/milestones/v2.1.0-a-ROADMAP.md`
   3. A unit test for circular include detection throws with the full include chain in the error message rather than recursing infinitely
   4. A unit test for a missing referenced file throws with an error naming both the source file and the unresolvable path
 
+> **Pivot note (Phase 45):** Phase 44's `resolveIncludes()` function was built and unit-tested as planned, then removed in Phase 45 when the approach pivoted to Eta v4 as the install-time template engine.
+
 **Plans**: TBD
 
 ### Phase 45: Pipeline Integration
 
-**Goal**: All 117 `` !`cat` `` references introduced in 260525-o1n are reverted to `@~` form, 3 mixed-notation command files are cleaned, and `resolveIncludes()` is wired at both `install.js` insertion points so a Claude runtime install produces zero surviving unresolved `@~/.claude/get-shit-done/references/` patterns
+**Goal**: Eta v4 is wired as the install-time template engine in both `install.js` copy loops; all ~180 install-time static reference lines across 82 source files are converted to `{%~ include() %}` tags; Phase 44's `resolveIncludes()` is removed; every installed file is fully self-contained with zero surviving `@~/.claude/get-shit-done/` patterns
 **Depends on**: Phase 44
 **Requirements**: INTG-01, INTG-02, INTG-03, INTG-04, INTG-05, INTG-06
 **Success Criteria** (what must be TRUE):
 
-  1. All 55 command files in `commands/gsd/` that had `` !`cat` `` references introduced by 260525-o1n are restored to `@~` notation — a grep for `` !`cat ~/.claude/get-shit-done/workflows/` `` across `commands/gsd/` returns 0 results
-  2. `extract-learnings.md`, `mvp-phase.md`, and `ship.md` each contain exactly one reference per workflow target — no duplicate `@` + `` !`cat` `` pairs for the same file
-  3. A Claude runtime install of the full repo produces zero surviving `@~/.claude/get-shit-done/references/` patterns in any installed file
-  4. Dynamic `.planning/` runtime references in `add-tests.md` (STATE.md, ROADMAP.md) remain as runtime references in installed output — they are not inlined
+  1. `eta` is in `package.json` `dependencies`; `content = eta.renderString(content, {})` is wired as the first transform in both `copyWithPathReplacement()` and the agent install loop
+  2. All 82 source files across `commands/gsd/`, `agents/`, `get-shit-done/workflows/`, `get-shit-done/references/` have bare-line static refs converted to `{%~ include('get-shit-done/X') %}` tags — post-conversion grep returns 0 survivors
+  3. Runtime `.planning/` bare-line refs in the agents layer converted to `` !`cat .planning/X` `` form
+  4. `resolveIncludes()` removed from `bin/install.js` and `tests/resolve-includes.test.cjs` deleted; `npm test` passes with no new failures
 
 **Plans**: TBD
 
@@ -315,8 +317,8 @@ Full details: `.planning/milestones/v2.1.0-a-ROADMAP.md`
 | 46. Workflow Layer Fixes | v2.1.0-b | 0/0 | Abandoned | - |
 | 47. Agent Layer Fixes | v2.1.0-b | 0/0 | Abandoned | - |
 | 48. Quality Gate | v2.1.0-b | 0/0 | Abandoned | - |
-| 44. Resolver Core | v2.1.0-c | 0/TBD | Not started | - |
-| 45. Pipeline Integration | v2.1.0-c | 0/TBD | Not started | - |
+| 44. Resolver Core | v2.1.0-c | 1/1 | Complete | 2026-05-28 |
+| 45. Pipeline Integration | v2.1.0-c | 3/4 | In Progress | - |
 | 46. Regression Test Suite | v2.1.0-c | 0/TBD | Not started | - |
 | 47. Full Runtime Matrix + Verification | v2.1.0-c | 0/TBD | Not started | - |
 
