@@ -451,7 +451,18 @@ not from a `pwd` captured in the orchestrator context.
 **0. Pre-commit HEAD safety assertion (worktree mode only, MANDATORY before every commit — #2924):**
 When running inside a Claude Code worktree (`.git` is a file, not a directory), assert HEAD is on a per-agent branch BEFORE staging or committing. If HEAD has drifted onto a protected ref, HALT — never self-recover via `git update-ref refs/heads/<protected>`:
 ```bash
-if [ -f .git ]; then  # worktree
+if [ -f .git ]; then
+  # Distinguish worktree (gitdir: .git/worktrees/...) from submodule (gitdir: ../.git/modules/...)
+  GIT_CONTENT=$(cat .git 2>/dev/null)
+  if echo "$GIT_CONTENT" | command grep -q "^gitdir:.*\.git/worktrees/"; then
+    # This is a worktree — apply worktree guards below
+    :
+  else
+    # This is a submodule or other non-worktree .git file — skip worktree guards
+    GIT_CONTENT=
+  fi
+fi
+if [ -f .git ] && echo "${GIT_CONTENT:-}" | command grep -q "^gitdir:.*\.git/worktrees/"; then  # worktree (not submodule)
   HEAD_REF=$(git symbolic-ref --quiet HEAD || echo "DETACHED")
   ACTUAL_BRANCH=$(git rev-parse --abbrev-ref HEAD)
   # Deny-list: never commit on a protected ref.
