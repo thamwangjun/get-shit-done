@@ -187,7 +187,7 @@ Full details: `.planning/milestones/v2.1.0-a-ROADMAP.md`
 **Goal:** *(Abandoned before any phase started — milestone scope invalidated by v2.1.0-c decision to address install-time content materialization first)*
 **Abandoned after:** 0/5 phases complete
 
-- [ ] Phase 44: Investigation — not started
+- [x] Phase 44: Investigation — not started (completed 2026-05-28)
 - [ ] Phase 45: Command Layer Fixes — not started
 - [ ] Phase 46: Workflow Layer Fixes — not started
 - [ ] Phase 47: Agent Layer Fixes — not started
@@ -207,46 +207,58 @@ Full details: `.planning/milestones/v2.1.0-a-ROADMAP.md`
 ## Phase Details
 
 ### Phase 44: Resolver Core
+
 **Goal**: `resolveIncludes()` exists in `bin/install.js` as a correct, fully-tested pure function that handles all edge cases before any integration work begins — the hardest constraint (conditional guard) is validated first
 **Depends on**: Nothing (first phase of milestone)
 **Requirements**: RESV-01, RESV-02, RESV-03, RESV-04, RESV-05, RESV-06, RESV-07
 **Success Criteria** (what must be TRUE):
+
   1. `resolveIncludes(content, sourceRoot, seen)` is defined in `bin/install.js` and correctly inlines bare-line `@~/.claude/` and `` !`cat ~/.claude/` `` references by reading referenced files at source repo paths
   2. The conditional `@~` expression in `execute-phase.md:619` (inside a `${}` JS template literal) passes through the resolver verbatim — a unit test asserting `${CONTEXT_WINDOW < 200000 ?` survives in output passes
   3. A unit test for circular include detection throws with the full include chain in the error message rather than recursing infinitely
   4. A unit test for a missing referenced file throws with an error naming both the source file and the unresolvable path
+
 **Plans**: TBD
 
 ### Phase 45: Pipeline Integration
+
 **Goal**: All 117 `` !`cat` `` references introduced in 260525-o1n are reverted to `@~` form, 3 mixed-notation command files are cleaned, and `resolveIncludes()` is wired at both `install.js` insertion points so a Claude runtime install produces zero surviving unresolved `@~/.claude/get-shit-done/references/` patterns
 **Depends on**: Phase 44
 **Requirements**: INTG-01, INTG-02, INTG-03, INTG-04, INTG-05, INTG-06
 **Success Criteria** (what must be TRUE):
+
   1. All 55 command files in `commands/gsd/` that had `` !`cat` `` references introduced by 260525-o1n are restored to `@~` notation — a grep for `` !`cat ~/.claude/get-shit-done/workflows/` `` across `commands/gsd/` returns 0 results
   2. `extract-learnings.md`, `mvp-phase.md`, and `ship.md` each contain exactly one reference per workflow target — no duplicate `@` + `` !`cat` `` pairs for the same file
   3. A Claude runtime install of the full repo produces zero surviving `@~/.claude/get-shit-done/references/` patterns in any installed file
   4. Dynamic `.planning/` runtime references in `add-tests.md` (STATE.md, ROADMAP.md) remain as runtime references in installed output — they are not inlined
+
 **Plans**: TBD
 
 ### Phase 46: Regression Test Suite
+
 **Goal**: Six regression tests running against installed output (not source files) cover every critical failure mode identified in research — the safety net exists before the runtime matrix sweep
 **Depends on**: Phase 45
 **Requirements**: TEST-01, TEST-02, TEST-03, TEST-04, TEST-05, TEST-06
 **Success Criteria** (what must be TRUE):
+
   1. A test file exists in `tests/` that installs to a temp directory and asserts zero unresolved `@~/.claude/` references survive in any installed file
   2. A test asserts the conditional `@~` expression in `execute-phase.md` is preserved verbatim in the Claude runtime installed output
   3. A test installs for a non-Claude runtime (e.g. Copilot) and asserts tool names inside inlined reference content are transformed (`Read` → `read`, `Bash` → `execute`)
   4. Tests for circular include detection and missing-file handling each throw with the correct error message rather than hanging or producing silent failures
+
 **Plans**: TBD
 
 ### Phase 47: Full Runtime Matrix + Verification
+
 **Goal**: Every supported runtime install produces fully self-contained files — zero unresolved `@~` or `` !`cat ~/.claude/` `` patterns — and the full `npm test` suite passes with no new regressions
 **Depends on**: Phase 46
 **Requirements**: GATE-01, GATE-02, GATE-03
 **Success Criteria** (what must be TRUE):
+
   1. `grep -r '@~/.claude/' <install-dir>` run against a fresh install for each of Claude, Copilot, Codex, Gemini, OpenCode, Cursor, and Antigravity returns 0 results
   2. The negative-framing scanner passes at 99/99 after all file edits introduced in this milestone
   3. `npm test` completes with 0 new failures beyond the pre-existing baseline established at v2.1.0-a
+
 **Plans**: TBD
 
 ## Progress
@@ -298,7 +310,7 @@ Full details: `.planning/milestones/v2.1.0-a-ROADMAP.md`
 | 41. Final Verification & Parity Audit | v1.41.5 | 1/1 | Complete | 2026-05-23 |
 | 42. SHA Hook and Install Reimplementation | v2.1.0-a | 1/1 | Complete | 2026-05-25 |
 | 43. Update Workflow SHA Migration + Full Gate | v2.1.0-a | 1/1 | Complete | 2026-05-26 |
-| 44. Investigation | v2.1.0-b | 1/1 | Complete   | 2026-05-28 |
+| 44. Investigation | v2.1.0-b | 1/1 | Complete    | 2026-05-28 |
 | 45. Command Layer Fixes | v2.1.0-b | 0/0 | Abandoned | - |
 | 46. Workflow Layer Fixes | v2.1.0-b | 0/0 | Abandoned | - |
 | 47. Agent Layer Fixes | v2.1.0-b | 0/0 | Abandoned | - |

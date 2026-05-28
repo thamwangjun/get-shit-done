@@ -1,7 +1,7 @@
 ---
 phase: 44-resolver-core
 verified: 2026-05-28T10:30:00Z
-status: human_needed
+status: passed
 score: 4/4 must-haves verified
 overrides_applied: 0
 human_verification:
@@ -14,7 +14,7 @@ human_verification:
 
 **Phase Goal:** `resolveIncludes()` exists in `bin/install.js` as a correct, fully-tested pure function that handles all edge cases before any integration work begins — the hardest constraint (conditional guard) is validated first.
 **Verified:** 2026-05-28T10:30:00Z
-**Status:** human_needed
+**Status:** passed
 **Re-verification:** No — initial verification
 
 ## Goal Achievement

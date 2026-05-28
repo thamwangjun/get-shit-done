@@ -9,13 +9,13 @@ Requirements for the Install-Time Content Materialization milestone. Each maps t
 
 ### Resolver
 
-- [ ] **RESV-01**: `resolveIncludes(content, sourceRoot, seen)` function exists in `bin/install.js` and inlines `@~/.claude/` bare-line references by reading and substituting the referenced file content at source repo paths
-- [ ] **RESV-02**: `resolveIncludes` also inlines `` !`cat $HOME/.claude/...` `` and `` !`cat ~/.claude/...` `` bare-line references (the full backtick-wrapped shell injection form)
-- [ ] **RESV-03**: Resolver detects and preserves the conditional `@~` expression in `execute-phase.md:619` (`` ${...? '' : '@~/.claude/...'} ``) — only bare-line `@~` references on their own line are expanded
-- [ ] **RESV-04**: Resolver skips `@~` and `` !`...` `` patterns inside fenced code blocks and `${...}` template expressions
-- [ ] **RESV-05**: Resolver detects circular include chains via a `seen` Set and aborts with a clear error naming the full include chain rather than recursing infinitely
-- [ ] **RESV-06**: Resolver aborts with a clear error naming the source file and unresolvable path when a referenced file does not exist
-- [ ] **RESV-07**: Resolver supports nested includes up to depth 3 (handles the confirmed two-hop chain `model-profile-resolution.md` → `model-profiles.md`); aborts with a descriptive error at depth 4+
+- [x] **RESV-01**: `resolveIncludes(content, sourceRoot, seen)` function exists in `bin/install.js` and inlines `@~/.claude/` bare-line references by reading and substituting the referenced file content at source repo paths
+- [x] **RESV-02**: `resolveIncludes` also inlines `` !`cat $HOME/.claude/...` `` and `` !`cat ~/.claude/...` `` bare-line references (the full backtick-wrapped shell injection form)
+- [x] **RESV-03**: Resolver detects and preserves the conditional `@~` expression in `execute-phase.md:619` (`` ${...? '' : '@~/.claude/...'} ``) — only bare-line `@~` references on their own line are expanded
+- [x] **RESV-04**: Resolver skips `@~` and `` !`...` `` patterns inside fenced code blocks and `${...}` template expressions
+- [x] **RESV-05**: Resolver detects circular include chains via a `seen` Set and aborts with a clear error naming the full include chain rather than recursing infinitely
+- [x] **RESV-06**: Resolver aborts with a clear error naming the source file and unresolvable path when a referenced file does not exist
+- [x] **RESV-07**: Resolver supports nested includes up to depth 3 (handles the confirmed two-hop chain `model-profile-resolution.md` → `model-profiles.md`); aborts with a descriptive error at depth 4+
 
 ### Integration
 
@@ -59,13 +59,13 @@ Requirements for the Install-Time Content Materialization milestone. Each maps t
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| RESV-01 | Phase 44 | Pending |
-| RESV-02 | Phase 44 | Pending |
-| RESV-03 | Phase 44 | Pending |
-| RESV-04 | Phase 44 | Pending |
-| RESV-05 | Phase 44 | Pending |
-| RESV-06 | Phase 44 | Pending |
-| RESV-07 | Phase 44 | Pending |
+| RESV-01 | Phase 44 | Complete |
+| RESV-02 | Phase 44 | Complete |
+| RESV-03 | Phase 44 | Complete |
+| RESV-04 | Phase 44 | Complete |
+| RESV-05 | Phase 44 | Complete |
+| RESV-06 | Phase 44 | Complete |
+| RESV-07 | Phase 44 | Complete |
 | INTG-01 | Phase 45 | Pending |
 | INTG-02 | Phase 45 | Pending |
 | INTG-03 | Phase 45 | Pending |
@@ -83,6 +83,7 @@ Requirements for the Install-Time Content Materialization milestone. Each maps t
 | GATE-03 | Phase 47 | Pending |
 
 **Coverage:**
+
 - v2.1.0-c requirements: 22 total
 - Mapped to phases: 22
 - Unmapped: 0 ✓
