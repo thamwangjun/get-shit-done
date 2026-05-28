@@ -1744,6 +1744,146 @@ function replaceRelativePathReference(content, fromPath, toPath) {
   );
 }
 
+// ─── Include Resolution ───────────────────────────────────────────────────────
+
+/**
+ * Resolve @-reference and !`cat ...` include directives in content by reading
+ * the referenced files from disk and inlining their (recursively resolved) content.
+ *
+ * @param {string} content      - Text to process (may contain bare @-lines or cat lines)
+ * @param {string} sourceRoot   - Project root directory (contains get-shit-done/, bin/, agents/)
+ * @param {Set<string>} seen    - Set of resolved absolute paths currently on the call stack (for circular detection)
+ * @param {number} [depth=0]    - Current recursion depth (for depth-limit enforcement)
+ * @param {string} [sourceFile] - Path of the file being processed (for error messages)
+ * @returns {string} Content with all include directives replaced by file contents
+ */
+function resolveIncludes(content, sourceRoot, seen, depth = 0, sourceFile = 'unknown') {
+  if (depth >= 3) {
+    throw new Error(
+      'Include depth limit exceeded at depth ' + depth + ': ' + [...seen].join(' → ')
+    );
+  }
+
+  const lines = content.split('\n');
+  const result = [];
+  let inFencedBlock = false;
+  let templateDepth = 0;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    // Toggle fenced-block state (D-11)
+    if (trimmed.startsWith('```')) {
+      inFencedBlock = !inFencedBlock;
+      result.push(line);
+      continue;
+    }
+
+    // Inside fenced block — emit verbatim
+    if (inFencedBlock) {
+      result.push(line);
+      continue;
+    }
+
+    // Track ${...} template expression nesting across lines (D-12)
+    for (let i = 0; i < line.length; i++) {
+      if (line[i] === '$' && line[i + 1] === '{') {
+        templateDepth++;
+        i++; // skip '{'
+      } else if (line[i] === '}' && templateDepth > 0) {
+        templateDepth--;
+      }
+    }
+
+    // If we are inside a multi-line template expression, emit verbatim
+    // Also, if the line ITSELF is a single-line ${...} expression containing @, skip expansion:
+    // templateDepth was updated for this line above; if the line contains ${ ... } with @
+    // inside, the depth will be 0 after parsing the line (balanced), but the @ is still inside.
+    const lineContainsTemplateExpr = /\$\{[^}]*@/.test(line) || templateDepth > 0;
+    if (lineContainsTemplateExpr) {
+      result.push(line);
+      continue;
+    }
+
+    // Bare @-line detection (D-09): the trimmed line starts with @ and is the entire line content
+    const atMatch = /^@(.+)$/.exec(trimmed);
+    // Bare !`cat ...` line detection (D-10)
+    const catMatch = /^!`cat\s+([^`]+)`$/.exec(trimmed);
+
+    let includePath = null;
+    let rawRef = null;
+
+    if (atMatch && trimmed === line.trim()) {
+      rawRef = atMatch[1]; // everything after @
+    } else if (catMatch && trimmed === line.trim()) {
+      rawRef = catMatch[1].trim(); // path argument to cat
+    }
+
+    if (rawRef !== null) {
+      // Path resolution (D-14, D-15, D-16)
+      let resolvedPath;
+      if (rawRef.startsWith('~/.claude/') || rawRef.startsWith('$HOME/.claude/')) {
+        // Strip the home-prefix and resolve relative to sourceRoot
+        const remainder = rawRef.startsWith('~/.claude/')
+          ? rawRef.slice('~/.claude/'.length)
+          : rawRef.slice('$HOME/.claude/'.length);
+        resolvedPath = path.join(sourceRoot, remainder);
+      } else if (rawRef.startsWith('~/') || rawRef.startsWith('$HOME/')) {
+        // Other home-relative references: resolve relative to sourceRoot
+        const remainder = rawRef.startsWith('~/')
+          ? rawRef.slice('~/'.length)
+          : rawRef.slice('$HOME/'.length);
+        resolvedPath = path.join(sourceRoot, remainder);
+      } else if (path.isAbsolute(rawRef)) {
+        resolvedPath = rawRef;
+      } else {
+        // Relative reference (D-16): resolve relative to the source file's directory
+        const sourceDir = sourceFile !== 'unknown'
+          ? path.dirname(sourceFile)
+          : sourceRoot;
+        resolvedPath = path.resolve(sourceDir, rawRef);
+      }
+
+      includePath = resolvedPath;
+    }
+
+    if (includePath !== null) {
+      // Circular detection (D-04, D-06)
+      if (seen.has(includePath)) {
+        throw new Error(
+          'Circular include detected: ' + [...seen, includePath].join(' → ')
+        );
+      }
+
+      // Read the file
+      let fileContent;
+      try {
+        fileContent = fs.readFileSync(includePath, 'utf8');
+      } catch (e) {
+        throw new Error(
+          'resolveIncludes: cannot read "' + includePath + '" included from "' + sourceFile + '"'
+        );
+      }
+
+      // Recurse with updated seen set (D-04, D-05)
+      const expanded = resolveIncludes(
+        fileContent,
+        sourceRoot,
+        new Set([...seen, includePath]),
+        depth + 1,
+        includePath
+      );
+
+      // Push expanded content lines (strip trailing newline to avoid double-blank-lines)
+      result.push(expanded.replace(/\n$/, ''));
+    } else {
+      result.push(line);
+    }
+  }
+
+  return result.join('\n');
+}
+
 /**
  * Convert a Claude Code tool name to GitHub Copilot format.
  * - Applies explicit mapping from claudeToCopilotTools
@@ -11397,6 +11537,7 @@ module.exports = {
     getConfigDirFromHome,
     resolveKiloConfigPath,
     configureKiloPermissions,
+    resolveIncludes,
     claudeToCopilotTools,
     convertCopilotToolName,
     convertClaudeToCopilotContent,
