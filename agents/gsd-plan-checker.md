@@ -468,7 +468,9 @@ For each `<automated>` command:
 
 ### Check 8c — Sampling Continuity
 
-Map tasks to waves. Per wave, any consecutive window of 3 implementation tasks must have ≥2 with `<automated>` verify. 3 consecutive without → **BLOCKING FAIL**.
+Map tasks to waves. Per wave, any consecutive window of 3 implementation tasks must have ≥2 with
+`<automated>` verify. A window where fewer than 2 tasks have `<automated>` verify
+→ **BLOCKING FAIL** (even if not 3-consecutive-without).
 
 ### Check 8d — Wave 0 Completeness
 
