@@ -2,11 +2,12 @@
  * GSD Tools Tests - resolve-includes
  *
  * Unit tests for the resolveIncludes() pure function in bin/install.js.
- * Four tests, each mapping to one phase 44 success criterion:
+ * Five tests, four mapping to phase 44 success criteria plus depth-limit (RESV-07):
  *   1. Bare @~/.claude/ line inlining
  *   2. Conditional guard (${...} template expression) pass-through
  *   3. Circular-include detection error
  *   4. Missing-file error
+ *   5. Depth-limit error at depth >= 3
  */
 
 'use strict';
@@ -99,6 +100,30 @@ test('throws naming both source file and unresolvable path when referenced file 
       (err) => {
         assert.ok(err instanceof Error, 'should throw an Error');
         assert.ok(err.message.includes('no/such/file.md'), 'error message should contain the missing path');
+        return true;
+      }
+    );
+  } finally {
+    fs.rmSync(sourceRoot, { recursive: true, force: true });
+  }
+});
+
+// ─── Test 5 — depth-limit error (RESV-07) ────────────────────────────────────
+
+test('throws descriptive error when include depth reaches limit', () => {
+  const sourceRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'ri-test-'));
+  try {
+    const dir = path.join(sourceRoot, 'get-shit-done');
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, 'deep.md'), '# Deep\n', 'utf8');
+
+    const content = '@~/.claude/get-shit-done/deep.md\n';
+
+    assert.throws(
+      () => resolveIncludes(content, sourceRoot, new Set(), 3),
+      (err) => {
+        assert.ok(err instanceof Error, 'should throw an Error');
+        assert.ok(err.message.includes('depth'), 'error message should mention depth');
         return true;
       }
     );
