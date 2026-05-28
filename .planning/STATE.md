@@ -1,17 +1,14 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.41.5
-milestone_name: Refactor Git Commit History
-current_phase: 41
-status: archived
-stopped_at: v1.41.5 milestone archived 2026-05-24
-last_updated: "2026-05-24T00:00:00.000Z"
-last_activity: 2026-05-25
+milestone: v2.1.0-a
+milestone_name: SHA Versioning Reimplementation
+status: archived (shipped 2026-05-26)
+last_updated: "2026-05-27T11:37:12.935Z"
 progress:
-  total_phases: 7
-  completed_phases: 7
-  total_plans: 7
-  completed_plans: 7
+  total_phases: 2
+  completed_phases: 2
+  total_plans: 2
+  completed_plans: 2
   percent: 100
 ---
 
@@ -19,16 +16,16 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-05-24 after v1.41.5 milestone)
+See: .planning/PROJECT.md (updated 2026-05-26 after v2.1.0-a milestone)
 
-**Core value:** Every agent, command, and workflow file on `thamw-main` meets the fork's prompt engineering quality bar before it ships
-**Current focus:** v1.41.5 archived — start `/gsd-new-milestone` for next milestone
+**Core value:** Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships
+**Current focus:** Planning next milestone — run `/gsd-new-milestone`
 
 ## Current Position
 
-Phase: 41 (final-verification-parity-audit) — COMPLETE
-Status: Milestone archived (v1.41.5)
-Last activity: 2026-05-24
+Milestone: v2.1.0-a — SHA Versioning Reimplementation
+Status: archived (shipped 2026-05-26)
+Next: `/gsd-new-milestone` to start next milestone cycle
 
 ## Performance Metrics
 
@@ -45,10 +42,11 @@ Decisions are logged in PROJECT.md Key Decisions table.
 
 - [Phase 31]: All prompt content files pass expanded scanner at 0 violations, 0 warnings (v1.38.6 baseline)
 - [260513-kzj]: Upstream v1.41.2 merged into thamw-v1.41.2; 9 conflicts resolved; 11 test failures identified
+- [260525-msv]: Upstream new-upstream/release/1.1.0 merged; upstream migrated to semver (1.1.0); fork reverted semver migration in worker keeping inline SHA isNewer() — full SHA reimplementation deferred to v2.1.0-a
 
 ### Prompt Content File State
 
-All prompt content files (agents, commands, workflows) pass the expanded negative framing scanner at 0 violations, 0 warnings as of v1.38.6 (2026-05-03). Scanner at 99/99 subtests passing. Two upstream-verbatim workflow files (`debug.md`, `reapply-patches.md`) introduced in v1.41.2 are known to have framing violations — addressed in Phase 33.
+All prompt content files (agents, commands, workflows) pass the expanded negative framing scanner at 0 violations, 0 warnings as of v1.38.6 (2026-05-03). Scanner at 99/99 subtests passing.
 
 ### Pending Todos
 
@@ -56,7 +54,9 @@ None.
 
 ### Blockers/Concerns
 
-None.
+Phase 42 resolved: `semver-compare.test.cjs` (17/17) and `version-detection.test.cjs` (4/4) now pass.
+
+Resolved: `tests/bug-2992-check-latest-version.test.cjs` rewritten for SHA-based assertions (Phase 43-01). All 9 tests pass. No open blockers.
 
 ### Quick Tasks Completed
 
@@ -69,9 +69,13 @@ None.
 | 260525-cjp | Fix SyntaxError from duplicate computeProgressPercent declaration in state.cjs | 2026-05-25 | 996ec0dc | [260525-cjp-fix-state-duplicate-declaration](./quick/260525-cjp-fix-state-duplicate-declaration/) |
 | 260525-msv | Merge upstream/main into thamw-main — revert semver migration, keep SHA versioning (inline isNewer) | 2026-05-25 | e773e485 | [260525-msv-merge-upstream-main-revert-semver-migration](./quick/260525-msv-merge-upstream-main-revert-semver-migration/) |
 | 260525-o1n | Convert @ file-reference notation in commands/gsd/ to shell-cat form (117 occurrences, 54 files) | 2026-05-25 | 4ba5dde1 | [260525-o1n-convert-commands-at-notation](./quick/260525-o1n-convert-commands-at-notation/) |
+| 260525-i50 | Update branch name thamw-main → main; remove CLAUDE.md from .gitignore | 2026-05-25 | b960ed06 | [260525-i50-update-branch-name-thamw-main-to-main](./quick/260525-i50-update-branch-name-thamw-main-to-main/) |
+| 260525-igz | Update CLAUDE.md architecture counts to reflect current project state (67 cmds, 90 workflows, 33 agents, 79 lib modules) | 2026-05-25 | e55d6831 | [260525-update-claude-md](./quick/260525-update-claude-md/) |
+| 260526-enb | Fix 8 v2.1.0-a tech debt items — stale update.md metadata and tracking inconsistencies | 2026-05-26 | a62f5357 | [20260526-v2-1-0-a-tech-debt-cleanup](./quick/20260526-v2-1-0-a-tech-debt-cleanup/) |
+| 260527-g3f | Fix installer banner to display 7-char SHA via gsdVersion instead of semver pkg.version | 2026-05-27 | 44ad13c1 | [260527-g3f-fix-install-banner-sha-instead-of-semver](./quick/260527-g3f-fix-install-banner-sha-instead-of-semver/) |
 
 ## Session Continuity
 
-Last session: 2026-05-25
-Stopped at: Quick task 260525-o1n complete — @ notation converted in commands/gsd/
-Resume: Start `/gsd-new-milestone` to define next milestone
+Last session: 2026-05-26
+Stopped at: v2.1.0-a milestone archived — all phases complete, all docs updated
+Resume: `/gsd-new-milestone` to define next milestone

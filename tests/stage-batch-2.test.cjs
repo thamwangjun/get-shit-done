@@ -10,7 +10,7 @@
  *   3. Script ends with run() call
  *   4. hasChangesSinceV1_41_2 function uses git cat-file + git diff --quiet
  *   5. expectedFiles Set contains exactly 3 Batch 2 files
- *   6. Branch guard checks for thamw-main and ALLOW_ANY_BRANCH override
+ *   6. Branch guard checks for main and ALLOW_ANY_BRANCH override
  *   7. Missing-file detection runs before any git add
  *   8. Duplicate commit detection for exact Batch 2 commit message
  *   9. git reset runs before git add
@@ -232,10 +232,10 @@ describe('stage-batch-2.cjs', () => {
 
   // ── 4. Branch guard ──────────────────────────────────────────
 
-  test('branch guard checks for thamw-main', () => {
+  test('branch guard checks for main', () => {
     assert.ok(
-      scriptSrc.includes("'thamw-main'") || scriptSrc.includes('"thamw-main"'),
-      'Must check for thamw-main branch'
+      scriptSrc.includes("'main'") || scriptSrc.includes('"main"'),
+      'Must check for main branch'
     );
   });
 

@@ -208,9 +208,9 @@ Every task has four required fields:
 
 Format: `(per D-NN)` or `per D-NN —` with the brief rationale inline.
 
-- Good: `Fast-forward thamw-main (per D-02 — local only, no push): git merge --ff-only thamw-v1.41.3`
+- Good: `Fast-forward main (per D-02 — local only, no push): git merge --ff-only thamw-v1.41.3`
 - Good: `Per D-01 (zero-fix rule): report exact failing test names and escalate.`
-- Bad: `Fast-forward thamw-main: git merge --ff-only thamw-v1.41.3` — D-02 local-only constraint is invisible to the executor
+- Bad: `Fast-forward main: git merge --ff-only thamw-v1.41.3` — D-02 local-only constraint is invisible to the executor
 
 A D-NN truth in `must_haves.truths` that appears in no task's `<action>` is untethered — the executor has no signal to apply it at the right moment. Cite each D-NN in the `<action>` of the task it constrains, and mirror the constraint in `<done>` when the D-NN governs the acceptance outcome.
 

@@ -35,7 +35,7 @@ function run() {
   const repoRoot = path.join(__dirname, '..');
 
   // Check the active branch guard: if process.env.ALLOW_ANY_BRANCH !== '1',
-  // retrieve current branch using git, and if it is not "thamw-main", log error and abort with exit code 1.
+  // retrieve current branch using git, and if it is not "main", log error and abort with exit code 1.
   let currentBranch = '';
   try {
     currentBranch = execFileSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], { encoding: 'utf8', cwd: repoRoot }).trim();
@@ -44,8 +44,8 @@ function run() {
     process.exit(1);
   }
 
-  if (process.env.ALLOW_ANY_BRANCH !== '1' && currentBranch !== 'thamw-main') {
-    console.error(`Error: Current branch is "${currentBranch}", but "thamw-main" is required to run this script. Set ALLOW_ANY_BRANCH=1 to override.`);
+  if (process.env.ALLOW_ANY_BRANCH !== '1' && currentBranch !== 'main') {
+    console.error(`Error: Current branch is "${currentBranch}", but "main" is required to run this script. Set ALLOW_ANY_BRANCH=1 to override.`);
     process.exit(1);
   }
 

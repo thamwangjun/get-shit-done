@@ -130,11 +130,11 @@ describe('stage-batch-5.cjs structural validation', () => {
     );
   });
 
-  test('branch guard: references thamw-main', () => {
+  test('branch guard: references main', () => {
     const content = fs.readFileSync(SCRIPT_PATH, 'utf8');
     assert.ok(
-      content.includes('thamw-main'),
-      'must include thamw-main branch guard'
+      content.includes('main'),
+      'must include main branch guard'
     );
   });
 });

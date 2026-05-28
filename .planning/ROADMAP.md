@@ -13,6 +13,7 @@
 - ✅ **v1.38.6 Positive Framing Pass** — Phases 28–31 (shipped 2026-05-03)
 - ✅ **v1.41.3 Upstream v1.41.2 Fork Compliance** — Phases 32–34 (shipped 2026-05-19)
 - ✅ **v1.41.5 Refactor Git Commit History** — Phases 35–41 (shipped 2026-05-24)
+- ✅ **v2.1.0-a SHA Versioning Reimplementation** — Phases 42–43 (shipped 2026-05-26)
 
 ## Phases
 
@@ -57,7 +58,7 @@ Full details: `.planning/milestones/v1.36.0.a-ROADMAP.md`
 <details>
 <summary>✓ v1.37.1 Files (Phases 7–12) — SHIPPED 2026-04-22</summary>
 
-**Goal:** Merge upstream v1.37.1 into thamw-main, sync CATALOGUE.json, apply the fork's positive framing and XML structure standards to all new and modified prompt files, and keep the test suite green.
+**Goal:** Merge upstream v1.37.1 into main, sync CATALOGUE.json, apply the fork's positive framing and XML structure standards to all new and modified prompt files, and keep the test suite green.
 
 - [x] Phase 7: Merge and Conflict Resolution (2/2 plans) — completed 2026-04-17
 - [x] Phase 8: CATALOGUE Sync (1/1 plans) — completed 2026-04-17
@@ -143,7 +144,7 @@ Full details: `.planning/milestones/v1.38.6-ROADMAP.md`
 <details>
 <summary>✅ v1.41.3 Upstream v1.41.2 Fork Compliance (Phases 32–34) — SHIPPED 2026-05-19</summary>
 
-**Milestone Goal:** Resolve all known test failures on thamw-v1.41.2, pass the negative-framing scanner across all upstream-introduced files, fix any new violations, and fast-forward thamw-main to thamw-v1.41.3.
+**Milestone Goal:** Resolve all known test failures on thamw-v1.41.2, pass the negative-framing scanner across all upstream-introduced files, fix any new violations, and fast-forward main to thamw-v1.41.3.
 
 - [x] Phase 32: Quick Test Fixes (1/1 plans) — completed 2026-05-13
 - [x] Phase 33: Positive Framing Pass (2/2 plans) — completed 2026-05-14
@@ -165,6 +166,16 @@ Full details: `.planning/milestones/v1.41.3-ROADMAP.md`
 - [x] Phase 41: Final Verification & Parity Audit (1/1 plans) — completed 2026-05-23
 
 Full details: `.planning/milestones/v1.41.5-ROADMAP.md`
+
+</details>
+
+<details>
+<summary>✅ v2.1.0-a SHA Versioning Reimplementation (Phases 42–43) — SHIPPED 2026-05-26</summary>
+
+- [x] Phase 42: SHA Hook and Install Reimplementation (1/1 plans) — completed 2026-05-25
+- [x] Phase 43: Update Workflow SHA Migration + Full Gate (1/1 plans) — completed 2026-05-26
+
+Full details: `.planning/milestones/v2.1.0-a-ROADMAP.md`
 
 </details>
 
@@ -215,6 +226,9 @@ Full details: `.planning/milestones/v1.41.5-ROADMAP.md`
 | 39. Stage and Commit Tests & SDK Validation | v1.41.5 | 1/1 | Complete | 2026-05-22 |
 | 40. Stage and Commit Maintenance, Logs, & State | v1.41.5 | 1/1 | Complete | 2026-05-23 |
 | 41. Final Verification & Parity Audit | v1.41.5 | 1/1 | Complete | 2026-05-23 |
+| 42. SHA Hook and Install Reimplementation | v2.1.0-a | 1/1 | Complete | 2026-05-25 |
+| 43. Update Workflow SHA Migration + Full Gate | v2.1.0-a | 1/1 | Complete | 2026-05-26 |
 
 *v1.41.3 shipped 2026-05-19 — see `.planning/milestones/v1.41.3-ROADMAP.md`*
 *v1.41.5 shipped 2026-05-24 — see `.planning/milestones/v1.41.5-ROADMAP.md`*
+*v2.1.0-a shipped 2026-05-26 — see `.planning/milestones/v2.1.0-a-ROADMAP.md`*

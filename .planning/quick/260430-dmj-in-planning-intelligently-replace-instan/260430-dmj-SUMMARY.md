@@ -1,6 +1,7 @@
 ---
 phase: quick-260430-dmj
 plan: "01"
+status: complete
 subsystem: documentation
 tags: [path-fix, refs-migration, housekeeping, planning-docs]
 

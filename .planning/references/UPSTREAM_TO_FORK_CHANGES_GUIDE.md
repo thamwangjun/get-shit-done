@@ -1,17 +1,17 @@
 # Upstream to Fork Changes Guide
 
-> A reference for understanding what `thamw-main` changes relative to upstream `main` and how to maintain those changes across future upstream merges. This is the authoritative record of every category of fork modification.
+> A reference for understanding what `main` changes relative to upstream `main` and how to maintain those changes across future upstream merges. This is the authoritative record of every category of fork modification.
 
 ---
 
 ## Fork Identity
 
-**Branch:** `thamw-main`  
+**Branch:** `main`  
 **Upstream:** `upstream/main` (merged via `git merge upstream/main`)  
 **Quality bar:** `.planning/references/PROMPT_ENGINEERING_GUIDE_V09.md` and `.planning/references/PROMPT_IMPROVEMENT_GUIDE_V01.md`  
-**Core rule:** Every prompt file on `thamw-main` meets the fork's prompt engineering quality bar before it ships — upstream content additions are modified, not accepted verbatim.
+**Core rule:** Every prompt file on `main` meets the fork's prompt engineering quality bar before it ships — upstream content additions are modified, not accepted verbatim.
 
-As of 2026-04-23, `thamw-main` is 412 commits ahead of `v1.37.1` across 476 changed files (54,407 insertions / 5,006 deletions).
+As of 2026-04-23, `main` is 412 commits ahead of `v1.37.1` across 476 changed files (54,407 insertions / 5,006 deletions).
 
 ---
 
