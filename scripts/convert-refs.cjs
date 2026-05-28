@@ -194,6 +194,7 @@ function transformFile(filePath) {
       fs.writeFileSync(filePath, result, 'utf-8');
     } catch (err) {
       process.stderr.write(`ERROR writing ${filePath}: ${err.message}\n`);
+      process.exitCode = 1;
       return { changed: false, linesChanged: 0 };
     }
   }
