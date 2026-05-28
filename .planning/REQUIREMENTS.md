@@ -3,39 +3,43 @@
 **Defined:** 2026-05-28
 **Core Value:** Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships — upstream content additions are modified, not accepted verbatim.
 
-## v2.1.0-b Requirements
+## v2.1.0-c Requirements
 
-Requirements for the Workflow Compliance Reinforcement milestone. Each maps to roadmap phases.
+Requirements for the Install-Time Content Materialization milestone. Each maps to roadmap phases.
 
-### Investigation
+### Resolver
 
-- [ ] **INVEST-01**: Root cause analysis of compliance failures produces a structured findings document with evidence drawn from actual files across all three layers (commands, workflows, agents)
-- [ ] **INVEST-02**: Failure mode taxonomy categorizes findings into distinct types: (a) subagent spawning failures, (b) step omission, (c) premature inline fallback loopholes, (d) buried critical instructions lost to the "lost in the middle" effect, (e) `` !`cat` `` workflow injection truncation where Claude receives only a ~2KiB preview of large workflow files and ignores the "Full output saved to: …" read instruction
-- [ ] **INVEST-03**: Audit all 72 command files that use `` !`cat` `` to inject workflow content — document which commands are affected, confirm the truncation threshold, and record the exact truncation notice pattern so the Phase 45 fix can be verified
+- [ ] **RESV-01**: `resolveIncludes(content, sourceRoot, seen)` function exists in `bin/install.js` and inlines `@~/.claude/` bare-line references by reading and substituting the referenced file content at source repo paths
+- [ ] **RESV-02**: `resolveIncludes` also inlines `` !`cat $HOME/.claude/...` `` and `` !`cat ~/.claude/...` `` bare-line references (the full backtick-wrapped shell injection form)
+- [ ] **RESV-03**: Resolver detects and preserves the conditional `@~` expression in `execute-phase.md:619` (`` ${...? '' : '@~/.claude/...'} ``) — only bare-line `@~` references on their own line are expanded
+- [ ] **RESV-04**: Resolver skips `@~` and `` !`...` `` patterns inside fenced code blocks and `${...}` template expressions
+- [ ] **RESV-05**: Resolver detects circular include chains via a `seen` Set and aborts with a clear error naming the full include chain rather than recursing infinitely
+- [ ] **RESV-06**: Resolver aborts with a clear error naming the source file and unresolvable path when a referenced file does not exist
+- [ ] **RESV-07**: Resolver supports nested includes up to depth 3 (handles the confirmed two-hop chain `model-profile-resolution.md` → `model-profiles.md`); aborts with a descriptive error at depth 4+
 
-### Command Layer
+### Integration
 
-- [ ] **CMD-01**: All 67 command files contain an explicit orchestrator identity or spawn mandate at a high-attention position (start of `<objective>` or `<process>` block)
-- [ ] **CMD-02**: `<process>` blocks in commands that use subagents explicitly restate the spawn mandate rather than deferring entirely to the loaded workflow file
-- [ ] **CMD-03**: Command files that invoke subagent workflows do not grant inline execution as a default fallback without a user-supplied flag (e.g., `--interactive`)
-- [ ] **CMD-04**: All 72 command files that inline workflow content via `` !`cat` `` are converted so Claude receives the full workflow — either by replacing `` !`cat` `` with an explicit `Read` instruction or by an `@`-reference so the file is loaded in full rather than truncated at ~2KiB
+- [ ] **INTG-01**: Quick task 260525-o1n is reverted — all 117 `` !`cat` `` references introduced in `commands/gsd/` (55 files) are removed and restored to `@~` form
+- [ ] **INTG-02**: Three mixed-notation command files (`extract-learnings.md`, `mvp-phase.md`, `ship.md`) are cleaned — duplicate `@` + `` !`cat` `` references for the same target are reduced to a single `@~` reference
+- [ ] **INTG-03**: `resolveIncludes()` is wired into `copyWithPathReplacement()` (~line 6432 in `bin/install.js`) as the first transform step — before path substitution and all runtime converters
+- [ ] **INTG-04**: `resolveIncludes()` is wired into the agent install loop (~line 8646 in `bin/install.js`) as the first transform step
+- [ ] **INTG-05**: Dynamic `.planning/` runtime references in `add-tests.md` (STATE.md, ROADMAP.md) are excluded from resolution
+- [ ] **INTG-06**: The `applyRuntimeContentRewritesInPlace` skills path is audited — if skills are staged after command resolution, they inherit inlined content automatically; if staged before, a third resolver call is added
 
-### Workflow Layer
+### Tests
 
-- [ ] **WF-01**: All workflows that spawn subagents open with an orchestrator reframe pattern per PEG V10 Section 6 ("Your job is NOT to execute directly — it's to spawn X")
-- [ ] **WF-02**: Critical spawn instructions are placed at high-attention positions (start or end of workflow), not buried in middle sections where the "lost in the middle" effect causes them to be ignored
-- [ ] **WF-03**: `<runtime_compatibility>` inline-fallback blocks are guarded so inline execution requires an explicit user-supplied flag, not an assumption about runtime type
-- [ ] **WF-04**: Workflows with mandatory step sequences use explicit required-step markers (per PEG V10 Section 16 `required_steps universal="true"` pattern) that the model cannot silently skip
-
-### Agent Layer
-
-- [ ] **AGENT-01**: All 33 agent files are audited for step-omission patterns — executors short-circuiting task steps, verifiers skipping adversarial probes, planners skipping required reads
-- [ ] **AGENT-02**: Agent files with identified compliance issues receive PEG V10 fixes: required step anchors, adversarial probe mandates, explicit completion criteria
+- [ ] **TEST-01**: Test verifies that installed output files contain no unresolved `@~/.claude/` references (post-install grep returns zero results)
+- [ ] **TEST-02**: Test verifies the conditional `@~` expression in `execute-phase.md` is preserved verbatim in installed output
+- [ ] **TEST-03**: Test verifies tool-name transformation applies correctly inside inlined reference content for non-Claude runtimes (e.g. `Read`→`read`, `Bash`→`execute` for Copilot)
+- [ ] **TEST-04**: Test verifies circular include detection — a file that includes itself causes a thrown error, not infinite recursion
+- [ ] **TEST-05**: Test verifies missing-file handling — an unresolvable reference causes a thrown error with a message naming the source file and missing path
+- [ ] **TEST-06**: Installed agent file line counts are verified against the `agent-size-budget.test.cjs` thresholds — test runs against installed output, not source files
 
 ### Quality Gate
 
 - [ ] **GATE-01**: Full `npm test` passes after all changes with 0 regressions beyond pre-existing failures
-- [ ] **GATE-02**: Negative-framing scanner passes at 99/99 after all workflow, command, and agent edits
+- [ ] **GATE-02**: Negative-framing scanner passes at 99/99 after all file edits
+- [ ] **GATE-03**: `grep -r '@~/.claude/' <install-dir>` on a fresh install across all supported runtimes returns 0 results — all references materialized
 
 ## Future Requirements
 
@@ -45,34 +49,42 @@ Requirements for the Workflow Compliance Reinforcement milestone. Each maps to r
 
 | Feature | Reason |
 |---------|--------|
-| Changing GSD's core functionality or runtime behavior | Fork is prompt content only |
-| Fixes to `get-shit-done/templates/` or `get-shit-done/references/` | Out of scan scope per established fork policy |
-| Fixes to `sdk/` or `tests/` | Out of scan scope per `SCAN_DIRS` |
-| Enforcing XML tag hierarchy on modified files | Dropped from fork scope in v2.1.0-a Key Decisions |
+| Variable substitution (`{{ var }}`) or conditional blocks in source files | Not needed for current scope — only file includes are being replaced |
+| External template engine (Nunjucks, LiquidJS, Eta) | Custom `resolveIncludes()` function covers the bounded use case; Eta noted as future option if variable/conditional needs arise |
+| Inlining dynamic `.planning/` runtime references | These are project-specific files that vary per session — must stay as runtime references |
+| Auditing 8 unreferenced files in `references/` | Determine orphaned vs prose-loaded after main inlining ships |
+| Applying changes to `get-shit-done/templates/` | Out of scan scope per established fork policy |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INVEST-01 | Phase 44 | Pending |
-| INVEST-02 | Phase 44 | Pending |
-| INVEST-03 | Phase 44 | Pending |
-| CMD-01 | Phase 45 | Pending |
-| CMD-02 | Phase 45 | Pending |
-| CMD-03 | Phase 45 | Pending |
-| CMD-04 | Phase 45 | Pending |
-| WF-01 | Phase 46 | Pending |
-| WF-02 | Phase 46 | Pending |
-| WF-03 | Phase 46 | Pending |
-| WF-04 | Phase 46 | Pending |
-| AGENT-01 | Phase 47 | Pending |
-| AGENT-02 | Phase 47 | Pending |
-| GATE-01 | Phase 48 | Pending |
-| GATE-02 | Phase 48 | Pending |
+| RESV-01 | Phase 44 | Pending |
+| RESV-02 | Phase 44 | Pending |
+| RESV-03 | Phase 44 | Pending |
+| RESV-04 | Phase 44 | Pending |
+| RESV-05 | Phase 44 | Pending |
+| RESV-06 | Phase 44 | Pending |
+| RESV-07 | Phase 44 | Pending |
+| INTG-01 | Phase 45 | Pending |
+| INTG-02 | Phase 45 | Pending |
+| INTG-03 | Phase 45 | Pending |
+| INTG-04 | Phase 45 | Pending |
+| INTG-05 | Phase 45 | Pending |
+| INTG-06 | Phase 45 | Pending |
+| TEST-01 | Phase 46 | Pending |
+| TEST-02 | Phase 46 | Pending |
+| TEST-03 | Phase 46 | Pending |
+| TEST-04 | Phase 46 | Pending |
+| TEST-05 | Phase 46 | Pending |
+| TEST-06 | Phase 46 | Pending |
+| GATE-01 | Phase 47 | Pending |
+| GATE-02 | Phase 47 | Pending |
+| GATE-03 | Phase 47 | Pending |
 
 **Coverage:**
-- v2.1.0-b requirements: 15 total
-- Mapped to phases: 13
+- v2.1.0-c requirements: 22 total
+- Mapped to phases: 22
 - Unmapped: 0 ✓
 
 ---
