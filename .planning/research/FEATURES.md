@@ -1,175 +1,283 @@
-# Feature Research: Git Commit History Refactoring
+# Features Research: Current Reference Map
 
-**Domain:** Repository Consolidation & History Refactoring
-**Researched:** 2026-05-21
-**Confidence:** HIGH
-
----
-
-## Feature Landscape
-
-This research outlines the feature landscape for the **v1.41.5 Refactor Git Commit History** milestone. The core objective is to collapse the fork's commit history since `upstream/v1.41.2` into exactly 5 feature-focused commits while ensuring zero functional regressions and 100% file content parity.
-
-### Table Stakes (Users & Maintainers Expect These)
-
-These are the non-negotiable requirements. Missing any of these means the refactor fails its core intent.
-
-| Feature | Why Expected | Complexity | Notes |
-|---------|--------------|------------|-------|
-| **Soft Reset to `v1.41.2`** | Moves branch HEAD back to the target upstream release tag without modifying the working tree files. | LOW | Uses `git reset --soft v1.41.2` so changes remain staged/unstaged. |
-| **5-Batch Grouping** | Collects related modifications into logical, reviewable blocks. | MEDIUM | Grouping must be precise to avoid path leakage across batches. |
-| **Zero-Diff Content Parity** | The final commit tree must match the original tree with 100% byte-for-byte correctness. | HIGH | Checked via `git diff HEAD $ORIGINAL_HEAD` returning nothing. |
-| **Full Test Validation** | All 8300+ tests must pass to verify no regressions were introduced. | MEDIUM | Guarded by `npm test` gate. |
-| **Coherent Commit Messages** | Each of the 5 commits needs a clear, semantic commit message. | LOW | Defines the purpose and boundaries of the batch. |
-
-### Differentiators (Competitive Advantage)
-
-These features enhance developer efficiency and history sanity beyond the bare minimum.
-
-| Feature | Value Proposition | Complexity | Notes |
-|---------|-------------------|------------|-------|
-| **Dependency-Ordered Commits** | Committing files in their order of dependency (Configs -> Scanners -> Prompts -> Tests -> Logs) preserves logical readability in Git history. | MEDIUM | Ensures that if intermediate commits are checked out, the system remains cohesive. |
-| **Automated Staging Script** | Prevents human error in manually staging hundreds of files across 5 complex batches. | MEDIUM | Can be implemented using a Node/Bash script parsing `changed_files.txt`. |
-| **Dry-Run Diff Audit** | Verifies the staging boundaries before making final commits. | LOW | Use `git diff --cached --name-only` to review each batch before committing. |
-
-### Anti-Features (Avoid These)
-
-These are tempting shortcuts or features that actually introduce risk, complexity, or history corruption.
-
-| Feature | Why Requested | Why Problematic | Alternative |
-|---------|---------------|-----------------|-------------|
-| **Squashing into a single commit** | Extremely simple; requires no staging taxonomy. | Loses all distinction between logic, configuration, tests, and historical logs. | Maintain the 5-batch taxonomy to separate concerns. |
-| **Interactive Rebase (`rebase -i`)** | Standard git squashing method. | Hundreds of commits make conflict resolution highly error-prone and time-consuming. | Use `git reset --soft` followed by clean path staging. |
-| **Sneaking in code fixes** | Fix minor typos or add new rules during refactoring. | Violates the zero-diff quality gate; makes debugging history consolidation harder. | Keep all file contents 100% identical; defer fixes to next milestone. |
-| **Coarse directory-based staging** | Staging `git add .planning/` in one go. | Mixes config files (Batch 1), quick tasks (Batch 5), and references (Batch 1). | Use exact pathnames or targeted glob patterns. |
+**Audit date:** 2026-05-28
+**Scope:** `commands/gsd/`, `get-shit-done/workflows/`, `agents/`, `get-shit-done/references/`
 
 ---
 
-## Feature Dependencies
+## Summary
 
-The 5 batches have strong logical dependencies. Committing them in the correct sequence ensures each step is built on top of its prerequisites.
+- `@` references: **107 total** across **4 layers** (5 in commands, 57 in workflows, 42 in agents, 3 in references)
+- `` !`<cmd>` `` references: **117 total**, **entirely in commands/gsd/** (0 in workflows, agents, or references)
+- Unique `@` target files: **62** (49 references/, 5 templates/, 7 workflows/, 1 agent)
+- Unique `` !`cat` `` static target files: **90** (66 workflows, 19 references, 4 templates)
+- Dynamic `.planning/` references via shell injection: **2** (both in `add-tests.md`)
+
+The split is clean by layer: `commands/gsd/` was converted wholesale to `` !`cat $HOME/.claude/...` `` notation (task 260525-o1n, 117 occurrences, 55 files), while `workflows/`, `agents/`, and `references/` use `@` notation exclusively. Four command files were **not** converted and remain on `@` notation. Three command files have **mixed notation** (both `@` and `` !`cat` `` in the same file).
+
+---
+
+## Reference Inventory
+
+### commands/gsd/ — `` !`cat` `` notation (post-conversion)
+
+55 of 67 command files use `` !`cat` ``. All references point to `$HOME/.claude/...` paths.
+
+| File | `` !`cat` `` targets |
+|------|---------------------|
+| add-tests.md | workflows/add-tests.md, .planning/STATE.md, .planning/ROADMAP.md |
+| ai-integration-phase.md | workflows/ai-integration-phase.md, references/ai-frameworks.md, references/ai-evals.md |
+| audit-fix.md | workflows/audit-fix.md |
+| audit-milestone.md | workflows/audit-milestone.md |
+| audit-uat.md | workflows/audit-uat.md |
+| autonomous.md | workflows/autonomous.md, references/ui-brand.md |
+| capture.md | workflows/add-todo.md, workflows/note.md, workflows/add-backlog.md, workflows/plant-seed.md, workflows/check-todos.md, references/ui-brand.md |
+| cleanup.md | workflows/cleanup.md |
+| code-review.md | workflows/code-review.md |
+| config.md | workflows/settings.md, workflows/settings-advanced.md, workflows/settings-integrations.md |
+| debug.md | workflows/debug.md |
+| docs-update.md | workflows/docs-update.md |
+| eval-review.md | workflows/eval-review.md, references/ai-evals.md |
+| execute-phase.md | workflows/execute-phase.md, references/ui-brand.md |
+| explore.md | workflows/explore.md |
+| extract-learnings.md | workflows/extract-learnings.md **(MIXED — also has `@`)** |
+| fast.md | workflows/fast.md |
+| forensics.md | workflows/forensics.md |
+| health.md | workflows/health.md |
+| help.md | workflows/help.md |
+| import.md | workflows/import.md, references/ui-brand.md, references/gate-prompts.md, references/doc-conflict-engine.md |
+| inbox.md | workflows/inbox.md |
+| ingest-docs.md | workflows/ingest-docs.md, references/ui-brand.md, references/gate-prompts.md, references/doc-conflict-engine.md |
+| manager.md | workflows/manager.md, references/ui-brand.md |
+| map-codebase.md | workflows/map-codebase.md |
+| milestone-summary.md | workflows/milestone-summary.md |
+| mvp-phase.md | workflows/mvp-phase.md, references/spidr-splitting.md, references/user-story-template.md **(MIXED — also has `@`)** |
+| new-milestone.md | workflows/new-milestone.md, references/questioning.md, references/ui-brand.md, templates/project.md, templates/requirements.md |
+| new-project.md | workflows/new-project.md, references/questioning.md, references/ui-brand.md, templates/project.md, templates/requirements.md |
+| pause-work.md | workflows/pause-work.md |
+| phase.md | workflows/add-phase.md, workflows/insert-phase.md, workflows/remove-phase.md, workflows/edit-phase.md |
+| plan-phase.md | workflows/plan-phase.md, references/ui-brand.md |
+| plan-review-convergence.md | workflows/plan-review-convergence.md, references/revision-loop.md, references/gates.md, references/agent-contracts.md |
+| pr-branch.md | workflows/pr-branch.md |
+| profile-user.md | workflows/profile-user.md, references/ui-brand.md |
+| progress.md | workflows/progress.md, workflows/next.md, workflows/do.md, references/ui-brand.md |
+| quick.md | workflows/quick.md |
+| resume-work.md | workflows/resume-project.md |
+| review.md | workflows/review.md |
+| secure-phase.md | workflows/secure-phase.md |
+| settings.md | workflows/settings.md |
+| ship.md | workflows/ship.md **(MIXED — also has `@`)** |
+| sketch.md | workflows/sketch.md, workflows/sketch-wrap-up.md, references/ui-brand.md, references/sketch-theme-system.md, references/sketch-interactivity.md, references/sketch-tooling.md, references/sketch-variant-patterns.md |
+| spec-phase.md | workflows/spec-phase.md, templates/spec.md |
+| spike.md | workflows/spike.md, workflows/spike-wrap-up.md, references/ui-brand.md |
+| stats.md | workflows/stats.md |
+| thread.md | workflows/thread.md |
+| ui-phase.md | workflows/ui-phase.md, references/ui-brand.md |
+| ui-review.md | workflows/ui-review.md, references/ui-brand.md |
+| ultraplan-phase.md | workflows/ultraplan-phase.md, references/ui-brand.md |
+| undo.md | workflows/undo.md, references/ui-brand.md, references/gate-prompts.md |
+| update.md | workflows/update.md, workflows/sync-skills.md, workflows/reapply-patches.md |
+| validate-phase.md | workflows/validate-phase.md |
+| verify-work.md | workflows/verify-work.md, templates/UAT.md |
+| workspace.md | workflows/new-workspace.md, workflows/list-workspaces.md, workflows/remove-workspace.md, references/ui-brand.md |
+
+**Commands NOT converted — still use `@` notation (4 files):**
+
+| File | Notation | `@` targets |
+|------|----------|-------------|
+| complete-milestone.md | `@` only | workflows/complete-milestone.md, templates/milestone-archive.md |
+| extract-learnings.md | MIXED | workflows/extract-learnings.md (both `@` line 23 and `` !`cat` `` line 20) |
+| mvp-phase.md | MIXED | workflows/mvp-phase.md (both `@` line 43 and `` !`cat` `` line 27) |
+| ship.md | MIXED | workflows/ship.md (both `@` line 24 and `` !`cat` `` line 21) |
+
+The three mixed files each reference the **same workflow** via both notations simultaneously — the `@` reference is a narrative sentence ("Execute X from @~/.claude/...") while the `` !`cat` `` line injects the workflow content. This means the workflow file is mentioned twice, which is redundant and likely unintentional.
+
+---
+
+### get-shit-done/workflows/ — `@` notation only (57 occurrences, 20 files)
+
+| File | `@` targets |
+|------|-------------|
+| ai-integration-phase.md | references/ai-frameworks.md, references/ai-evals.md |
+| discuss-phase.md | references/domain-probes.md, references/gate-prompts.md, references/universal-anti-patterns.md; inline body prose: references/scout-codebase.md |
+| discuss-phase/modes/advisor.md | agents/gsd-advisor-researcher.md (unusual — agent file, not a reference fragment) |
+| discuss-phase/modes/power.md | workflows/discuss-phase-power.md |
+| eval-review.md | references/ai-evals.md |
+| execute-phase.md | references/agent-contracts.md, references/context-budget.md, references/gates.md, workflows/execute-plan.md, templates/summary.md, references/checkpoints.md, references/tdd.md, references/worktree-path-safety.md, references/executor-examples.md (conditional) |
+| execute-plan.md | references/git-integration.md |
+| explore.md | references/questioning.md, references/domain-probes.md |
+| mvp-phase.md | references/user-story-template.md, references/spidr-splitting.md, references/planner-mvp-mode.md, references/phase-argument-parsing.md (inline) |
+| plan-phase.md | references/ui-brand.md, references/revision-loop.md, references/gate-prompts.md, references/agent-contracts.md, references/gates.md, references/tdd.md (x2), references/skeleton-template.md, references/planner-mvp-mode.md (x2) |
+| resume-project.md | references/continuation-format.md |
+| secure-phase.md | references/ui-brand.md |
+| sketch.md | references/sketch-theme-system.md, references/sketch-variant-patterns.md, references/sketch-interactivity.md, references/sketch-tooling.md |
+| transition.md | workflows/graduation.md |
+| ui-phase.md | references/ui-brand.md |
+| ui-review.md | references/ui-brand.md |
+| undo.md | references/ui-brand.md, references/gate-prompts.md |
+| validate-phase.md | references/ui-brand.md |
+| verify-phase.md | references/verification-patterns.md, templates/verification-report.md |
+| verify-work.md | templates/UAT.md, references/verify-mvp-mode.md (inline), workflows/diagnose-issues.md |
+
+---
+
+### agents/ — `@` notation only (42 occurrences, 7 files)
+
+| File | `@` targets |
+|------|-------------|
+| gsd-debugger.md | references/mandatory-initial-read.md, references/common-bug-patterns.md (x2), references/project-skills-discovery.md, references/debugger-philosophy.md, references/thinking-models-debug.md |
+| gsd-executor.md | references/mandatory-initial-read.md, references/project-skills-discovery.md, references/thinking-models-execution.md, references/ios-scaffold.md, references/executor-examples.md, references/checkpoints.md, references/execute-mvp-tdd.md, templates/summary.md |
+| gsd-phase-researcher.md | references/mandatory-initial-read.md, references/project-skills-discovery.md, references/thinking-models-research.md |
+| gsd-plan-checker.md | references/gates.md, references/thinking-models-planning.md, references/few-shot-examples/plan-checker.md |
+| gsd-planner.md | references/mandatory-initial-read.md, references/project-skills-discovery.md, references/planner-source-audit.md (x2), references/planner-antipatterns.md (x2), references/tdd.md, references/planner-mvp-mode.md (x2), references/user-story-template.md, references/skeleton-template.md, workflows/execute-plan.md, templates/summary.md, references/thinking-models-planning.md, references/planner-chunked.md |
+| gsd-user-profiler.md | references/user-profiling.md |
+| gsd-verifier.md | references/mandatory-initial-read.md, references/verification-overrides.md, references/gates.md, references/project-skills-discovery.md, references/thinking-models-verification.md, references/few-shot-examples/verifier.md, references/verify-mvp-mode.md |
+
+---
+
+### get-shit-done/references/ — `@` notation, cross-references only (3 occurrences, 3 files)
+
+| File | `@` target | Nature |
+|------|------------|--------|
+| model-profile-resolution.md | references/model-profiles.md | Load directive to sibling file |
+| planner-mvp-mode.md | references/skeleton-template.md | Inline prose reference to sibling file |
+| verification-patterns.md | references/checkpoints.md | Bold-text inline mention (not a load directive) |
+
+---
+
+## Shared Fragments Inventory
+
+63 total files in `get-shit-done/references/` (including `few-shot-examples/` subdir with 2 files).
+
+| Fragment | Referenced By | Status |
+|----------|--------------|--------|
+| agent-contracts.md | workflows/plan-phase, commands/plan-review-convergence | Active |
+| ai-evals.md | workflows/ai-integration-phase + eval-review, commands/ai-integration-phase + eval-review | Active |
+| ai-frameworks.md | workflows/ai-integration-phase, commands/ai-integration-phase | Active |
+| artifact-types.md | — | **UNREFERENCED** |
+| autonomous-smart-discuss.md | — | Unreferenced via path (may be loaded by prose) |
+| checkpoints.md | workflows/execute-phase, agents/gsd-executor, references/verification-patterns (inline mention) | Active |
+| common-bug-patterns.md | agents/gsd-debugger (x2) | Active |
+| context-budget.md | workflows/execute-phase | Active |
+| continuation-format.md | workflows/resume-project | Active |
+| debugger-philosophy.md | agents/gsd-debugger | Active |
+| decimal-phase-calculation.md | — | **UNREFERENCED** |
+| doc-conflict-engine.md | commands/import + ingest-docs | Active |
+| domain-probes.md | workflows/discuss-phase + explore | Active |
+| execute-mvp-tdd.md | agents/gsd-executor | Active |
+| executor-examples.md | workflows/execute-phase (conditional), agents/gsd-executor | Active |
+| few-shot-examples/plan-checker.md | agents/gsd-plan-checker | Active |
+| few-shot-examples/verifier.md | agents/gsd-verifier | Active |
+| gate-prompts.md | workflows/discuss-phase + plan-phase + undo, commands/import + ingest-docs + undo | Active |
+| gates.md | workflows/execute-phase + plan-phase, agents/gsd-plan-checker + gsd-verifier, commands/plan-review-convergence | Active |
+| git-integration.md | workflows/execute-plan | Active |
+| git-planning-commit.md | — | **UNREFERENCED** |
+| ios-scaffold.md | agents/gsd-executor | Active |
+| mandatory-initial-read.md | agents/gsd-debugger + gsd-executor + gsd-phase-researcher + gsd-planner + gsd-verifier (5 agents) | Active |
+| model-profile-resolution.md | Only from within references/ itself | Effectively unreferenced from outside |
+| model-profiles.md | references/model-profile-resolution.md | Active (indirect only) |
+| mvp-concepts.md | — | Unreferenced via path (may be loaded by prose) |
+| phase-argument-parsing.md | workflows/mvp-phase (inline prose) | Active |
+| planner-antipatterns.md | workflows/execute-phase (inline), agents/gsd-planner (x2) | Active |
+| planner-chunked.md | agents/gsd-planner | Active |
+| planner-gap-closure.md | — | Unreferenced via path (may be loaded by prose) |
+| planner-graphify-auto-update.md | — | **UNREFERENCED** |
+| planner-human-verify-mode.md | — | **UNREFERENCED** |
+| planner-interface-context.md | — | Unreferenced via path (may be loaded by prose) |
+| planner-mvp-mode.md | workflows/plan-phase (x2) + mvp-phase, agents/gsd-planner (x2), references/planner-mvp-mode (self-ref) | Active |
+| planner-reviews.md | — | Unreferenced via path (may be loaded by prose) |
+| planner-revision.md | — | Unreferenced via path (may be loaded by prose) |
+| planner-source-audit.md | agents/gsd-planner (x2) | Active |
+| planning-config.md | — | **UNREFERENCED** |
+| project-skills-discovery.md | agents/gsd-debugger + gsd-executor + gsd-phase-researcher + gsd-planner + gsd-verifier (5 agents) | Active |
+| questioning.md | workflows/explore, commands/new-milestone + new-project | Active |
+| revision-loop.md | workflows/plan-phase, commands/plan-review-convergence | Active |
+| scout-codebase.md | workflows/discuss-phase (inline prose) | Active |
+| skeleton-template.md | workflows/plan-phase (inline), agents/gsd-planner, references/planner-mvp-mode | Active |
+| sketch-interactivity.md | workflows/sketch, commands/sketch | Active |
+| sketch-theme-system.md | workflows/sketch, commands/sketch | Active |
+| sketch-tooling.md | workflows/sketch, commands/sketch | Active |
+| sketch-variant-patterns.md | workflows/sketch, commands/sketch | Active |
+| spidr-splitting.md | workflows/mvp-phase, commands/mvp-phase | Active |
+| tdd.md | workflows/execute-phase + plan-phase (x2), agents/gsd-planner | Active |
+| thinking-models-debug.md | agents/gsd-debugger | Active |
+| thinking-models-execution.md | agents/gsd-executor | Active |
+| thinking-models-planning.md | agents/gsd-plan-checker + gsd-planner | Active |
+| thinking-models-research.md | agents/gsd-phase-researcher | Active |
+| thinking-models-verification.md | agents/gsd-verifier | Active |
+| thinking-partner.md | — | Unreferenced via path (may be loaded by prose) |
+| ui-brand.md | 18 `` !`cat` `` in commands + 7 `@` in workflows = **most-referenced fragment** | Active |
+| universal-anti-patterns.md | workflows/discuss-phase | Active |
+| user-profiling.md | agents/gsd-user-profiler | Active |
+| user-story-template.md | workflows/mvp-phase (x2), agents/gsd-planner, commands/mvp-phase | Active |
+| verification-overrides.md | agents/gsd-verifier | Active |
+| verification-patterns.md | workflows/verify-phase | Active |
+| verify-mvp-mode.md | workflows/verify-work (inline), agents/gsd-verifier | Active |
+| workstream-flag.md | — | **UNREFERENCED** |
+| worktree-path-safety.md | workflows/execute-phase | Active |
+
+**Confirmed unreferenced via path-based grep (6 files):**
+`artifact-types.md`, `decimal-phase-calculation.md`, `git-planning-commit.md`, `planner-graphify-auto-update.md`, `planner-human-verify-mode.md`, `planning-config.md`, `workstream-flag.md`
+
+`model-profile-resolution.md` is only referenced from within `references/` itself (by `model-profiles.md` as its cross-reference), making it unreachable from any workflow, agent, or command.
+
+---
+
+## Static vs Dynamic Analysis
+
+### Truly Static — safe to inline at install time
+
+All 55 active `references/` fragment files contain fixed instructional prose with no runtime interpolation. A template engine can inline these at install time without loss of correctness. Both `@` and `` !`cat` `` produce identical results for this category.
+
+All `templates/` files (project.md, requirements.md, spec.md, UAT.md, summary.md, verification-report.md, milestone-archive.md) are static boilerplate. Content is agent-filled after loading, not by the reference mechanism itself.
+
+Workflow files referenced via `` !`cat` `` from commands (66 unique workflow targets) are static install-time files. They contain no runtime variable substitution at the point of injection by the command.
+
+### Dynamic — must NOT be inlined at install time
+
+**`.planning/STATE.md` and `.planning/ROADMAP.md`** (`commands/gsd/add-tests.md` lines 35-36):
 
 ```
-[Batch 1: Rules & Config]
-       ├──required by──> [Batch 2: Scanner Logic]
-       │                        └──required by──> [Batch 4: Tests & Gates]
-       └──required by──> [Batch 3: Workflows & Agents]
-                                └──required by──> [Batch 4: Tests & Gates]
-
-[Batch 5: Maintenance & State] ──enhances/documents──> [All Batches]
+!`cat .planning/STATE.md`
+!`cat .planning/ROADMAP.md`
 ```
 
-### Dependency Notes
+These are project-specific files that change per-project and per-session. They must remain as runtime shell executions. A template engine must exclude these from any install-time inlining pass and preserve the shell injection form.
 
-- **Batch 2 (Scanner) requires Batch 1 (Rules & Config):** The scanners rely on rules defined in prompt guides and catalogues to run correctly.
-- **Batch 3 (Workflows & Agents) requires Batch 1 (Rules & Config):** Prompt content is governed by configuration limits and references.
-- **Batch 4 (Tests) requires Batches 1, 2, and 3:** The test suite verifies agents (Batch 3) using scanner logic (Batch 2) against config structures (Batch 1).
-- **Batch 5 (Maintenance & Logs) contains state metadata:** These are self-contained logs, quick plans, and hook scripts that document or automate the workspace.
+**Conditional `@` reference** (`get-shit-done/workflows/execute-phase.md` line 619):
 
----
-
-## MVP Definition
-
-### Launch With (v1.41.5)
-
-The minimal feature set required to achieve the milestone objectives safely:
-
-- [ ] **Soft reset** the current branch to `v1.41.2`.
-- [ ] **Staging map** categorizing all 690+ changed files into 5 distinct batches.
-- [ ] **5 commits** executed sequentially with semantic messages.
-- [ ] **Zero-diff validation** verifying parity with the original branch HEAD.
-- [ ] **Test validation** ensuring `npm test` finishes with 8300+ green tests.
-
-### Add After Validation (v1.x)
-
-- [ ] **Automated staging CLI tool:** A utility to automatically stage files based on path glob rules.
-- [ ] **Git pre-commit validation hook:** A hook that checks if a commit violates the zero-diff rule.
-
-### Future Consideration (v2+)
-
-- [ ] **Divergence tracking system:** An automated pipeline that warns when a PR exceeds a commit threshold, alerting maintainers that history consolidation is needed.
-
----
-
-## Feature Prioritization Matrix
-
-| Feature | User Value | Implementation Cost | Priority |
-|---------|------------|---------------------|----------|
-| Soft Reset & Unstage | HIGH | LOW | P1 |
-| 5-Batch File Classification | HIGH | MEDIUM | P1 |
-| Zero-Diff Validation Process | HIGH | LOW | P1 |
-| Full Test Suite Gate | HIGH | MEDIUM | P1 |
-| Automated Staging Script | MEDIUM | MEDIUM | P2 |
-
----
-
-## Batch File Mapping
-
-The table below maps the 694 changed files to the 5 batches based on their paths and contents:
-
-| Batch | Description | Representative Files & Paths |
-|-------|-------------|------------------------------|
-| **Batch 1** | Rules and configuration files | `CATALOGUE.json`, `mise.toml`, `.planning/config.json`, `.planning/references/*` (`PROMPT_ENGINEERING_GUIDE_V10.md`, `PROMPT_IMPROVEMENT_GUIDE_V01.md`, `UPSTREAM_TO_FORK_CHANGES_GUIDE.md`) |
-| **Batch 2** | Scanner logic and scanner configs | `hooks/gsd-read-injection-scanner.js`, `scripts/audit-tags.js`, `hooks/gsd-check-update.js` |
-| **Batch 3** | Workflows, agents, commands, templates | `agents/*.md`, `commands/gsd/*.md`, `get-shit-done/workflows/*.md`, `README*.md`, `docs/*.md` (excluding test/inventory docs) |
-| **Batch 4** | Core tests, unit tests, validation gates | `tests/*.test.cjs`, `scripts/run-tests.cjs` |
-| **Batch 5** | Quick tasks, maintenance, logs, state | `.planning/quick/**/*`, `logs/*.md`, `.planning/PROJECT.md`, `.planning/STATE.md`, `.planning/ROADMAP.md`, `.planning/PROJECT_HISTORY.md`, `.planning/MILESTONES.md`, `.planning/RETROSPECTIVE.md`, `.planning/v1.36.0.a-MILESTONE-AUDIT.md`, `.planning/codebase/*`, `.planning/critique/*`, `.planning/debug/*`, `.planning/intel/*`, `.planning/notes/*`, `.planning/research/*`, `bin/install.js`, `hooks/gsd-check-update-worker.js`, `hooks/gsd-statusline.js`, `sdk/src/cli.ts`, `scripts/gen-inventory-manifest.cjs`, `get-shit-done/bin/lib/security.cjs`, `get-shit-done/bin/lib/state.cjs` |
-
----
-
-## Zero-Diff Validation Procedure
-
-To ensure 100% file content parity, execute the following script during consolidation:
-
-```bash
-# 1. Store the original HEAD SHA
-ORIGINAL_HEAD=$(git rev-parse HEAD)
-
-# 2. Reset the branch pointer to v1.41.2
-git reset --soft v1.41.2
-
-# 3. Unstage everything to verify files
-git reset
-
-# 4. Stage and commit Batch 1
-# E.g., git add CATALOGUE.json mise.toml .planning/config.json .planning/references/
-git commit -m "feat(rules-config): [Batch 1/5] consolidate fork standards, references, and project configurations"
-
-# 5. Stage and commit Batch 2
-# E.g., git add hooks/gsd-read-injection-scanner.js scripts/audit-tags.js hooks/gsd-check-update.js
-git commit -m "feat(scanner): [Batch 2/5] consolidate custom injection scanning and tag audit logic"
-
-# 6. Stage and commit Batch 3
-# E.g., git add agents/ commands/ get-shit-done/workflows/ README* docs/
-git commit -m "feat(prompts-docs): [Batch 3/5] consolidate positive framing refactors across agents, commands, workflows, and documentation"
-
-# 7. Stage and commit Batch 4
-# E.g., git add tests/ scripts/run-tests.cjs
-git commit -m "test(validation): [Batch 4/5] consolidate test suite and custom regression gates"
-
-# 8. Stage and commit Batch 5
-# E.g., git add .planning/quick/ logs/ bin/install.js hooks/ sdk/ scripts/ get-shit-done/bin/
-git commit -m "chore(maintenance): [Batch 5/5] consolidate quick tasks, run logs, git state metadata, and installer hooks"
-
-# 9. Perform zero-diff validation
-git diff HEAD $ORIGINAL_HEAD
-
-# 10. Run the test suite
-npm test
+```
+${CONTEXT_WINDOW < 200000 ? '' : '@~/.claude/get-shit-done/references/executor-examples.md'}
 ```
 
-If `git diff HEAD $ORIGINAL_HEAD` returns no output and `npm test` passes, the consolidation is successful.
+This is a JavaScript template-literal expression inside a workflow prompt string. The `@` reference is conditionally included based on `CONTEXT_WINDOW` resolved at workflow execution time. This is the only conditional `@` reference in the entire codebase. A template engine cannot inline this at install time; the JavaScript conditional expression must be preserved as-is, or the template engine must implement conditional include syntax.
+
+**Agent file reference in a spawn prompt** (`get-shit-done/workflows/discuss-phase/modes/advisor.md`):
+
+```
+prompt="First, read @~/.claude/agents/gsd-advisor-researcher.md for your role and instructions.
+```
+
+This `@` reference is injected into a dynamically-constructed agent spawn string. It targets an agent definition file in `agents/`, not a reference fragment. Inlining the full agent definition into the workflow prompt would be semantically wrong — the intent is for the spawned subagent to read its own role file, not for the orchestrator to load it.
 
 ---
 
-## Sources
+## Coverage Gaps
 
-- `.planning/PROJECT.md`
-- Git commit logs (`git log v1.41.2..HEAD`)
-- Git diff statistics (`git diff --stat v1.41.2 HEAD`)
-- Core test suite runner configurations
-- Prior milestone consolidation plans (`v1.36.0` - `v1.41.3`)
+### Four command files not converted from `@` notation
 
----
-*Feature research for: Git Commit History Refactoring*
-*Researched: 2026-05-21*
+`complete-milestone.md` was skipped entirely by the conversion task. `extract-learnings.md`, `mvp-phase.md`, and `ship.md` were partially converted — each now has both notations for the same target workflow file. These are the files that need to be fixed in the revert-and-unify milestone.
+
+### Mixed-notation files introduce double-load risk
+
+In `extract-learnings.md`, `mvp-phase.md`, and `ship.md`, the workflow content file is referenced by both an `@` inline-read line and a `` !`cat` `` injection line. At runtime this causes the workflow content to appear twice in the context window, wasting tokens. These three files must have one notation removed.
+
+### 8 unreferenced files in references/
+
+These exist but are not reachable via any formal path reference. They are either: (a) orphaned and can be removed, or (b) loaded via prose instruction without a path (e.g., "read planner-reviews.md"). The template unification work should audit these to determine whether they need `@` or `` !`cat` `` wiring added, or whether they are dead code.
+
+The 8 files: `artifact-types.md`, `decimal-phase-calculation.md`, `git-planning-commit.md`, `model-profile-resolution.md` (external), `planner-graphify-auto-update.md`, `planner-human-verify-mode.md`, `planning-config.md`, `workstream-flag.md`.
+
+### No circular references detected
+
+No file in `references/` chains through more than one level of `@` references. The three intra-references/ cross-references are all leaf references. The `model-profile-resolution.md` → `model-profiles.md` chain is two hops but the second file has no further references.
