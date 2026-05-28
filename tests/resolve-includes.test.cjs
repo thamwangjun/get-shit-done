@@ -131,3 +131,60 @@ test('throws descriptive error when include depth reaches limit', () => {
     fs.rmSync(sourceRoot, { recursive: true, force: true });
   }
 });
+
+// ─── Test 6 — bare !`cat $HOME/.claude/` inlining (RESV-02) ─────────────────
+
+test('inlines bare !`cat $HOME/.claude/` reference by reading file at sourceRoot path', () => {
+  const sourceRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'ri-test-'));
+  try {
+    const dir = path.join(sourceRoot, 'get-shit-done', 'workflows');
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, 'sample.md'), '# Sample\ncat-inlined content\n', 'utf8');
+
+    // The cat-command form: bare line with !`cat $HOME/.claude/...`
+    const content = 'preamble\n!`cat $HOME/.claude/get-shit-done/workflows/sample.md`\npostamble\n';
+    const result = resolveIncludes(content, sourceRoot, new Set());
+
+    assert.ok(result.includes('cat-inlined content'), 'result should contain the inlined file content');
+    assert.ok(
+      !result.includes('!`cat '),
+      'result should not contain the original !`cat ...` directive'
+    );
+    assert.ok(result.includes('preamble'), 'result should retain surrounding content');
+    assert.ok(result.includes('postamble'), 'result should retain surrounding content');
+  } finally {
+    fs.rmSync(sourceRoot, { recursive: true, force: true });
+  }
+});
+
+// ─── Test 7 — skip patterns inside fenced code blocks (RESV-04) ──────────────
+
+test('emits @~/.claude/ reference verbatim when inside a fenced code block', () => {
+  const sourceRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'ri-test-'));
+  try {
+    // The referenced file does NOT exist — if the implementation tried to inline
+    // it, the call would throw. Absence of an error proves the line was skipped.
+    const content = [
+      'before fence',
+      '```markdown',
+      '@~/.claude/no/such/file-inside-fence.md',
+      '```',
+      'after fence',
+    ].join('\n') + '\n';
+
+    let result;
+    assert.doesNotThrow(
+      () => { result = resolveIncludes(content, sourceRoot, new Set()); },
+      'should not throw when @-reference appears inside a fenced code block'
+    );
+
+    assert.ok(
+      result.includes('@~/.claude/no/such/file-inside-fence.md'),
+      'the original @~/.claude/ line should appear verbatim in the output'
+    );
+    assert.ok(result.includes('before fence'), 'surrounding content should be preserved');
+    assert.ok(result.includes('after fence'), 'surrounding content should be preserved');
+  } finally {
+    fs.rmSync(sourceRoot, { recursive: true, force: true });
+  }
+});
