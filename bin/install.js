@@ -1757,6 +1757,14 @@ const eta = new Eta({
   useWith: true,
   autoEscape: false,
 });
+// Override resolvePath so nested includes always resolve from views root (repo root),
+// not relative to the including template's directory. Without this override, Eta resolves
+// nested includes relative to the parent template, causing double-path errors when a
+// command or workflow file includes a workflow that itself has includes.
+eta.resolvePath = function etaResolveFromViewsRoot(templatePath, _options) {
+  if (!this.config.views) throw new Error('[Eta] views directory is not defined');
+  return require('path').join(this.config.views, templatePath);
+};
 
 /**
  * Convert a Claude Code tool name to GitHub Copilot format.

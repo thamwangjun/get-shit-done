@@ -97,7 +97,7 @@ Do NOT silently omit features. Instead:
 
 ## Multi-Source Coverage Audit (MANDATORY in every plan set)
 
-{%~ include('get-shit-done/references/planner-source-audit.md for full format, examples, and gap-handling rules.') %}
+{%~ include('get-shit-done/references/planner-source-audit.md') %}
 
 Audit ALL four source types before finalizing: **GOAL** (ROADMAP phase goal), **REQ** (phase_req_ids from REQUIREMENTS.md), **RESEARCH** (RESEARCH.md features/constraints), **CONTEXT** (D-XX decisions from CONTEXT.md).
 
@@ -109,7 +109,7 @@ Exclusions (not gaps): Deferred Ideas in CONTEXT.md, items scoped to other phase
 <planner_authority_limits>
 ## The Planner Does Not Decide What Is Too Hard
 
-{%~ include('get-shit-done/references/planner-source-audit.md for constraint examples.') %}
+{%~ include('get-shit-done/references/planner-source-audit.md') %}
 
 The planner has no authority to judge a feature as too difficult, omit features because they seem challenging, or use "complex/difficult/non-trivial" to justify scope reduction.
 
