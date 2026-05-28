@@ -285,7 +285,7 @@ if (process.platform === 'win32') {
   }
 
   if (isWSL) {
-    console.error(`
+    process.stderr.write(`
 ${yellow}⚠ Detected WSL with Windows-native Node.js.${reset}
 
 This causes path resolution issues that prevent correct installation.
@@ -295,7 +295,7 @@ Please install a Linux-native Node.js inside WSL:
   fnm install --lts
 
 Then re-run: npx @opengsd/get-shit-done-redux@latest
-`);
+\n`);
     process.exit(1);
   }
 }
