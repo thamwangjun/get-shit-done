@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v2.1.0-c
 milestone_name: Install-Time Content Materialization
-status: planning
-last_updated: "2026-05-28T09:38:22.491Z"
-last_activity: "2026-05-28 — v2.1.0-c roadmap created (4 phases: 44 Resolver Core, 45 Pipeline Integration, 46 Regression Test Suite, 47 Full Runtime Matrix)"
+status: executing
+last_updated: "2026-05-28T09:49:25.391Z"
+last_activity: 2026-05-28 -- Phase 44 execution started
 progress:
   total_phases: 4
   completed_phases: 0
-  total_plans: 0
+  total_plans: 1
   completed_plans: 0
   percent: 0
 ---
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-28 after v2.1.0-c roadmap defined)
 
 **Core value:** Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships
-**Current focus:** Phase 44 — Resolver Core (build and unit-test `resolveIncludes()` in isolation before wiring into install pipeline)
+**Current focus:** Phase 44 — resolver-core
 
 ## Current Position
 
-Phase: Not started (roadmap defined, planning phase 44)
-Plan: —
-Status: planning
-Last activity: 2026-05-28 — v2.1.0-c roadmap created (4 phases: 44 Resolver Core, 45 Pipeline Integration, 46 Regression Test Suite, 47 Full Runtime Matrix)
+Phase: 44 (resolver-core) — EXECUTING
+Plan: 1 of 1
+Status: Executing Phase 44
+Last activity: 2026-05-28 -- Phase 44 execution started
 
 ## Performance Metrics
 

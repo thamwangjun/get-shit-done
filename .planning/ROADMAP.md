@@ -199,7 +199,7 @@ Full details: `.planning/milestones/v2.1.0-a-ROADMAP.md`
 
 **Milestone Goal:** Replace runtime `@` and `` !`<bash>` `` content injection with install-time template substitution so every installed file is fully self-contained — no reliance on Claude to inject referenced content at runtime.
 
-- [ ] **Phase 44: Resolver Core** — Build and unit-test `resolveIncludes()` in isolation before wiring into the install pipeline
+- [x] **Phase 44: Resolver Core** — Build and unit-test `resolveIncludes()` in isolation before wiring into the install pipeline (completed 2026-05-28)
 - [ ] **Phase 45: Pipeline Integration** — Revert 260525-o1n, clean 3 mixed-notation files, wire `resolveIncludes()` into both `install.js` insertion points, audit skills path
 - [ ] **Phase 46: Regression Test Suite** — 6 targeted tests running against installed output (not source files)
 - [ ] **Phase 47: Full Runtime Matrix + Verification** — Validate all supported runtimes produce zero unresolved references; `npm test` green
@@ -298,7 +298,7 @@ Full details: `.planning/milestones/v2.1.0-a-ROADMAP.md`
 | 41. Final Verification & Parity Audit | v1.41.5 | 1/1 | Complete | 2026-05-23 |
 | 42. SHA Hook and Install Reimplementation | v2.1.0-a | 1/1 | Complete | 2026-05-25 |
 | 43. Update Workflow SHA Migration + Full Gate | v2.1.0-a | 1/1 | Complete | 2026-05-26 |
-| 44. Investigation | v2.1.0-b | 0/0 | Abandoned | - |
+| 44. Investigation | v2.1.0-b | 1/1 | Complete   | 2026-05-28 |
 | 45. Command Layer Fixes | v2.1.0-b | 0/0 | Abandoned | - |
 | 46. Workflow Layer Fixes | v2.1.0-b | 0/0 | Abandoned | - |
 | 47. Agent Layer Fixes | v2.1.0-b | 0/0 | Abandoned | - |
