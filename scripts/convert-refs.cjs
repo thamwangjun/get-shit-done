@@ -61,6 +61,19 @@ function collectMdFiles(dir) {
   return results;
 }
 
+// ─── Path safety ───────────────────────────────────────────────────────────
+
+/**
+ * Returns true if a relative path tail extracted from a ref pattern is safe
+ * to use in an Eta include tag. Rejects paths containing traversal segments
+ * (`..`) or absolute-path markers.
+ * @param {string} tail
+ * @returns {boolean}
+ */
+function isSafePath(tail) {
+  return !/(?:^|\/)\.\.(?:\/|$)/.test(tail) && !path.isAbsolute(tail);
+}
+
 // ─── Line transformation ────────────────────────────────────────────────────
 
 // D-06 regexes — match lines that are ENTIRELY the pattern (no other content)
@@ -90,19 +103,43 @@ function transformLine(line) {
 
   // D-06: !`cat $HOME/.claude/get-shit-done/X`
   let m = RE_CAT_HOME.exec(trimmed);
-  if (m) return `${indent}{%~ include('get-shit-done/${m[1]}') %}`;
+  if (m) {
+    if (!isSafePath(m[1])) {
+      process.stderr.write(`WARN: skipping unsafe path in D-06 pattern: ${m[1]}\n`);
+      return null;
+    }
+    return `${indent}{%~ include('get-shit-done/${m[1]}') %}`;
+  }
 
   // D-06: !`cat ~/.claude/get-shit-done/X`
   m = RE_CAT_TILDE.exec(trimmed);
-  if (m) return `${indent}{%~ include('get-shit-done/${m[1]}') %}`;
+  if (m) {
+    if (!isSafePath(m[1])) {
+      process.stderr.write(`WARN: skipping unsafe path in D-06 pattern: ${m[1]}\n`);
+      return null;
+    }
+    return `${indent}{%~ include('get-shit-done/${m[1]}') %}`;
+  }
 
   // D-06: @~/.claude/get-shit-done/X
   m = RE_AT_TILDE.exec(trimmed);
-  if (m) return `${indent}{%~ include('get-shit-done/${m[1]}') %}`;
+  if (m) {
+    if (!isSafePath(m[1])) {
+      process.stderr.write(`WARN: skipping unsafe path in D-06 pattern: ${m[1]}\n`);
+      return null;
+    }
+    return `${indent}{%~ include('get-shit-done/${m[1]}') %}`;
+  }
 
   // D-06: @$HOME/.claude/get-shit-done/X
   m = RE_AT_HOME.exec(trimmed);
-  if (m) return `${indent}{%~ include('get-shit-done/${m[1]}') %}`;
+  if (m) {
+    if (!isSafePath(m[1])) {
+      process.stderr.write(`WARN: skipping unsafe path in D-06 pattern: ${m[1]}\n`);
+      return null;
+    }
+    return `${indent}{%~ include('get-shit-done/${m[1]}') %}`;
+  }
 
   // D-07 idempotent: already !`cat .planning/X` — retain
   if (RE_CAT_PLANNING.test(trimmed)) return null;
