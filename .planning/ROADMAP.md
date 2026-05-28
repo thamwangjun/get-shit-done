@@ -199,19 +199,19 @@ Full details: `.planning/milestones/v2.1.0-a-ROADMAP.md`
 **Requirements**: INVEST-01, INVEST-02
 **Success Criteria** (what must be TRUE):
   1. A findings document exists with at least one concrete file:line example per identified failure mode drawn from commands, workflows, and agents
-  2. Failure modes are classified into the five taxonomy categories: subagent spawning failures, step omission, premature inline fallback loopholes, buried critical instructions, and `!cat` truncation (Claude receives only ~2KiB of a large workflow file and ignores the "Full output saved to:" read instruction)
-  3. All 72 command files using `!cat` workflow injection are enumerated with their workflow target and approximate workflow line count
+  2. Failure modes are classified into the five taxonomy categories: subagent spawning failures, step omission, premature inline fallback loopholes, buried critical instructions, and `` !`cat` `` truncation (Claude receives only ~2KiB of a large workflow file and ignores the "Full output saved to:" read instruction)
+  3. All 72 command files using `` !`cat` `` workflow injection are enumerated with their workflow target and approximate workflow line count
   4. The findings document is specific enough that Phase 45 and 46 implementers can look up which files need changes without additional investigation
 **Plans**: TBD
 
 ### Phase 45: Command Layer Fixes
-**Goal**: All 67 command files carry an explicit spawn mandate at a high-attention position, none grant silent inline fallbacks, and all 72 `!cat` workflow injections are replaced so Claude receives the full workflow file rather than a ~2KiB truncated preview
+**Goal**: All 67 command files carry an explicit spawn mandate at a high-attention position, none grant silent inline fallbacks, and all 72 `` !`cat` `` workflow injections are replaced so Claude receives the full workflow file rather than a ~2KiB truncated preview
 **Depends on**: Phase 44
 **Requirements**: CMD-01, CMD-02, CMD-03, CMD-04
 **Success Criteria** (what must be TRUE):
   1. Every command file that delegates to a subagent workflow restates the spawn mandate explicitly at the start of its `<objective>` or `<process>` block — a reviewer scanning each file can see the mandate without reading the loaded workflow
   2. No command file that invokes a subagent workflow offers inline execution as a silent default fallback — the only inline path requires an explicit user-supplied flag
-  3. All 72 `!cat` workflow injection lines are replaced with a mechanism that delivers the full file to Claude (explicit Read instruction or `@`-reference)
+  3. All 72 `` !`cat` `` workflow injection lines are replaced with a mechanism that delivers the full file to Claude (explicit Read instruction or `@`-reference)
   4. The negative-framing scanner still passes at 99/99 after all command file edits
 **Plans**: TBD
 **UI hint**: no

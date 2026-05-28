@@ -1,215 +1,237 @@
-# Architecture Research
+# Architecture Research: install.js Template Integration
 
-**Domain:** Git Commit Refactoring & Parity Validation
-**Researched:** 2026-05-21
-**Confidence:** HIGH
-
-## Standard Architecture
-
-### System Overview
-
-This architecture governs the history refactoring workflow for the `v1.41.5 Refactor Git Commit History` milestone. It defines how changes are backed up, how a soft reset is executed, how files are segregated into 5 feature-focused commit batches, and how verification gates (Node.js runner, custom scanner test suite, update hooks) guarantee zero regression and parity.
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                 Original Repository State                   │
-├─────────────────────────────────────────────────────────────┤
-│  ┌───────────────────────┐         ┌─────────────────────┐  │
-│  │   Active Workspace    │ ──────> │  Hard Backup/Stash  │  │
-│  │   (Divergent Tree)    │         │  (Safety Copy)      │  │
-│  └──────────┬────────────┘         └─────────────────────┘  │
-│             │                                               │
-│             │ git reset --soft v1.41.2                      │
-│             ▼                                               │
-├─────────────────────────────────────────────────────────────┤
-│                 Refactoring & Staging Stage                 │
-├─────────────────────────────────────────────────────────────┤
-│  ┌───────────────────────────────────────────────────────┐  │
-│  │               Batch Staging Pipeline                  │  │
-│  │  1. Configs ➔ 2. Scanners ➔ 3. Prompts/Workflows     │  │
-│  │            ➔ 4. Core Tests ➔ 5. Logs/State           │  │
-│  └──────────────────────────┬────────────────────────────┘  │
-│                             │                               │
-│                             ▼                               │
-├─────────────────────────────────────────────────────────────┤
-│                 Validation & Parity Gates                   │
-├─────────────────────────────────────────────────────────────┤
-│  ┌──────────────┐  ┌──────────────┐  ┌───────────────────┐  │
-│  │   Node.js    │  │    Custom    │  │    Zero-Diff      │  │
-│  │ Test Runner  │  │   Scanners   │  │ Verification Gate │  │
-│  └──────────────┘  └──────────────┘  └───────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Component Responsibilities
-
-| Component | Responsibility | Typical Implementation |
-|-----------|----------------|------------------------|
-| Hard Backup | Safety copy of the full repository tree to prevent data loss before git reset. | Create a temporary branch `backup-v1.41.5` and perform a physical directory copy (`cp -R`) outside the repository. |
-| Git Soft Reset | Moves HEAD back to tag `v1.41.2` while keeping all modified files intact in the working tree. | `git reset --soft v1.41.2` followed by unstaging files via `git reset HEAD` or `git restore --staged .`. |
-| Batch Stager | Segregates unstaged files into 5 distinct staging batches for clean, coherent commit history. | Staged sequentially via selective `git add` paths/globs, producing 5 distinct commits. |
-| Custom Scanners | Verifies prompt compliance with positive framing rules and blocks read-injection risks. | `tests/negative-framing-scan.test.cjs` (positive framing regex analysis) and `hooks/gsd-read-injection-scanner.js` (PostToolUse hook). |
-| Node.js Runner | Runs the 8300+ tests concurrently to verify workspace runtime sanity. | `scripts/run-tests.cjs` (Node.js test runner using `execFileSync` to run serial and parallel batches). |
-| Zero-Diff Validator | Assures that the refactored commits produce 100% file content parity with the original tree. | `git diff backup-v1.41.5` must return no output (zero difference). |
-
-## Recommended Project Structure
-
-The codebase is organized into directories representing different tiers of the GSD framework. Here is how they correspond to the 5 refactoring batches:
-
-```
-get-shit-done/
-├── .antigravity/                   # Batch 1: Rules and configuration files
-│   └── rules.md
-├── .planning/
-│   ├── config.json                 # Batch 1: Rules and configuration files
-│   └── STATE.md, ROADMAP.md, etc.  # Batch 5: Maintenance and state updates
-├── hooks/
-│   ├── gsd-read-injection-...js     # Batch 2: Scanner logic and rules
-│   └── gsd-check-update-worker.js  # Batch 5: Maintenance and state updates
-├── scripts/
-│   ├── base64-scan.sh              # Batch 2: Scanner logic and rules
-│   ├── lint-*.cjs                  # Batch 4: Core tests and validation gates
-│   └── run-tests.cjs               # Batch 4: Core tests and validation gates
-├── agents/                         # Batch 3: Workflows, agents, commands
-├── commands/                       # Batch 3: Workflows, agents, commands
-├── get-shit-done/                  # Batch 3: Workflows, agents, commands
-├── tests/
-│   ├── negative-framing-scan...   # Batch 2: Scanner logic and rules
-│   └── *.test.cjs (other tests)    # Batch 4: Core tests and validation gates
-└── sdk/                            # Batch 4: Core tests and validation gates
-```
-
-### Structure Rationale
-
-- **Rules and configs (Batch 1):** Placed first to establish linting, formatting, and behavioral constraints before code or prompts are staged.
-- **Scanner logic (Batch 2):** Placed second so that the custom verification tools are in place to validate all prompt files introduced in Batch 3.
-- **Prompts/Workflows/Agents (Batch 3):** Committed third as they represent the core value/content of the GSD fork. They are immediately scannable by the Batch 2 rules.
-- **Tests & SDK (Batch 4):** Committed fourth to introduce unit/integration tests and helpers that verify the prompt changes.
-- **Logs, state, and hooks (Batch 5):** Placed last to record the final milestone outputs, historical logs, state files (`STATE.md`), and update banners.
-
-## Architectural Patterns
-
-### Pattern 1: Hard Backup before Reset
-
-**What:** Creating a dual-layer backup prior to destructive git operations.
-**When to use:** Before running any soft/hard reset or branch pointer overrides.
-**Trade-offs:** Consumes minor storage but eliminates the risk of deleting uncommitted/untracked files.
-
-**Example:**
-```bash
-# Layer 1: Git Branch Backup
-git checkout -b backup-v1.41.5
-git checkout thamw-main
-
-# Layer 2: Filesystem Backup
-cp -R /Users/thamw/development/local/get-shit-done /Users/thamw/development/local/get-shit-done-backup
-```
-
-### Pattern 2: Coherent Batch Staging
-
-**What:** Staging files in isolated groups using precise path targeting.
-**When to use:** Refactoring multi-commit history to group changes logically.
-**Trade-offs:** Requires careful manual path specification but creates highly readable git history.
-
-**Example:**
-```bash
-# Staging Batch 1: Rules & Configs
-git add .antigravity/rules.md .clinerules .coderabbit.yaml package.json package-lock.json tsconfig.json vitest.config.ts .planning/config.json
-git commit -m "refactor: rules and configuration files"
-```
-
-### Pattern 3: Zero-Diff Parity Gate
-
-**What:** Standardizing verification against the backup branch to guarantee identical content.
-**When to use:** At the very end of the refactoring process before pushing changes.
-**Trade-offs:** Hard requirement for ensuring zero regression in codebase content.
-
-**Example:**
-```bash
-# Final parity check
-git diff backup-v1.41.5
-# Expected output: completely clean (zero diff)
-```
-
-## Data Flow
-
-### Request Flow
-
-The commit refactoring workflow executes along a linear pipeline to ensure state preservation:
-
-```
-[Current Branch] ➔ [Create Backup Branch & Directory] ➔ [git reset --soft v1.41.2]
-                                                                  │
-                                                                  ▼
-[Verification Gate Passes] ◄─ [Stage & Commit Batches 1-5] ◄─ [Unstage All Files]
-            │
-            ▼
-[Zero-Diff Check vs Backup] ➔ [Milestone Complete]
-```
-
-### State Management
-
-```
-[Tracked Files State]
-         │
-         ▼ (Soft Reset)
-[Unstaged Working Tree] ──(Stage Batch)──> [Index] ──(Commit)──> [Refactored Commits]
-```
-
-### Key Data Flows
-
-1. **Staging Flow:** Files move from unstaged index to staged index in groups matching the 5 batches. Each batch is committed under a semantic message prefix (`refactor:`, `feat:`, `chore:`).
-2. **Validation Flow:** Node.js runner (`scripts/run-tests.cjs`) spawns parallel and serial test files, feeding outputs to standard output/error. Custom scanners read prompt files on disk, ensuring 0 positive-framing violations.
-
-## Scaling Considerations
-
-| Scale | Architecture Adjustments |
-|-------|--------------------------|
-| 1-10 Commits | Direct manual staging using git command line is efficient and quick. |
-| 10-100 Commits | Automate staging via batching scripts that define array lists of paths to stage. |
-| 100+ Commits | Use automated git rewrite tools (interactive rebase, git filter-repo) to maintain parity. |
-
-### Scaling Priorities
-
-1. **Staging cross-contamination:** Staging files in the wrong batch can occur when directories like `.planning/` contain mixed files (e.g., config vs state files). Solve by targeting exact files instead of whole directories.
-2. **Git cache bloat:** Soft resets with thousands of modified files can slow down git. Running `git status` helps keep track of staged vs unstaged files clearly.
-
-## Anti-Patterns
-
-### Anti-Pattern 1: Hard Resetting Without Copy Backup
-
-**What people do:** Run `git reset --hard` assuming git reflog will capture every untracked or ignored file.
-**Why it's wrong:** Reflog only tracks committed states. Untracked configuration files or workspace states are permanently deleted.
-**Do this instead:** Copy the directory physically to a backup path outside git before reset.
-
-### Anti-Pattern 2: Broad Directory Staging (`git add .planning/`)
-
-**What people do:** Run `git add .planning/` to stage configuration files.
-**Why it's wrong:** This mistakenly stages historical logs, research files, and roadmaps, which belong to Batch 5, polluting Batch 1.
-**Do this instead:** Stage files individually: `git add .planning/config.json`.
-
-## Integration Points
-
-### External Services
-
-| Service | Integration Pattern | Notes |
-|---------|---------------------|-------|
-| GitHub API | Outbound HTTPS GET query in update worker hook (`hooks/gsd-check-update-worker.js`). | Checks for newer commits on the fork repository coordinates; replaces traditional npm registry checking. |
-
-### Internal Boundaries
-
-| Boundary | Communication | Notes |
-|----------|---------------|-------|
-| Test Runner ↔ Test Files | Node.js child_process runner (`scripts/run-tests.cjs`) executes `node --test` targeting specific files. | Runs parallel and serial splits. Serial files include shared filesystem mutation tests. |
-| Custom Scanner ↔ Prompt Corpus | `tests/negative-framing-scan.test.cjs` reads files from `SCAN_DIRS`. | Scans `agents/`, `get-shit-done/workflows/`, `get-shit-done/references/`, and `commands/gsd/`. |
-| Version System ↔ Installer | `bin/install.js` reads Git HEAD short SHA and writes it to `VERSION`. | Written to user's home runtime directory for offline/online version comparison. |
-
-## Sources
-
-- [GSD UPSTREAM_TO_FORK_CHANGES_GUIDE.md](file:///Users/thamw/development/local/get-shit-done/.planning/references/UPSTREAM_TO_FORK_CHANGES_GUIDE.md)
-- [GSD PROJECT.md](file:///Users/thamw/development/local/get-shit-done/.planning/PROJECT.md)
-- [Node.js Test Runner Documentation](https://nodejs.org/api/test.html)
+**Researched:** 2026-05-28
+**Confidence:** HIGH (based on direct source reading)
 
 ---
-*Architecture research for: Git Commit History Refactoring*
-*Researched: 2026-05-21*
+
+## Current install.js Pipeline
+
+The installer is a single 11,000+ line Node.js CommonJS file. The install flow for prompt content files (agents, commands, workflows) runs as follows:
+
+### Step 1 — Staging
+
+`_stageSkills(commandsDir)` and `_stageAgents(agentsDir)` filter source files into a temporary staging directory based on the active install profile (core vs full). This produces a filtered set of source `.md` files but does not modify their content.
+
+### Step 2 — Content Read + Path Substitution
+
+For **agents** (lines 8643–8719): the loop reads each `.md` file with `fs.readFileSync`, then immediately runs path substitution — replacing `~/.claude/`, `$HOME/.claude/`, etc. with the runtime-specific `pathPrefix`. This happens inline in the install loop.
+
+For **commands/get-shit-done** (lines 6399–6562 in `copyWithPathReplacement`): the same pattern — read file, apply path substitution regex, then hand off to the runtime converter.
+
+For **skills** (layout-driven runtimes via `installRuntimeArtifacts`): staging happens via `kind.stage()`, then `applyRuntimeContentRewritesInPlace(staged, runtime, pathPrefix)` walks the staged directory and applies `_applyRuntimeRewrites()` per-file.
+
+### Step 3 — Runtime-Specific Transform
+
+After path substitution, content is passed through one of these converters depending on runtime:
+
+| Runtime | Converter |
+|---------|-----------|
+| opencode | `convertClaudeToOpencodeFrontmatter()` |
+| kilo | `convertClaudeToKiloFrontmatter()` |
+| gemini | `convertClaudeToGeminiMarkdown()` / `convertClaudeToGeminiAgent()` |
+| codex | `convertClaudeToCodexMarkdown()` / `convertClaudeAgentToCodexAgent()` |
+| copilot | `convertClaudeToCopilotContent()` / `convertClaudeAgentToCopilotAgent()` |
+| cursor | `convertClaudeToCursorMarkdown()` / `convertClaudeAgentToCursorAgent()` |
+| antigravity | `convertClaudeToAntigravityContent()` / `convertClaudeAgentToAntigravityAgent()` |
+| windsurf, augment, trae, codebuddy, cline, qwen, hermes | similar per-runtime converters |
+
+The converters mutate frontmatter (tool name lists, permission schemas) and body (path strings, command namespace `/gsd:` → `/gsd-`).
+
+### Step 4 — Attribution + Namespace Normalization
+
+`processAttribution(content, getCommitAttribution(runtime))` and `normalizeAgentBodyForRuntime(content, runtime, cmdNames)` run after the runtime converter for some paths.
+
+### Step 5 — Write to Destination
+
+`fs.writeFileSync(destPath, content)` writes the final transformed content.
+
+---
+
+## Key Functions / Entry Points
+
+| Function | File Location | Role |
+|----------|--------------|------|
+| `copyWithPathReplacement(srcDir, destDir, pathPrefix, runtime, isCommand, isGlobal)` | ~line 6399 | Recursive directory copy for commands and get-shit-done subtree. The `.md` file read + transform happens inside the loop at line 6432. |
+| `applyRuntimeContentRewritesInPlace(stagedDir, runtime, pathPrefix)` | line 5898 | Walks staged skills dirs and rewrites each `SKILL.md` in place before `_copyStaged` writes to dest. |
+| `_applyRuntimeRewrites(content, runtime, pathPrefix)` | line 5926 | Pure function applying per-runtime regex substitutions. Unit-testable. |
+| Agent install loop | lines 8639–8727 in `install()` | Directly reads each agent `.md`, applies path substitution and runtime conversion inline. |
+| `installRuntimeArtifacts(runtime, configDir, scope, resolvedProfile)` | line 6279 | Orchestrator for layout-driven runtimes: calls `kind.stage()`, then `applyRuntimeContentRewritesInPlace`, then `_copyStaged`. |
+
+**The single best entry point for adding a template resolution step is the content read point**, which occurs in three distinct code sites:
+
+1. `copyWithPathReplacement` at line 6432: `let content = fs.readFileSync(srcPath, 'utf8');` — all commands and the `get-shit-done/` subtree (workflows, references, templates) flow through here.
+2. The agent loop at line 8646: `let content = fs.readFileSync(path.join(agentsSrc, entry.name), 'utf8');` — all agents flow through here.
+3. `applyRuntimeContentRewritesInPlace` → `_applyRuntimeRewrites` — skills (`SKILL.md`) flow through here, but they are already transformed copies of commands.
+
+---
+
+## Proposed Integration Design
+
+Template resolution must run **before** runtime-specific transforms. The path substitution step (`~/.claude/` → runtime prefix) must also run before resolution, because `@` include paths in source files reference `~/.claude/get-shit-done/references/...` — those paths need to be resolved to actual filesystem paths pointing into the source repo, not the installed destination.
+
+However, the cleaner design is to resolve includes **against the source repo** before any path substitution, using the repo-relative source paths directly. This avoids a chicken-and-egg problem with path rewriting.
+
+### Recommended pipeline order per file
+
+```
+1. readFileSync(srcPath)             <- raw source content
+2. resolveIncludes(content, srcDir)  <- inline all @ and !`<bash>` references
+                                        using source repo paths
+3. path substitution regexes         <- ~/.claude/ → pathPrefix
+4. runtime-specific converter        <- frontmatter, tool names, etc.
+5. processAttribution()              <- attribution line
+6. normalizeAgentBodyForRuntime()    <- namespace normalization
+7. writeFileSync(destPath, content)  <- write final output
+```
+
+### Pseudocode for resolveIncludes()
+
+```javascript
+/**
+ * Inline all @path and !`<bash>` path include references in content.
+ * Paths are resolved relative to sourceRoot (the repo root).
+ * @param {string} content      - Raw file content
+ * @param {string} sourceRoot   - Absolute path to GSD repo root (path.join(__dirname, '..'))
+ * @param {Set<string>} [seen]  - Already-resolved paths for cycle detection
+ * @returns {string}            - Content with includes replaced by file content
+ */
+function resolveIncludes(content, sourceRoot, seen = new Set()) {
+  // Matches:
+  //   @~/.claude/get-shit-done/references/foo.md
+  //   @$HOME/.claude/get-shit-done/references/foo.md
+  //   !`cat ~/.claude/get-shit-done/references/foo.md`
+  //   !`cat $HOME/.claude/get-shit-done/references/foo.md`
+  const INCLUDE_PATTERN = /(?:^|(?<=\s))[@!`cat\s]+~\/\.claude\/|(?:^|(?<=\s))[@!`cat\s]+\$HOME\/\.claude\//;
+
+  // Simpler regex covering the actual patterns:
+  const INCLUDE_RE = /@(?:~\/\.claude|(?:\$HOME)\/\.claude)\/([\w\-./]+\.md)/g;
+  // !`<bash>` variant — backtick-wrapped shell injection evaluated by Claude Code at message-send time
+  const CAT_RE = /!`cat\s+(?:~\/\.claude|\$HOME\/\.claude)\/([\w\-./]+\.md)`/g;
+
+  let result = content;
+
+  for (const [re] of [[INCLUDE_RE], [CAT_RE]]) {
+    result = result.replace(re, (match, relPath) => {
+      const absPath = path.join(sourceRoot, relPath);
+      if (seen.has(absPath)) return match; // cycle guard
+      if (!fs.existsSync(absPath)) return match; // missing file — leave as-is
+
+      seen.add(absPath);
+      const included = fs.readFileSync(absPath, 'utf8');
+      // Recurse to handle nested includes
+      const resolved = resolveIncludes(included, sourceRoot, seen);
+      seen.delete(absPath); // allow same file in different branches
+      return resolved;
+    });
+  }
+
+  return result;
+}
+```
+
+### Where to call resolveIncludes()
+
+**Site 1 — `copyWithPathReplacement` (line 6432):**
+
+```javascript
+// BEFORE (current):
+let content = fs.readFileSync(srcPath, 'utf8');
+if (!isCopilot && !isAntigravity) {
+  content = content.replace(globalClaudeRegex, pathPrefix);
+  // ...
+}
+
+// AFTER (with template resolution):
+let content = fs.readFileSync(srcPath, 'utf8');
+content = resolveIncludes(content, src); // src = path.join(__dirname, '..')
+if (!isCopilot && !isAntigravity) {
+  content = content.replace(globalClaudeRegex, pathPrefix);
+  // ...
+}
+```
+
+**Site 2 — agent install loop (line 8646):**
+
+```javascript
+// BEFORE (current):
+let content = fs.readFileSync(path.join(agentsSrc, entry.name), 'utf8');
+const dirRegex = /~\/\.claude\//g;
+// ...
+
+// AFTER (with template resolution):
+let content = fs.readFileSync(path.join(agentsSrc, entry.name), 'utf8');
+content = resolveIncludes(content, src); // src is already in scope
+const dirRegex = /~\/\.claude\//g;
+// ...
+```
+
+**Note on skills path (`applyRuntimeContentRewritesInPlace`):** Skills (`SKILL.md` files) are already-converted copies of commands. They should not need separate include resolution if the command path above runs first. However, if the pipeline calls `applyRuntimeContentRewritesInPlace` on content that was staged before include resolution ran, the skill files in the staged directory will still have unresolved `@` references. The safest fix is to also call `resolveIncludes` inside `applyRuntimeContentRewritesInPlace`'s `walkAndRewrite` loop, or to ensure staging occurs after include resolution.
+
+---
+
+## Reference File Format
+
+Reference files in `get-shit-done/references/` are plain Markdown with prose, code blocks, and XML-like semantic tags (e.g. `<philosophy>`, `<core_principle>`, `<anti_patterns>`). Verified examples:
+
+- `questioning.md` — prose sections, XML-style tags, no `@` includes found
+- `verification-patterns.md` — bash code blocks, markdown headings, no `@` includes found
+- `model-profiles.md` — tables, JSON code blocks, no `@` includes found
+- `gates.md` — no `@` includes found
+- `agent-contracts.md` — no `@` includes found
+- `context-budget.md` — no `@` includes found
+
+**Conclusion:** Reference files are leaf nodes. They do not themselves contain `@~/.claude/` include directives. Recursive resolution is technically required for correctness (the algorithm should handle it), but in practice the current reference corpus is flat — no includes-within-includes exist.
+
+---
+
+## Recursive Include Handling
+
+Recursion is required for safety but the current corpus does not exercise it. The `resolveIncludes` function above handles it via:
+
+1. A `seen` Set passed through recursion for cycle detection (prevents infinite loops if file A includes file B which includes file A).
+2. `seen.delete(absPath)` after return so the same file can appear in multiple non-cyclic include chains (diamond includes).
+3. Returning the unresolved `match` string if the referenced file does not exist — this is a safe fallback that preserves the original `@` reference in the output rather than silently dropping content.
+
+Depth is bounded in practice by the flat reference file structure. A hard depth limit (e.g. max 10 levels) would be a belt-and-suspenders addition but is not strictly necessary given the current corpus.
+
+---
+
+## Path Resolution Strategy
+
+All `@` include paths in source files use one of two forms:
+- `@~/.claude/get-shit-done/references/foo.md`
+- `@$HOME/.claude/get-shit-done/references/foo.md`
+
+Both resolve to the same location in the source repo. The resolver maps these to the source repo path by:
+
+```javascript
+// Strip the runtime-install prefix, replace with repo source root
+const CLAUDE_PREFIX_RE = /^(?:~\/\.claude|\$HOME\/\.claude)\//;
+const relPath = includeTarget.replace(CLAUDE_PREFIX_RE, '');
+const absPath = path.join(sourceRoot, relPath);
+// sourceRoot = path.join(__dirname, '..')
+// e.g. "get-shit-done/references/foo.md" → "/path/to/repo/get-shit-done/references/foo.md"
+```
+
+This works because the source repo layout mirrors the installed layout exactly — `get-shit-done/references/` exists at the same relative path in both the repo root and `~/.claude/` after install.
+
+**Edge case — conditional includes:** One reference in `execute-phase.md` uses a ternary:
+```
+${CONTEXT_WINDOW < 200000 ? '' : '@~/.claude/get-shit-done/references/executor-examples.md'}
+```
+This is a JavaScript template literal evaluated at agent runtime, not a static `@` reference. The include resolver must not attempt to resolve these — the regex pattern `@~/.claude/...` embedded inside `${}` template expressions will not match a line-start-anchored or whitespace-preceded pattern, but the regex needs to be written carefully to avoid matching embedded occurrences inside template literals and code blocks. The safest approach is to apply the resolver only to lines where `@~/.claude/` appears as a standalone include (not inside backtick code blocks or `${...}` expressions).
+
+**Recommendation:** Use a line-by-line pass that skips lines inside fenced code blocks (``` triple-backtick delimited) and skips `@` references inside `${...}` expressions. This avoids mangling documentation examples that show include syntax.
+
+---
+
+## Summary of Integration Points
+
+| Code Site | Lines | Files Affected | Action |
+|-----------|-------|---------------|--------|
+| `copyWithPathReplacement` — `.md` branch | 6432 | commands/*.md, workflows/*.md, references/*.md, templates/*.md | Add `resolveIncludes(content, src)` immediately after `fs.readFileSync` |
+| Agent install loop | 8646 | agents/gsd-*.md | Add `resolveIncludes(content, src)` immediately after `fs.readFileSync` |
+| `applyRuntimeContentRewritesInPlace` walk | 5908 | SKILL.md (already-converted commands) | Optional: add resolve step here if skills are staged before include resolution runs elsewhere |
+
+The `resolveIncludes` function itself should be defined near the top of `install.js` (before the first install function), alongside `processAttribution` and `replaceRelativePathReference`, as a pure transform function.

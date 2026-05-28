@@ -10,14 +10,14 @@ Every agent, command, and workflow file on `main` meets the fork's prompt engine
 
 ## Current Milestone: v2.1.0-c Install-Time Content Materialization
 
-**Goal:** Replace runtime `@` and `!cat` content injection with install-time template substitution so every installed file is fully self-contained — no reliance on Claude to inject referenced content at runtime.
+**Goal:** Replace runtime `@` and `` !`<bash>` `` content injection with install-time template substitution so every installed file is fully self-contained — no reliance on Claude to inject referenced content at runtime.
 
 **Target features:**
 - Research: audit current reference map + recommend template engine within zero-dependency constraint
-- Revert `!cat` changes from quick task 260525-o1n (commands/gsd/, 54 files)
+- Revert `` !`cat` `` changes from quick task 260525-o1n (commands/gsd/, 54 files)
 - Introduce unified template notation across commands, workflows, agents, and references
 - Extend `bin/install.js` to resolve and inline all template references at install time
-- Verification: installed files contain no `@` or `!cat` references — all content self-contained
+- Verification: installed files contain no `@` or `` !`<bash>` `` references — all content self-contained
 
 ## Requirements
 
