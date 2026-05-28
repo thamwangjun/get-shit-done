@@ -109,7 +109,7 @@ Every agent, command, and workflow file on `main` meets the fork's prompt engine
   - `.planning/fork_plans/B0-SYNC_CATALOGUE_V01.md` — CATALOGUE.json sync process
   - `.planning/fork_plans/C0-POSITIVE_FRAMING_PASS_V01.md` — positive framing pass across all prompt content files
 
-- **Current state**: v2.1.0-c Phase 44 (Resolver Core) complete 2026-05-28. `resolveIncludes()` implemented in `bin/install.js` with 5 unit tests (including RESV-07 depth-limit). SHA versioning fully reimplemented — all installation and update-check logic uses 7-char SHA via GitHub Commits API. npm test at 185 non-ai-evals failures (2 pre-existing ai-evals), zero fork regressions. Historical milestone delivery records and validated requirements are in `.planning/PROJECT_HISTORY.md`.
+- **Current state**: v2.1.0-c Phase 45 (Pipeline Integration) complete 2026-05-28. Eta v4 wired as install-time content materialization engine — `eta.renderString()` in both copy loops, `resolveIncludes()` deleted, 84 source files converted (0 bare-line @-ref survivors), planning artifacts updated to reflect Eta pivot. `npm test` 2527 pass, 0 fail. Next: Phase 46 (regression-test-suite). Historical milestone delivery records and validated requirements are in `.planning/PROJECT_HISTORY.md`.
 - **Test suite**: `npm test` runs Node.js built-in test runner. `agent-frontmatter.test.cjs` is the critical gate — all agent YAML frontmatter is validated there. Fork-side tests: negative-framing-scan (99/99), ios-scaffold-safety (6/6), bug-1924-ensure-hooks-dist-on-demand (8/8), agent-frontmatter (155/155), execute-phase-wave (15/15), semver-compare (12/17 — 5 failing: HOOK-03 writeResult, HOOK-04 GitHub API), version-detection (2/4 — 2 failing: INST-01 git rev-parse, INST-02 no-network sentinel), debug-session-management (HDOC subtest intentionally skipped), qwen-install (16/16), read-injection-scanner (19/19).
 - **File-writing agents** (those with `Write` in their tools list) must retain the string `Only use the Write tool` in their prompt body. Dynamic `FILE_WRITING_AGENTS` list used (WR-04: no longer hardcoded).
 - **Scanner precedence**: When tests conflict with fork standards (e.g., test asserts for upstream negative-framing strings), modify the test to reflect fork behavior — established precedent in v1.36.0 Phase 3.
@@ -168,4 +168,4 @@ This document evolves at phase transitions and milestone boundaries.
 ---
 ---
 ---
-*Last updated: 2026-05-28 after v2.1.0-b abandoned, v2.1.0-c started*
+*Last updated: 2026-05-28 after Phase 45 (pipeline-integration) complete*
