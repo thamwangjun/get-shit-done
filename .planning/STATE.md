@@ -3,14 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.1.0-c
 milestone_name: Install-Time Content Materialization
 status: executing
-last_updated: "2026-05-28T10:57:30.421Z"
+stopped_at: Phase 45 context gathered
+last_updated: "2026-05-28T13:47:57.521Z"
 last_activity: 2026-05-28
 progress:
   total_phases: 4
-  completed_phases: 1
-  total_plans: 1
-  completed_plans: 1
-  percent: 25
+  completed_phases: 2
+  total_plans: 5
+  completed_plans: 5
+  percent: 50
 ---
 
 # Project State
@@ -24,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-05-28 after v2.1.0-c roadmap defined)
 
 ## Current Position
 
-Phase: 45
+Phase: 46
 Plan: Not started
 Status: Executing Phase 44
 Last activity: 2026-05-28
@@ -33,7 +34,7 @@ Last activity: 2026-05-28
 
 **Velocity:**
 
-- Total plans completed: 57 (v1.37.1 Phases 7–12, v1.37.1a Phases 13–17, v1.37.1b Phases 18–19)
+- Total plans completed: 61 (v1.37.1 Phases 7–12, v1.37.1a Phases 13–17, v1.37.1b Phases 18–19)
 - Average duration: — (metrics not retroactively enabled for completed phases)
 
 ## Accumulated Context

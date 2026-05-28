@@ -188,7 +188,7 @@ Full details: `.planning/milestones/v2.1.0-a-ROADMAP.md`
 **Abandoned after:** 0/5 phases complete
 
 - [x] Phase 44: Investigation — not started (completed 2026-05-28)
-- [ ] Phase 45: Command Layer Fixes — not started
+- [x] Phase 45: Command Layer Fixes — not started (completed 2026-05-28)
 - [ ] Phase 46: Workflow Layer Fixes — not started
 - [ ] Phase 47: Agent Layer Fixes — not started
 - [ ] Phase 48: Quality Gate — not started
@@ -313,7 +313,7 @@ Full details: `.planning/milestones/v2.1.0-a-ROADMAP.md`
 | 42. SHA Hook and Install Reimplementation | v2.1.0-a | 1/1 | Complete | 2026-05-25 |
 | 43. Update Workflow SHA Migration + Full Gate | v2.1.0-a | 1/1 | Complete | 2026-05-26 |
 | 44. Investigation | v2.1.0-b | 1/1 | Complete    | 2026-05-28 |
-| 45. Command Layer Fixes | v2.1.0-b | 4/4 | Complete   | 2026-05-28 |
+| 45. Command Layer Fixes | v2.1.0-b | 4/4 | Complete    | 2026-05-28 |
 | 46. Workflow Layer Fixes | v2.1.0-b | 0/0 | Abandoned | - |
 | 47. Agent Layer Fixes | v2.1.0-b | 0/0 | Abandoned | - |
 | 48. Quality Gate | v2.1.0-b | 0/0 | Abandoned | - |

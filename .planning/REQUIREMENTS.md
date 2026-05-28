@@ -21,12 +21,12 @@ Requirements for the Install-Time Content Materialization milestone. Each maps t
 
 ### Integration
 
-- [ ] **INTG-01**: `eta` v4 added to `dependencies` in `package.json`; a module-level Eta instance configured with `{%`/`%}` delimiters, `autoEscape: false`, `useWith: true`, and `views` = repo root exists in `bin/install.js`
-- [ ] **INTG-02**: All install-time GSD static refs across `commands/gsd/` (55 files), `agents/` (7 files), `get-shit-done/workflows/` (19 files), and `get-shit-done/references/` (1 file) converted to `{%~ include('get-shit-done/X') %}` Eta tags — a post-conversion grep for bare-line `@~/.claude/get-shit-done/` and `` !`cat $HOME/.claude/get-shit-done/` `` returns 0 results
-- [ ] **INTG-03**: Runtime `.planning/` bare-line refs in the agents layer (notably `agents/gsd-planner.md` lines 465-467) converted to `` !`cat .planning/X` `` form — cross-runtime compatible; `grep -n '@\.planning/' agents/gsd-planner.md` returns 0 results
-- [ ] **INTG-04**: Eta renderer wired into `copyWithPathReplacement()` as the first transform step — `content = eta.renderString(content, {})` called immediately after `fs.readFileSync(srcPath, 'utf8')` at line ~6572, before path-substitution regexes
-- [ ] **INTG-05**: Eta renderer wired into the agent install loop as the first transform step — `content = eta.renderString(content, {})` called immediately after `fs.readFileSync(path.join(agentsSrc, entry.name), 'utf8')` at line ~8786, before path-substitution regexes
-- [ ] **INTG-06**: Skills path (`applyRuntimeContentRewritesInPlace`) confirmed as not requiring a renderer call — `SKILL.md` files contain 0 install-time include refs; no Eta rendering needed on that code path
+- [x] **INTG-01**: `eta` v4 added to `dependencies` in `package.json`; a module-level Eta instance configured with `{%`/`%}` delimiters, `autoEscape: false`, `useWith: true`, and `views` = repo root exists in `bin/install.js`
+- [x] **INTG-02**: All install-time GSD static refs across `commands/gsd/` (55 files), `agents/` (7 files), `get-shit-done/workflows/` (19 files), and `get-shit-done/references/` (1 file) converted to `{%~ include('get-shit-done/X') %}` Eta tags — a post-conversion grep for bare-line `@~/.claude/get-shit-done/` and `` !`cat $HOME/.claude/get-shit-done/` `` returns 0 results
+- [x] **INTG-03**: Runtime `.planning/` bare-line refs in the agents layer (notably `agents/gsd-planner.md` lines 465-467) converted to `` !`cat .planning/X` `` form — cross-runtime compatible; `grep -n '@\.planning/' agents/gsd-planner.md` returns 0 results
+- [x] **INTG-04**: Eta renderer wired into `copyWithPathReplacement()` as the first transform step — `content = eta.renderString(content, {})` called immediately after `fs.readFileSync(srcPath, 'utf8')` at line ~6572, before path-substitution regexes
+- [x] **INTG-05**: Eta renderer wired into the agent install loop as the first transform step — `content = eta.renderString(content, {})` called immediately after `fs.readFileSync(path.join(agentsSrc, entry.name), 'utf8')` at line ~8786, before path-substitution regexes
+- [x] **INTG-06**: Skills path (`applyRuntimeContentRewritesInPlace`) confirmed as not requiring a renderer call — `SKILL.md` files contain 0 install-time include refs; no Eta rendering needed on that code path
 
 ### Tests
 
@@ -68,12 +68,12 @@ Requirements for the Install-Time Content Materialization milestone. Each maps t
 | RESV-05 | Phase 44 | Complete |
 | RESV-06 | Phase 44 | Complete |
 | RESV-07 | Phase 44 | Complete |
-| INTG-01 | Phase 45 | Pending |
-| INTG-02 | Phase 45 | Pending |
-| INTG-03 | Phase 45 | Pending |
-| INTG-04 | Phase 45 | Pending |
-| INTG-05 | Phase 45 | Pending |
-| INTG-06 | Phase 45 | Pending |
+| INTG-01 | Phase 45 | Complete |
+| INTG-02 | Phase 45 | Complete |
+| INTG-03 | Phase 45 | Complete |
+| INTG-04 | Phase 45 | Complete |
+| INTG-05 | Phase 45 | Complete |
+| INTG-06 | Phase 45 | Complete |
 | TEST-01 | Phase 46 | Pending |
 | TEST-02 | Phase 46 | Pending |
 | TEST-03 | Phase 46 | Pending |
