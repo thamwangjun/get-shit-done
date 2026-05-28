@@ -15,7 +15,7 @@
 - ✅ **v1.41.5 Refactor Git Commit History** — Phases 35–41 (shipped 2026-05-24)
 - ✅ **v2.1.0-a SHA Versioning Reimplementation** — Phases 42–43 (shipped 2026-05-26)
 - ✗ **v2.1.0-b Workflow Compliance Reinforcement** — Phases 44–48 (abandoned 2026-05-28, 0/5 phases complete)
-- 🚧 **v2.1.0-c Install-Time Content Materialization** — Phases 44– (in progress)
+- 🚧 **v2.1.0-c Install-Time Content Materialization** — Phases 44–47 (in progress)
 
 ## Phases
 
@@ -181,73 +181,73 @@ Full details: `.planning/milestones/v2.1.0-a-ROADMAP.md`
 
 </details>
 
-### 🚧 v2.1.0-b Workflow Compliance Reinforcement (In Progress)
+<details>
+<summary>✗ v2.1.0-b Workflow Compliance Reinforcement (Phases 44–48) — ABANDONED 2026-05-28</summary>
 
-**Milestone Goal:** Investigate why Claude consistently fails to comply with GSD workflow instructions and apply targeted prompt engineering fixes across all command and workflow files.
+**Goal:** *(Abandoned before any phase started — milestone scope invalidated by v2.1.0-c decision to address install-time content materialization first)*
+**Abandoned after:** 0/5 phases complete
 
-- [ ] **Phase 44: Investigation** — Root cause analysis of compliance failures across all three layers
-- [ ] **Phase 45: Command Layer Fixes** — Harden spawn mandates and remove inline-fallback loopholes in 67 command files
-- [ ] **Phase 46: Workflow Layer Fixes** — Apply orchestrator reframe, high-attention placement, and required-step markers to 93 workflow files
-- [ ] **Phase 47: Agent Layer Fixes** — Audit 33 agent files for step-omission patterns and apply PEG V10 fixes
-- [ ] **Phase 48: Quality Gate** — npm test green, negative-framing scanner at 99/99
+- [ ] Phase 44: Investigation — not started
+- [ ] Phase 45: Command Layer Fixes — not started
+- [ ] Phase 46: Workflow Layer Fixes — not started
+- [ ] Phase 47: Agent Layer Fixes — not started
+- [ ] Phase 48: Quality Gate — not started
+
+</details>
+
+### 🚧 v2.1.0-c Install-Time Content Materialization (Phases 44–47)
+
+**Milestone Goal:** Replace runtime `@` and `` !`<bash>` `` content injection with install-time template substitution so every installed file is fully self-contained — no reliance on Claude to inject referenced content at runtime.
+
+- [ ] **Phase 44: Resolver Core** — Build and unit-test `resolveIncludes()` in isolation before wiring into the install pipeline
+- [ ] **Phase 45: Pipeline Integration** — Revert 260525-o1n, clean 3 mixed-notation files, wire `resolveIncludes()` into both `install.js` insertion points, audit skills path
+- [ ] **Phase 46: Regression Test Suite** — 6 targeted tests running against installed output (not source files)
+- [ ] **Phase 47: Full Runtime Matrix + Verification** — Validate all supported runtimes produce zero unresolved references; `npm test` green
 
 ## Phase Details
 
-### Phase 44: Investigation
-**Goal**: Produce a structured root cause analysis of compliance failures, with evidence from actual files, that classifies failure modes and gives the next phases a concrete target list
+### Phase 44: Resolver Core
+**Goal**: `resolveIncludes()` exists in `bin/install.js` as a correct, fully-tested pure function that handles all edge cases before any integration work begins — the hardest constraint (conditional guard) is validated first
 **Depends on**: Nothing (first phase of milestone)
-**Requirements**: INVEST-01, INVEST-02
+**Requirements**: RESV-01, RESV-02, RESV-03, RESV-04, RESV-05, RESV-06, RESV-07
 **Success Criteria** (what must be TRUE):
-  1. A findings document exists with at least one concrete file:line example per identified failure mode drawn from commands, workflows, and agents
-  2. Failure modes are classified into the five taxonomy categories: subagent spawning failures, step omission, premature inline fallback loopholes, buried critical instructions, and `` !`cat` `` truncation (Claude receives only ~2KiB of a large workflow file and ignores the "Full output saved to:" read instruction)
-  3. All 72 command files using `` !`cat` `` workflow injection are enumerated with their workflow target and approximate workflow line count
-  4. The findings document is specific enough that Phase 45 and 46 implementers can look up which files need changes without additional investigation
+  1. `resolveIncludes(content, sourceRoot, seen)` is defined in `bin/install.js` and correctly inlines bare-line `@~/.claude/` and `` !`cat ~/.claude/` `` references by reading referenced files at source repo paths
+  2. The conditional `@~` expression in `execute-phase.md:619` (inside a `${}` JS template literal) passes through the resolver verbatim — a unit test asserting `${CONTEXT_WINDOW < 200000 ?` survives in output passes
+  3. A unit test for circular include detection throws with the full include chain in the error message rather than recursing infinitely
+  4. A unit test for a missing referenced file throws with an error naming both the source file and the unresolvable path
 **Plans**: TBD
 
-### Phase 45: Command Layer Fixes
-**Goal**: All 67 command files carry an explicit spawn mandate at a high-attention position, none grant silent inline fallbacks, and all 72 `` !`cat` `` workflow injections are replaced so Claude receives the full workflow file rather than a ~2KiB truncated preview
+### Phase 45: Pipeline Integration
+**Goal**: All 117 `` !`cat` `` references introduced in 260525-o1n are reverted to `@~` form, 3 mixed-notation command files are cleaned, and `resolveIncludes()` is wired at both `install.js` insertion points so a Claude runtime install produces zero surviving unresolved `@~/.claude/get-shit-done/references/` patterns
 **Depends on**: Phase 44
-**Requirements**: CMD-01, CMD-02, CMD-03, CMD-04
+**Requirements**: INTG-01, INTG-02, INTG-03, INTG-04, INTG-05, INTG-06
 **Success Criteria** (what must be TRUE):
-  1. Every command file that delegates to a subagent workflow restates the spawn mandate explicitly at the start of its `<objective>` or `<process>` block — a reviewer scanning each file can see the mandate without reading the loaded workflow
-  2. No command file that invokes a subagent workflow offers inline execution as a silent default fallback — the only inline path requires an explicit user-supplied flag
-  3. All 72 `` !`cat` `` workflow injection lines are replaced with a mechanism that delivers the full file to Claude (explicit Read instruction or `@`-reference)
-  4. The negative-framing scanner still passes at 99/99 after all command file edits
+  1. All 55 command files in `commands/gsd/` that had `` !`cat` `` references introduced by 260525-o1n are restored to `@~` notation — a grep for `` !`cat ~/.claude/get-shit-done/workflows/` `` across `commands/gsd/` returns 0 results
+  2. `extract-learnings.md`, `mvp-phase.md`, and `ship.md` each contain exactly one reference per workflow target — no duplicate `@` + `` !`cat` `` pairs for the same file
+  3. A Claude runtime install of the full repo produces zero surviving `@~/.claude/get-shit-done/references/` patterns in any installed file
+  4. Dynamic `.planning/` runtime references in `add-tests.md` (STATE.md, ROADMAP.md) remain as runtime references in installed output — they are not inlined
 **Plans**: TBD
-**UI hint**: no
 
-### Phase 46: Workflow Layer Fixes
-**Goal**: All workflows that spawn subagents open with an orchestrator reframe, place critical spawn instructions at high-attention positions, guard inline-fallback blocks, and mark mandatory steps so the model cannot silently skip them
-**Depends on**: Phase 44
-**Requirements**: WF-01, WF-02, WF-03, WF-04
+### Phase 46: Regression Test Suite
+**Goal**: Six regression tests running against installed output (not source files) cover every critical failure mode identified in research — the safety net exists before the runtime matrix sweep
+**Depends on**: Phase 45
+**Requirements**: TEST-01, TEST-02, TEST-03, TEST-04, TEST-05, TEST-06
 **Success Criteria** (what must be TRUE):
-  1. Every subagent-spawning workflow opens with an orchestrator reframe statement per PEG V10 Section 6 — a reviewer can find it at the top of each workflow file without reading past the first screen
-  2. Critical spawn instructions appear at the start or end of each workflow file, not buried in middle sections
-  3. Every `<runtime_compatibility>` inline-fallback block is guarded by an explicit user-supplied flag check — inline execution is not the default path
-  4. Workflows with mandatory step sequences carry `required_steps universal="true"` markers (per PEG V10 Section 16) on every non-skippable step
+  1. A test file exists in `tests/` that installs to a temp directory and asserts zero unresolved `@~/.claude/` references survive in any installed file
+  2. A test asserts the conditional `@~` expression in `execute-phase.md` is preserved verbatim in the Claude runtime installed output
+  3. A test installs for a non-Claude runtime (e.g. Copilot) and asserts tool names inside inlined reference content are transformed (`Read` → `read`, `Bash` → `execute`)
+  4. Tests for circular include detection and missing-file handling each throw with the correct error message rather than hanging or producing silent failures
 **Plans**: TBD
-**UI hint**: no
 
-### Phase 47: Agent Layer Fixes
-**Goal**: All 33 agent files have been audited for step-omission patterns and every agent with an identified compliance issue carries PEG V10 fixes: required step anchors, adversarial probe mandates, or explicit completion criteria
-**Depends on**: Phase 44
-**Requirements**: AGENT-01, AGENT-02
+### Phase 47: Full Runtime Matrix + Verification
+**Goal**: Every supported runtime install produces fully self-contained files — zero unresolved `@~` or `` !`cat ~/.claude/` `` patterns — and the full `npm test` suite passes with no new regressions
+**Depends on**: Phase 46
+**Requirements**: GATE-01, GATE-02, GATE-03
 **Success Criteria** (what must be TRUE):
-  1. An audit record exists confirming each of the 33 agent files was examined for step-omission patterns (executor short-circuiting, verifier probe-skipping, planner read-skipping)
-  2. Every agent file with an identified compliance issue has been updated — the update is observable as a new required-step anchor, adversarial probe mandate, or explicit completion criterion in the file
-  3. The negative-framing scanner still passes at 99/99 after all agent file edits
+  1. `grep -r '@~/.claude/' <install-dir>` run against a fresh install for each of Claude, Copilot, Codex, Gemini, OpenCode, Cursor, and Antigravity returns 0 results
+  2. The negative-framing scanner passes at 99/99 after all file edits introduced in this milestone
+  3. `npm test` completes with 0 new failures beyond the pre-existing baseline established at v2.1.0-a
 **Plans**: TBD
-**UI hint**: no
-
-### Phase 48: Quality Gate
-**Goal**: All changes from Phases 45–47 pass the full test suite with zero new regressions and the negative-framing scanner holds at 99/99
-**Depends on**: Phase 45, Phase 46, Phase 47
-**Requirements**: GATE-01, GATE-02
-**Success Criteria** (what must be TRUE):
-  1. `npm test` completes with 0 failures beyond the pre-existing baseline established at v2.1.0-a (185 non-ai-evals failures)
-  2. The negative-framing scanner runs across all agents, commands, and workflows and reports 99/99 subtests passing with 0 violations and 0 warnings
-**Plans**: TBD
-**UI hint**: no
 
 ## Progress
 
@@ -298,11 +298,15 @@ Full details: `.planning/milestones/v2.1.0-a-ROADMAP.md`
 | 41. Final Verification & Parity Audit | v1.41.5 | 1/1 | Complete | 2026-05-23 |
 | 42. SHA Hook and Install Reimplementation | v2.1.0-a | 1/1 | Complete | 2026-05-25 |
 | 43. Update Workflow SHA Migration + Full Gate | v2.1.0-a | 1/1 | Complete | 2026-05-26 |
-| 44. Investigation | v2.1.0-b | 0/TBD | Not started | - |
-| 45. Command Layer Fixes | v2.1.0-b | 0/TBD | Not started | - |
-| 46. Workflow Layer Fixes | v2.1.0-b | 0/TBD | Not started | - |
-| 47. Agent Layer Fixes | v2.1.0-b | 0/TBD | Not started | - |
-| 48. Quality Gate | v2.1.0-b | 0/TBD | Not started | - |
+| 44. Investigation | v2.1.0-b | 0/0 | Abandoned | - |
+| 45. Command Layer Fixes | v2.1.0-b | 0/0 | Abandoned | - |
+| 46. Workflow Layer Fixes | v2.1.0-b | 0/0 | Abandoned | - |
+| 47. Agent Layer Fixes | v2.1.0-b | 0/0 | Abandoned | - |
+| 48. Quality Gate | v2.1.0-b | 0/0 | Abandoned | - |
+| 44. Resolver Core | v2.1.0-c | 0/TBD | Not started | - |
+| 45. Pipeline Integration | v2.1.0-c | 0/TBD | Not started | - |
+| 46. Regression Test Suite | v2.1.0-c | 0/TBD | Not started | - |
+| 47. Full Runtime Matrix + Verification | v2.1.0-c | 0/TBD | Not started | - |
 
 *v1.41.3 shipped 2026-05-19 — see `.planning/milestones/v1.41.3-ROADMAP.md`*
 *v1.41.5 shipped 2026-05-24 — see `.planning/milestones/v1.41.5-ROADMAP.md`*
