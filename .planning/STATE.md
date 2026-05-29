@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-05-29 after v2.1.0-c milestone)
 Milestone v2.1.0-c complete — SHIPPED 2026-05-29
 All 5 phases, 11 plans complete.
 Status: Milestone archived — ready for next milestone planning
-Last activity: 2026-05-29 - Completed quick task 260529-g0y: compare npm test failures dev HEAD vs upstream v1.01.0
+Last activity: 2026-05-29 - Completed quick task 260529-gn2: Fix 25 npm test failures (RC1/RC2/RC3)
 
 ## Performance Metrics
 
@@ -79,6 +79,7 @@ Resolved: `tests/bug-2992-check-latest-version.test.cjs` rewritten for SHA-based
 | 260529-dxz | Address phase 45 and phase 46 tech debts. | 2026-05-29 | 1e54d94e | [260529-dxz-address-phase-45-and-phase-46-tech-debts](./quick/260529-dxz-address-phase-45-and-phase-46-tech-debts/) |
 | 260529-f6o | Compare npm test failures vs upstream/v1.01.0 — fix eta template regex, skip stale tests, regenerate inventory | 2026-05-29 | 57f6579d | [260529-f6o-compare-npm-test-failures-between-curren](./quick/260529-f6o-compare-npm-test-failures-between-curren/) |
 | 260529-g0y | Compare npm test failures: dev HEAD vs upstream v1.01.0 (investigation only) | 2026-05-29 | — | [260529-g0y-compare-npm-test-failures-current-head-v](./quick/260529-g0y-compare-npm-test-failures-current-head-v/) |
+| 260529-gn2 | Fix 25 npm test failures: RC1 remove semver extract, RC2 update VERSION assertions, RC3 skip fork-diverged tests | 2026-05-29 | a81c4a8a | [260529-gn2-fix-25-npm-test-failures-rc1-remove-semv](./quick/260529-gn2-fix-25-npm-test-failures-rc1-remove-semv/) |
 
 ## Session Continuity
 
