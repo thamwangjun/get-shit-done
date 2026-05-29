@@ -119,5 +119,23 @@ TEST-06 was correctly reasoned away in CONTEXT.md D-11 and RESEARCH.md. However,
 
 ---
 
+### Post-Resolution Notes (added 2026-05-29)
+
+**Gap 1 resolved:** TEST-03 (Copilot tool-name transformation) formally deferred to a future
+milestone. REQUIREMENTS.md marks it `[x] ~~TEST-03~~` with rationale; ROADMAP.md updated to
+reflect 5 tests and deferred scope. The gap is accepted scope — not an outstanding deficit.
+
+**Gap 2 resolved:** TEST-06 drop reflected in REQUIREMENTS.md (`~~TEST-06~~` with D-11 rationale)
+and ROADMAP.md. Tracking artifact integrity gap closed.
+
+**TEST-02 approach deviation (intentional):** TEST-02 renders `execute-phase.md` via
+`renderEtaContent` on the source file directly rather than via a full `installRuntimeArtifacts`
+call (the ROADMAP SC #2 specification). This deviation is intentional and accepted — the
+behavioral intent (confirming Eta does not corrupt the `${}` conditional expression) is fully
+met by the source-file rendering approach. No code change is needed or desired; this note
+records that the deviation is a deliberate implementation choice, not an oversight.
+
+---
+
 _Verified: 2026-05-29T05:48:34Z_
 _Verifier: Claude (gsd-verifier)_
