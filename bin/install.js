@@ -6407,6 +6407,34 @@ function uninstallRuntimeArtifacts(runtime, configDir, scope) {
 }
 
 /**
+ * Render Eta template content with circular-include detection.
+ * Creates a fresh Eta instance scoped to viewsRoot so tests can pass a temp
+ * dir without affecting the global eta instance used in production.
+ * @param {string} content - Template content to render
+ * @param {string} srcPath - Source file path (used in error messages)
+ * @param {string} viewsRoot - Views root for Eta include resolution
+ * @returns {string} Rendered content
+ */
+function renderEtaContent(content, srcPath, viewsRoot) {
+  const renderEta = new Eta({
+    views: viewsRoot,
+    useWith: true,
+    autoEscape: false,
+  });
+  renderEta.resolvePath = function(templatePath, _options) {
+    return path.join(viewsRoot, templatePath);
+  };
+  try {
+    return renderEta.renderString(content, {});
+  } catch (e) {
+    if (e instanceof RangeError) {
+      throw new Error('Circular include detected in: ' + srcPath);
+    }
+    throw e;
+  }
+}
+
+/**
  * Recursively copy directory, replacing paths in .md files
  * Deletes existing destDir first to remove orphaned files from previous versions
  * @param {string} srcDir - Source directory
@@ -6450,7 +6478,7 @@ function copyWithPathReplacement(srcDir, destDir, pathPrefix, runtime, isCommand
       // Replace ~/.claude/ and $HOME/.claude/ and ./.claude/ with runtime-appropriate paths
       // Skip generic replacement for Copilot — convertClaudeToCopilotContent handles all paths
       let content = fs.readFileSync(srcPath, 'utf8');
-      content = eta.renderString(content, {});
+      content = renderEtaContent(content, srcPath, _etaSourceRoot);
       if (!isCopilot && !isAntigravity) {
         const globalClaudeRegex = /~\/\.claude\//g;
         const globalClaudeHomeRegex = /\$HOME\/\.claude\//g;
@@ -8664,8 +8692,9 @@ function install(isGlobal, runtime = 'claude', options = {}) {
     const agentEntries = fs.readdirSync(agentsSrc, { withFileTypes: true });
     for (const entry of agentEntries) {
       if (entry.isFile() && entry.name.endsWith('.md')) {
-        let content = fs.readFileSync(path.join(agentsSrc, entry.name), 'utf8');
-        content = eta.renderString(content, {});
+        const srcPath = path.join(agentsSrc, entry.name);
+        let content = fs.readFileSync(srcPath, 'utf8');
+        content = renderEtaContent(content, srcPath, _etaSourceRoot);
         // Replace ~/.claude/ and $HOME/.claude/ as they are the source of truth in the repo
         const dirRegex = /~\/\.claude\//g;
         const homeDirRegex = /\$HOME\/\.claude\//g;
@@ -11485,6 +11514,7 @@ module.exports = {
     ensureCodexHooksJsonSessionStart,
     readGsdCommandNames,
     installRuntimeArtifacts,
+    renderEtaContent,
     uninstallRuntimeArtifacts,
   };
 
