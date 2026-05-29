@@ -326,8 +326,8 @@ Plans:
 | 47. Agent Layer Fixes | v2.1.0-b | 0/0 | Abandoned | - |
 | 48. Quality Gate | v2.1.0-b | 0/0 | Abandoned | - |
 | 44. Resolver Core | v2.1.0-c | 1/1 | Complete | 2026-05-28 |
-| 45. Pipeline Integration | v2.1.0-c | 3/4 | In Progress | - |
-| 46. Regression Test Suite | v2.1.0-c | 0/TBD | Not started | - |
+| 45. Pipeline Integration | v2.1.0-c | 5/5 | Complete | 2026-05-28 |
+| 46. Regression Test Suite | v2.1.0-c | 2/2 | Complete | 2026-05-29 |
 | 47. Full Runtime Matrix + Verification | v2.1.0-c | 1/1 | Complete | 2026-05-29 |
 
 *v1.41.3 shipped 2026-05-19 — see `.planning/milestones/v1.41.3-ROADMAP.md`*

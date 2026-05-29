@@ -4,7 +4,7 @@ milestone: v2.1.0-c
 milestone_name: Install-Time Content Materialization
 status: verified
 last_updated: "2026-05-29T09:00:00.000Z"
-last_activity: 2026-05-29 -- Phase 47 verified (human_needed: GATE-02 scanner + multi-runtime spot-check)
+last_activity: 2026-05-29 -- Addressed v2.1.0-c milestone audit tech debt (quick task 260529-c7a)
 progress:
   total_phases: 4
   completed_phases: 4
@@ -75,6 +75,7 @@ Resolved: `tests/bug-2992-check-latest-version.test.cjs` rewritten for SHA-based
 | 260525-igz | Update CLAUDE.md architecture counts to reflect current project state (67 cmds, 90 workflows, 33 agents, 79 lib modules) | 2026-05-25 | e55d6831 | [260525-update-claude-md](./quick/260525-update-claude-md/) |
 | 260526-enb | Fix 8 v2.1.0-a tech debt items — stale update.md metadata and tracking inconsistencies | 2026-05-26 | a62f5357 | [20260526-v2-1-0-a-tech-debt-cleanup](./quick/20260526-v2-1-0-a-tech-debt-cleanup/) |
 | 260527-g3f | Fix installer banner to display 7-char SHA via gsdVersion instead of semver pkg.version | 2026-05-27 | 44ad13c1 | [260527-g3f-fix-install-banner-sha-instead-of-semver](./quick/260527-g3f-fix-install-banner-sha-instead-of-semver/) |
+| 260529-c7a | Address v2.1.0-c milestone audit tech debt | 2026-05-29 | TBD | [260529-c7a-address-v2-1-0-c-milestone-audit-tech-de](./quick/260529-c7a-address-v2-1-0-c-milestone-audit-tech-de/) |
 
 ## Session Continuity
 
