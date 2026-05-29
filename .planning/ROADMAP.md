@@ -248,7 +248,11 @@ Full details: `.planning/milestones/v2.1.0-a-ROADMAP.md`
   3. A test installs for a non-Claude runtime (e.g. Copilot) and asserts tool names inside inlined reference content are transformed (`Read` → `read`, `Bash` → `execute`)
   4. Tests for circular include detection and missing-file handling each throw with the correct error message rather than hanging or producing silent failures
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 46-01-PLAN.md — Remove custom Eta delimiters from bin/install.js and convert 83 source files from {%~ to <%~ (Eta default)
+- [ ] 46-02-PLAN.md — Add renderEtaContent helper and five regression tests in tests/install-eta-regression.test.cjs
 
 ### Phase 47: Full Runtime Matrix + Verification
 
