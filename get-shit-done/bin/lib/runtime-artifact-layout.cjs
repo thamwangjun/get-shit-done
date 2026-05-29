@@ -192,9 +192,14 @@ function skillsKind(destSubpath, prefix, converterName, runtime, configDir) {
       // Compute cmdNames once per stage call for performance (#3583).
       // Extra args are ignored by converters that don't need runtime/cmdNames.
       const cmdNames = installExports.readGsdCommandNames();
-      const wrappedConverter = (content, skillName) =>
-        realConverter(content, skillName, runtime, cmdNames);
-      return stageSkillsForRuntimeAsSkills(findInstallSourceRoot(configDir), resolved, wrappedConverter, prefix);
+      const srcCommandsDir = findInstallSourceRoot(configDir);
+      // Two levels up from commands/gsd yields the repo root — same as _etaSourceRoot in install.js.
+      const etaViewsRoot = path.join(srcCommandsDir, '..', '..');
+      const wrappedConverter = (content, skillName) => {
+        const rendered = installExports.renderEtaContent(content, skillName, etaViewsRoot);
+        return realConverter(rendered, skillName, runtime, cmdNames);
+      };
+      return stageSkillsForRuntimeAsSkills(srcCommandsDir, resolved, wrappedConverter, prefix);
     },
   };
 }
