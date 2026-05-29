@@ -18,7 +18,7 @@ changes that are irrelevant to code review.
 </objective>
 
 <execution_context>
-{%~ include('get-shit-done/workflows/pr-branch.md') %}
+<%~ include('get-shit-done/workflows/pr-branch.md') %>
 </execution_context>
 
 <process>

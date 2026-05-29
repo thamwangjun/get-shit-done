@@ -25,7 +25,7 @@ Routes to the update workflow which handles:
 </objective>
 
 <execution_context>
-{%~ include('get-shit-done/workflows/update.md') %}
+<%~ include('get-shit-done/workflows/update.md') %>
 </execution_context>
 
 <flags>
@@ -43,6 +43,6 @@ Parse the first token of $ARGUMENTS:
 </process>
 
 <execution_context_extended>
-{%~ include('get-shit-done/workflows/sync-skills.md') %}
-{%~ include('get-shit-done/workflows/reapply-patches.md') %}
+<%~ include('get-shit-done/workflows/sync-skills.md') %>
+<%~ include('get-shit-done/workflows/reapply-patches.md') %>
 </execution_context_extended>

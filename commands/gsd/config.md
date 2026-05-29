@@ -32,9 +32,9 @@ Mode routing:
 </routing>
 
 <execution_context>
-{%~ include('get-shit-done/workflows/settings.md') %}
-{%~ include('get-shit-done/workflows/settings-advanced.md') %}
-{%~ include('get-shit-done/workflows/settings-integrations.md') %}
+<%~ include('get-shit-done/workflows/settings.md') %>
+<%~ include('get-shit-done/workflows/settings-advanced.md') %>
+<%~ include('get-shit-done/workflows/settings-integrations.md') %>
 </execution_context>
 
 <context>

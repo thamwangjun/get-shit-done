@@ -30,9 +30,9 @@ Does not require prior new-project setup — auto-creates `.planning/spikes/` if
 </objective>
 
 <execution_context>
-{%~ include('get-shit-done/workflows/spike.md') %}
-{%~ include('get-shit-done/workflows/spike-wrap-up.md') %}
-{%~ include('get-shit-done/references/ui-brand.md') %}
+<%~ include('get-shit-done/workflows/spike.md') %>
+<%~ include('get-shit-done/workflows/spike-wrap-up.md') %>
+<%~ include('get-shit-done/references/ui-brand.md') %>
 </execution_context>
 
 <runtime_note>

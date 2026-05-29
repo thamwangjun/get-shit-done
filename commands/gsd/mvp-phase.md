@@ -24,9 +24,9 @@ Phase 1 of the vertical-mvp-slice PRD shipped the planner-side machinery; this c
 </objective>
 
 <execution_context>
-{%~ include('get-shit-done/workflows/mvp-phase.md') %}
-{%~ include('get-shit-done/references/spidr-splitting.md') %}
-{%~ include('get-shit-done/references/user-story-template.md') %}
+<%~ include('get-shit-done/workflows/mvp-phase.md') %>
+<%~ include('get-shit-done/references/spidr-splitting.md') %>
+<%~ include('get-shit-done/references/user-story-template.md') %>
 </execution_context>
 
 <runtime_note>

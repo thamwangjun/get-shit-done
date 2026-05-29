@@ -20,7 +20,7 @@ Output: Forensic report saved to `.planning/forensics/`, presented inline, with 
 </objective>
 
 <execution_context>
-{%~ include('get-shit-done/workflows/forensics.md') %}
+<%~ include('get-shit-done/workflows/forensics.md') %>
 </execution_context>
 
 <context>

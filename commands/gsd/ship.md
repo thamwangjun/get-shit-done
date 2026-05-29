@@ -18,7 +18,7 @@ Closes the plan → execute → verify → ship loop.
 </objective>
 
 <execution_context>
-{%~ include('get-shit-done/workflows/ship.md') %}
+<%~ include('get-shit-done/workflows/ship.md') %>
 </execution_context>
 
 Execute the ship workflow from @~/.claude/get-shit-done/workflows/ship.md end-to-end.

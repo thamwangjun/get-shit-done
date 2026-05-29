@@ -30,13 +30,13 @@ Does not require prior new-project setup — auto-creates `.planning/sketches/` 
 </objective>
 
 <execution_context>
-{%~ include('get-shit-done/workflows/sketch.md') %}
-{%~ include('get-shit-done/workflows/sketch-wrap-up.md') %}
-{%~ include('get-shit-done/references/ui-brand.md') %}
-{%~ include('get-shit-done/references/sketch-theme-system.md') %}
-{%~ include('get-shit-done/references/sketch-interactivity.md') %}
-{%~ include('get-shit-done/references/sketch-tooling.md') %}
-{%~ include('get-shit-done/references/sketch-variant-patterns.md') %}
+<%~ include('get-shit-done/workflows/sketch.md') %>
+<%~ include('get-shit-done/workflows/sketch-wrap-up.md') %>
+<%~ include('get-shit-done/references/ui-brand.md') %>
+<%~ include('get-shit-done/references/sketch-theme-system.md') %>
+<%~ include('get-shit-done/references/sketch-interactivity.md') %>
+<%~ include('get-shit-done/references/sketch-tooling.md') %>
+<%~ include('get-shit-done/references/sketch-variant-patterns.md') %>
 </execution_context>
 
 <runtime_note>

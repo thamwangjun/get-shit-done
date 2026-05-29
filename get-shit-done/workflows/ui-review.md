@@ -3,7 +3,7 @@ Retroactive 6-pillar visual audit of implemented frontend code. Standalone comma
 </purpose>
 
 <required_reading>
-{%~ include('get-shit-done/references/ui-brand.md') %}
+<%~ include('get-shit-done/references/ui-brand.md') %>
 </required_reading>
 
 <available_agent_types>

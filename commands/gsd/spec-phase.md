@@ -29,8 +29,8 @@ Clarify phase requirements through structured Socratic questioning with quantita
 </objective>
 
 <execution_context>
-{%~ include('get-shit-done/workflows/spec-phase.md') %}
-{%~ include('get-shit-done/templates/spec.md') %}
+<%~ include('get-shit-done/workflows/spec-phase.md') %>
+<%~ include('get-shit-done/templates/spec.md') %>
 </execution_context>
 
 <runtime_note>

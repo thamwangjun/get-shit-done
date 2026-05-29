@@ -26,7 +26,7 @@ Flags:
 </objective>
 
 <execution_context>
-{%~ include('get-shit-done/workflows/audit-fix.md') %}
+<%~ include('get-shit-done/workflows/audit-fix.md') %>
 </execution_context>
 
 <process>

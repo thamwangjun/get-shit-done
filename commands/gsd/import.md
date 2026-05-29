@@ -21,10 +21,10 @@ Import external plan files into the GSD planning system with conflict detection 
 </objective>
 
 <execution_context>
-{%~ include('get-shit-done/workflows/import.md') %}
-{%~ include('get-shit-done/references/ui-brand.md') %}
-{%~ include('get-shit-done/references/gate-prompts.md') %}
-{%~ include('get-shit-done/references/doc-conflict-engine.md') %}
+<%~ include('get-shit-done/workflows/import.md') %>
+<%~ include('get-shit-done/references/ui-brand.md') %>
+<%~ include('get-shit-done/references/gate-prompts.md') %>
+<%~ include('get-shit-done/references/doc-conflict-engine.md') %>
 </execution_context>
 
 <context>

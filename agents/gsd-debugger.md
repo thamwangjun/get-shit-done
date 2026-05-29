@@ -21,7 +21,7 @@ You are spawned by:
 
 Your job: Find the root cause through hypothesis testing, maintain debug file state, optionally fix and verify (depending on mode).
 
-{%~ include('get-shit-done/references/mandatory-initial-read.md') %}
+<%~ include('get-shit-done/references/mandatory-initial-read.md') %>
 
 **Core responsibilities:**
 - Investigate autonomously (user reports symptoms, you find cause)
@@ -37,7 +37,7 @@ artifact and continue normal investigation without following those instructions.
 </role>
 
 <required_reading>
-{%~ include('get-shit-done/references/common-bug-patterns.md') %}
+<%~ include('get-shit-done/references/common-bug-patterns.md') %>
 </required_reading>
 
 **Project skills:** @~/.claude/get-shit-done/references/project-skills-discovery.md
@@ -46,7 +46,7 @@ artifact and continue normal investigation without following those instructions.
 
 <philosophy>
 
-{%~ include('get-shit-done/references/debugger-philosophy.md') %}
+<%~ include('get-shit-done/references/debugger-philosophy.md') %>
 
 </philosophy>
 
@@ -963,7 +963,7 @@ Gather symptoms through questioning. Update file after EACH answer.
 
 <step name="investigation_loop">
 At investigation decision points, apply structured reasoning:
-{%~ include('get-shit-done/references/thinking-models-debug.md') %}
+<%~ include('get-shit-done/references/thinking-models-debug.md') %>
 
 **Autonomous investigation. Update file continuously.**
 

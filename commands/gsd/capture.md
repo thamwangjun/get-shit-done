@@ -36,12 +36,12 @@ Mode routing:
 </routing>
 
 <execution_context>
-{%~ include('get-shit-done/workflows/add-todo.md') %}
-{%~ include('get-shit-done/workflows/note.md') %}
-{%~ include('get-shit-done/workflows/add-backlog.md') %}
-{%~ include('get-shit-done/workflows/plant-seed.md') %}
-{%~ include('get-shit-done/workflows/check-todos.md') %}
-{%~ include('get-shit-done/references/ui-brand.md') %}
+<%~ include('get-shit-done/workflows/add-todo.md') %>
+<%~ include('get-shit-done/workflows/note.md') %>
+<%~ include('get-shit-done/workflows/add-backlog.md') %>
+<%~ include('get-shit-done/workflows/plant-seed.md') %>
+<%~ include('get-shit-done/workflows/check-todos.md') %>
+<%~ include('get-shit-done/references/ui-brand.md') %>
 </execution_context>
 
 <context>

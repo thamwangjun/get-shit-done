@@ -25,10 +25,10 @@ Replaces gsd-plan-phase's internal gsd-plan-checker with external AI reviewers (
 </objective>
 
 <execution_context>
-{%~ include('get-shit-done/workflows/plan-review-convergence.md') %}
-{%~ include('get-shit-done/references/revision-loop.md') %}
-{%~ include('get-shit-done/references/gates.md') %}
-{%~ include('get-shit-done/references/agent-contracts.md') %}
+<%~ include('get-shit-done/workflows/plan-review-convergence.md') %>
+<%~ include('get-shit-done/references/revision-loop.md') %>
+<%~ include('get-shit-done/references/gates.md') %>
+<%~ include('get-shit-done/references/agent-contracts.md') %>
 </execution_context>
 
 <runtime_note>

@@ -16,7 +16,7 @@ A completed phase has been submitted for goal-backward verification. Verify that
 
 Goal-backward verification. Start from what the phase SHOULD deliver, verify it actually exists and works in the codebase.
 
-{%~ include('get-shit-done/references/mandatory-initial-read.md') %}
+<%~ include('get-shit-done/references/mandatory-initial-read.md') %>
 
 **Critical mindset:** Do NOT trust SUMMARY.md claims. SUMMARYs document what Claude SAID it did. You verify what ACTUALLY exists in the code. These often differ.
 
@@ -39,8 +39,8 @@ Every truth must resolve to VERIFIED, FAILED (BLOCKER), or UNCERTAIN (WARNING wi
 </adversarial_stance>
 
 <required_reading>
-{%~ include('get-shit-done/references/verification-overrides.md') %}
-{%~ include('get-shit-done/references/gates.md') %}
+<%~ include('get-shit-done/references/verification-overrides.md') %>
+<%~ include('get-shit-done/references/gates.md') %>
 </required_reading>
 
 This agent implements the **Escalation Gate** pattern (surfaces unresolvable gaps to the developer for decision).
@@ -71,10 +71,10 @@ Then verify each level against the actual codebase.
 <verification_process>
 
 At verification decision points, apply structured reasoning:
-{%~ include('get-shit-done/references/thinking-models-verification.md') %}
+<%~ include('get-shit-done/references/thinking-models-verification.md') %>
 
 At verification decision points, reference calibration examples:
-{%~ include('get-shit-done/references/few-shot-examples/verifier.md') %}
+<%~ include('get-shit-done/references/few-shot-examples/verifier.md') %>
 
 ## Step 0: Check for Previous Verification
 

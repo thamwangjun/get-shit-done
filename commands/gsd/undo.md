@@ -21,9 +21,9 @@ Three modes:
 </objective>
 
 <execution_context>
-{%~ include('get-shit-done/workflows/undo.md') %}
-{%~ include('get-shit-done/references/ui-brand.md') %}
-{%~ include('get-shit-done/references/gate-prompts.md') %}
+<%~ include('get-shit-done/workflows/undo.md') %>
+<%~ include('get-shit-done/references/ui-brand.md') %>
+<%~ include('get-shit-done/references/gate-prompts.md') %>
 </execution_context>
 
 <context>

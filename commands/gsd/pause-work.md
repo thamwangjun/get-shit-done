@@ -21,7 +21,7 @@ Routes to the pause-work workflow which handles:
 </objective>
 
 <execution_context>
-{%~ include('get-shit-done/workflows/pause-work.md') %}
+<%~ include('get-shit-done/workflows/pause-work.md') %>
 </execution_context>
 
 <context>

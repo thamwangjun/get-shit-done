@@ -23,7 +23,7 @@ Output: updated SECURITY.md.
 </objective>
 
 <execution_context>
-{%~ include('get-shit-done/workflows/secure-phase.md') %}
+<%~ include('get-shit-done/workflows/secure-phase.md') %>
 </execution_context>
 
 <context>

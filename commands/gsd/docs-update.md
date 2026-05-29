@@ -26,7 +26,7 @@ Flag handling rule:
 </objective>
 
 <execution_context>
-{%~ include('get-shit-done/workflows/docs-update.md') %}
+<%~ include('get-shit-done/workflows/docs-update.md') %>
 </execution_context>
 
 <context>

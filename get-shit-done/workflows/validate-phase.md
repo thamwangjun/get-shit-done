@@ -3,7 +3,7 @@ Audit Nyquist validation gaps for a completed phase. Generate missing tests. Upd
 </purpose>
 
 <required_reading>
-{%~ include('get-shit-done/references/ui-brand.md') %}
+<%~ include('get-shit-done/references/ui-brand.md') %>
 </required_reading>
 
 <available_agent_types>

@@ -3,7 +3,7 @@ Verify threat mitigations for a completed phase. Confirm PLAN.md threat register
 </purpose>
 
 <required_reading>
-{%~ include('get-shit-done/references/ui-brand.md') %}
+<%~ include('get-shit-done/references/ui-brand.md') %>
 </required_reading>
 
 <available_agent_types>

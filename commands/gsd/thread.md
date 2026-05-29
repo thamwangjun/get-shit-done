@@ -16,7 +16,7 @@ doesn't belong to any specific phase.
 </objective>
 
 <execution_context>
-{%~ include('get-shit-done/workflows/thread.md') %}
+<%~ include('get-shit-done/workflows/thread.md') %>
 </execution_context>
 
 <process>

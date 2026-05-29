@@ -32,8 +32,8 @@ Context budget: ~15% orchestrator, 100% fresh per subagent.
 </objective>
 
 <execution_context>
-{%~ include('get-shit-done/workflows/execute-phase.md') %}
-{%~ include('get-shit-done/references/ui-brand.md') %}
+<%~ include('get-shit-done/workflows/execute-phase.md') %>
+<%~ include('get-shit-done/references/ui-brand.md') %>
 </execution_context>
 
 <runtime_note>

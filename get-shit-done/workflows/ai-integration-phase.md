@@ -11,8 +11,8 @@ This prevents the two most common AI development failures: choosing the wrong fr
 </purpose>
 
 <required_reading>
-{%~ include('get-shit-done/references/ai-frameworks.md') %}
-{%~ include('get-shit-done/references/ai-evals.md') %}
+<%~ include('get-shit-done/references/ai-frameworks.md') %>
+<%~ include('get-shit-done/references/ai-evals.md') %>
 </required_reading>
 
 <process>

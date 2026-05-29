@@ -21,7 +21,7 @@ Routes to the settings workflow which handles:
 </objective>
 
 <execution_context>
-{%~ include('get-shit-done/workflows/settings.md') %}
+<%~ include('get-shit-done/workflows/settings.md') %>
 </execution_context>
 
 <process>

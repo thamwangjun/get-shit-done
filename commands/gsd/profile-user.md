@@ -19,8 +19,8 @@ Routes to the profile-user workflow which orchestrates the full flow: consent ga
 </objective>
 
 <execution_context>
-{%~ include('get-shit-done/workflows/profile-user.md') %}
-{%~ include('get-shit-done/references/ui-brand.md') %}
+<%~ include('get-shit-done/workflows/profile-user.md') %>
+<%~ include('get-shit-done/references/ui-brand.md') %>
 </execution_context>
 
 <context>

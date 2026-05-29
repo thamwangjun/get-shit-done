@@ -31,10 +31,10 @@ Mode routing:
 </routing>
 
 <execution_context>
-{%~ include('get-shit-done/workflows/add-phase.md') %}
-{%~ include('get-shit-done/workflows/insert-phase.md') %}
-{%~ include('get-shit-done/workflows/remove-phase.md') %}
-{%~ include('get-shit-done/workflows/edit-phase.md') %}
+<%~ include('get-shit-done/workflows/add-phase.md') %>
+<%~ include('get-shit-done/workflows/insert-phase.md') %>
+<%~ include('get-shit-done/workflows/remove-phase.md') %>
+<%~ include('get-shit-done/workflows/edit-phase.md') %>
 </execution_context>
 
 <context>

@@ -29,10 +29,10 @@ Mode routing:
 </routing>
 
 <execution_context>
-{%~ include('get-shit-done/workflows/new-workspace.md') %}
-{%~ include('get-shit-done/workflows/list-workspaces.md') %}
-{%~ include('get-shit-done/workflows/remove-workspace.md') %}
-{%~ include('get-shit-done/references/ui-brand.md') %}
+<%~ include('get-shit-done/workflows/new-workspace.md') %>
+<%~ include('get-shit-done/workflows/list-workspaces.md') %>
+<%~ include('get-shit-done/workflows/remove-workspace.md') %>
+<%~ include('get-shit-done/references/ui-brand.md') %>
 </execution_context>
 
 <context>

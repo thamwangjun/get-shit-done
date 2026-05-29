@@ -26,11 +26,11 @@ Brownfield equivalent of new-project. Project exists, PROJECT.md has history. Ga
 </objective>
 
 <execution_context>
-{%~ include('get-shit-done/workflows/new-milestone.md') %}
-{%~ include('get-shit-done/references/questioning.md') %}
-{%~ include('get-shit-done/references/ui-brand.md') %}
-{%~ include('get-shit-done/templates/project.md') %}
-{%~ include('get-shit-done/templates/requirements.md') %}
+<%~ include('get-shit-done/workflows/new-milestone.md') %>
+<%~ include('get-shit-done/references/questioning.md') %>
+<%~ include('get-shit-done/references/ui-brand.md') %>
+<%~ include('get-shit-done/templates/project.md') %>
+<%~ include('get-shit-done/templates/requirements.md') %>
 </execution_context>
 
 <context>

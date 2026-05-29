@@ -5,7 +5,7 @@ Use after /gsd:execute-phase to verify that the evaluation strategy from AI-SPEC
 </purpose>
 
 <required_reading>
-{%~ include('get-shit-done/references/ai-evals.md') %}
+<%~ include('get-shit-done/references/ai-evals.md') %>
 </required_reading>
 
 <process>

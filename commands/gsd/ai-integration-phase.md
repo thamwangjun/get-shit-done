@@ -22,9 +22,9 @@ Flow: Select Framework → Research Docs → Research Domain → Design Eval Str
 </objective>
 
 <execution_context>
-{%~ include('get-shit-done/workflows/ai-integration-phase.md') %}
-{%~ include('get-shit-done/references/ai-frameworks.md') %}
-{%~ include('get-shit-done/references/ai-evals.md') %}
+<%~ include('get-shit-done/workflows/ai-integration-phase.md') %>
+<%~ include('get-shit-done/references/ai-frameworks.md') %>
+<%~ include('get-shit-done/references/ai-evals.md') %>
 </execution_context>
 
 <context>
