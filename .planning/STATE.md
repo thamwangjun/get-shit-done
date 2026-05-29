@@ -3,14 +3,15 @@ gsd_state_version: 1.0
 milestone: v2.1.0-c
 milestone_name: Install-Time Content Materialization
 status: executing
-last_updated: "2026-05-29T04:15:02.788Z"
-last_activity: 2026-05-28
+stopped_at: Phase 46 context gathered
+last_updated: "2026-05-29T05:54:56.240Z"
+last_activity: 2026-05-29
 progress:
   total_phases: 4
-  completed_phases: 2
-  total_plans: 6
-  completed_plans: 6
-  percent: 50
+  completed_phases: 3
+  total_plans: 8
+  completed_plans: 8
+  percent: 75
 ---
 
 # Project State
@@ -20,20 +21,20 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-28 after v2.1.0-c roadmap defined)
 
 **Core value:** Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships
-**Current focus:** Phase 44 — resolver-core
+**Current focus:** Phase 46 — regression-test-suite
 
 ## Current Position
 
-Phase: 46
+Phase: 47
 Plan: Not started
-Status: Executing Phase 44
-Last activity: 2026-05-28
+Status: Executing Phase 46
+Last activity: 2026-05-29
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 61 (v1.37.1 Phases 7–12, v1.37.1a Phases 13–17, v1.37.1b Phases 18–19)
+- Total plans completed: 63 (v1.37.1 Phases 7–12, v1.37.1a Phases 13–17, v1.37.1b Phases 18–19)
 - Average duration: — (metrics not retroactively enabled for completed phases)
 
 ## Accumulated Context
