@@ -578,7 +578,7 @@ Read ROADMAP.md `**Requirements:**` line for this phase. Strip brackets if prese
   `Package installs detected but audit table not found — researcher must run Package Legitimacy Gate protocol`
   Fallback policy: treat all packages as `[ASSUMED]`.
 - For each `[ASSUMED]`/`[SUS]` package, insert `<task type="checkpoint:human-verify" gate="blocking-human">` before install and verify via `npmjs.com/package`, `pypi.org/project`, or `crates.io/crates`.
-- `[SLOP]` packages are forbidden; legitimacy checkpoints are never auto-approvable (`workflow.auto_advance` ignored). Keep `T-{phase}-SC` in `<threat_model>`.
+- `[SLOP]` packages must be rejected; legitimacy checkpoints require explicit human approval (`workflow.auto_advance` has no effect here). Keep `T-{phase}-SC` in `<threat_model>`.
 
 **Step 1: State the Goal**
 Take phase goal from ROADMAP.md. Must be outcome-shaped, not task-shaped.

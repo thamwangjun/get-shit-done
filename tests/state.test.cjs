@@ -1579,6 +1579,72 @@ describe('milestone-scoped phase counting in frontmatter', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// cross-milestone progress preservation (#3242 Bug A)
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('cross-milestone progress preservation (#3242 Bug A)', () => {
+  let tmpDir;
+
+  beforeEach(() => {
+    tmpDir = createTempProject();
+  });
+
+  afterEach(() => {
+    cleanup(tmpDir);
+  });
+
+  test('cmdStateBuild preserves curated total_phases when frontmatter exceeds disk-derived count', () => {
+    // Disk has only 3 phase directories — disk-derived total_phases would be 3.
+    // But the existing STATE.md frontmatter says total_phases: 50 (cross-milestone aggregate).
+    // The implementation must preserve the curated value (50), not overwrite with 3.
+    for (let i = 1; i <= 3; i++) {
+      const padded = String(i).padStart(2, '0');
+      const phaseDir = path.join(tmpDir, '.planning', 'phases', `${padded}-phase-${i}`);
+      fs.mkdirSync(phaseDir, { recursive: true });
+      fs.writeFileSync(path.join(phaseDir, `${padded}-01-PLAN.md`), '# Plan');
+      fs.writeFileSync(path.join(phaseDir, `${padded}-01-SUMMARY.md`), '# Summary');
+    }
+
+    // Write STATE.md with curated cross-milestone frontmatter: total_phases=50
+    const stateMd = [
+      '---',
+      'status: in_progress',
+      'progress:',
+      '  total_phases: 50',
+      '  completed_phases: 47',
+      '  total_plans: 50',
+      '  completed_plans: 47',
+      '  percent: 94',
+      '---',
+      '',
+      '# Project State',
+      '',
+      '**Current Phase:** 03',
+      '**Status:** In progress',
+      '',
+    ].join('\n');
+    fs.writeFileSync(path.join(tmpDir, '.planning', 'STATE.md'), stateMd);
+
+    // Trigger a state build by calling state json — this re-derives progress from disk
+    // but must preserve the curated frontmatter values when they exceed disk-derived values.
+    const jsonResult = runGsdTools('state json', tmpDir);
+    assert.ok(jsonResult.success, `state json failed: ${jsonResult.error}`);
+
+    const output = JSON.parse(jsonResult.output);
+    assert.strictEqual(
+      Number(output.progress.total_phases),
+      50,
+      'curated cross-milestone total_phases (50) must be preserved over disk-derived count (3)'
+    );
+    assert.strictEqual(
+      Number(output.progress.completed_phases),
+      47,
+      'curated completed_phases (47) must be preserved alongside total_phases'
+    );
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 // begin-phase — field preservation (#1365)
 // ─────────────────────────────────────────────────────────────────────────────
 

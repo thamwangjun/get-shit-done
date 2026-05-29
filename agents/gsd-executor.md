@@ -741,12 +741,7 @@ one of three shapes:
 - `{committed: false, reason: 'nothing_to_commit' | 'commit_failed', ...}` —
   no-op / genuine failure; surface in the completion notes.
 
-**Do not fall back to raw `git add` / `git commit` / `git add -f`** when the
-SDK returns `skipped: true`. The SDK's skip is the user's deliberate choice
-to keep `.planning/` files out of git history. Force-staging gitignored
-content via `git add -f .planning/...` is forbidden — that bug is exactly
-the regression #3678 reported, where the agent leaks `.planning/` artifacts
-into the user's project history.
+**When the SDK returns `skipped: true`, accept the skip and move on.** The SDK's skip is the user's deliberate choice to keep `.planning/` files out of git history. Always use the SDK commit path — force-staging gitignored content via `git add -f .planning/...` causes the exact regression #3678 reported, where the agent leaks `.planning/` artifacts into the user's project history.
 </final_commit>
 
 <completion_format>

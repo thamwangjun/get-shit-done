@@ -269,7 +269,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 47-01-PLAN.md — Upgrade TEST-01 with full Claude install walk + ALLOWED_INLINE_REFS, strike through REQUIREMENTS.md TEST-03, close GATE-01/02/03
+- [x] 47-01-PLAN.md — Upgrade TEST-01 with full Claude install walk + ALLOWED_INLINE_REFS, strike through REQUIREMENTS.md TEST-03, close GATE-01/02/03
 
 ## Progress
 
@@ -328,7 +328,7 @@ Plans:
 | 44. Resolver Core | v2.1.0-c | 1/1 | Complete | 2026-05-28 |
 | 45. Pipeline Integration | v2.1.0-c | 3/4 | In Progress | - |
 | 46. Regression Test Suite | v2.1.0-c | 0/TBD | Not started | - |
-| 47. Full Runtime Matrix + Verification | v2.1.0-c | 0/TBD | Not started | - |
+| 47. Full Runtime Matrix + Verification | v2.1.0-c | 1/1 | Complete | 2026-05-29 |
 
 *v1.41.3 shipped 2026-05-19 — see `.planning/milestones/v1.41.3-ROADMAP.md`*
 *v1.41.5 shipped 2026-05-24 — see `.planning/milestones/v1.41.5-ROADMAP.md`*

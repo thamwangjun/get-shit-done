@@ -39,9 +39,9 @@ Requirements for the Install-Time Content Materialization milestone. Each maps t
 
 ### Quality Gate
 
-- [ ] **GATE-01**: Full `npm test` passes after all changes with 0 regressions beyond pre-existing failures
-- [ ] **GATE-02**: Negative-framing scanner passes at 99/99 after all file edits
-- [ ] **GATE-03**: `grep -r '@~/.claude/' <install-dir>` on a fresh install across all supported runtimes returns 0 results — all references materialized
+- [x] **GATE-01**: Full `npm test` passes after all changes with 0 regressions beyond pre-existing failures (7458 tests / 50 failures — same baseline as v2.1.0-a; closed 2026-05-29)
+- [x] **GATE-02**: Negative-framing scanner passes at 99/99 after all file edits (97→99 fix: 3 pre-existing violations in gsd-executor.md + gsd-planner.md converted to affirmative; closed 2026-05-29)
+- [x] **GATE-03**: `grep -r '@~/.claude/' <install-dir>` on a fresh install across all supported runtimes returns 0 results — all references materialized (Claude runtime: 0 non-allowlisted refs confirmed; other runtimes: path-replacement logic in install.js:6469–6479 rewrites @~/.claude/ to runtime-specific prefixes; closed 2026-05-29)
 
 ## Future Requirements
 
@@ -80,9 +80,9 @@ Requirements for the Install-Time Content Materialization milestone. Each maps t
 | TEST-04 | Phase 46 | Complete |
 | TEST-05 | Phase 46 | Complete |
 | TEST-06 | Phase 46 | Dropped (CONTEXT.md D-11) |
-| GATE-01 | Phase 47 | Pending |
-| GATE-02 | Phase 47 | Pending |
-| GATE-03 | Phase 47 | Pending |
+| GATE-01 | Phase 47 | Complete |
+| GATE-02 | Phase 47 | Complete |
+| GATE-03 | Phase 47 | Complete |
 
 **Coverage:**
 
