@@ -58,21 +58,21 @@ describe('INTG-01: eta dependency and Eta instance wiring', () => {
     );
   });
 
-  test('bin/install.js has Eta instance with tags:["{%","%}"]', () => {
+  test('bin/install.js Eta instance uses default delimiters — no custom tags config', () => {
     const installSrc = fs.readFileSync(path.join(REPO_ROOT, 'bin', 'install.js'), 'utf-8');
-    assert.match(
+    assert.doesNotMatch(
       installSrc,
       /tags\s*:\s*\[.*'\{%'.*'%}'.*\]/,
-      'Eta instance must be configured with tags: ["{%", "%}"]'
+      'Eta instance must use default delimiters — custom tags:["{%","%}"] config must be absent (Phase 46 D-01)'
     );
   });
 
-  test('bin/install.js has Eta instance with parse:{raw:"~"}', () => {
+  test('bin/install.js Eta instance uses default raw prefix — no custom parse.raw config', () => {
     const installSrc = fs.readFileSync(path.join(REPO_ROOT, 'bin', 'install.js'), 'utf-8');
-    assert.match(
+    assert.doesNotMatch(
       installSrc,
       /parse\s*:\s*\{[^}]*raw\s*:\s*'~'[^}]*\}/,
-      'Eta instance must be configured with parse: { raw: "~" }'
+      'Eta instance must use default raw prefix — custom parse:{raw:"~"} config must be absent (Phase 46 D-01)'
     );
   });
 
