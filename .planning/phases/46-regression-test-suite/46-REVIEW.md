@@ -8,164 +8,129 @@ files_reviewed_list:
   - tests/bug-phase45-eta-wiring.test.cjs
   - tests/install-eta-regression.test.cjs
 findings:
-  critical: 0
-  warning: 4
-  info: 3
-  total: 7
+  critical: 1
+  warning: 3
+  info: 1
+  total: 5
 status: issues_found
 ---
 
 # Phase 46: Code Review Report
 
-**Reviewed:** 2026-05-29T00:00:00Z
+**Reviewed:** 2026-05-29
 **Depth:** standard
 **Files Reviewed:** 3
 **Status:** issues_found
 
 ## Summary
 
-Three files reviewed: the `bin/install.js` installer (Eta engine wiring), `tests/bug-phase45-eta-wiring.test.cjs` (INTG integration tests), and `tests/install-eta-regression.test.cjs` (render-pipeline regression tests).
+Three files reviewed: the `bin/install.js` installer (Eta engine wiring and the `renderEtaContent` export), `tests/bug-phase45-eta-wiring.test.cjs` (INTG-01 through INTG-06 source-level checks), and `tests/install-eta-regression.test.cjs` (TEST-01 through TEST-05 render-pipeline regression tests).
 
-`bin/install.js` has correct Eta instance configuration — default delimiters, `autoEscape: false`, `useWith: true`, `views` pointing to `_etaSourceRoot` (repo root), and a `resolvePath` override anchoring all includes to the views root. The `renderEtaContent` export creates a fresh per-call Eta instance, correctly isolating test invocations from the global instance.
+The `renderEtaContent` implementation in `bin/install.js` is functionally correct — circular-include detection wraps `RangeError` to a descriptive `Error`, `EtaFileResolutionError` is rethrown correctly, and the per-call fresh Eta instance prevents global state pollution. The `autoEscape: false`, `useWith: true`, and `views: _etaSourceRoot` configuration is validated by INTG-01 assertions that hold against the current source.
 
-The test suite has no critical defects. Four warnings involve test assertions that are either regex-quote-blind (can produce false negatives) or vacuously pass when guarded directories or files are absent. These do not represent failures in the current repo state but are real gaps that could silently miss regressions if the codebase evolves.
+One critical defect was found: TEST-01 in `install-eta-regression.test.cjs` does not exercise Eta rendering at all. The call to `installRuntimeArtifacts('claude', tmpDir, 'global', ...)` installs only SKILL.md files through a path that never invokes `renderEtaContent`, making the core regression assertion vacuously true regardless of whether Eta rendering is wired or broken. Three warnings were found covering a dead global Eta instance, vacuously-passing tests for missing SKILL.md files, and silent guards on missing source directories.
+
+## Critical Issues
+
+### CR-01: TEST-01 does not exercise Eta rendering — test passes vacuously
+
+**File:** `tests/install-eta-regression.test.cjs:52-70`
+
+**Issue:** `installRuntimeArtifacts('claude', tmpDir, 'global', RESOLVED_CORE)` resolves to the `skillsKind` layout for `claude + global` scope (per `runtime-artifact-layout.cjs:234`). This routes exclusively through:
+
+1. `applyRuntimeContentRewritesInPlace` — path-replacement only, no `renderEtaContent` call.
+2. `_copyStaged` — raw `fs.copyFileSync`, no transformation of any kind.
+
+No agent `.md` files (the only files containing `<%~ include(...) %>` directives) are written to `tmpDir` by this code path. SKILL.md files, which are the only files installed, do not contain `@~/.claude/` bare-line references at source level (INTG-06 checks this). Consequently the assertion `!/^@~\/.claude\//m.test(content)` passes for every file in `tmpDir` regardless of whether `renderEtaContent` is wired, misconfigured, or deleted entirely.
+
+This means a regression in Eta rendering of agent files — the exact failure mode Phase 45 was designed to prevent — would not be caught by this test.
+
+**Fix:** Replace the `installRuntimeArtifacts` call with a direct invocation of `renderEtaContent` on a known agent that contains `include()` directives, then assert the `@~` reference is absent from the rendered output:
+
+```javascript
+test('Rendering gsd-executor.md with Eta leaves no bare @~/.claude/ refs', () => {
+  const srcPath = path.join(REPO_ROOT, 'agents', 'gsd-executor.md');
+  assert.ok(fs.existsSync(srcPath), `Agent source not found: ${srcPath}`);
+  const source = fs.readFileSync(srcPath, 'utf8');
+  const rendered = renderEtaContent(source, srcPath, REPO_ROOT);
+  assert.ok(
+    !/^@~\/.claude\//m.test(rendered),
+    `Unresolved bare-line @~/.claude/ found in rendered output of ${srcPath}`
+  );
+});
+```
+
+---
 
 ## Warnings
 
-### WR-01: Delimiter-absence regexes are single-quote-only — double-quoted variants bypass the check
+### WR-01: Dead global `eta` instance in `bin/install.js`
 
-**File:** `tests/bug-phase45-eta-wiring.test.cjs:65` and `:74`
-**Issue:** The two `assert.doesNotMatch` assertions that verify custom Eta delimiter config is absent use regexes that only match single-quoted string literals:
+**File:** `bin/install.js:1753-1765`
 
-- Line 65: `/tags\s*:\s*\[.*'\{%'.*'%}'.*\]/` — matches `'{%'` but not `"{%"`
-- Line 74: `/parse\s*:\s*\{[^}]*raw\s*:\s*'~'[^}]*\}/` — matches `'~'` but not `"~"`
+**Issue:** The module-scope `const eta = new Eta({...})` instance at line 1753, including its `resolvePath` override at line 1762, is never used. `renderEtaContent` — the sole Eta rendering function in the file — creates a fresh `Eta` instance on every call (lines 6419-6426) and does not reference the global `eta` variable. The only reference to `eta` after declaration is the `resolvePath` property assignment at line 1762. No `eta.renderString` or `eta.render` calls exist anywhere in the file.
 
-Since the assertion is `doesNotMatch`, a developer who writes the banned config using double quotes would get a false pass. The tests intend to assert that no custom delimiter/raw-prefix config exists; the regex should be quote-agnostic.
+This dead instance allocates resources on every `require('../bin/install.js')` and misleads readers into thinking it is the active rendering instance, when it is not.
 
-**Fix:**
-```js
-// Line 65 — match single OR double quotes
-assert.doesNotMatch(
-  installSrc,
-  /tags\s*:\s*\[.*['"][{]%['"].*['"]%}['"].*\]/,
-  'Eta instance must use default delimiters ...'
-);
-
-// Line 74 — match single OR double quotes
-assert.doesNotMatch(
-  installSrc,
-  /parse\s*:\s*\{[^}]*raw\s*:\s*['"]~['"][^}]*\}/,
-  'Eta instance must use default raw prefix ...'
-);
-```
+**Fix:** Remove lines 1753-1765 (the `const eta = new Eta({...})` declaration and the `eta.resolvePath = ...` override). `renderEtaContent` is self-contained.
 
 ---
 
-### WR-02: "views points to repo root" test checks pattern co-existence, not binding identity
+### WR-02: INTG-06 passes vacuously — no SKILL.md files exist in repo
 
-**File:** `tests/bug-phase45-eta-wiring.test.cjs:86-90`
-**Issue:** The test verifies the Eta `views` config with two separate regexes: one matching any variable assigned `path.join(__dirname, '..')`, and another matching `views: _etaSourceRoot`. These are tested independently with `&&` — the test would pass if `_someOtherVar = path.join(__dirname, '..')` exists elsewhere in the file for an unrelated purpose and `views: _etaSourceRoot` is set to a different value entirely.
+**File:** `tests/bug-phase45-eta-wiring.test.cjs:239-294`
 
-```js
-const definesParentDirVar = /(?:const|let|var)\s+\w+\s*=\s*path\.join\(__dirname,\s*['"]\.\.['"]\s*\)/.test(installSrc);
-const viewsSetToVar = /views\s*:\s*_etaSourceRoot/.test(installSrc);
-// Both true if ANY var = path.join(__dirname, '..'), even if _etaSourceRoot != parent dir
-assert.ok((definesParentDirVar && viewsSetToVar) || viewsSetInline, ...);
+**Issue:** `findSkillFiles(REPO_ROOT)` returns an empty array because there are no `SKILL.md` files in the repository outside `node_modules`. The `for (const filePath of skillFiles)` loop body never executes, and `assert.strictEqual(survivors.length, 0, ...)` trivially passes with no files inspected. A future commit that introduces a `SKILL.md` containing a bare `@~/.claude/get-shit-done/` reference would go undetected until the `SKILL.md` is added — at which point the test might flag it, but only if the developer runs the full suite.
+
+**Fix:** Add a guard that skips or fails explicitly when no SKILL.md files are found, making the vacuous-pass visible:
+
+```javascript
+const skillFiles = findSkillFiles(REPO_ROOT);
+// If no SKILL.md files exist, the test provides no coverage — skip rather than false-green.
+if (skillFiles.length === 0) {
+  // node:test's skip mechanism: return early with a note
+  return; // or: test.skip(...)
+}
 ```
 
-The current code happens to be correct (`_etaSourceRoot = path.join(__dirname, '..')` and `views: _etaSourceRoot` are both present and consistent), but the test would not catch a regression where `_etaSourceRoot` is reassigned to a different path.
-
-**Fix:** Add a targeted regex that matches the specific assignment in one shot:
-```js
-const etaSourceRootIsParentDir = /const\s+_etaSourceRoot\s*=\s*path\.join\(__dirname,\s*['"]\.\.['"]\s*\)/.test(installSrc);
-const viewsUsesEtaSourceRoot = /views\s*:\s*_etaSourceRoot/.test(installSrc);
-assert.ok(
-  etaSourceRootIsParentDir && viewsUsesEtaSourceRoot,
-  'Eta views must use _etaSourceRoot = path.join(__dirname, "..")'
-);
-```
+Alternatively, if SKILL.md files are expected to exist at review time, add: `assert.ok(skillFiles.length > 0, 'Expected at least one SKILL.md to validate — none found')`.
 
 ---
 
-### WR-03: INTG-02 and INTG-03 directory walkers silently pass when guarded directory is absent
+### WR-03: INTG-02 and INTG-03 walkers silently pass when source directories are absent
 
-**File:** `tests/bug-phase45-eta-wiring.test.cjs:139` and `:223`
-**Issue:** Both `findBareLineAtTildeRefs` and the INTG-03 walker use an existence guard before walking:
+**File:** `tests/bug-phase45-eta-wiring.test.cjs:139` and `223`
 
-```js
+**Issue:** Both the `findBareLineAtTildeRefs` helper (INTG-02) and the INTG-03 walker guard their walks with `if (fs.existsSync(dir)) { walkDir(dir); }`. If a guarded directory (`commands/gsd/`, `agents/`, `get-shit-done/workflows/`, `get-shit-done/references/`) were absent — due to an accidental deletion, a repository restructure, or a test running from a wrong working directory — all tests in INTG-02 and INTG-03 would return `survivors.length === 0` and pass silently with zero files inspected.
+
+```javascript
 if (fs.existsSync(dir)) {
   walkDir(dir);
 }
-return survivors; // empty — test passes vacuously
+return survivors; // empty if dir missing — test passes vacuously
 ```
 
-If `commands/gsd/`, `agents/`, `get-shit-done/workflows/`, or `get-shit-done/references/` were accidentally deleted or the repo root changed, all four INTG-02 tests and the INTG-03 test would pass with 0 survivors — giving a false green signal. The same applies to the INTG-03 `agentsDir` guard at line 223.
+**Fix:** Assert existence before walking:
 
-**Fix:** Assert that the directory exists and contains at least one `.md` file before evaluating survivors:
-```js
-assert.ok(fs.existsSync(dir), `Source directory must exist: ${dir}`);
-const survivors = findBareLineAtTildeRefs(dir);
-assert.strictEqual(survivors.length, 0, ...);
+```javascript
+assert.ok(fs.existsSync(dir), `Source directory must exist for this check: ${dir}`);
+walkDir(dir);
 ```
-
----
-
-### WR-04: INTG-06 never asserts that any SKILL.md files were found — passes vacuously
-
-**File:** `tests/bug-phase45-eta-wiring.test.cjs:239-294`
-**Issue:** The `INTG-06` test calls `findSkillFiles(REPO_ROOT)` and iterates over results. Currently there are zero `SKILL.md` files in the repository. The test therefore always passes with `survivors.length === 0` without having checked any file.
-
-```js
-const skillFiles = findSkillFiles(REPO_ROOT);
-// skillFiles.length === 0 today — loop body never runs
-for (const filePath of skillFiles) { ... }
-assert.strictEqual(survivors.length, 0, ...); // trivially true
-```
-
-The test provides zero coverage value in the current repo state and would not catch a regression if a `SKILL.md` with bare `@~/.claude/` refs were added.
-
-**Fix:** Add a guard assertion, or skip the test with a clear note when no files exist:
-```js
-const skillFiles = findSkillFiles(REPO_ROOT);
-if (skillFiles.length === 0) {
-  // No SKILL.md files in repo — test is vacuous. Skip rather than false-green.
-  return;
-}
-// ... rest of test
-```
-Alternatively, require at least one `SKILL.md` to exist: `assert.ok(skillFiles.length > 0, 'Expected at least one SKILL.md to validate')`.
 
 ---
 
 ## Info
 
-### IN-01: Orphaned JSDoc block for installRuntimeArtifacts separated from function definition
+### IN-01: `loadSkillsManifest` / `resolveProfile` execute at module scope for all tests
 
-**File:** `bin/install.js:6257-6264`
-**Issue:** A JSDoc comment documenting `installRuntimeArtifacts` (params: `runtime`, `configDir`, `scope`, `resolvedProfile`) appears at line 6257, but the actual `function installRuntimeArtifacts` declaration is at line 6299, separated by the `_snapshotDir` and `_restoreDir` helper functions. Most tooling (IDEs, documentation generators) will associate the JSDoc with `_snapshotDir` instead.
+**File:** `tests/install-eta-regression.test.cjs:25-26`
 
-**Fix:** Move the JSDoc block to immediately precede `function installRuntimeArtifacts` at line 6299. The existing JSDoc on `_snapshotDir` at lines 6265-6270 is correctly placed and should remain.
+**Issue:** `MANIFEST` and `RESOLVED_CORE` are computed at module scope, meaning `loadSkillsManifest(REAL_COMMANDS_DIR)` and `resolveProfile(...)` run unconditionally when the file is loaded — even when running only TEST-02 through TEST-05, which do not use `RESOLVED_CORE`. If `install-profiles.cjs` or `REAL_COMMANDS_DIR` throws during module initialization, all five test suites in the file fail with a misleading module-load error instead of a per-test failure.
 
----
-
-### IN-02: Duplicated walkDir logic in INTG-02 and INTG-03
-
-**File:** `tests/bug-phase45-eta-wiring.test.cjs:114-137` and `204-220`
-**Issue:** The inner `walkDir` function is defined with near-identical logic in both `findBareLineAtTildeRefs` (called by INTG-02) and the INTG-03 anonymous block. The only difference is the pattern applied per line. This duplication makes future changes (e.g., adding `.yaml` file support) require edits in multiple places.
-
-**Fix:** Extract a shared `walkMdFiles(dir)` helper that returns all `.md` file paths (similar to the `walkMdFiles` already defined in `install-eta-regression.test.cjs`), then apply patterns over the returned paths in each test.
+**Fix:** Move lines 24-26 (`REAL_COMMANDS_DIR`, `MANIFEST`, `RESOLVED_CORE`) inside the TEST-01 `describe` block or into the TEST-01 test body so they only execute when that test runs.
 
 ---
 
-### IN-03: TEST-01 header comment misstates what the test checks
-
-**File:** `tests/install-eta-regression.test.cjs:3`
-**Issue:** The file header says "TEST-01 checks installed skills output" but the test actually walks **all** `.md` files produced by `installRuntimeArtifacts` — including agents, commands, and workflows — not only skill files.
-
-**Fix:** Update the comment to: `// TEST-01 checks all installed .md file output for unresolved @~/.claude/ bare-line references`.
-
----
-
-_Reviewed: 2026-05-29T00:00:00Z_
+_Reviewed: 2026-05-29_
 _Reviewer: Claude (gsd-code-reviewer)_
 _Depth: standard_
