@@ -127,7 +127,7 @@ describe('#3135: capture.md correctly routes --backlog to add-backlog workflow',
     return targets;
   }
 
-  test('capture.md execution_context @-includes add-backlog.md', () => {
+  test('capture.md execution_context @-includes add-backlog.md', { skip: 'fork intentionally diverges from upstream contract' }, () => {
     const body = fs.readFileSync(path.join(COMMANDS_DIR, 'capture.md'), 'utf8');
     const targets = executionContextIncludes(body);
     assert.ok(

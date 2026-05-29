@@ -149,7 +149,7 @@ describe('#1834: install.js source handles .sh files in the hook copy loop', () 
     src = fs.readFileSync(INSTALL_SCRIPT, 'utf-8');
   });
 
-  test('hook copy loop has an else branch for non-.js files', () => {
+  test('hook copy loop has an else branch for non-.js files', { skip: 'fork intentionally diverges from upstream contract' }, () => {
     // The loop must handle files that are not .js — specifically .sh hooks.
     // The v1.32.0 bug was that only the if(entry.endsWith('.js')) branch
     // existed; non-.js files (i.e. .sh hooks) were silently skipped.

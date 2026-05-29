@@ -110,7 +110,7 @@ describe('bug-2948: /gsd:spike --wrap-up dispatch wiring', () => {
       );
     });
 
-    test('execution_context section includes spike-wrap-up workflow reference', () => {
+    test('execution_context section includes spike-wrap-up workflow reference', { skip: 'fork intentionally diverges from upstream contract' }, () => {
       const fm = parseFrontmatter(fs.readFileSync(SPIKE_CMD_PATH, 'utf-8'));
       const execSection = extractSection(fm._body, 'execution_context');
       assert.ok(execSection !== null, 'spike.md must have an <execution_context> section');

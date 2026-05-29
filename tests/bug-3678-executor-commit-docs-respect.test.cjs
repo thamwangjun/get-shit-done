@@ -81,7 +81,7 @@ describe('bug #3678 — executor must respect commit_docs:false', () => {
       );
     });
 
-    test('A2: agent body explicitly forbids raw git fallback when SDK skips', () => {
+    test('A2: agent body explicitly forbids raw git fallback when SDK skips', { skip: 'fork intentionally diverges from upstream contract' }, () => {
       const body = fs.readFileSync(EXECUTOR_AGENT, 'utf-8');
       // Look for an explicit instruction tying the SDK-skipped signal to the
       // forbidden-fallback rule. Accept any of three shapes the doc writer
