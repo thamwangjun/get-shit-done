@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.1.0-c
 milestone_name: Install-Time Content Materialization
-status: verified
-last_updated: "2026-05-29T09:00:00.000Z"
-last_activity: 2026-05-29 -- Addressed v2.1.0-c milestone audit tech debt (quick task 260529-c7a)
+status: planning
+last_updated: "2026-05-29T09:09:54.816Z"
+last_activity: "2026-05-29 -- Phase 47.1 inserted (gap closure: INTG-04/GATE-03 — BLOCKER-01)"
 progress:
-  total_phases: 4
+  total_phases: 5
   completed_phases: 4
   total_plans: 9
   completed_plans: 9
-  percent: 100
+  percent: 80
 ---
 
 # Project State
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-28 after v2.1.0-c roadmap defined)
 
 **Core value:** Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships
-**Current focus:** Phase 47 — full-runtime-matrix-verification (verified, awaiting human sign-off on GATE-02 and multi-runtime spot-check)
+**Current focus:** Phase 47.1 — close-gap-intg-04-gate-03 (inserted: BLOCKER-01 skills path never renders Eta content)
 
 ## Current Position
 
-Phase: 47 (full-runtime-matrix-verification) — VERIFIED
-Plan: 1 of 1
-Status: Phase 47 verification complete — status: human_needed (2 human checks pending for full gate closure)
-Last activity: 2026-05-29 -- Phase 47 verified
+Phase: 47.1 (close-gap-intg-04-gate-03-wire-renderetacontent-into-skills-) — INSERTED
+Plan: not planned yet
+Status: planning
+Last activity: 2026-05-29 -- Phase 47.1 inserted (gap closure: INTG-04/GATE-03 — BLOCKER-01)
 
 ## Performance Metrics
 
@@ -79,6 +79,6 @@ Resolved: `tests/bug-2992-check-latest-version.test.cjs` rewritten for SHA-based
 
 ## Session Continuity
 
-Last session: 2026-05-29T09:00:00.000Z
-Stopped at: Phase 47 verification complete
-Resume file: .planning/phases/47-full-runtime-matrix-verification/47-VERIFICATION.md
+Last session: 2026-05-29T09:09:54.806Z
+Stopped at: Phase 47.1 context gathered
+Resume file: .planning/phases/47.1-close-gap-intg-04-gate-03-wire-renderetacontent-into-skills-/47.1-CONTEXT.md
