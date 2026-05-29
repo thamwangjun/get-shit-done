@@ -78,17 +78,17 @@ describe('INTG-01: eta dependency and Eta instance wiring', () => {
 
   test('bin/install.js Eta instance views points to repo root (parent of bin/)', () => {
     const installSrc = fs.readFileSync(path.join(REPO_ROOT, 'bin', 'install.js'), 'utf-8');
-    // The views value must resolve to the repo root (path.join(__dirname, '..')).
-    // The implementation defines a named variable (_etaSourceRoot = path.join(__dirname, '..'))
-    // and then passes it as views: _etaSourceRoot. Verify both halves:
-    // 1. A variable is assigned path.join(__dirname, '..')
-    // 2. views: is set to that variable (the result is repo root)
+    // renderEtaContent creates a fresh Eta instance per call. Verify both halves:
+    // 1. A module-level variable (_etaSourceRoot) is assigned path.join(__dirname, '..')
+    // 2. renderEtaContent is called with _etaSourceRoot as the viewsRoot argument,
+    //    which is then passed as views: viewsRoot inside renderEtaContent
     const definesParentDirVar = /(?:const|let|var)\s+\w+\s*=\s*path\.join\(__dirname,\s*['"]\.\.['"]\s*\)/.test(installSrc);
-    const viewsSetToVar = /views\s*:\s*_etaSourceRoot/.test(installSrc);
+    const passedToRenderEta = /renderEtaContent\s*\([^)]*_etaSourceRoot\s*\)/.test(installSrc);
     const viewsSetInline = /views\s*:\s*path\.join\(__dirname,\s*['"]\.\.['"]\s*\)/.test(installSrc);
     assert.ok(
-      (definesParentDirVar && viewsSetToVar) || viewsSetInline,
-      'Eta instance views must resolve to path.join(__dirname, "..") — the repo root (one level above bin/)'
+      (definesParentDirVar && passedToRenderEta) || viewsSetInline,
+      'Eta views root must resolve to path.join(__dirname, "..") — the repo root (one level above bin/). ' +
+      '_etaSourceRoot must be defined as path.join(__dirname, "..") and passed to renderEtaContent calls.'
     );
   });
 });

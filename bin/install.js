@@ -1750,19 +1750,6 @@ const { Eta } = require('eta');
 // sourceRoot = repo root (contains get-shit-done/, agents/, commands/)
 // bin/install.js lives one level inside: path.join(__dirname, '..') resolves to repo root
 const _etaSourceRoot = path.join(__dirname, '..');
-const eta = new Eta({
-  views: _etaSourceRoot,
-  useWith: true,
-  autoEscape: false,
-});
-// Override resolvePath so nested includes always resolve from views root (repo root),
-// not relative to the including template's directory. Without this override, Eta resolves
-// nested includes relative to the parent template, causing double-path errors when a
-// command or workflow file includes a workflow that itself has includes.
-eta.resolvePath = function etaResolveFromViewsRoot(templatePath, _options) {
-  if (!this.config.views) throw new Error('[Eta] views directory is not defined');
-  return require('path').join(this.config.views, templatePath);
-};
 
 /**
  * Convert a Claude Code tool name to GitHub Copilot format.
@@ -6408,8 +6395,8 @@ function uninstallRuntimeArtifacts(runtime, configDir, scope) {
 
 /**
  * Render Eta template content with circular-include detection.
- * Creates a fresh Eta instance scoped to viewsRoot so tests can pass a temp
- * dir without affecting the global eta instance used in production.
+ * Creates a fresh Eta instance scoped to viewsRoot so each call is isolated —
+ * tests can pass a temp dir as viewsRoot without any global state side effects.
  * @param {string} content - Template content to render
  * @param {string} srcPath - Source file path (used in error messages)
  * @param {string} viewsRoot - Views root for Eta include resolution
