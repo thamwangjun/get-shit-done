@@ -24,7 +24,7 @@ Requirements for the Install-Time Content Materialization milestone. Each maps t
 - [x] **INTG-01**: `eta` v4 added to `dependencies` in `package.json`; a module-level Eta instance configured with `{%`/`%}` delimiters, `autoEscape: false`, `useWith: true`, and `views` = repo root exists in `bin/install.js`
 - [x] **INTG-02**: All install-time GSD static refs across `commands/gsd/` (55 files), `agents/` (7 files), `get-shit-done/workflows/` (19 files), and `get-shit-done/references/` (1 file) converted to `{%~ include('get-shit-done/X') %}` Eta tags — a post-conversion grep for bare-line `@~/.claude/get-shit-done/` and `` !`cat $HOME/.claude/get-shit-done/` `` returns 0 results
 - [x] **INTG-03**: Runtime `.planning/` bare-line refs in the agents layer (notably `agents/gsd-planner.md` lines 465-467) converted to `` !`cat .planning/X` `` form — cross-runtime compatible; `grep -n '@\.planning/' agents/gsd-planner.md` returns 0 results
-- [x] **INTG-04**: Eta renderer wired into `copyWithPathReplacement()` as the first transform step — `content = eta.renderString(content, {})` called immediately after `fs.readFileSync(srcPath, 'utf8')` at line ~6572, before path-substitution regexes
+- [x] **INTG-04**: Eta renderer wired into `copyWithPathReplacement()` as the first transform step — `content = eta.renderString(content, {})` called immediately after `fs.readFileSync(srcPath, 'utf8')` at line ~6572, before path-substitution regexes (skills path: `renderEtaContent` wired into `wrappedConverter` in `runtime-artifact-layout.cjs` — closed phase 47.1)
 - [x] **INTG-05**: Eta renderer wired into the agent install loop as the first transform step — `content = eta.renderString(content, {})` called immediately after `fs.readFileSync(path.join(agentsSrc, entry.name), 'utf8')` at line ~8786, before path-substitution regexes
 - [x] **INTG-06**: Skills path (`applyRuntimeContentRewritesInPlace`) confirmed as not requiring a renderer call — `SKILL.md` files contain 0 install-time include refs; no Eta rendering needed on that code path
 
@@ -41,7 +41,7 @@ Requirements for the Install-Time Content Materialization milestone. Each maps t
 
 - [x] **GATE-01**: Full `npm test` passes after all changes with 0 regressions beyond pre-existing failures (7458 tests / 50 failures — same baseline as v2.1.0-a; closed 2026-05-29)
 - [x] **GATE-02**: Negative-framing scanner passes at 99/99 after all file edits (97→99 fix: 3 pre-existing violations in gsd-executor.md + gsd-planner.md converted to affirmative; closed 2026-05-29)
-- [x] **GATE-03**: `grep -r '@~/.claude/' <install-dir>` on a fresh install across all supported runtimes returns 0 results — all references materialized (Claude runtime: 0 non-allowlisted refs confirmed; other runtimes: path-replacement logic in install.js:6469–6479 rewrites @~/.claude/ to runtime-specific prefixes; closed 2026-05-29)
+- [x] **GATE-03**: `grep -r '@~/.claude/' <install-dir>` on a fresh install across all supported runtimes returns 0 results — all references materialized (Claude runtime: 0 non-allowlisted refs confirmed; other runtimes: path-replacement logic in install.js:6469–6479 rewrites @~/.claude/ to runtime-specific prefixes; closed 2026-05-29; skills-path `<%~ include()` gap closed phase 47.1 — TEST-01 now also detects unrendered Eta directives)
 
 ## Future Requirements
 

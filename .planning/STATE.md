@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.1.0-c
 milestone_name: Install-Time Content Materialization
-status: planning
-last_updated: "2026-05-29T09:09:54.816Z"
-last_activity: "2026-05-29 -- Phase 47.1 inserted (gap closure: INTG-04/GATE-03 — BLOCKER-01)"
+status: verifying
+last_updated: "2026-05-29T09:41:01.418Z"
+last_activity: 2026-05-29
 progress:
   total_phases: 5
   completed_phases: 4
-  total_plans: 9
-  completed_plans: 9
+  total_plans: 11
+  completed_plans: 10
   percent: 80
 ---
 
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-28 after v2.1.0-c roadmap defined)
 
 **Core value:** Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships
-**Current focus:** Phase 47.1 — close-gap-intg-04-gate-03 (inserted: BLOCKER-01 skills path never renders Eta content)
+**Current focus:** Phase 47.1 — close-gap-intg-04-gate-03-wire-renderetacontent-into-skills-
 
 ## Current Position
 
-Phase: 47.1 (close-gap-intg-04-gate-03-wire-renderetacontent-into-skills-) — INSERTED
-Plan: not planned yet
-Status: planning
-Last activity: 2026-05-29 -- Phase 47.1 inserted (gap closure: INTG-04/GATE-03 — BLOCKER-01)
+Phase: 47.1 (close-gap-intg-04-gate-03-wire-renderetacontent-into-skills-) — EXECUTING
+Plan: 2 of 2
+Status: Phase complete — ready for verification
+Last activity: 2026-05-29
 
 ## Performance Metrics
 
@@ -79,6 +79,6 @@ Resolved: `tests/bug-2992-check-latest-version.test.cjs` rewritten for SHA-based
 
 ## Session Continuity
 
-Last session: 2026-05-29T09:09:54.806Z
-Stopped at: Phase 47.1 context gathered
-Resume file: .planning/phases/47.1-close-gap-intg-04-gate-03-wire-renderetacontent-into-skills-/47.1-CONTEXT.md
+Last session: 2026-05-29T09:41:01.408Z
+Stopped at: Completed 47.1-02-PLAN.md — phase 47.1 bookkeeping done
+Resume file: None

@@ -269,6 +269,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
+
 - [x] 47-01-PLAN.md — Upgrade TEST-01 with full Claude install walk + ALLOWED_INLINE_REFS, strike through REQUIREMENTS.md TEST-03, close GATE-01/02/03
 
 ## Progress
@@ -329,7 +330,20 @@ Plans:
 | 45. Pipeline Integration | v2.1.0-c | 5/5 | Complete | 2026-05-28 |
 | 46. Regression Test Suite | v2.1.0-c | 2/2 | Complete | 2026-05-29 |
 | 47. Full Runtime Matrix + Verification | v2.1.0-c | 1/1 | Complete | 2026-05-29 |
+| 47.1. Close gap: INTG-04/GATE-03 — wire renderEtaContent into skills path | v2.1.0-c | 2/2 | Complete | 2026-05-29 |
 
 *v1.41.3 shipped 2026-05-19 — see `.planning/milestones/v1.41.3-ROADMAP.md`*
 *v1.41.5 shipped 2026-05-24 — see `.planning/milestones/v1.41.5-ROADMAP.md`*
 *v2.1.0-a shipped 2026-05-26 — see `.planning/milestones/v2.1.0-a-ROADMAP.md`*
+
+### Phase 47.1: Close gap: INTG-04/GATE-03 — wire renderEtaContent into skills install path (INSERTED)
+
+**Goal:** Wire renderEtaContent into skills staging pipeline; expand TEST-01 to detect unrendered Eta directives. Closes INTG-04/GATE-03 for skills-based runtimes (BLOCKER-01 from v2.1.0-c audit).
+**Requirements**: INTG-04, GATE-03
+**Depends on:** Phase 47
+**Plans:** 2 plans
+
+Plans:
+
+- [x] 47.1-01: Wire renderEtaContent into wrappedConverter + expand TEST-01
+- [x] 47.1-02: Close INTG-04/GATE-03 bookkeeping
