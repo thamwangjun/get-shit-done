@@ -330,7 +330,7 @@ Plans:
 | 45. Pipeline Integration | v2.1.0-c | 5/5 | Complete | 2026-05-28 |
 | 46. Regression Test Suite | v2.1.0-c | 2/2 | Complete | 2026-05-29 |
 | 47. Full Runtime Matrix + Verification | v2.1.0-c | 1/1 | Complete | 2026-05-29 |
-| 47.1. Close gap: INTG-04/GATE-03 — wire renderEtaContent into skills path | v2.1.0-c | 2/2 | Complete | 2026-05-29 |
+| 47.1. Close gap: INTG-04/GATE-03 — wire renderEtaContent into skills path | v2.1.0-c | 2/2 | Complete   | 2026-05-29 |
 
 *v1.41.3 shipped 2026-05-19 — see `.planning/milestones/v1.41.3-ROADMAP.md`*
 *v1.41.5 shipped 2026-05-24 — see `.planning/milestones/v1.41.5-ROADMAP.md`*
@@ -341,7 +341,7 @@ Plans:
 **Goal:** Wire renderEtaContent into skills staging pipeline; expand TEST-01 to detect unrendered Eta directives. Closes INTG-04/GATE-03 for skills-based runtimes (BLOCKER-01 from v2.1.0-c audit).
 **Requirements**: INTG-04, GATE-03
 **Depends on:** Phase 47
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 
 Plans:
 
