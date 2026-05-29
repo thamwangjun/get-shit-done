@@ -154,6 +154,47 @@ describe('TEST-01: No unexpected @~/.claude/ references survive in full Claude i
       assert.fail(`${unexpected.length} unexpected @~/.claude/ reference(s) found:\n\n${details}`);
     }
   });
+
+  test('Full Claude runtime install leaves no unrendered <%~ Eta directives in any installed .md file', () => {
+    tmpDir = createTempDir('gsd-eta-test01b-');
+    installRuntimeArtifacts('claude', tmpDir, 'global', RESOLVED_CORE);
+
+    // Walk every installed .md file and check for unrendered <%~ occurrences.
+    // Any surviving <%~ tag in installed output is always a bug — no allowlist needed (D-03).
+    const etaSurvivors = [];
+
+    function walkDirEta(dir) {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          walkDirEta(fullPath);
+        } else if (entry.isFile() && entry.name.endsWith('.md')) {
+          const content = fs.readFileSync(fullPath, 'utf8');
+          const lines = content.split('\n');
+          for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            if (line.includes('<%~')) {
+              etaSurvivors.push({ file: fullPath, lineNo: i + 1, match: line.trim() });
+            }
+          }
+        }
+      }
+    }
+
+    walkDirEta(tmpDir);
+
+    if (etaSurvivors.length > 0) {
+      const details = etaSurvivors.map(({ file, lineNo, match }) =>
+        `Found unrendered Eta directive in installed output:\n` +
+        `  File: ${file}:${lineNo}\n` +
+        `  Match: ${match}\n` +
+        `\n` +
+        `This <%~ include() %> tag was not rendered during install.\n` +
+        `Fix: ensure renderEtaContent is called in the skills staging pipeline before convertClaudeCommandTo*Skill.`
+      ).join('\n\n---\n\n');
+      assert.fail(`${etaSurvivors.length} unrendered Eta directive(s) found:\n\n${details}`);
+    }
+  });
 });
 
 // ─── TEST-02 ───────────────────────────────────────────────────────────────────
