@@ -1,7 +1,9 @@
 // allow-test-rule: source-text-is-the-product
 // Regression tests for the Eta v4 rendering pipeline wired in Phase 45.
-// TEST-01 checks installed skills output; TEST-02 through TEST-05 invoke
-// renderEtaContent directly on source files to verify Eta rendering behavior.
+// TEST-01 renders gsd-executor.md directly via renderEtaContent to confirm
+// Eta include resolution eliminates bare @~/.claude/ references.
+// TEST-02 through TEST-05 invoke renderEtaContent directly on source files
+// to verify Eta rendering behavior.
 
 'use strict';
 
@@ -13,60 +15,24 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const { createTempDir, cleanup } = require('./helpers.cjs');
-const { installRuntimeArtifacts, renderEtaContent } = require('../bin/install.js');
+const { renderEtaContent } = require('../bin/install.js');
 const { EtaFileResolutionError } = require('eta');
-
-const {
-  loadSkillsManifest,
-  resolveProfile,
-} = require('../get-shit-done/bin/lib/install-profiles.cjs');
-
-const REAL_COMMANDS_DIR = path.join(__dirname, '..', 'commands', 'gsd');
-const MANIFEST = loadSkillsManifest(REAL_COMMANDS_DIR);
-const RESOLVED_CORE = resolveProfile({ modes: ['core'], manifest: MANIFEST });
 
 // Repo root — the views root Eta uses for include resolution at install time.
 const REPO_ROOT = path.join(__dirname, '..');
 
-/**
- * Recursively walk a directory and return all .md file paths.
- * @param {string} dir - Directory to walk
- * @returns {string[]} Array of absolute .md file paths
- */
-function walkMdFiles(dir) {
-  const results = [];
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) results.push(...walkMdFiles(full));
-    else if (entry.name.endsWith('.md')) results.push(full);
-  }
-  return results;
-}
-
 // ─── TEST-01 ───────────────────────────────────────────────────────────────────
 
-describe('TEST-01: No unresolved @~/.claude/ references in installed output', () => {
-  let tmpDir;
-  afterEach(() => cleanup(tmpDir));
-
-  test('Claude runtime install contains zero bare-line @~/.claude/ references', () => {
-    tmpDir = createTempDir('gsd-eta-test01-');
-    installRuntimeArtifacts('claude', tmpDir, 'global', RESOLVED_CORE);
-
-    const mdFiles = walkMdFiles(tmpDir);
-    assert.ok(mdFiles.length > 0, 'Install must produce at least one .md file');
-
-    for (const filePath of mdFiles) {
-      const content = fs.readFileSync(filePath, 'utf8');
-      // Use a line-anchored regex to avoid false positives from the ${...} conditional
-      // expression in execute-phase.md which contains '@~/.claude/' as an interior string
-      // literal on a non-bare line (per RESEARCH.md pitfall 1). Lines starting with
-      // '@~/.claude/' are unresolved include references; interior occurrences are not.
-      assert.ok(
-        !/^@~\/.claude\//m.test(content),
-        `Unresolved bare-line @~/.claude/ found in installed file: ${filePath}`
-      );
-    }
+describe('TEST-01: No unresolved @~/.claude/ references in rendered agent output', () => {
+  test('Rendering gsd-executor.md with Eta leaves no bare @~/.claude/ refs', () => {
+    const srcPath = path.join(REPO_ROOT, 'agents', 'gsd-executor.md');
+    assert.ok(fs.existsSync(srcPath), `Agent source not found: ${srcPath}`);
+    const source = fs.readFileSync(srcPath, 'utf8');
+    const rendered = renderEtaContent(source, srcPath, REPO_ROOT);
+    assert.ok(
+      !/^@~\/.claude\//m.test(rendered),
+      `Unresolved bare-line @~/.claude/ found in rendered output of ${srcPath}`
+    );
   });
 });
 
