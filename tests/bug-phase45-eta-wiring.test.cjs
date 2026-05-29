@@ -136,9 +136,8 @@ describe('INTG-02: zero bare-line @~ survivors across source layers', () => {
       }
     }
 
-    if (fs.existsSync(dir)) {
-      walkDir(dir);
-    }
+    assert.ok(fs.existsSync(dir), `Source directory must exist for this check: ${dir}`);
+    walkDir(dir);
     return survivors;
   }
 
@@ -220,9 +219,8 @@ describe('INTG-03: zero bare-line @.planning/ refs survive in agents/', () => {
       }
     }
 
-    if (fs.existsSync(agentsDir)) {
-      walkDir(agentsDir);
-    }
+    assert.ok(fs.existsSync(agentsDir), `Source directory must exist for this check: ${agentsDir}`);
+    walkDir(agentsDir);
 
     assert.strictEqual(
       survivors.length,
