@@ -265,6 +265,15 @@ describe('INTG-06: SKILL.md files contain zero install-time @~ bare-line refs', 
 
     const skillFiles = findSkillFiles(REPO_ROOT);
 
+    // If no SKILL.md files exist the test provides no coverage — return early
+    // to make the vacuous-pass visible in test output rather than silently green.
+    // When SKILL.md files are added to the repo, remove this guard.
+    if (skillFiles.length === 0) {
+      // eslint-disable-next-line no-console
+      console.warn('INTG-06: no SKILL.md files found outside node_modules — skipping bare-line @~ check');
+      return;
+    }
+
     for (const filePath of skillFiles) {
       const content = fs.readFileSync(filePath, 'utf-8');
       const lines = content.split(/\r?\n/);
