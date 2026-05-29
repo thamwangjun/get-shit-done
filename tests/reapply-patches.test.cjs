@@ -338,8 +338,8 @@ describe('reapply-patches workflow contract (#1469)', () => {
     for (const l of rawLines) {
       if (l.startsWith('@')) {
         includes.push(l.replace(/^@/, ''));
-      } else if (/^\{%~?\s+include\('get-shit-done\//.test(l)) {
-        // Eta include tag: {%~ include('get-shit-done/X') %}
+      } else if (/^<%~?\s+include\('get-shit-done\//.test(l)) {
+        // Eta include tag: <%~ include('get-shit-done/X') %>
         const m = /include\('get-shit-done\/([^']+)'\)/.exec(l);
         if (m) includes.push(m[1]);
       }

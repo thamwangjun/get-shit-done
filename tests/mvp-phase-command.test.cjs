@@ -52,7 +52,7 @@ function parseCommandContract(content) {
   for (const t of rawContextLines) {
     if (t.startsWith('@')) {
       executionContextRefs.push(t.replace(/^@~?\/?(?:\.claude\/)?(?:get-shit-done\/)?/, ''));
-    } else if (/^\{%~?\s+include\('get-shit-done\//.test(t)) {
+    } else if (/^<%~?\s+include\('get-shit-done\//.test(t)) {
       const m = /include\('get-shit-done\/([^']+)'\)/.exec(t);
       if (m) executionContextRefs.push(m[1]);
     } else {

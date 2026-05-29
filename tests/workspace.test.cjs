@@ -372,8 +372,8 @@ describe('workspace command files', () => {
             .replace(/`$/, '')
             .replace(/^\$HOME\/(?:\.claude\/)?(?:get-shit-done\/)?/, '')
             .replace(/^~\/(?:\.claude\/)?(?:get-shit-done\/)?/, '');
-        } else if (/^\{%~?\s+include\('get-shit-done\//.test(t)) {
-          // Eta include tag: {%~ include('get-shit-done/X') %}
+        } else if (/^<%~?\s+include\('get-shit-done\//.test(t)) {
+          // Eta include tag: <%~ include('get-shit-done/X') %>
           const m = /include\('get-shit-done\/([^']+)'\)/.exec(t);
           if (m) rel = m[1];
           else continue;
