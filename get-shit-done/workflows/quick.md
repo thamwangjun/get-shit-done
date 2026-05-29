@@ -995,6 +995,11 @@ Display completion output:
 
 **If `$VALIDATE_MODE`:**
 ```
+
+<mandatory>
+This task is not complete until this commit succeeds.
+</mandatory>
+
 ---
 
 GSD > QUICK TASK COMPLETE (VALIDATED)
