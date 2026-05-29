@@ -1752,8 +1752,6 @@ const { Eta } = require('eta');
 const _etaSourceRoot = path.join(__dirname, '..');
 const eta = new Eta({
   views: _etaSourceRoot,
-  tags: ['{%', '%}'],
-  parse: { raw: '~' },
   useWith: true,
   autoEscape: false,
 });
