@@ -998,6 +998,7 @@ Display completion output:
 
 <mandatory>
 This task is not complete until this commit succeeds.
+All steps must be followed in order until this commit succeeds.
 </mandatory>
 
 ---
