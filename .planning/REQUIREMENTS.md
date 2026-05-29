@@ -32,7 +32,7 @@ Requirements for the Install-Time Content Materialization milestone. Each maps t
 
 - [x] **TEST-01**: Test verifies that installed output files contain no unresolved `@~/.claude/` references (post-install grep returns zero results)
 - [x] **TEST-02**: Test verifies the conditional `@~` expression in `execute-phase.md` is preserved verbatim in installed output
-- [x] **TEST-03**: Test verifies inlined reference content is present in installed agent files — `Mandatory Initial Read` appears in installed `gsd-executor.md` after Eta resolves the `mandatory-initial-read.md` include (implemented as direct `renderEtaContent` call; Copilot transformation deferred to Phase 47 scope)
+- [x] ~~**TEST-03**: Test verifies inlined reference content is present in installed agent files — `Mandatory Initial Read` appears in installed `gsd-executor.md` after Eta resolves the `mandatory-initial-read.md` include (implemented as direct `renderEtaContent` call; Copilot transformation deferred to Phase 47 scope)~~ — **Closed as out-of-scope for v2.1.0-c.** Tool-name transformation (e.g., `Read`→`read` for Copilot runtime) is orthogonal to Eta include resolution. The include pipeline milestone does not cover runtime-specific tool-name rewriting. Deferred to a future milestone.
 - [x] **TEST-04**: Test verifies circular include detection — a file that includes itself causes a thrown error, not infinite recursion
 - [x] **TEST-05**: Test verifies missing-file handling — an unresolvable reference causes a thrown error with a message naming the source file and missing path
 - ~~**TEST-06**~~: Dropped — installed agent size budgets provide no testing value; size varies by platform and profile selection (per CONTEXT.md D-11)
