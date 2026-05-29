@@ -2,9 +2,8 @@
 gsd_state_version: 1.0
 milestone: v2.1.0-c
 milestone_name: Install-Time Content Materialization
-status: executing
-stopped_at: Phase 46 complete — ready to plan Phase 47
-last_updated: "2026-05-29T06:34:22.842Z"
+status: planning
+last_updated: "2026-05-29T06:58:27.053Z"
 last_activity: 2026-05-29
 progress:
   total_phases: 4
@@ -79,6 +78,6 @@ Resolved: `tests/bug-2992-check-latest-version.test.cjs` rewritten for SHA-based
 
 ## Session Continuity
 
-Last session: 2026-05-29
-Stopped at: Phase 46 complete, ready to plan Phase 47
-Resume file: None
+Last session: 2026-05-29T06:58:27.044Z
+Stopped at: Phase 47 context gathered
+Resume file: .planning/phases/47-full-runtime-matrix-verification/47-CONTEXT.md
