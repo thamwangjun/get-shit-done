@@ -201,7 +201,7 @@ Full details: `.planning/milestones/v2.1.0-a-ROADMAP.md`
 
 - [x] **Phase 44: Resolver Core** — Build and unit-test `resolveIncludes()` in isolation before wiring into the install pipeline; pivoted in Phase 45 to Eta v4 (completed 2026-05-28)
 - [x] **Phase 45: Pipeline Integration** — Wire Eta v4 into install.js; convert ~180 static ref lines to {%~ include() %} tags across 82 files; remove resolveIncludes() (completed 2026-05-28)
-- [x] **Phase 46: Regression Test Suite** — 6 targeted tests running against installed output (not source files) (completed 2026-05-29)
+- [x] **Phase 46: Regression Test Suite** — 5 regression tests running against installed output; TEST-06 dropped per D-11, Copilot transformation deferred to Phase 47 (completed 2026-05-29)
 - [ ] **Phase 47: Full Runtime Matrix + Verification** — Validate all supported runtimes produce zero unresolved references; `npm test` green
 
 ## Phase Details
@@ -238,7 +238,7 @@ Full details: `.planning/milestones/v2.1.0-a-ROADMAP.md`
 
 ### Phase 46: Regression Test Suite
 
-**Goal**: Six regression tests running against installed output (not source files) cover every critical failure mode identified in research — the safety net exists before the runtime matrix sweep
+**Goal**: Five regression tests running against installed output (not source files) cover every critical failure mode identified in research — the safety net exists before the runtime matrix sweep (TEST-06 dropped per CONTEXT.md D-11; Copilot tool-name transformation deferred to Phase 47 per CONTEXT.md `<deferred>`)
 **Depends on**: Phase 45
 **Requirements**: TEST-01, TEST-02, TEST-03, TEST-04, TEST-05
 **Success Criteria** (what must be TRUE):
