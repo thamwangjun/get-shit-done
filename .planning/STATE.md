@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v2.1.0-c
 milestone_name: Install-Time Content Materialization
 status: executing
-stopped_at: Phase 46 context gathered
-last_updated: "2026-05-29T05:54:56.240Z"
+stopped_at: Phase 46 complete — ready to plan Phase 47
+last_updated: "2026-05-29T06:34:22.842Z"
 last_activity: 2026-05-29
 progress:
   total_phases: 4
@@ -21,20 +21,20 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-28 after v2.1.0-c roadmap defined)
 
 **Core value:** Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships
-**Current focus:** Phase 46 — regression-test-suite
+**Current focus:** Phase 47 — full-runtime-matrix-+-verification
 
 ## Current Position
 
 Phase: 47
 Plan: Not started
-Status: Executing Phase 46
+Status: Ready to plan
 Last activity: 2026-05-29
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 63 (v1.37.1 Phases 7–12, v1.37.1a Phases 13–17, v1.37.1b Phases 18–19)
+- Total plans completed: 65 (v1.37.1 Phases 7–12, v1.37.1a Phases 13–17, v1.37.1b Phases 18–19)
 - Average duration: — (metrics not retroactively enabled for completed phases)
 
 ## Accumulated Context
@@ -79,6 +79,6 @@ Resolved: `tests/bug-2992-check-latest-version.test.cjs` rewritten for SHA-based
 
 ## Session Continuity
 
-Last session: 2026-05-29T04:15:02.779Z
-Stopped at: Phase 46 context gathered
-Resume: `/gsd-plan-phase 44` to plan the Resolver Core phase
+Last session: 2026-05-29
+Stopped at: Phase 46 complete, ready to plan Phase 47
+Resume file: None
