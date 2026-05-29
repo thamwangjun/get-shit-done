@@ -266,7 +266,10 @@ Plans:
   2. The negative-framing scanner passes at 99/99 after all file edits introduced in this milestone
   3. `npm test` completes with 0 new failures beyond the pre-existing baseline established at v2.1.0-a
 
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 47-01-PLAN.md — Upgrade TEST-01 with full Claude install walk + ALLOWED_INLINE_REFS, strike through REQUIREMENTS.md TEST-03, close GATE-01/02/03
 
 ## Progress
 
