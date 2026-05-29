@@ -2,6 +2,44 @@
 
 *A living document updated after each milestone. Lessons feed forward into future planning.*
 
+## Milestone: v2.1.0-c — Install-Time Content Materialization
+
+**Shipped:** 2026-05-29
+**Phases:** 5 (44, 45, 46, 47, 47.1) | **Plans:** 11 | **Timeline:** 2026-05-28 → 2026-05-29 (2 days) | **Commits:** 98
+
+### What Was Built
+
+- Custom `resolveIncludes()` pure function (Phase 44) implemented then superseded by Eta v4 pivot (Phase 45) — production-grade template engine proved more robust than handrolled resolver
+- Eta v4 wired as install-time template engine in both `copyWithPathReplacement()` and agent install loop; 82 source files converted from bare-line `@~/` refs to `<%~ include() %>` Eta tags; zero survivors
+- 5 regression tests in `tests/install-eta-regression.test.cjs` covering zero-ref (full install walk), conditional expression preservation, circular detection, and missing-file handling
+- TEST-01 upgraded to walk the full Claude install with 27-entry `ALLOWED_INLINE_REFS` exception list; GATE-01/02/03 closed at `npm test` 7459/49
+- Phase 47.1 inserted after audit found `wrappedConverter` gap: `renderEtaContent` now wired for all 11 skills-based runtimes; TEST-01 expanded to detect `<%~` survivors
+
+### What Worked
+
+- **Audit-before-close discipline**: Running `gsd-audit-milestone` after Phase 47 revealed the skills-path gap (INTG-04/GATE-03 not fully closed). Inserting Phase 47.1 rather than treating it as tech debt meant the milestone shipped with no open blockers.
+- **Pivot in Phase 45**: Switching from custom `resolveIncludes()` to Eta v4 early (after Phase 44 proved the pattern was complex) was the right call — the production engine handled edge cases that would have required significant custom resolver work.
+- **Default delimiter rollback in Phase 46**: Discovering the `{%~`/`~%}` custom delimiter issue early (files processed twice) and rolling back to Eta defaults (`<%`/`%>`) in Phase 46 kept the regression test suite clean.
+- **Integration checker at milestone audit time**: The `gsd-integration-checker` confirmed all cross-phase wiring live (6/6 tests) and caught the `wrappedConverter` gap — this is more reliable than static analysis of plan files.
+
+### What Was Inefficient
+
+- **Two-phase delimiter churn**: Phase 45 introduced custom `{%~`/`~%}` delimiters; Phase 46 rolled them back to Eta defaults after discovering the double-processing issue. The plan should have evaluated delimiter choices before any mass conversion.
+- **Phase 47.1 was avoidable at planning time**: The `stageSkillsForRuntimeAsSkills` code path could have been identified as an integration risk during Phase 47 planning — it was a known skills-specific copy path that was noted in INTG-06 as "not requiring a renderer call" without verifying whether `<%~` tags would ever appear in skills files. A more thorough audit at Phase 47 time would have caught this before a separate phase was needed.
+
+### Patterns Established
+
+- Integration checker (`gsd-integration-checker`) should run at Phase N verification time, not only at milestone audit time — it caught the `wrappedConverter` gap that static plan analysis missed
+- When descoping a requirement (TEST-03, TEST-06), document both the reason and the test-file impact immediately — avoids confusion during verification about why test count differs from plan
+- Delimiter choice for Eta (or any templating engine) should be locked at the start of the pipeline integration phase and tested against the full source file corpus before mass conversion
+
+### Key Lessons
+
+- Mass conversion passes (82 files) should be preceded by a delimiter/syntax smoke test on 3–5 representative files across all source layers before any batch script runs — the Phase 46 rollback was cheap but avoidable
+- `audit-open` at milestone close surfaced zero false positives this time (unlike v2.1.0-a); the `status: complete` frontmatter pattern in `*-SUMMARY.md` files is now consistently applied
+
+---
+
 ## Milestone: v2.1.0-a — SHA Versioning Reimplementation
 
 **Shipped:** 2026-05-26

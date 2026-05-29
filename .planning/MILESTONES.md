@@ -1,5 +1,23 @@
 # Milestones
 
+## v2.1.0-c Install-Time Content Materialization (Shipped: 2026-05-29)
+
+**Phases completed:** 5 phases, 11 plans
+**Git range:** 841b06f7..HEAD · 98 commits · 161 files, +9,170 / -539 lines
+**Timeline:** 2026-05-28 → 2026-05-29 (2 days)
+**Known deferred items at close:** 0
+
+**Key accomplishments:**
+
+- Built `resolveIncludes()` pure function (Phase 44), then pivoted to Eta v4 (Phase 45) as the production install-time template engine — `eta ^4.6.0` wired into both `copyWithPathReplacement()` and the agent install loop as the first content transform
+- Converted 82 source files (55 commands, 7 agents, 19 workflows, 1 reference) from bare-line `@~/` static refs to `<%~ include() %>` Eta tags; post-conversion grep returns 0 survivors
+- Added 5 regression tests in `tests/install-eta-regression.test.cjs` covering: zero unresolved refs (full install walk), conditional expression preservation, circular detection, and missing-file handling
+- Upgraded TEST-01 to walk the full Claude install with 27-entry `ALLOWED_INLINE_REFS` exception list; closed GATE-01/02/03 at `npm test` 7459/49 (better than pre-milestone baseline of 7458/50)
+- Inserted Phase 47.1 after audit detected skills-path gap: wired `renderEtaContent` into `wrappedConverter` in `runtime-artifact-layout.cjs:198–201` — all 11 skills-based runtimes now render Eta directives at install time; TEST-01 expanded to detect `<%~` survivors
+- All 19/19 active requirements satisfied; Nyquist COMPLIANT across all 5 phases
+
+---
+
 ## v2.1.0-a SHA Versioning Reimplementation (Shipped: 2026-05-26)
 
 **Phases completed:** 2 phases, 2 plans

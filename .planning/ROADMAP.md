@@ -15,7 +15,7 @@
 - ✅ **v1.41.5 Refactor Git Commit History** — Phases 35–41 (shipped 2026-05-24)
 - ✅ **v2.1.0-a SHA Versioning Reimplementation** — Phases 42–43 (shipped 2026-05-26)
 - ✗ **v2.1.0-b Workflow Compliance Reinforcement** — Phases 44–48 (abandoned 2026-05-28, 0/5 phases complete)
-- 🚧 **v2.1.0-c Install-Time Content Materialization** — Phases 44–47 (in progress)
+- ✅ **v2.1.0-c Install-Time Content Materialization** — Phases 44–47.1 (shipped 2026-05-29)
 
 ## Phases
 
@@ -195,82 +195,20 @@ Full details: `.planning/milestones/v2.1.0-a-ROADMAP.md`
 
 </details>
 
-### 🚧 v2.1.0-c Install-Time Content Materialization (Phases 44–47)
+<details>
+<summary>✅ v2.1.0-c Install-Time Content Materialization (Phases 44–47.1) — SHIPPED 2026-05-29</summary>
 
 **Milestone Goal:** Replace runtime `@` and `` !`<bash>` `` content injection with install-time template substitution so every installed file is fully self-contained — no reliance on Claude to inject referenced content at runtime.
 
-- [x] **Phase 44: Resolver Core** — Build and unit-test `resolveIncludes()` in isolation before wiring into the install pipeline; pivoted in Phase 45 to Eta v4 (completed 2026-05-28)
-- [x] **Phase 45: Pipeline Integration** — Wire Eta v4 into install.js; convert ~180 static ref lines to {%~ include() %} tags across 82 files; remove resolveIncludes() (completed 2026-05-28)
-- [x] **Phase 46: Regression Test Suite** — 5 regression tests running against installed output; TEST-06 dropped per D-11, Copilot transformation deferred to Phase 47 (completed 2026-05-29)
-- [ ] **Phase 47: Full Runtime Matrix + Verification** — Validate all supported runtimes produce zero unresolved references; `npm test` green
+- [x] **Phase 44: Resolver Core** — Build and unit-test `resolveIncludes()` in isolation; pivoted in Phase 45 to Eta v4 (completed 2026-05-28)
+- [x] **Phase 45: Pipeline Integration** — Wire Eta v4 into install.js; convert ~180 static ref lines to `<%~ include() %>` tags across 82 files; remove resolveIncludes() (completed 2026-05-28)
+- [x] **Phase 46: Regression Test Suite** — 5 regression tests running against installed output; TEST-06 dropped per D-11 (completed 2026-05-29)
+- [x] **Phase 47: Full Runtime Matrix + Verification** — Validate all supported runtimes produce zero unresolved references; `npm test` green (completed 2026-05-29)
+- [x] **Phase 47.1: Close Gap INTG-04/GATE-03** — Wire renderEtaContent into skills path; expand TEST-01 to detect `<%~` survivors (completed 2026-05-29)
 
-## Phase Details
+Full details: `.planning/milestones/v2.1.0-c-ROADMAP.md`
 
-### Phase 44: Resolver Core
-
-**Goal**: `resolveIncludes()` exists in `bin/install.js` as a correct, fully-tested pure function that handles all edge cases before any integration work begins — the hardest constraint (conditional guard) is validated first
-**Depends on**: Nothing (first phase of milestone)
-**Requirements**: RESV-01, RESV-02, RESV-03, RESV-04, RESV-05, RESV-06, RESV-07
-**Success Criteria** (what must be TRUE):
-
-  1. `resolveIncludes(content, sourceRoot, seen)` is defined in `bin/install.js` and correctly inlines bare-line `@~/.claude/` and `` !`cat ~/.claude/` `` references by reading referenced files at source repo paths
-  2. The conditional `@~` expression in `execute-phase.md:619` (inside a `${}` JS template literal) passes through the resolver verbatim — a unit test asserting `${CONTEXT_WINDOW < 200000 ?` survives in output passes
-  3. A unit test for circular include detection throws with the full include chain in the error message rather than recursing infinitely
-  4. A unit test for a missing referenced file throws with an error naming both the source file and the unresolvable path
-
-> **Pivot note (Phase 45):** Phase 44's `resolveIncludes()` function was built and unit-tested as planned, then removed in Phase 45 when the approach pivoted to Eta v4 as the install-time template engine.
-
-**Plans**: TBD
-
-### Phase 45: Pipeline Integration
-
-**Goal**: Eta v4 is wired as the install-time template engine in both `install.js` copy loops; all ~180 install-time static reference lines across 82 source files are converted to `{%~ include() %}` tags; Phase 44's `resolveIncludes()` is removed; every installed file is fully self-contained with zero surviving `@~/.claude/get-shit-done/` patterns
-**Depends on**: Phase 44
-**Requirements**: INTG-01, INTG-02, INTG-03, INTG-04, INTG-05, INTG-06
-**Success Criteria** (what must be TRUE):
-
-  1. `eta` is in `package.json` `dependencies`; `content = eta.renderString(content, {})` is wired as the first transform in both `copyWithPathReplacement()` and the agent install loop
-  2. All 82 source files across `commands/gsd/`, `agents/`, `get-shit-done/workflows/`, `get-shit-done/references/` have bare-line static refs converted to `{%~ include('get-shit-done/X') %}` tags — post-conversion grep returns 0 survivors
-  3. Runtime `.planning/` bare-line refs in the agents layer converted to `` !`cat .planning/X` `` form
-  4. `resolveIncludes()` removed from `bin/install.js` and `tests/resolve-includes.test.cjs` deleted; `npm test` passes with no new failures
-
-**Plans**: TBD
-
-### Phase 46: Regression Test Suite
-
-**Goal**: Five regression tests running against installed output (not source files) cover every critical failure mode identified in research — the safety net exists before the runtime matrix sweep (TEST-06 dropped per CONTEXT.md D-11; Copilot tool-name transformation deferred to Phase 47 per CONTEXT.md `<deferred>`)
-**Depends on**: Phase 45
-**Requirements**: TEST-01, TEST-02, TEST-03, TEST-04, TEST-05
-**Success Criteria** (what must be TRUE):
-
-  1. A test file exists in `tests/` that installs to a temp directory and asserts zero unresolved `@~/.claude/` references survive in any installed file
-  2. A test asserts the conditional `@~` expression in `execute-phase.md` is preserved verbatim in the Claude runtime installed output
-  3. A test verifies inlined reference content is present in installed output — `Mandatory Initial Read` appears in installed `gsd-executor.md` after Eta resolves the `mandatory-initial-read.md` include
-  4. Tests for circular include detection and missing-file handling each throw with the correct error message rather than hanging or producing silent failures
-
-**Plans**: 2 plans
-
-Plans:
-
-- [x] 46-01-PLAN.md — Remove custom Eta delimiters from bin/install.js and convert 83 source files from {%~ to <%~ (Eta default)
-- [x] 46-02-PLAN.md — Add renderEtaContent helper and five regression tests in tests/install-eta-regression.test.cjs
-
-### Phase 47: Full Runtime Matrix + Verification
-
-**Goal**: Every supported runtime install produces fully self-contained files — zero unresolved `@~` or `` !`cat ~/.claude/` `` patterns — and the full `npm test` suite passes with no new regressions
-**Depends on**: Phase 46
-**Requirements**: GATE-01, GATE-02, GATE-03
-**Success Criteria** (what must be TRUE):
-
-  1. `grep -r '@~/.claude/' <install-dir>` run against a fresh install for each of Claude, Copilot, Codex, Gemini, OpenCode, Cursor, and Antigravity returns 0 results
-  2. The negative-framing scanner passes at 99/99 after all file edits introduced in this milestone
-  3. `npm test` completes with 0 new failures beyond the pre-existing baseline established at v2.1.0-a
-
-**Plans**: 1 plan
-
-Plans:
-
-- [x] 47-01-PLAN.md — Upgrade TEST-01 with full Claude install walk + ALLOWED_INLINE_REFS, strike through REQUIREMENTS.md TEST-03, close GATE-01/02/03
+</details>
 
 ## Progress
 
@@ -335,15 +273,4 @@ Plans:
 *v1.41.3 shipped 2026-05-19 — see `.planning/milestones/v1.41.3-ROADMAP.md`*
 *v1.41.5 shipped 2026-05-24 — see `.planning/milestones/v1.41.5-ROADMAP.md`*
 *v2.1.0-a shipped 2026-05-26 — see `.planning/milestones/v2.1.0-a-ROADMAP.md`*
-
-### Phase 47.1: Close gap: INTG-04/GATE-03 — wire renderEtaContent into skills install path (INSERTED)
-
-**Goal:** Wire renderEtaContent into skills staging pipeline; expand TEST-01 to detect unrendered Eta directives. Closes INTG-04/GATE-03 for skills-based runtimes (BLOCKER-01 from v2.1.0-c audit).
-**Requirements**: INTG-04, GATE-03
-**Depends on:** Phase 47
-**Plans:** 2/2 plans complete
-
-Plans:
-
-- [x] 47.1-01: Wire renderEtaContent into wrappedConverter + expand TEST-01
-- [x] 47.1-02: Close INTG-04/GATE-03 bookkeeping
+*v2.1.0-c shipped 2026-05-29 — see `.planning/milestones/v2.1.0-c-ROADMAP.md`*

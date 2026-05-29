@@ -2,8 +2,8 @@
 gsd_state_version: 1.0
 milestone: v2.1.0-c
 milestone_name: Install-Time Content Materialization
-status: verifying
-last_updated: "2026-05-29T10:06:49.460Z"
+status: complete
+last_updated: "2026-05-29T11:30:00.000Z"
 last_activity: 2026-05-29
 progress:
   total_phases: 5
@@ -17,16 +17,16 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-05-28 after v2.1.0-c roadmap defined)
+See: .planning/PROJECT.md (updated 2026-05-29 after v2.1.0-c milestone)
 
 **Core value:** Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships
-**Current focus:** Phase 47.1 — close-gap-intg-04-gate-03-wire-renderetacontent-into-skills-
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 47.1 (close-gap-intg-04-gate-03-wire-renderetacontent-into-skills-) — EXECUTING
-Plan: 2 of 2
-Status: Phase complete — ready for verification
+Milestone v2.1.0-c complete — SHIPPED 2026-05-29
+All 5 phases, 11 plans complete.
+Status: Milestone archived — ready for next milestone planning
 Last activity: 2026-05-29
 
 ## Performance Metrics
