@@ -1,5 +1,5 @@
 ---
-status: complete
+status: diagnosed
 phase: 45-pipeline-integration
 source: [45-01-SUMMARY.md, 45-02-SUMMARY.md, 45-03-SUMMARY.md, 45-04-SUMMARY.md]
 started: 2026-05-29T01:07:44Z
@@ -61,8 +61,13 @@ blocked: 0
   reason: "User reported: 5 new test failures — import-command.test.cjs (1 test) and ingest-docs.test.cjs (4 tests) still check for @~/.claude/get-shit-done/ notation but Phase 45-02 converted those command files to Eta include tags without updating these two test files"
   severity: major
   test: 1
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "Phase 45-02 converted commands/gsd/import.md and commands/gsd/ingest-docs.md from @~ refs to Eta include tags but did not update tests/import-command.test.cjs and tests/ingest-docs.test.cjs. The 5 failing assertions use content.includes('@~/.claude/get-shit-done/...') which no longer matches the Eta tag format in the command files."
+  artifacts:
+    - path: "tests/import-command.test.cjs"
+      issue: "1 assertion at line 57 checks for @~/.claude/get-shit-done/workflows/import.md — file now uses Eta include tag"
+    - path: "tests/ingest-docs.test.cjs"
+      issue: "4 assertions at lines 80, 86, 92, 299 check for @~/.claude/ refs — all now Eta include tags"
+  missing:
+    - "Update 5 assertions to accept both @-notation OR Eta include tag form, following the dual-accept pattern from tests/few-shot-calibration.test.cjs (Phase 45-04)"
+  debug_session: ".planning/debug/import-ingest-test-failures.md"
 
