@@ -264,10 +264,28 @@ describe('scanForOutOfOrder() — synthetic content', () => {
     assert.equal(violations.length, 0, 'code-fenced steps must not affect sequence tracking');
   });
 
-  test('does not detect out-of-order steps preceded by list markers (known G-01 limitation)', () => {
+  test('detects out-of-order steps preceded by dash list markers', () => {
     const c = ['## Section', '- **Step 3:** reversed', '- **Step 1:** also reversed'].join('\n');
     const violations = scanForOutOfOrder(c);
-    assert.equal(violations.length, 0, 'list-marker-prefixed steps are not detected by current regex (G-01 limitation)');
+    assert.equal(violations.length, 1, 'reversed list-marker steps are now detected — Step 1 after baseline Step 3 must produce one violation');
+  });
+
+  test('detects out-of-order steps preceded by numbered-list markers', () => {
+    const c = ['## Section', '1. **Step 3:** reversed', '2. **Step 1:** also reversed'].join('\n');
+    const violations = scanForOutOfOrder(c);
+    assert.equal(violations.length, 1, 'reversed numbered-list steps are now detected — Step 1 after baseline Step 3 must produce one violation');
+  });
+
+  test('detects out-of-order steps preceded by blockquote markers', () => {
+    const c = ['## Section', '> **Step 3:** reversed', '> **Step 1:** also reversed'].join('\n');
+    const violations = scanForOutOfOrder(c);
+    assert.equal(violations.length, 1, 'reversed blockquote steps are now detected — Step 1 after baseline Step 3 must produce one violation');
+  });
+
+  test('detects out-of-order steps preceded by asterisk list markers', () => {
+    const c = ['## Section', '* **Step 3:** reversed', '* **Step 1:** also reversed'].join('\n');
+    const violations = scanForOutOfOrder(c);
+    assert.equal(violations.length, 1, 'reversed asterisk-list steps are now detected — Step 1 after baseline Step 3 must produce one violation');
   });
 });
 
