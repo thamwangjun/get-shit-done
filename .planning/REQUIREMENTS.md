@@ -14,11 +14,11 @@ Requirements for whole-integer step numbering enforcement. Each maps to roadmap 
 
 ### Cross-File Reference Mapping
 
-- [ ] **MAP-01**: Pre-normalization survey produces a cross-file step reference index — enumerates all prose references of the form "filename.md step N" across the corpus, recording source file, source line, target file, and target step number; produced before any step renaming begins
+- [x] **MAP-01**: Pre-normalization survey produces a cross-file step reference index — enumerates all prose references of the form "filename.md step N" across the corpus, recording source file, source line, target file, and target step number; produced before any step renaming begins
 
 ### Normalization
 
-- [ ] **NORM-01**: All violating files renumbered to sequential whole integers in original order; same-file inline cross-references and affected test assertions co-updated in the same commit
+- [x] **NORM-01**: All violating files renumbered to sequential whole integers in original order; same-file inline cross-references and affected test assertions co-updated in the same commit
 - [ ] **NORM-02**: `scripts/normalize-step-numbers.cjs` is cross-file-aware — uses MAP-01 reference index plus the per-file correlation map (old step → new step) to simultaneously update cross-file references when renaming; `--dry-run` flag; idempotency guarantee (exits 0 on already-clean corpus)
 
 ### Cross-File Reference Integrity
@@ -49,8 +49,8 @@ Requirements for whole-integer step numbering enforcement. Each maps to roadmap 
 |-------------|-------|--------|
 | SCAN-01 | Phase 48 | Complete |
 | SCAN-02 | Phase 48 | Complete |
-| MAP-01 | Phase 49 | Pending |
-| NORM-01 | Phase 49 | Pending |
+| MAP-01 | Phase 49 | Complete |
+| NORM-01 | Phase 49 | Complete |
 | NORM-02 | Phase 50 | Pending |
 | XREF-01 | Phase 50 | Pending |
 | GATE-01 | Phase 51 | Pending |

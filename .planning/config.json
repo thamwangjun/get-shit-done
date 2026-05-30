@@ -39,8 +39,17 @@
   "phase_naming": "sequential",
   "agent_skills": {},
   "model_overrides": {
+    "gsd-planner": "opus",
+    "gsd-eval-planner": "opus",
+    "gsd-plan-checker": "opus",
+    "gsd-integration-checker": "opus",
+    "gsd-ui-checker": "opus",
+    "gsd-phase-researcher": "opus",
+    "gsd-project-researcher": "opus",
     "gsd-advisor-researcher": "opus",
-    "gsd-phase-researcher": "opus"
+    "gsd-ai-researcher": "opus",
+    "gsd-domain-researcher": "opus",
+    "gsd-ui-researcher": "opus"
   },
   "resolve_model_ids": "omit",
   "mode": "yolo",
