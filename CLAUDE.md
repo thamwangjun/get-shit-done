@@ -21,6 +21,12 @@ node --test tests/phase.test.cjs
 
 Tests use Node.js built-in `--test` runner (no external test framework). Coverage is measured only against `get-shit-done/bin/lib/*.cjs`. Requires Node.js >=20.
 
+**Running tests efficiently:** Run tests once, pipe output to `/tmp`, then analyze the file — avoid re-running tests just to read output.
+```bash
+npm test 2>&1 | tee /tmp/gsd-test-output.txt; echo "Exit: $?"
+# Then: Read /tmp/gsd-test-output.txt to analyze results
+```
+
 ## Reading Files
 
 When a file is truncated in tool output, a reference path to the full file is provided (e.g. `@file:/path/to/file`). Always read the full file at that path before continuing — never act on truncated content.
