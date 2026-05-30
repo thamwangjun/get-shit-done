@@ -621,7 +621,7 @@ cat "$phase_dir"/*-CONTEXT.md 2>/dev/null
 - User decided "simple UI, no animations" → skip animation library research; the decision is locked
 - Marked as Claude's discretion → research options and recommend
 
-## Step 1.3: Load Graph Context
+## Step 2: Load Graph Context
 
 Check for knowledge graph:
 
@@ -654,9 +654,9 @@ Use graph results to:
 - Surface dependencies the phase description does not explicitly mention
 - Inform which subsystems to investigate more deeply in subsequent research steps
 
-If no results or graph.json absent, continue to Step 1.5 without graph context.
+If no results or graph.json absent, continue to Step 3 without graph context.
 
-## Step 1.5: Architectural Responsibility Mapping
+## Step 3: Architectural Responsibility Mapping
 
 Before diving into framework-specific research, map each capability in this phase to its standard architectural tier owner. This is a pure reasoning step — no tool calls needed.
 
@@ -683,7 +683,7 @@ Before diving into framework-specific research, map each capability in this phas
 
 **Why this matters:** Multi-tier applications frequently have capabilities misassigned during planning — e.g., putting auth logic in the browser tier when it belongs in the API tier, or putting data fetching in the frontend server when the API already provides it. Mapping tier ownership before research prevents these misassignments from propagating into plans.
 
-## Step 2: Identify Research Domains
+## Step 4: Identify Research Domains
 
 Based on phase description, identify what needs investigating:
 
@@ -693,7 +693,7 @@ Based on phase description, identify what needs investigating:
 - **Pitfalls:** Common beginner mistakes, gotchas, rewrite-causing errors
 - **Library Coverage:** Existing solutions for deceptively complex problems
 
-## Step 2.5: Runtime State Inventory (rename / refactor / migration phases only)
+## Step 5: Runtime State Inventory (rename / refactor / migration phases only)
 
 **Trigger:** Any phase involving rename, rebrand, refactor, string replacement, or migration.
 
@@ -713,7 +713,7 @@ For each item found: document (1) what needs changing, and (2) whether it requir
 
 If the answer for a category is "nothing" — say so explicitly. Leaving it blank is not acceptable; the planner cannot distinguish "researched and found nothing" from "not checked."
 
-## Step 2.6: Environment Availability Audit
+## Step 6: Environment Availability Audit
 
 **Trigger:** Any phase that depends on external tools, services, runtimes, or CLI utilities beyond the project's own code.
 
@@ -773,13 +773,13 @@ docker info 2>/dev/null | head -3
    - **Missing with fallback:** Not found, but a viable alternative exists → planner uses fallback
    - **Missing, blocking:** Not found, no fallback → planner must address (install step, or descope feature)
 
-**Skip condition:** If the phase is purely code/config changes with no external dependencies (e.g., refactoring, documentation), output: "Step 2.6: SKIPPED (no external dependencies identified)" and move on.
+**Skip condition:** If the phase is purely code/config changes with no external dependencies (e.g., refactoring, documentation), output: "Step 6: SKIPPED (no external dependencies identified)" and move on.
 
-## Step 3: Execute Research Protocol
+## Step 7: Execute Research Protocol
 
 For each domain: Context7 first → Official docs → WebSearch → Cross-verify. Document findings with confidence levels as you go.
 
-## Step 4: Validation Architecture Research (if nyquist_validation enabled)
+## Step 8: Validation Architecture Research (if nyquist_validation enabled)
 
 **Skip if** workflow.nyquist_validation is explicitly set to false. If absent, treat as enabled.
 
@@ -792,7 +792,7 @@ For each phase requirement: identify behavior, determine test type (unit/integra
 ### Identify Wave 0 Gaps
 List missing test files, framework config, or shared fixtures needed before implementation.
 
-## Step 5: Quality Check
+## Step 9: Quality Check
 
 - [ ] All domains investigated
 - [ ] Negative claims verified
@@ -800,7 +800,7 @@ List missing test files, framework config, or shared fixtures needed before impl
 - [ ] Confidence levels assigned honestly
 - [ ] "What might I have missed?" review
 
-## Step 6: Write RESEARCH.md
+## Step 10: Write RESEARCH.md
 
 Use the Write tool to create files — never use `Bash(cat << 'EOF')` or heredoc commands for file creation. This rule applies regardless of `commit_docs` setting.
 
@@ -839,13 +839,13 @@ Write to: `$PHASE_DIR/$PADDED_PHASE-RESEARCH.md`
 
 ⚠️ `commit_docs` controls git only, NOT file writing. Always write first.
 
-## Step 7: Commit Research (optional)
+## Step 11: Commit Research (optional)
 
 ```bash
 gsd-sdk query commit "docs($PHASE): research phase domain" --files "$PHASE_DIR/$PADDED_PHASE-RESEARCH.md"
 ```
 
-## Step 8: Return Structured Result
+## Step 12: Return Structured Result
 
 </execution_flow>
 

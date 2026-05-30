@@ -338,11 +338,11 @@ describe('VERIFY: data-flow trace, environment audit, and behavioral spot-checks
     );
   });
 
-  test('gsd-phase-researcher has Step 2.6: Environment Availability Audit', () => {
+  test('gsd-phase-researcher has Step 6: Environment Availability Audit', () => {
     const content = fs.readFileSync(path.join(AGENTS_DIR, 'gsd-phase-researcher.md'), 'utf-8');
     assert.ok(
-      content.includes('Step 2.6: Environment Availability Audit'),
-      'gsd-phase-researcher must have Step 2.6 for environment availability auditing'
+      content.includes('Step 6: Environment Availability Audit'),
+      'gsd-phase-researcher must have Step 6 for environment availability auditing'
     );
     assert.ok(
       content.includes('Environment Availability'),
