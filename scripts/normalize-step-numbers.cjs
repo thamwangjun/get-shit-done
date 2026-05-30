@@ -145,9 +145,9 @@ function buildRenameMap(content) {
     if (inCodeBlock) continue;
 
     // Section boundary: ## or ### heading resets the per-section counter (Pattern 5)
+    // Reset counter but do NOT continue — heading lines may also contain decimal step labels.
     if (/^#{2,3}\s/.test(line)) {
       sectionCounter = 0;
-      continue;
     }
 
     // Pattern A/B: "Step N.M" or "Step Na" — any decimal or letter-suffix step label
