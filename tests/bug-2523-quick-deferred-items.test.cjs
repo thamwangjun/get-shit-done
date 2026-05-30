@@ -26,14 +26,14 @@ describe('bug #2523: quick-task final commit includes deferred-items.md', () => 
     assert.ok(fs.existsSync(WORKFLOW_PATH), 'get-shit-done/workflows/quick.md must exist');
   });
 
-  test('Step 8 file list references deferred-items.md', () => {
-    const step8Idx = content.indexOf('Step 8: Final commit');
-    assert.notEqual(step8Idx, -1, 'Step 8 section must exist in quick.md');
+  test('Step 15 file list references deferred-items.md', () => {
+    const step15Idx = content.indexOf('Step 15: Final commit');
+    assert.notEqual(step15Idx, -1, 'Step 15 section must exist in quick.md');
 
-    const step8Section = content.slice(step8Idx, step8Idx + 2000);
+    const step15Section = content.slice(step15Idx, step15Idx + 2000);
     assert.ok(
-      step8Section.includes('deferred-items.md'),
-      'Step 8 file list must include deferred-items.md. ' +
+      step15Section.includes('deferred-items.md'),
+      'Step 15 file list must include deferred-items.md. ' +
       'Without this, any out-of-scope findings logged by the executor to ' +
       '${QUICK_DIR}/${quick_id}-deferred-items.md are left untracked after commit (bug #2523).'
     );

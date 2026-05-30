@@ -109,7 +109,7 @@ describe('bug #2410: execute-phase emits checkpoint heartbeats', () => {
     // tool calls in that step.
     const step2 = workflow.slice(
       describeIdx,
-      workflow.indexOf('3. **Spawn executor agents', describeIdx)
+      workflow.indexOf('4. **Spawn executor agents', describeIdx)
     );
     assert.ok(
       step2.includes('[checkpoint]'),
@@ -124,33 +124,33 @@ describe('bug #2410: execute-phase emits checkpoint heartbeats', () => {
   });
 
   test('plan-start heartbeat is inside the spawn step', () => {
-    const spawnIdx = workflow.indexOf('3. **Spawn executor agents');
-    const waitIdx = workflow.indexOf('4. **Wait for all agents', spawnIdx);
+    const spawnIdx = workflow.indexOf('4. **Spawn executor agents');
+    const waitIdx = workflow.indexOf('5. **Wait for all agents', spawnIdx);
     assert.ok(spawnIdx !== -1 && waitIdx !== -1, 'spawn and wait steps must exist');
-    const step3 = workflow.slice(spawnIdx, waitIdx);
+    const step4 = workflow.slice(spawnIdx, waitIdx);
     assert.ok(
-      /\[checkpoint\][^\n]*plan \{plan_id\} starting/.test(step3),
-      'plan-start heartbeat should be emitted inside step 3 (spawn executor agents)'
+      /\[checkpoint\][^\n]*plan \{plan_id\} starting/.test(step4),
+      'plan-start heartbeat should be emitted inside step 4 (spawn executor agents)'
     );
   });
 
   test('plan-complete and wave-complete heartbeats are inside the wait/report steps', () => {
-    const waitIdx = workflow.indexOf('4. **Wait for all agents');
-    const hookIdx = workflow.indexOf('5. **Post-wave hook validation', waitIdx);
+    const waitIdx = workflow.indexOf('5. **Wait for all agents');
+    const hookIdx = workflow.indexOf('6. **Post-wave hook validation', waitIdx);
     assert.ok(waitIdx !== -1 && hookIdx !== -1, 'wait + hook steps must exist');
-    const step4 = workflow.slice(waitIdx, hookIdx);
+    const step5 = workflow.slice(waitIdx, hookIdx);
     assert.ok(
-      /\[checkpoint\][^\n]*plan \{plan_id\} complete/.test(step4),
-      'plan-complete heartbeat should be emitted in step 4 (wait for agents)'
+      /\[checkpoint\][^\n]*plan \{plan_id\} complete/.test(step5),
+      'plan-complete heartbeat should be emitted in step 5 (wait for agents)'
     );
 
-    const reportIdx = workflow.indexOf('6. **Report completion');
-    const failureIdx = workflow.indexOf('7. **Handle failures', reportIdx);
+    const reportIdx = workflow.indexOf('11. **Report completion');
+    const failureIdx = workflow.indexOf('12. **Handle failures', reportIdx);
     assert.ok(reportIdx !== -1 && failureIdx !== -1, 'report + failure steps must exist');
-    const step6 = workflow.slice(reportIdx, failureIdx);
+    const step11 = workflow.slice(reportIdx, failureIdx);
     assert.ok(
-      /\[checkpoint\][^\n]*wave \{N\}\/\{M\} complete/.test(step6),
-      'wave-complete heartbeat should be emitted in step 6 (report completion)'
+      /\[checkpoint\][^\n]*wave \{N\}\/\{M\} complete/.test(step11),
+      'wave-complete heartbeat should be emitted in step 11 (report completion)'
     );
   });
 });

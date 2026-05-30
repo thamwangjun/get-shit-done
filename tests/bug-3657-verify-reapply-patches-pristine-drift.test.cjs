@@ -490,10 +490,10 @@ describe('Bug #3657: pristine-drift does not produce false FAIL_USER_LINES_MISSI
     const workflowPath = path.join(ROOT, 'get-shit-done', 'workflows', 'reapply-patches.md');
     const workflowSource = fs.readFileSync(workflowPath, 'utf8');
 
-    // The drift-check block must be present in Step 5a.
+    // The drift-check block must be present in section 5a.
     assert.ok(
-      workflowSource.includes('Step 5a: drift check'),
-      'workflow must contain "Step 5a: drift check" heading',
+      workflowSource.includes('5a: Deterministic verifier'),
+      'workflow must contain "5a: Deterministic verifier" section',
     );
 
     // Must gate on the drifted count field from the JSON report.
@@ -516,7 +516,7 @@ describe('Bug #3657: pristine-drift does not produce false FAIL_USER_LINES_MISSI
 
     // The drift check must appear BEFORE the VERIFY_STATUS non-zero check.
     // (Drift can be present even when exit code is 0.)
-    const driftCheckPos    = workflowSource.indexOf('Step 5a: drift check');
+    const driftCheckPos    = workflowSource.indexOf('5a: Deterministic verifier');
     const verifyStatusPos  = workflowSource.indexOf('If `VERIFY_STATUS` is non-zero');
     assert.ok(
       driftCheckPos < verifyStatusPos,
