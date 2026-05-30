@@ -218,6 +218,8 @@ cat .planning/METHODOLOGY.md 2>/dev/null || true
 <step name="scout_codebase">
 Lightweight scan of existing code to inform assumption generation.
 
+### Codebase Context
+
 **Step 1: Check for existing codebase maps**
 ```bash
 ls .planning/codebase/*.md 2>/dev/null || true
