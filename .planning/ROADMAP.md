@@ -224,13 +224,13 @@ Full details: `.planning/milestones/v2.1.0-c-ROADMAP.md`
 
 ### Phase 48: TDD Red Gate
 
-**Goal**: Scanner tests for decimal step labels and out-of-order step numbering exist and fail against the current unmodified corpus
+**Goal**: Scanner tests for decimal step labels, letter-suffix step labels (e.g., Step 7a), and out-of-order step numbering exist and fail against the current unmodified corpus
 **Depends on**: Nothing (first phase of milestone)
 **Requirements**: SCAN-01, SCAN-02
 **Success Criteria** (what must be TRUE):
 
   1. `tests/step-numbering-scan.test.cjs` exists and all corpus subtests fail RED against the unmodified corpus (confirming actual violations are detected)
-  2. Scanner correctly detects Pattern A/B (`**Step N.M**` headings) and Pattern D (ordered-list decimal items like `2.5.`) without false-positives on letter-suffix steps (e.g., `Step 7a`) or code-fenced content
+  2. Scanner correctly detects Pattern A/B (`**Step N.M**` headings), Pattern D (ordered-list decimal items like `2.5.`), and letter-suffix steps (e.g., `Step 7a`) as violations requiring renumbering to whole integers; code-fenced content is excluded
   3. Scanner correctly detects out-of-order step sequences (e.g., Step 1 then Step 3 then Step 2) in each file
   4. Running `npm test -- tests/step-numbering-scan.test.cjs` shows failures attributable to the 6 known violating files (not unrelated files)**Plans**: 1 plan
 - [x] 48-01-PLAN.md — Write step-numbering scanner test (tests/step-numbering-scan.test.cjs)
@@ -243,7 +243,7 @@ Full details: `.planning/milestones/v2.1.0-c-ROADMAP.md`
 **Success Criteria** (what must be TRUE):
 
   1. A cross-file step reference index exists (produced before any renaming) enumerating every prose reference of the form "filename.md step N" with source file, source line, target file, and target step number
-  2. `tests/step-numbering-scan.test.cjs` decimal-label corpus subtests pass GREEN after normalization (0 violations in agents/, commands/gsd/, get-shit-done/workflows/)
+  2. `tests/step-numbering-scan.test.cjs` decimal-label and letter-suffix-label corpus subtests pass GREEN after normalization (0 violations in agents/, commands/gsd/, get-shit-done/workflows/)
   3. All 14+ affected test assertions (quick-branching, execute-phase-step-5-5-deviation-doc, agent-frontmatter, and others) are updated to reference the new whole-integer step labels
   4. Every cross-file reference updated in the same commit as the file rename it corresponds to (execute-plan.md step 5.5 references, post-merge-gate.md step 5.8 reference, fast.md Step 7 comment)
   5. `npm test` passes with 0 new failures after each individual file rename commit
