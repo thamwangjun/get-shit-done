@@ -33,33 +33,33 @@ describe('phase-researcher: Architectural Responsibility Mapping', () => {
     );
   });
 
-  test('Architectural Responsibility Mapping step comes after Step 1 and before Step 2', () => {
-    const step1Pos = content.indexOf('## Step 1:');
-    // Look for the step heading specifically (not the output format section)
-    const stepARMPos = content.indexOf('## Step 1.5:');
+  test('Architectural Responsibility Mapping step comes after Step 2 and before Step 4', () => {
     const step2Pos = content.indexOf('## Step 2:');
+    // Look for the step heading specifically (not the output format section)
+    const stepARMPos = content.indexOf('## Step 3:');
+    const step4Pos = content.indexOf('## Step 4:');
 
-    assert.ok(step1Pos !== -1, 'Step 1 must exist');
-    assert.ok(stepARMPos !== -1, 'Step 1.5 Architectural Responsibility Mapping step must exist');
     assert.ok(step2Pos !== -1, 'Step 2 must exist');
+    assert.ok(stepARMPos !== -1, 'Step 3 (Architectural Responsibility Mapping) step must exist');
+    assert.ok(step4Pos !== -1, 'Step 4 must exist');
 
     assert.ok(
-      stepARMPos > step1Pos,
-      'Step 1.5 (Architectural Responsibility Mapping) must come after Step 1'
+      stepARMPos > step2Pos,
+      'Step 3 (Architectural Responsibility Mapping) must come after Step 2'
     );
     assert.ok(
-      stepARMPos < step2Pos,
-      'Step 1.5 (Architectural Responsibility Mapping) must come before Step 2'
+      stepARMPos < step4Pos,
+      'Step 3 (Architectural Responsibility Mapping) must come before Step 4'
     );
   });
 
   test('step is a pure reasoning step with no tool calls', () => {
     // Extract the ARM section content (between the ARM heading and the next ## Step heading)
-    const armHeadingMatch = content.match(/## Step 1\.5[^\n]*Architectural Responsibility Map/);
-    assert.ok(armHeadingMatch, 'Must have a Step 1.5 heading for Architectural Responsibility Mapping');
+    const armHeadingMatch = content.match(/## Step 3[^\n]*Architectural Responsibility Map/);
+    assert.ok(armHeadingMatch, 'Must have a Step 3 heading for Architectural Responsibility Mapping');
 
     const armStart = content.indexOf(armHeadingMatch[0]);
-    const nextStepMatch = content.indexOf('## Step 2:', armStart);
+    const nextStepMatch = content.indexOf('## Step 4:', armStart);
     const armSection = content.substring(armStart, nextStepMatch);
 
     // Should not contain tool invocation patterns
@@ -82,7 +82,7 @@ describe('phase-researcher: Architectural Responsibility Mapping', () => {
 
   test('mentions standard architectural tiers', () => {
     const armStart = content.indexOf('Architectural Responsibility Map');
-    const nextStep = content.indexOf('## Step 2:', armStart);
+    const nextStep = content.indexOf('## Step 4:', armStart);
     const armSection = content.substring(armStart, nextStep);
 
     // Should reference standard tiers

@@ -86,19 +86,19 @@ describe('quick workflow: research step', () => {
     );
   });
 
-  test('step 4.75 research phase exists', () => {
+  test('step 7 research phase exists', () => {
     content = fs.readFileSync(workflowPath, 'utf-8');
     assert.ok(
-      content.includes('Step 4.75'),
-      'workflow should contain Step 4.75 (research phase)'
+      content.includes('Step 7'),
+      'workflow should contain Step 7 (research phase)'
     );
   });
 
   test('research step spawns gsd-phase-researcher', () => {
     content = fs.readFileSync(workflowPath, 'utf-8');
     const researchSection = content.substring(
-      content.indexOf('Step 4.75'),
-      content.indexOf('Step 5:')
+      content.indexOf('Step 7'),
+      content.indexOf('Step 8:')
     );
     assert.ok(
       researchSection.includes('subagent_type="gsd-phase-researcher"'),
@@ -109,8 +109,8 @@ describe('quick workflow: research step', () => {
   test('research step writes RESEARCH.md', () => {
     content = fs.readFileSync(workflowPath, 'utf-8');
     const researchSection = content.substring(
-      content.indexOf('Step 4.75'),
-      content.indexOf('Step 5:')
+      content.indexOf('Step 7'),
+      content.indexOf('Step 8:')
     );
     assert.ok(
       researchSection.includes('RESEARCH.md'),
@@ -121,8 +121,8 @@ describe('quick workflow: research step', () => {
   test('planner context includes RESEARCH.md when research mode', () => {
     content = fs.readFileSync(workflowPath, 'utf-8');
     const plannerSection = content.substring(
-      content.indexOf('Step 5: Spawn planner'),
-      content.indexOf('Step 5.5')
+      content.indexOf('Step 8: Spawn planner'),
+      content.indexOf('Step 9:')
     );
     assert.ok(
       plannerSection.includes('RESEARCH_MODE') && plannerSection.includes('RESEARCH.md'),
