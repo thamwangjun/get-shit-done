@@ -256,19 +256,19 @@ gsd-tools intel patch-meta .planning/intel/deps.json
 Synthesize patterns from steps 2-5 into a human-readable summary.
 Write `arch.md`.
 
-### Step 6.5: Self-Check
+### Step 7: Self-Check
 
 Run: `gsd-tools intel validate`
 
 Review the output:
 
-- If `valid: true`: proceed to Step 7
+- If `valid: true`: proceed to Step 8
 - If errors exist: fix the indicated files before proceeding
 - Common fixes: replace descriptive exports with actual symbol names, fix stale timestamps
 
 This step is MANDATORY -- do not skip it.
 
-### Step 7: Snapshot
+### Step 8: Snapshot
 
 Run: `gsd-tools intel snapshot`
 
