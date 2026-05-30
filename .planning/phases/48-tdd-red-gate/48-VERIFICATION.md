@@ -1,7 +1,7 @@
 ---
 phase: 48-tdd-red-gate
 verified: 2026-05-30T08:00:00Z
-status: passed
+status: gaps_found
 score: 7/7
 overrides_applied: 0
 ---
@@ -10,7 +10,7 @@ overrides_applied: 0
 
 **Phase Goal:** Write `tests/step-numbering-scan.test.cjs` — TDD Red Gate for the v2.1.0-d whole-integer step numbering milestone. The scanner must detect decimal step labels (Pattern A/B and D) and out-of-order step sequences, failing RED against the unmodified corpus.
 **Verified:** 2026-05-30T08:00:00Z
-**Status:** passed
+**Status:** gaps_found
 **Re-verification:** No — initial verification
 
 ## Goal Achievement
@@ -73,7 +73,11 @@ None. All acceptance criteria are programmatically verifiable.
 
 ### Gaps Summary
 
-No gaps. All 7 observable truths verified with direct code and test output evidence.
+**1 gap identified post-execution** (added during execute-phase session after discussion with developer, 2026-05-30):
+
+| # | Gap | Severity | Recommended Fix |
+|---|-----|----------|-----------------|
+| G-01 | `scanForOutOfOrder` line-start anchor misses step labels preceded by list markers (`- **Step N:**`, `1. **Step N:**`) or blockquotes (`>`). Current corpus is clean (verified 2026-05-30), but upstream merges could introduce these patterns, causing silent false negatives. | low | Replace `^\s*\*?\*?` with `^[\s*]*` and add list-marker stripping. See comment in `tests/step-numbering-scan.test.cjs:scanForOutOfOrder`. |
 
 **Noteworthy finding (not a gap):** Phase 48 introduced two additional RED failures beyond the 5 required:
 - `get-shit-done/workflows/execute-plan.md` — additional decimal label found
@@ -83,7 +87,7 @@ Both are genuine violations detected by the scanner. The Phase 48 plan anticipat
 
 **Pre-existing test failures (not regressions):** `tests/ai-evals.test.cjs` has 2 failing tests (`W016 — workflow.ai_integration_phase absent` and `addAiIntegrationPhaseKey repair`). These were committed at `3d1e663b7` before phase 48 began and are unrelated to the new file.
 
-**Documented deviation from PATTERNS.md (noted in SUMMARY.md):** The `scanForOutOfOrder` regex was anchored to line start (`/^\s*\*?\*?Step\s+(\d+)(?![\.\da-z])/i`) to avoid false positives from mid-sentence cross-references (e.g., "in Step 8, status MUST be..."). All unit tests still pass with this fix applied.
+**Documented deviation from PATTERNS.md (noted in SUMMARY.md):** The `scanForOutOfOrder` regex was anchored to line start (`/^\s*\*?\*?Step\s+(\d+)(?![\.\da-z])/i`) to avoid false positives from mid-sentence cross-references (e.g., "in Step 8, status MUST be..."). All unit tests still pass with this fix applied. The anchor introduced the G-01 gap above, which was identified and documented post-execution during discussion with the developer.
 
 ---
 
