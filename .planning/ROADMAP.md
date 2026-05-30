@@ -339,7 +339,7 @@ Full details: `.planning/milestones/v2.1.0-c-ROADMAP.md`
 | 47. Full Runtime Matrix + Verification | v2.1.0-c | 1/1 | Complete | 2026-05-29 |
 | 47.1. Close gap: INTG-04/GATE-03 — wire renderEtaContent into skills path | v2.1.0-c | 2/2 | Complete   | 2026-05-29 |
 | 48. TDD Red Gate | v2.1.0-d | 0/1 | Not started | - |
-| 49. Survey and Normalization | v2.1.0-d | 1/13 | In Progress|  |
+| 49. Survey and Normalization | v2.1.0-d | 11/13 | In Progress|  |
 | 50. Maintenance Script and Cross-Ref Scanner | v2.1.0-d | 0/TBD | Not started | - |
 | 51. Quality Gate | v2.1.0-d | 0/TBD | Not started | - |
 
