@@ -111,7 +111,7 @@ Extract phase goal from ROADMAP.md — this is the outcome to verify, not the ta
 
 In re-verification mode, must-haves come from Step 0.
 
-**Step 2a: Always load ROADMAP Success Criteria**
+**Step 3: Always load ROADMAP Success Criteria**
 
 ```bash
 PHASE_DATA=$(gsd-sdk query roadmap.get-phase "$PHASE_NUM" --raw)
@@ -119,7 +119,7 @@ PHASE_DATA=$(gsd-sdk query roadmap.get-phase "$PHASE_NUM" --raw)
 
 Parse the `success_criteria` array from the JSON output. These are the **roadmap contract** — they must always be verified regardless of what PLAN frontmatter says. Store them as `roadmap_truths`.
 
-**Step 2b: Load PLAN frontmatter must-haves (if present)**
+**Step 4: Load PLAN frontmatter must-haves (if present)**
 
 ```bash
 grep -l "must_haves:" "$PHASE_DIR"/*-PLAN.md 2>/dev/null
@@ -141,14 +141,14 @@ must_haves:
       via: "fetch in useEffect"
 ```
 
-**Step 2c: Merge must-haves**
+**Step 5: Merge must-haves**
 
 Combine all sources into a single must-haves list:
 
-1. **Start with `roadmap_truths`** from Step 2a (these are non-negotiable)
-2. **Merge PLAN frontmatter truths** from Step 2b (these add plan-specific detail)
+1. **Start with `roadmap_truths`** from Step 3 (these are non-negotiable)
+2. **Merge PLAN frontmatter truths** from Step 4 (these add plan-specific detail)
 3. **Deduplicate:** If a PLAN truth clearly restates a roadmap SC, keep the roadmap SC wording (it's the contract)
-4. **If neither 2a nor 2b produced any truths**, fall back to Option C below
+4. **If neither Step 3 nor Step 4 produced any truths**, fall back to Option C below
 
 **CRITICAL:** PLAN frontmatter must-haves must cover at minimum the same scope as the roadmap Success Criteria — expanding is allowed, reducing is not. If ROADMAP.md defines 5 Success Criteria but the plan only lists 3 in must_haves, all 5 must still be verified.
 
@@ -162,7 +162,7 @@ If no Success Criteria in ROADMAP AND no must_haves in frontmatter:
 4. **Derive key links:** For each artifact, "What must be CONNECTED?" — this is where stubs hide
 5. **Document derived must-haves** before proceeding
 
-## Step 3: Verify Observable Truths
+## Step 6: Verify Observable Truths
 
 For each truth, determine if codebase enables it.
 
@@ -177,10 +177,10 @@ For each truth:
 1. Identify supporting artifacts
 2. Check artifact status (Step 4)
 3. Check wiring status (Step 5)
-4. **Before marking FAIL:** Check for override (Step 3b)
+4. **Before marking FAIL:** Check for override (Step 7)
 5. Determine truth status
 
-## Step 3b: Check Verification Overrides
+## Step 7: Check Verification Overrides
 
 Before marking any must-have as FAILED, check the VERIFICATION.md frontmatter for an `overrides:` entry that matches this must-have.
 
@@ -214,7 +214,7 @@ overrides:
 ```
 ```
 
-## Step 4: Verify Artifacts (Three Levels)
+## Step 8: Verify Artifacts (Three Levels)
 
 Use `gsd-sdk query` for artifact verification against must_haves in PLAN frontmatter:
 
@@ -261,7 +261,7 @@ grep -r "$artifact_name" "${search_path:-src/}" --include="*.ts" --include="*.ts
 | ✓      | ✗           | -     | ✗ STUB      |
 | ✗      | -           | -     | ✗ MISSING   |
 
-## Step 4b: Data-Flow Trace (Level 4)
+## Step 9: Data-Flow Trace (Level 4)
 
 Artifacts that pass Levels 1-3 (exist, substantive, wired) can still be hollow if their data source produces empty or hardcoded values. Level 4 traces upstream from the artifact to verify real data flows through the wiring.
 
@@ -318,7 +318,7 @@ grep -r -A 3 "<${COMPONENT_NAME}" "${search_path:-src/}" --include="*.tsx" 2>/de
 | ✓ | ✗ | - | - | ✗ STUB |
 | ✗ | - | - | - | ✗ MISSING |
 
-## Step 5: Verify Key Links (Wiring)
+## Step 10: Verify Key Links (Wiring)
 
 Key links are critical connections. If broken, the goal fails even with all artifacts present.
 
@@ -373,7 +373,7 @@ grep -E "\{.*$state_var.*\}|\{$state_var\." "$component" 2>/dev/null
 
 Status: WIRED (state displayed) | NOT_WIRED (state exists, not rendered)
 
-## Step 6: Check Requirements Coverage
+## Step 11: Check Requirements Coverage
 
 **6a. Extract requirement IDs from PLAN frontmatter:**
 
@@ -401,7 +401,7 @@ grep -E "Phase $PHASE_NUM" .planning/REQUIREMENTS.md 2>/dev/null
 
 If REQUIREMENTS.md maps additional IDs to this phase that don't appear in ANY plan's `requirements` field, flag as **ORPHANED** — these requirements were expected but no plan claimed them. ORPHANED requirements MUST appear in the verification report.
 
-## Step 7: Scan for Anti-Patterns
+## Step 12: Scan for Anti-Patterns
 
 Identify files modified in this phase from SUMMARY.md key-files section, or extract commits and verify:
 
@@ -443,7 +443,7 @@ grep -n -B 2 -A 2 "console\.log" "$file" 2>/dev/null | grep -E "^\s*(const|funct
 
 Categorize: 🛑 Blocker (prevents goal or unresolved debt marker) | ⚠️ Warning (incomplete) | ℹ️ Info (notable)
 
-## Step 7b: Behavioral Spot-Checks
+## Step 13: Behavioral Spot-Checks
 
 Anti-pattern scanning (Step 7) checks for code smells. Behavioral spot-checks go further — they verify that key behaviors actually produce expected output when invoked.
 
@@ -487,9 +487,9 @@ npm test -- --grep "$PHASE_TEST_PATTERN" 2>&1 | grep -q "passing"
 - Each check must complete in under 10 seconds
 - Do not start servers or services — only test what's already runnable
 - Do not modify state (no writes, no mutations, no side effects)
-- If the project has no runnable entry points yet, skip with: "Step 7b: SKIPPED (no runnable entry points)"
+- If the project has no runnable entry points yet, skip with: "Step 13: SKIPPED (no runnable entry points)"
 
-## Step 7c: Probe Execution
+## Step 14: Probe Execution
 
 SUMMARY.md probe pass claims are not evidence. If a phase declares or implies probe-based verification, the verifier must run the probe in its own process and record the command result.
 
@@ -526,7 +526,7 @@ done
 | ----- | ------- | ------ | ------ |
 | `scripts/.../probe-name.sh` | `bash "$probe"` | exit code/output | PASS / FAILED / MISSING_PROBE |
 
-## Step 8: Identify Human Verification Needs
+## Step 15: Identify Human Verification Needs
 
 **Always needs human:** Visual appearance, user flow completion, real-time behavior, external service integration, performance feel, error message clarity.
 
@@ -556,7 +556,7 @@ Merge those harvested items into the same human verification list as your own an
 **Why human:** {Why can't verify programmatically}
 ```
 
-## Step 9: Determine Overall Status
+## Step 16: Determine Overall Status
 
 Classify status using this decision tree IN ORDER (most restrictive first):
 
@@ -574,7 +574,7 @@ Classify status using this decision tree IN ORDER (most restrictive first):
 
 **Score:** `verified_truths / total_truths`
 
-## Step 9b: Filter Deferred Items
+## Step 17: Filter Deferred Items
 
 Before reporting gaps, check if any identified gaps are explicitly addressed in later phases of the current milestone. This prevents false-positive gap reports for items intentionally scheduled for future work.
 
@@ -601,7 +601,7 @@ Parse the JSON to extract all phases. Identify phases with `number > current_pha
 - If the gaps list is now empty but human verification items exist → `human_needed`
 - If the gaps list still has items → `gaps_found`
 
-## Step 10: Structure Gap Output (If Gaps Found)
+## Step 18: Structure Gap Output (If Gaps Found)
 
 Before writing VERIFICATION.md, verify that the status field matches the decision tree from Step 9 — in particular, confirm that status is not `passed` when human verification items exist.
 
@@ -625,7 +625,7 @@ gaps:
 - `artifacts`: Files with issues
 - `missing`: Specific things to add/fix
 
-If Step 9b identified deferred items, add a `deferred` section after `gaps`:
+If Step 17 identified deferred items, add a `deferred` section after `gaps`:
 
 ```yaml
 deferred:  # Items addressed in later phases — not actionable gaps
@@ -703,7 +703,7 @@ gaps: # Only if status: gaps_found
         issue: "What's wrong"
     missing:
       - "Specific thing to add/fix"
-deferred: # Only if deferred items exist (Step 9b)
+deferred: # Only if deferred items exist (Step 17)
   - truth: "Observable truth addressed in a later phase"
     addressed_in: "Phase N"
     evidence: "Matching goal or success criteria text"
@@ -734,7 +734,7 @@ human_verification: # Only if status: human_needed
 ### Deferred Items
 
 Items not yet met but explicitly addressed in later milestone phases.
-Only include this section if deferred items exist (from Step 9b).
+Only include this section if deferred items exist (from Step 17).
 
 | # | Item | Addressed In | Evidence |
 |---|------|-------------|----------|
@@ -908,7 +908,7 @@ return <div>No messages</div>  // Always shows "no messages"
 - [ ] Behavioral spot-checks run on runnable code (or skipped with reason)
 - [ ] Human verification items identified
 - [ ] Overall status determined
-- [ ] Deferred items filtered against later milestone phases (Step 9b)
+- [ ] Deferred items filtered against later milestone phases (Step 17)
 - [ ] Gaps structured in YAML frontmatter (if gaps_found)
 - [ ] Deferred items structured in YAML frontmatter (if deferred items exist)
 - [ ] Re-verification metadata included (if previous existed)

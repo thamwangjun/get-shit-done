@@ -214,24 +214,24 @@ describe('verification overrides reference (#1747)', () => {
     });
 
 
-    test('verifier includes Step 3b for override check before FAIL', () => {
+    test('verifier includes Step 7 for override check before FAIL', () => {
       verifierContent = verifierContent || fs.readFileSync(verifierPath, 'utf-8');
       assert.ok(
-        verifierContent.includes('Step 3b'),
-        'gsd-verifier.md should include a Step 3b override check'
+        verifierContent.includes('Step 7: Check Verification Overrides'),
+        'gsd-verifier.md should include a Step 7 override check'
       );
     });
 
-    test('verifier Step 3b uses must_have field (not criterion)', () => {
+    test('verifier Step 7 uses must_have field (not criterion)', () => {
       verifierContent = verifierContent || fs.readFileSync(verifierPath, 'utf-8');
-      // Find the Step 3b section
-      const step3bStart = verifierContent.indexOf('## Step 3b');
-      assert.ok(step3bStart > -1, 'Step 3b section should exist');
-      const step3bEnd = verifierContent.indexOf('\n## Step 4', step3bStart);
-      const step3bSection = verifierContent.slice(step3bStart, step3bEnd > -1 ? step3bEnd : undefined);
+      // Find the Step 7 section (renamed from Step 3b)
+      const step7Start = verifierContent.indexOf('## Step 7: Check Verification Overrides');
+      assert.ok(step7Start > -1, 'Step 7: Check Verification Overrides section should exist');
+      const step7End = verifierContent.indexOf('\n## Step 8', step7Start);
+      const step7Section = verifierContent.slice(step7Start, step7End > -1 ? step7End : undefined);
       assert.ok(
-        step3bSection.includes('must_have'),
-        'Step 3b should reference the must_have field'
+        step7Section.includes('must_have'),
+        'Step 7 should reference the must_have field'
       );
     });
 

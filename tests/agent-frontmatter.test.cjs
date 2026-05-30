@@ -286,11 +286,11 @@ describe('CLAUDEMD: CLAUDE.md compliance enforcement', () => {
 // ─── Verification Data-Flow and Environment Audit (#1245) ────────────────────
 
 describe('VERIFY: data-flow trace, environment audit, and behavioral spot-checks', () => {
-  test('gsd-verifier has Step 4b: Data-Flow Trace', () => {
+  test('gsd-verifier has Step 9: Data-Flow Trace', () => {
     const content = fs.readFileSync(path.join(AGENTS_DIR, 'gsd-verifier.md'), 'utf-8');
     assert.ok(
-      content.includes('Step 4b: Data-Flow Trace'),
-      'gsd-verifier must have Step 4b for data-flow tracing'
+      content.includes('Step 9: Data-Flow Trace'),
+      'gsd-verifier must have Step 9 for data-flow tracing'
     );
     assert.ok(
       content.includes('HOLLOW'),
@@ -302,11 +302,11 @@ describe('VERIFY: data-flow trace, environment audit, and behavioral spot-checks
     );
   });
 
-  test('gsd-verifier has Step 7b: Behavioral Spot-Checks', () => {
+  test('gsd-verifier has Step 13: Behavioral Spot-Checks', () => {
     const content = fs.readFileSync(path.join(AGENTS_DIR, 'gsd-verifier.md'), 'utf-8');
     assert.ok(
-      content.includes('Step 7b: Behavioral Spot-Checks'),
-      'gsd-verifier must have Step 7b for behavioral spot-checks'
+      content.includes('Step 13: Behavioral Spot-Checks'),
+      'gsd-verifier must have Step 13 for behavioral spot-checks'
     );
     assert.ok(
       content.includes('SKIP'),
