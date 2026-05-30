@@ -1,7 +1,7 @@
 /**
  * Quick task branching tests
  *
- * Validates that /gsd-quick exposes branch_name from init and that the Step 2.5
+ * Validates that /gsd-quick exposes branch_name from init and that the Step 3
  * "Handle quick-task branching" block:
  *   1. Reuses an existing branch as-is (no rebase / no reset).
  *   2. When the branch does not exist, creates it from origin/HEAD's default
@@ -41,9 +41,9 @@ function git(cwd, ...args) {
 }
 
 /**
- * Structurally extract the bash code under the "Step 2.5: Handle quick-task
+ * Structurally extract the bash code under the "Step 3: Handle quick-task
  * branching" heading. We:
- *   1. Locate the Step 2.5 heading.
+ *   1. Locate the Step 3 heading.
  *   2. Find the next horizontal rule (`---`) that ends the section.
  *   3. Concatenate every fenced ```bash block in between.
  *
@@ -57,7 +57,7 @@ function extractStep25Bash() {
   let start = -1;
   let end = -1;
   for (let i = 0; i < lines.length; i += 1) {
-    if (start === -1 && /^\*\*Step 2\.5:\s*Handle quick-task branching\*\*\s*$/.test(lines[i])) {
+    if (start === -1 && /^\*\*Step 3:\s*Handle quick-task branching\*\*\s*$/.test(lines[i])) {
       start = i + 1;
     } else if (start !== -1 && /^---\s*$/.test(lines[i])) {
       end = i;
@@ -65,7 +65,7 @@ function extractStep25Bash() {
     }
   }
   if (start === -1) {
-    throw new Error('quick.md does not contain a "Step 2.5: Handle quick-task branching" section');
+    throw new Error('quick.md does not contain a "Step 3: Handle quick-task branching" section');
   }
   if (end === -1) end = lines.length;
 
@@ -87,7 +87,7 @@ function extractStep25Bash() {
     if (inBash) buffer.push(line);
   }
   if (bashBlocks.length === 0) {
-    throw new Error('Step 2.5 contains no ```bash code blocks to execute');
+    throw new Error('Step 3 contains no ```bash code blocks to execute');
   }
   return bashBlocks.join('\n');
 }
@@ -195,15 +195,15 @@ describe('quick workflow: branching support', () => {
     );
   });
 
-  test('Step 2.5 section is present and contains executable bash', () => {
+  test('Step 3 section is present and contains executable bash', () => {
     const bash = extractStep25Bash();
-    assert.ok(bash.length > 0, 'Step 2.5 should contain at least one bash block');
+    assert.ok(bash.length > 0, 'Step 3 should contain at least one bash block');
   });
 
-  test('Step 2.5 runs before Step 3 (task directory creation)', () => {
+  test('Step 3 runs before Step 4 (task directory creation)', () => {
     const content = fs.readFileSync(QUICK_PATH, 'utf-8');
-    const branchingIndex = content.indexOf('Step 2.5: Handle quick-task branching');
-    const createDirIndex = content.indexOf('Step 3: Create task directory');
+    const branchingIndex = content.indexOf('Step 3: Handle quick-task branching');
+    const createDirIndex = content.indexOf('Step 4: Create task directory');
     assert.ok(
       branchingIndex !== -1 && createDirIndex !== -1,
       'workflow should contain both branching and directory steps'
@@ -241,7 +241,7 @@ describe('quick workflow: branching support', () => {
         assert.equal(
           git(clonePath, 'rev-parse', '--abbrev-ref', 'HEAD'),
           'quick/02-new-task',
-          'Step 2.5 should switch to the new quick-task branch'
+          'Step 3 should switch to the new quick-task branch'
         );
 
         const inherited = git(clonePath, 'rev-list', '--count', `${upstream}..HEAD`);
@@ -261,7 +261,7 @@ describe('quick workflow: branching support', () => {
     });
   }
 
-  test('Step 2.5 reuses an existing quick-task branch instead of forking again', () => {
+  test('Step 3 reuses an existing quick-task branch instead of forking again', () => {
     const bash = extractStep25Bash();
     const { root, clonePath } = setupFixture();
 

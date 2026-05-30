@@ -7,7 +7,7 @@
  * cache and causes subsequent Edit/Write calls to silently target the main repo
  * instead of the worktree (CC issue #36182 amplifier).
  *
- * Fix: Step 5.6 commits PLAN.md pre-dispatch when USE_WORKTREES is active.
+ * Fix: Step 10 commits PLAN.md pre-dispatch when USE_WORKTREES is active.
  */
 
 const { describe, test } = require('node:test');
@@ -25,58 +25,58 @@ describe('quick.md pre-dispatch PLAN.md commit (#2432)', () => {
     content = fs.readFileSync(QUICK_MD, 'utf-8');
   });
 
-  test('Step 5.6 exists between Step 5.5 and Step 6', () => {
-    const step55 = content.indexOf('Step 5.5');
-    const step56 = content.indexOf('Step 5.6');
-    const step6  = content.indexOf('Step 6:');
-    assert.ok(step55 !== -1, 'Step 5.5 must exist');
-    assert.ok(step56 !== -1, 'Step 5.6 must exist');
-    assert.ok(step6  !== -1, 'Step 6 must exist');
-    assert.ok(step56 > step55, 'Step 5.6 must appear after Step 5.5');
-    assert.ok(step56 < step6,  'Step 5.6 must appear before Step 6');
+  test('Step 10 exists between Step 9 and Step 11', () => {
+    const step55 = content.indexOf('Step 9');
+    const step56 = content.indexOf('Step 10');
+    const step6  = content.indexOf('Step 11:');
+    assert.ok(step55 !== -1, 'Step 9 must exist');
+    assert.ok(step56 !== -1, 'Step 10 must exist');
+    assert.ok(step6  !== -1, 'Step 11 must exist');
+    assert.ok(step56 > step55, 'Step 10 must appear after Step 9');
+    assert.ok(step56 < step6,  'Step 10 must appear before Step 11');
   });
 
-  test('Step 5.6 is gated on USE_WORKTREES', () => {
-    const step56Start = content.indexOf('Step 5.6');
-    const step6Start  = content.indexOf('Step 6:', step56Start);
+  test('Step 10 is gated on USE_WORKTREES', () => {
+    const step56Start = content.indexOf('Step 10');
+    const step6Start  = content.indexOf('Step 11:', step56Start);
     const step56Block = content.slice(step56Start, step6Start);
     assert.ok(
       step56Block.includes('USE_WORKTREES'),
-      'Step 5.6 must be gated on USE_WORKTREES — only commit pre-dispatch in worktree mode'
+      'Step 10 must be gated on USE_WORKTREES — only commit pre-dispatch in worktree mode'
     );
   });
 
-  test('Step 5.6 is gated on commit_docs', () => {
-    const step56Start = content.indexOf('Step 5.6');
-    const step6Start  = content.indexOf('Step 6:', step56Start);
+  test('Step 10 is gated on commit_docs', () => {
+    const step56Start = content.indexOf('Step 10');
+    const step6Start  = content.indexOf('Step 11:', step56Start);
     const step56Block = content.slice(step56Start, step6Start);
     assert.ok(
       step56Block.includes('commit_docs'),
-      'Step 5.6 must respect commit_docs config — skip pre-dispatch commit when commit_docs is false'
+      'Step 10 must respect commit_docs config — skip pre-dispatch commit when commit_docs is false'
     );
   });
 
-  test('Step 5.6 stages and commits PLAN.md', () => {
-    const step56Start = content.indexOf('Step 5.6');
-    const step6Start  = content.indexOf('Step 6:', step56Start);
+  test('Step 10 stages and commits PLAN.md', () => {
+    const step56Start = content.indexOf('Step 10');
+    const step6Start  = content.indexOf('Step 11:', step56Start);
     const step56Block = content.slice(step56Start, step6Start);
     assert.ok(
       step56Block.includes('PLAN.md'),
-      'Step 5.6 must reference PLAN.md in the pre-dispatch commit'
+      'Step 10 must reference PLAN.md in the pre-dispatch commit'
     );
     assert.ok(
       step56Block.includes('git add') || step56Block.includes('git commit'),
-      'Step 5.6 must include git add/commit to stage and commit PLAN.md'
+      'Step 10 must include git add/commit to stage and commit PLAN.md'
     );
   });
 
-  test('Step 5.6 uses --no-verify to avoid hook interference', () => {
-    const step56Start = content.indexOf('Step 5.6');
-    const step6Start  = content.indexOf('Step 6:', step56Start);
+  test('Step 10 uses --no-verify to avoid hook interference', () => {
+    const step56Start = content.indexOf('Step 10');
+    const step6Start  = content.indexOf('Step 11:', step56Start);
     const step56Block = content.slice(step56Start, step6Start);
     assert.ok(
       step56Block.includes('--no-verify'),
-      'Step 5.6 pre-dispatch commit must use --no-verify to avoid hook interference'
+      'Step 10 pre-dispatch commit must use --no-verify to avoid hook interference'
     );
   });
 
