@@ -8,11 +8,18 @@ An opinionated fork of the GSD (Get Shit Done) framework that applies systematic
 
 Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships — upstream content additions are modified, not accepted verbatim.
 
+## Current Milestone: v2.1.0-d Whole-Integer Step Numbering
+
+**Goal:** Enforce whole-integer-only step labels across all prompt content files and provide a durable maintenance script to re-enforce after every upstream merge.
+
+**Target features:**
+- Scanner/test that detects decimal step numbering (e.g. `Step 2.5`, `Step 1.3`) and fails
+- Normalize all violating files: renumber steps to sequential whole integers in original order, updating inline cross-references within each file
+- Maintenance script (`scripts/normalize-step-numbers.cjs`) that can be run standalone after upstream merges — detects violations and renumbers automatically
+
 ## Shipped: v2.1.0-c Install-Time Content Materialization (2026-05-29)
 
 Every file installed by `bin/install.js` is now fully self-contained. Eta v4 is wired as the install-time template engine in both copy loops; all 82 source files converted from bare-line `@~/` static refs to `<%~ include() %>` tags. Zero unresolved references in any installed runtime — verified by `tests/install-eta-regression.test.cjs` (6/6) and full Claude install walk (TEST-01 with 27-entry `ALLOWED_INLINE_REFS`).
-
-**Next milestone:** TBD — run `/gsd-new-milestone` to define v2.1.0-d or v2.2.0 goals.
 
 ## Requirements
 
@@ -93,7 +100,10 @@ Every file installed by `bin/install.js` is now fully self-contained. Eta v4 is 
 
 ### Active
 
-*(Next milestone not yet defined — run `/gsd-new-milestone` to scope v2.1.0-d or v2.2.0)*
+- [ ] STEP-01: Scanner/test detects decimal step numbering in agents, commands, and workflows and fails
+- [ ] STEP-02: All violating files renumbered to sequential whole integers with inline cross-references updated
+- [ ] STEP-03: `scripts/normalize-step-numbers.cjs` standalone script detects and renumbers decimal steps automatically
+- [ ] GATE-01: Full `npm test` passes at 0 regressions after all changes
 
 ### Out of Scope
 
@@ -180,4 +190,4 @@ This document evolves at phase transitions and milestone boundaries.
 ---
 ---
 ---
-*Last updated: 2026-05-29 after v2.1.0-c milestone*
+*Last updated: 2026-05-30 after v2.1.0-d milestone start*

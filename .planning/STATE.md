@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.1.0-c
-milestone_name: Install-Time Content Materialization
-status: complete
-last_updated: "2026-05-29T11:30:00.000Z"
-last_activity: 2026-05-29
+milestone: v2.1.0-d
+milestone_name: Whole-Integer Step Numbering
+status: planning
+last_updated: "2026-05-30T06:02:10.888Z"
+last_activity: 2026-05-30
 progress:
-  total_phases: 5
-  completed_phases: 5
-  total_plans: 11
-  completed_plans: 11
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -24,10 +24,10 @@ See: .planning/PROJECT.md (updated 2026-05-29 after v2.1.0-c milestone)
 
 ## Current Position
 
-Milestone v2.1.0-c complete — SHIPPED 2026-05-29
-All 5 phases, 11 plans complete.
-Status: Milestone archived — ready for next milestone planning
-Last activity: 2026-05-30 - Completed quick task 260530-7yv: implement the 1-line os.availableParallelism() fix in run-tests.cjs
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-05-30 — Milestone v2.1.0-d started
 
 ## Performance Metrics
 
