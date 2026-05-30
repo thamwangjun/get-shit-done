@@ -991,15 +991,15 @@ Get final commit hash:
 commit_hash=$(git rev-parse --short HEAD)
 ```
 
-Display completion output:
-
-**If `$VALIDATE_MODE`:**
-```
-
 <mandatory>
 This task is not complete until this commit succeeds.
 All steps must be followed in order until this commit succeeds.
 </mandatory>
+
+Display completion output:
+
+**If `$VALIDATE_MODE`:**
+```
 
 ---
 
