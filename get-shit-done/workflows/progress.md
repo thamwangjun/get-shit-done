@@ -191,7 +191,7 @@ List files in the current phase directory:
 
 State: "This phase has {X} plans, {Y} summaries."
 
-**Step 1.5: Check for unaddressed UAT gaps**
+**Step 2: Check for unaddressed UAT gaps**
 
 Check for UAT.md files with status "diagnosed" (has gaps needing fixes).
 
@@ -204,7 +204,7 @@ Track:
 - `uat_with_gaps`: UAT.md files with status "diagnosed" (gaps need fixing)
 - `uat_partial`: UAT.md files with status "partial" (incomplete testing)
 
-**Step 1.6: Cross-phase health check**
+**Step 3: Cross-phase health check**
 
 Scan ALL phases in the current milestone for outstanding verification debt using the CLI (which respects milestone boundaries via `getMilestonePhaseFilter`):
 
@@ -232,14 +232,14 @@ Resume testing: `/gsd:verify-work {phase} ${GSD_WS}` — retest specific phase
 
 This is a WARNING, not a blocker — routing proceeds normally. The debt is visible so the user can make an informed choice.
 
-**Step 2: Route based on counts**
+**Step 4: Route based on counts**
 
 | Condition | Meaning | Action |
 |-----------|---------|--------|
 | uat_partial > 0 | UAT testing incomplete | Go to **Route E.2** |
 | uat_with_gaps > 0 | UAT gaps need fix plans | Go to **Route E** |
 | summaries < plans | Unexecuted plans exist | Go to **Route A** |
-| summaries = plans AND plans > 0 | Phase complete | Go to Step 3 |
+| summaries = plans AND plans > 0 | Phase complete | Go to Step 5 |
 | plans = 0 | Phase not yet planned | Go to **Route B** |
 
 ---
@@ -392,7 +392,7 @@ UAT.md exists with `status: partial` — testing session ended before all items 
 
 ---
 
-**Step 3: Check milestone status (only when phase complete)**
+**Step 5: Check milestone status (only when phase complete)**
 
 Read ROADMAP.md and identify:
 1. Current phase number
