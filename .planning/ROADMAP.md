@@ -223,48 +223,58 @@ Full details: `.planning/milestones/v2.1.0-c-ROADMAP.md`
 ## Phase Details
 
 ### Phase 48: TDD Red Gate
+
 **Goal**: Scanner tests for decimal step labels and out-of-order step numbering exist and fail against the current unmodified corpus
 **Depends on**: Nothing (first phase of milestone)
 **Requirements**: SCAN-01, SCAN-02
 **Success Criteria** (what must be TRUE):
+
   1. `tests/step-numbering-scan.test.cjs` exists and all corpus subtests fail RED against the unmodified corpus (confirming actual violations are detected)
   2. Scanner correctly detects Pattern A/B (`**Step N.M**` headings) and Pattern D (ordered-list decimal items like `2.5.`) without false-positives on letter-suffix steps (e.g., `Step 7a`) or code-fenced content
   3. Scanner correctly detects out-of-order step sequences (e.g., Step 1 then Step 3 then Step 2) in each file
-  4. Running `npm test -- tests/step-numbering-scan.test.cjs` shows failures attributable to the 6 known violating files (not unrelated files)
-**Plans**: 1 plan
+  4. Running `npm test -- tests/step-numbering-scan.test.cjs` shows failures attributable to the 6 known violating files (not unrelated files)**Plans**: 1 plan
 - [ ] 48-01-PLAN.md — Write step-numbering scanner test (tests/step-numbering-scan.test.cjs)
 
 ### Phase 49: Survey and Normalization
+
 **Goal**: Every decimal step label across all in-scope prompt content files is renamed to whole-integer sequential numbering; all same-file cross-references and co-located test assertions are updated in the same commits; the Phase 48 scanner goes GREEN
 **Depends on**: Phase 48
 **Requirements**: MAP-01, NORM-01
 **Success Criteria** (what must be TRUE):
+
   1. A cross-file step reference index exists (produced before any renaming) enumerating every prose reference of the form "filename.md step N" with source file, source line, target file, and target step number
   2. `tests/step-numbering-scan.test.cjs` decimal-label corpus subtests pass GREEN after normalization (0 violations in agents/, commands/gsd/, get-shit-done/workflows/)
   3. All 14+ affected test assertions (quick-branching, execute-phase-step-5-5-deviation-doc, agent-frontmatter, and others) are updated to reference the new whole-integer step labels
   4. Every cross-file reference updated in the same commit as the file rename it corresponds to (execute-plan.md step 5.5 references, post-merge-gate.md step 5.8 reference, fast.md Step 7 comment)
   5. `npm test` passes with 0 new failures after each individual file rename commit
+
 **Plans**: TBD
 
 ### Phase 50: Maintenance Script and Cross-Ref Scanner
+
 **Goal**: A cross-file-aware maintenance script can detect and renumber decimal steps on a clean or dirty corpus; a cross-file reference integrity scanner prevents stale step references from surviving future upstream merges
 **Depends on**: Phase 49
 **Requirements**: NORM-02, XREF-01
 **Success Criteria** (what must be TRUE):
+
   1. `scripts/normalize-step-numbers.cjs --dry-run` exits 0 and reports "no changes needed" on the post-Phase-49 clean corpus
   2. `scripts/normalize-step-numbers.cjs` correctly renumbers a synthetic dirty file (decimal steps introduced) and updates its cross-file references, producing output identical to manual normalization
   3. `tests/cross-file-step-refs.test.cjs` exists and passes GREEN against the clean corpus — detecting any prose reference of the form "filename.md step N" where step N does not exist as a heading in the target file
   4. `tests/cross-file-step-refs.test.cjs` goes RED when a synthetic stale cross-file reference is injected (confirming detection works)
+
 **Plans**: TBD
 
 ### Phase 51: Quality Gate
+
 **Goal**: The full test suite passes with 0 regressions and the negative-framing scanner remains at 99/99 after all v2.1.0-d changes
 **Depends on**: Phase 50
 **Requirements**: GATE-01
 **Success Criteria** (what must be TRUE):
+
   1. `npm test` reports 0 new failures compared to the v2.1.0-c baseline (7459 pass / 49 fail baseline)
   2. Negative-framing scanner remains at 99/99 subtests passing
   3. `tests/step-numbering-scan.test.cjs` and `tests/cross-file-step-refs.test.cjs` both pass in the full suite run
+
 **Plans**: TBD
 
 ## Progress
