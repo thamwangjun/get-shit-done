@@ -1,10 +1,11 @@
 ---
 phase: 48
 slug: tdd-red-gate
-status: draft
+status: approved
 nyquist_compliant: true
-wave_0_complete: false
+wave_0_complete: true
 created: 2026-05-30
+audited: 2026-05-30
 ---
 
 # Phase 48 — Validation Strategy
@@ -38,7 +39,7 @@ created: 2026-05-30
 
 | Task ID | Plan | Wave | Requirement | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------------|-----------|-------------------|-------------|--------|
-| 48-01-01 | 01 | 1 | SCAN-01, SCAN-02 | N/A | unit + corpus | `node --test tests/step-numbering-scan.test.cjs` | ❌ W0 | ⬜ pending |
+| 48-01-01 | 01 | 1 | SCAN-01, SCAN-02 | N/A | unit + corpus | `node --test tests/step-numbering-scan.test.cjs` | ✅ yes | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -48,7 +49,7 @@ created: 2026-05-30
 
 ## Wave 0 Requirements
 
-- [ ] `tests/step-numbering-scan.test.cjs` — covers SCAN-01, SCAN-02. This file is the phase deliverable; the entire phase is its creation.
+- [x] `tests/step-numbering-scan.test.cjs` — covers SCAN-01, SCAN-02. This file is the phase deliverable; the entire phase is its creation.
 - No framework install needed (Node.js built-ins only).
 - No shared fixture file needed (synthetic fixtures inlined as string constants).
 
@@ -67,13 +68,14 @@ created: 2026-05-30
 | SCAN-02 | Out-of-order detection — gap flagged | unit (synthetic) | `node --test tests/step-numbering-scan.test.cjs` |
 | SCAN-02 | Out-of-order detection — reset on `##` or `###` heading | unit (synthetic) | `node --test tests/step-numbering-scan.test.cjs` |
 | SCAN-02 | Out-of-order detection — Step 0 valid starting label | unit (synthetic) | `node --test tests/step-numbering-scan.test.cjs` |
+| G-01 | `scanForOutOfOrder` list-marker false negative documented (known limitation, Phase 50 fix) | unit (documenting, G-01) | `node --test tests/step-numbering-scan.test.cjs` |
 | Acceptance criterion 4 | 6 known violating files fail RED for decimal subtests | corpus (RED expected) | `npm test -- tests/step-numbering-scan.test.cjs` |
 
 ---
 
 ## Manual-Only Verifications
 
-*All phase behaviors have automated verification.*
+*All phase behaviors have automated verification. G-01 is documented with a unit test asserting current behavior (list-marker steps are silently skipped). Fix deferred to Phase 50.*
 
 ---
 
@@ -86,4 +88,18 @@ created: 2026-05-30
 - [x] Feedback latency < 5s
 - [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** approved — 2026-05-30
+
+---
+
+## Validation Audit 2026-05-30
+
+| Metric | Count |
+|--------|-------|
+| Gaps found | 1 |
+| Resolved (automated test added) | 1 |
+| Escalated to manual-only | 0 |
+
+**G-01 resolved:** Added unit test at `tests/step-numbering-scan.test.cjs:264–268` documenting that list-marker-prefixed steps (`- **Step N:**`) are not detected by the current regex. Test asserts current behavior (violations.length === 0) as a known limitation. Fix deferred to Phase 50.
+
+**Final test counts:** 620 pass, 9 fail (9 expected RED corpus failures)
