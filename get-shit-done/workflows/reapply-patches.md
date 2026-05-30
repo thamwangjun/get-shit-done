@@ -295,7 +295,7 @@ VERIFY_OUTPUT="$(node "${GSD_HOME}/get-shit-done/bin/verify-reapply-patches.cjs"
 VERIFY_STATUS=$?
 ```
 
-**Step 5a: drift check** — even when `VERIFY_STATUS` is 0, the report may signal that one or more files were skipped due to pristine-snapshot drift (Bug #3657). Parse the JSON and check:
+**drift check** — even when `VERIFY_STATUS` is 0, the report may signal that one or more files were skipped due to pristine-snapshot drift (Bug #3657). Parse the JSON and check:
 
 ```bash
 DRIFTED_COUNT="$(echo "$VERIFY_OUTPUT" | node -e "const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));process.stdout.write(String(d.drifted||0))")"
@@ -374,7 +374,7 @@ A missing table absent from the workflow output cannot bypass this gate.
 **If any row in the Hunk Verification Table shows `verified: no`**, STOP and report:
 
 ```
-ERROR: {N} hunk(s) failed Step 5b verification — content may have been dropped during merge.
+ERROR: {N} hunk(s) failed hunk verification — content may have been dropped during merge.
 
 Unverified hunks:
   {file} hunk {hunk_id}: signature line "{signature_line}" not found in merged output
