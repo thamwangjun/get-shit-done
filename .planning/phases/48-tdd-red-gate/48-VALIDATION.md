@@ -102,4 +102,29 @@ audited: 2026-05-30
 
 **G-01 resolved:** Added unit test at `tests/step-numbering-scan.test.cjs:264–268` documenting that list-marker-prefixed steps (`- **Step N:**`) are not detected by the current regex. Test asserts current behavior (violations.length === 0) as a known limitation. Fix deferred to Phase 50.
 
-**Final test counts:** 620 pass, 9 fail (9 expected RED corpus failures)
+**Final test counts (after Plan 02):** 629 tests — 619 pass, 10 fail expected (7 Pattern A/B + 1 Pattern D + 1 out-of-order, plus gsd-verifier.md added by Plan 02).
+
+---
+
+## Validation Audit 2026-05-30 (Nyquist audit pass)
+
+| Metric | Count |
+|--------|-------|
+| Gaps found | 0 |
+| Resolved | 0 |
+| Escalated to manual-only | 0 |
+| New unexpected corpus violations detected | 5 |
+
+**0 phase-48 gaps** — all requirements have automated verification. `nyquist_compliant: true` confirmed.
+
+**5 new unexpected corpus violations** discovered by the Plan 02 regex expansion (`(?:\.\d|[a-z])`) that now catches lowercase letter-suffix step labels. These were not present at Plan 01 baseline and are not Phase 48 test gaps — they are new violations to fix in phase 49/50:
+
+| File | Pattern | Violation |
+|------|---------|-----------|
+| `get-shit-done/workflows/autonomous.md` | A/B (letter-suffix) | `step 3a` (lowercase) |
+| `get-shit-done/workflows/plan-review-convergence.md` | A/B (letter-suffix) | `step 5a` (lowercase) |
+| `get-shit-done/workflows/profile-user.md` | A/B (letter-suffix) | `step 4a`, `step 4b` (lowercase) |
+| `get-shit-done/workflows/reapply-patches.md` | A/B (letter-suffix) | `Step 5a`, `Step 5b` |
+| `commands/gsd/graphify.md` | A/B (letter-suffix) | `Step 2a`, `Step 2b`, `Step 2c` |
+
+**Current test counts:** 629 tests — 614 pass, 15 fail (10 expected + 5 new violations above). Fix tracked for phase 49.
