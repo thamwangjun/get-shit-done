@@ -260,6 +260,12 @@ describe('scanForOutOfOrder() — synthetic content', () => {
     const violations = scanForOutOfOrder(c);
     assert.equal(violations.length, 0, 'code-fenced steps must not affect sequence tracking');
   });
+
+  test('does not detect out-of-order steps preceded by list markers (known G-01 limitation)', () => {
+    const c = ['## Section', '- **Step 3:** reversed', '- **Step 1:** also reversed'].join('\n');
+    const violations = scanForOutOfOrder(c);
+    assert.equal(violations.length, 0, 'list-marker-prefixed steps are not detected by current regex (G-01 limitation)');
+  });
 });
 
 // ─── Corpus tests (D-06: one subtest per file per pattern) ───────────────────
