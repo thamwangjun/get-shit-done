@@ -297,7 +297,7 @@ describe('import command adopts shared conflict-engine', () => {
   test('import command loads doc-conflict-engine reference', () => {
     // Accept both legacy @-notation and Eta include tag form (Phase 45 converted bare-line refs)
     const hasLegacyRef = cmdContent.includes('@~/.claude/get-shit-done/references/doc-conflict-engine.md');
-    const hasEtaRef = /\{%~\s*include\(['"]get-shit-done\/references\/doc-conflict-engine\.md['"]\)\s*%\}/.test(cmdContent);
+    const hasEtaRef = /<%~\s*include\(['"]get-shit-done\/references\/doc-conflict-engine\.md['"]\)\s*%\}/.test(cmdContent);
     assert.ok(hasLegacyRef || hasEtaRef, '/gsd-import must load the shared conflict-engine contract (@-notation or Eta include form)');
   });
   test('import workflow cites the shared reference', () => {
