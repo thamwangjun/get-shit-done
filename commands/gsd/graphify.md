@@ -54,10 +54,10 @@ Parse `$ARGUMENTS` to determine the operation mode:
 
 | Argument | Action |
 |----------|--------|
-| `build` | Run inline build (Step 3) |
-| `query <term>` | Run inline query (Step 2a) |
-| `status` | Run inline status check (Step 2b) |
-| `diff` | Run inline diff check (Step 2c) |
+| `build` | Run inline build (Step 6) |
+| `query <term>` | Run inline query (Step 3) |
+| `status` | Run inline status check (Step 4) |
+| `diff` | Run inline diff check (Step 5) |
 | No argument or unknown | Show usage message |
 
 **Usage message** (shown when no argument or unrecognized argument):
@@ -74,7 +74,7 @@ Modes:
   diff            Show changes since last build
 ```
 
-### Step 2a -- Query
+### Step 3 -- Query
 
 Run:
 
@@ -90,7 +90,7 @@ Parse the JSON output and display results:
 
 **STOP** after displaying results. Do not spawn an agent.
 
-### Step 2b -- Status
+### Step 4 -- Status
 
 Run:
 
@@ -114,7 +114,7 @@ Surface both so the agent can choose.
 
 **STOP** after displaying status. Do not spawn an agent.
 
-### Step 2c -- Diff
+### Step 5 -- Diff
 
 Run:
 
@@ -132,7 +132,7 @@ If no snapshot exists, suggest running `build` twice (first to create, second to
 
 ---
 
-## Step 3 -- Build (Inline)
+## Step 6 -- Build (Inline)
 
 Run the pre-flight check first:
 
