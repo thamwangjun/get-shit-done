@@ -332,7 +332,7 @@ Full details: `.planning/milestones/v2.1.0-c-ROADMAP.md`
 | 45. Command Layer Fixes | v2.1.0-b | 4/4 | Complete    | 2026-05-28 |
 | 46. Workflow Layer Fixes | v2.1.0-b | 2/2 | Complete    | 2026-05-29 |
 | 47. Agent Layer Fixes | v2.1.0-b | 0/0 | Abandoned | - |
-| 48. Quality Gate | v2.1.0-b | 2/2 | Complete   | 2026-05-30 |
+| 48. Quality Gate | v2.1.0-b | 2/2 | Complete    | 2026-05-30 |
 | 44. Resolver Core | v2.1.0-c | 1/1 | Complete | 2026-05-28 |
 | 45. Pipeline Integration | v2.1.0-c | 5/5 | Complete | 2026-05-28 |
 | 46. Regression Test Suite | v2.1.0-c | 2/2 | Complete | 2026-05-29 |
