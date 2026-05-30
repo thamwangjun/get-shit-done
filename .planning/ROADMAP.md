@@ -217,7 +217,7 @@ Full details: `.planning/milestones/v2.1.0-c-ROADMAP.md`
 
 - [x] **Phase 48: TDD Red Gate** — Write step-numbering scanner tests confirmed RED against unmodified corpus (completed 2026-05-30)
 - [x] **Phase 49: Survey and Normalization** — Build cross-file reference index then renumber all violating files with test co-updates (completed 2026-05-30)
-- [ ] **Phase 50: Maintenance Script and Cross-Ref Scanner** — Maintenance script (cross-file-aware, idempotent) plus cross-file reference integrity scanner
+- [x] **Phase 50: Maintenance Script and Cross-Ref Scanner** — Maintenance script (cross-file-aware, idempotent) plus cross-file reference integrity scanner (completed 2026-05-30)
 - [ ] **Phase 51: Quality Gate** — Full npm test at 0 regressions
 
 ## Phase Details
@@ -266,15 +266,15 @@ Full details: `.planning/milestones/v2.1.0-c-ROADMAP.md`
 **Plans**: 3 plans
 **Wave 1**
 
-- [ ] 50-01-PLAN.md — Harden scanForOutOfOrder anchor in tests/step-numbering-scan.test.cjs (list-marker / blockquote stripping + flip G-01 limitation test) [NORM-02 prereq]
+- [x] 50-01-PLAN.md — Harden scanForOutOfOrder anchor in tests/step-numbering-scan.test.cjs (list-marker / blockquote stripping + flip G-01 limitation test) [NORM-02 prereq]
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 50-02-PLAN.md — Build scripts/normalize-step-numbers.cjs (cross-file-aware, idempotent, --dry-run) [NORM-02]
+- [x] 50-02-PLAN.md — Build scripts/normalize-step-numbers.cjs (cross-file-aware, idempotent, --dry-run) [NORM-02]
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 50-03-PLAN.md — Build tests/cross-file-step-refs.test.cjs (cross-file ref integrity scanner + RED test via tmp file) [XREF-01]
+- [x] 50-03-PLAN.md — Build tests/cross-file-step-refs.test.cjs (cross-file ref integrity scanner + RED test via tmp file) [XREF-01]
 
 ### Phase 51: Quality Gate
 
@@ -350,7 +350,7 @@ Full details: `.planning/milestones/v2.1.0-c-ROADMAP.md`
 | 47.1. Close gap: INTG-04/GATE-03 — wire renderEtaContent into skills path | v2.1.0-c | 2/2 | Complete   | 2026-05-29 |
 | 48. TDD Red Gate | v2.1.0-d | 0/1 | Not started | - |
 | 49. Survey and Normalization | v2.1.0-d | 14/13 | Complete    | 2026-05-30 |
-| 50. Maintenance Script and Cross-Ref Scanner | v2.1.0-d | 0/3 | Planned    |  |
+| 50. Maintenance Script and Cross-Ref Scanner | v2.1.0-d | 3/3 | Complete   | 2026-05-30 |
 | 51. Quality Gate | v2.1.0-d | 0/TBD | Not started | - |
 
 *v1.41.3 shipped 2026-05-19 — see `.planning/milestones/v1.41.3-ROADMAP.md`*
