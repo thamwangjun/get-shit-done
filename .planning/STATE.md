@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-05-29 after v2.1.0-c milestone)
 Milestone v2.1.0-c complete — SHIPPED 2026-05-29
 All 5 phases, 11 plans complete.
 Status: Milestone archived — ready for next milestone planning
-Last activity: 2026-05-30 - Completed quick task 260530-710: fix the regex with option A
+Last activity: 2026-05-30 - Completed quick task 260530-7yv: implement the 1-line os.availableParallelism() fix in run-tests.cjs
 
 ## Performance Metrics
 
@@ -85,6 +85,7 @@ Resolved: `tests/bug-2992-check-latest-version.test.cjs` rewritten for SHA-based
 | 260530-6ks | Fix 3 test failures: remove dead semver tests from gsd-statusline.test.cjs, fix eta regex in ingest-docs.test.cjs | 2026-05-30 | ffa2703b | [260530-6ks-investigate-3-test-failures-isinstalleda](./quick/260530-6ks-investigate-3-test-failures-isinstalleda/) |
 | 260530-6xt | Investigate failing test: import command loads doc-conflict-engine reference | 2026-05-30 | — | [260530-6xt-investigate-failing-test-import-command-](./quick/260530-6xt-investigate-failing-test-import-command-/) |
 | 260530-710 | fix the regex with option A | 2026-05-30 | 5e0fd08b | [260530-710-fix-the-regex-with-option-a](./quick/260530-710-fix-the-regex-with-option-a/) |
+| 260530-7yv | implement the 1-line os.availableParallelism() fix in run-tests.cjs | 2026-05-30 | TBD | [260530-7yv-implement-the-1-line-os-availableparalle](./quick/260530-7yv-implement-the-1-line-os-availableparalle/) |
 
 ## Session Continuity
 
