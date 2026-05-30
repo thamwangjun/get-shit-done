@@ -141,12 +141,13 @@ function scanForOutOfOrder(content) {
     // Whole-integer step only — anchored to line start to avoid mid-sentence cross-references
     // (e.g. "in Step 8, see..." must not trigger); negative lookahead excludes decimal labels,
     // other digits, and letter-suffix labels (a-z); handles Step 0 as a valid starting label.
-    // KNOWN LIMITATION: `^\s*\*?\*?` allows leading whitespace and bold markers only — a step
-    // label preceded by a list marker (`- **Step 3:**`, `1. **Step 3:**`) or blockquote (`>`)
-    // will not be detected. The current corpus has no such patterns (verified 2026-05-30), but
-    // upstream merges could introduce them. Phase 50 hardening should replace `^\s*\*?\*?` with
-    // `^[\s*]*` (allows any leading whitespace/asterisks) and add list-marker stripping.
-    const stepMatch = line.match(/^\s*\*?\*?Step\s+(\d+)(?![\.\da-z])/i);
+    // Phase 50 Plan 1 hardening: list markers (`- **Step 3:**`, `* **Step 3:**`, `+ **Step 3:**`,
+    // `1. **Step 3:**`) and blockquote markers (`> **Step 3:**`) are now detected. The corpus
+    // had no such patterns as of 2026-05-30, but upstream merges could introduce them. The fix
+    // strips leading list/blockquote markers via `/^(\s*(?:[-*+]|\d+\.|>)\s*)+/` before matching,
+    // and widens the anchor from `^\s*\*?\*?` to `^[\s*]*` (allows leading whitespace/asterisks).
+    const stripped = line.replace(/^(\s*(?:[-*+]|\d+\.|>)\s*)+/, '');
+    const stepMatch = stripped.match(/^[\s*]*Step\s+(\d+)(?![\.\da-z])/i);
     if (stepMatch) {
       const n = parseInt(stepMatch[1], 10);
       if (expectedNext === null) {
@@ -263,10 +264,28 @@ describe('scanForOutOfOrder() — synthetic content', () => {
     assert.equal(violations.length, 0, 'code-fenced steps must not affect sequence tracking');
   });
 
-  test('does not detect out-of-order steps preceded by list markers (known G-01 limitation)', () => {
+  test('detects out-of-order steps preceded by dash list markers', () => {
     const c = ['## Section', '- **Step 3:** reversed', '- **Step 1:** also reversed'].join('\n');
     const violations = scanForOutOfOrder(c);
-    assert.equal(violations.length, 0, 'list-marker-prefixed steps are not detected by current regex (G-01 limitation)');
+    assert.equal(violations.length, 1, 'reversed list-marker steps are now detected — Step 1 after baseline Step 3 must produce one violation');
+  });
+
+  test('detects out-of-order steps preceded by numbered-list markers', () => {
+    const c = ['## Section', '1. **Step 3:** reversed', '2. **Step 1:** also reversed'].join('\n');
+    const violations = scanForOutOfOrder(c);
+    assert.equal(violations.length, 1, 'reversed numbered-list steps are now detected — Step 1 after baseline Step 3 must produce one violation');
+  });
+
+  test('detects out-of-order steps preceded by blockquote markers', () => {
+    const c = ['## Section', '> **Step 3:** reversed', '> **Step 1:** also reversed'].join('\n');
+    const violations = scanForOutOfOrder(c);
+    assert.equal(violations.length, 1, 'reversed blockquote steps are now detected — Step 1 after baseline Step 3 must produce one violation');
+  });
+
+  test('detects out-of-order steps preceded by asterisk list markers', () => {
+    const c = ['## Section', '* **Step 3:** reversed', '* **Step 1:** also reversed'].join('\n');
+    const violations = scanForOutOfOrder(c);
+    assert.equal(violations.length, 1, 'reversed asterisk-list steps are now detected — Step 1 after baseline Step 3 must produce one violation');
   });
 });
 
