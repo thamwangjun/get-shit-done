@@ -15,7 +15,8 @@
  *               (Pattern C files — `## N.N.` headings without "Step" keyword;
  *                deferred to follow-on milestone per CONTEXT.md D-07)
  *
- * Phase 48 RED expectation: 6 files fail (5 primary + 1 cross-ref):
+ * Phase 48 RED expectation: 7 files fail (letter-suffix detection added via UAT gap closure):
+ *   - agents/gsd-verifier.md (Step 2a, Step 2b, Step 2c, Step 3b, Step 4b, Step 7b, Step 7c, Step 9b)
  *   - agents/gsd-intel-updater.md (Step 6.5)
  *   - agents/gsd-phase-researcher.md (Step 1.3, 1.5, 2.5, 2.6)
  *   - get-shit-done/workflows/progress.md (Step 1.5, 1.6)
@@ -63,10 +64,11 @@ const SCAN_FILES = ALL_FILES.filter(f =>
 
 // ─── Detection ───────────────────────────────────────────────────────────────
 
-// Pattern A/B: bold or plain "Step N.M" labels with decimal point
-// Guard: require \.[0-9] (excludes letter-suffix branches like "Step 7a")
-// D-05: no indentation guard — all leading whitespace allowed
-const STEP_DECIMAL_RE = /(?:^|\s|\*\*)Step\s+\d+\.\d/i;
+// Pattern A/B: bold or plain "Step N.M" decimal labels and "Step Na" letter-suffix labels.
+// Both are violations requiring renumbering to whole integers (user decision, UAT gap closure).
+// Matches either: digit-dot-digit (Step 7.0, Step 2.5) or digit-letter (Step 7a, Step 7b).
+// D-05: no indentation guard — all leading whitespace allowed.
+const STEP_DECIMAL_RE = /(?:^|\s|\*\*)Step\s+\d+(?:\.\d|[a-z])/i;
 
 /**
  * Scan content for decimal step labels.
@@ -201,9 +203,9 @@ describe('scanContent() — decimal detection', () => {
     assert.equal(patternAB.length, 1, 'indented Step N.M must still be flagged');
   });
 
-  test('does not flag letter-suffix step (Step 7a)', () => {
+  test('flags letter-suffix step (Step 7a) as violation', () => {
     const { patternAB } = scanContent('**Step 7a:** branch label\n');
-    assert.equal(patternAB.length, 0, 'letter-suffix steps must not be flagged');
+    assert.equal(patternAB.length, 1, 'letter-suffix steps are violations requiring renumbering to whole integers');
   });
 
   test('does not flag whole-integer step (Step 7)', () => {
