@@ -1,127 +1,212 @@
-# Stack Research
+# Technology Stack: Step-Number Normalization Tooling
 
-**Domain:** Git Commit History Refactoring / Repository Maintenance
-**Researched:** 2026-05-21
-**Confidence:** HIGH
-
-## Recommended Stack
-
-### Core Technologies
-
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| Git | 2.54.0 | Version control system for history manipulation. | Standard tool for managing commit histories. Recent versions support robust staging and resetting options safely. |
-| Node.js / npm | v24.14.1 / 11.11.0 | Runtime and package manager for tests. | Required to run GSD validation gates (`npm test`) with Node's native test runner to guarantee functional parity. |
-
-### Supporting Libraries
-
-| Library | Version | Purpose | When to Use |
-|---------|---------|---------|-------------|
-| Custom Scripts | Local | Automation of tag/rules audits and test execution. | Execute `scripts/run-tests.cjs` and `scripts/audit-tags.js` to verify tag compliance and test suite green state. |
-
-### Development Tools
-
-| Tool | Purpose | Notes |
-|------|---------|-------|
-| `git log` / `git diff` | CLI utilities to inspect commit history and file diffs. | Use `git log --oneline` to review commit structures and `git diff` to verify zero-diff against backup branches. |
-| VS Code Diff Tool | Interactive visual check of unstaged/staged files. | Recommended for reviewing code differences at a glance before finalizing batch commits. |
-
-## Installation
-
-No external package installations are needed as the core stack is pre-installed. Verify versions using:
-
-```bash
-# Verify Git installation
-git --version
-
-# Verify Node.js and npm installation
-node --version
-npm --version
-
-# Ensure all workspace dependencies are up-to-date
-npm install
-```
-
-## Alternatives Considered
-
-| Recommended | Alternative | When to Use Alternative |
-|-------------|-------------|-------------------------|
-| `git reset <tag>` (mixed reset) followed by `git add <batch>` and `git commit` | `git rebase -i <tag>` (Interactive Rebase) | Interactive rebase is suitable for a small commit count (e.g. < 20). It is **not** recommended here because there are 829 commits since tag `v1.41.2`, which would trigger massive merge conflict overhead. |
-| `git reset <tag>` (mixed reset) followed by `git add <batch>` and `git commit` | Squash Merges on branch merges | Squash merges are good when merging feature branches to a clean target branch, but not for post-facto history consolidation where we want 5 distinct, feature-focused commits rather than a single monolithic commit. |
-| `git reset <tag>` (mixed reset) followed by `git add <batch>` and `git commit` | `git-filter-repo` / `git filter-branch` | Heavy-duty rewriting tools are useful for deleting large assets or purging directories across historical revisions, but are unnecessarily complex for flattening the current state into structured batches. |
-
-## What NOT to Use
-
-| Avoid | Why | Use Instead |
-|-------|-----|-------------|
-| `git reset --hard` | Destructive command. It will permanently delete all modifications and additions since tag `v1.41.2`, destroying the current workspace state. | `git reset v1.41.2` (mixed reset) which changes HEAD/index but preserves all file modifications in the working tree. |
-| `git rebase -i` over large ranges | High probability of hitting merge conflicts repeatedly across 800+ commits, stalling progress. | Soft/mixed reset to base tag and staging batches from the final state. |
-| `git push --force` | Overwrites remote commits blindly; dangerous if other developers have pushed concurrent changes. | `git push --force-with-lease` to check remote state before forcing. |
-| `git filter-branch` | Deprecated, slow, and writes a warning to the console. | `git-filter-repo` if rewriting is required. |
-
-## Stack Patterns by Variant
-
-### If Refactoring Git History via Soft/Mixed Reset (Recommended Pattern):
-1. **Safety Backup**: Create a backup branch of the current state before executing any reset:
-   ```bash
-   git branch backup-before-refactor
-   ```
-2. **Execute Reset**: Run mixed reset to base tag (unstages all files but keeps working directory intact):
-   ```bash
-   git reset v1.41.2
-   ```
-3. **Commit in Coherent Batches**: Stage and commit files batch-by-batch using precise git commands:
-
-   * **Batch 1: Rules and configuration files**
-     ```bash
-     git add .planning/references/ mise.toml
-     git commit -m "refactor: rules and configuration files"
-     ```
-   * **Batch 2: Scanner logic and associated scanner configuration/rules**
-     ```bash
-     git add hooks/gsd-read-injection-scanner.js scripts/audit-tags.js
-     git commit -m "refactor: scanner logic and associated configurations"
-     ```
-   * **Batch 3: Workflows, agents, commands, and templates**
-     ```bash
-     git add agents/ commands/gsd/ get-shit-done/workflows/ get-shit-done/bin/lib/ hooks/gsd-statusline.js hooks/gsd-check-update.js hooks/gsd-check-update-worker.js sdk/src/cli.ts docs/ README*.md
-     git commit -m "refactor: workflows, agents, commands, and templates"
-     ```
-   * **Batch 4: Core tests, unit tests, and validation gates**
-     ```bash
-     git add tests/ scripts/run-tests.cjs
-     git commit -m "refactor: core tests, unit tests, and validation gates"
-     ```
-   * **Batch 5: Quick tasks, maintenance, historical logs, and state updates**
-     ```bash
-     # Add remaining files (logs, state, quick tasks, catalogue, etc.)
-     git add .planning/quick/ .planning/research/ logs/ CATALOGUE.json docs/INVENTORY.md docs/INVENTORY-MANIFEST.json scripts/gen-inventory-manifest.cjs bin/install.js
-     # Stage any remaining files if applicable (run git status to check)
-     git commit -m "chore: quick tasks, maintenance, historical logs, and state updates"
-     ```
-
-4. **Verify Parity**: Run a diff against the backup branch to confirm zero file content differences (expecting no output):
-   ```bash
-   git diff backup-before-refactor
-   ```
-5. **Verify Tests**: Execute the complete test suite to ensure all tests pass:
-   ```bash
-   npm test
-   ```
-
-## Version Compatibility
-
-| Package A | Compatible With | Notes |
-|-----------|-----------------|-------|
-| Git @ 2.54.0 | Git >= 2.23.0 | Compatible with modern commands like `git restore` and `git switch`. |
-| Node.js @ v24.14.1 | Node.js >= 18.0.0 | Compatible with built-in Node test runner. |
-
-## Sources
-
-- [Git Reset Official Documentation](https://git-scm.com/docs/git-reset) — Verified mixed reset behavior keeps working tree changes unstaged.
-- [Git Add Official Documentation](https://git-scm.com/docs/git-add) — Verified pattern matching for selective staging.
-- Local repository checkout — Confirmed Git version is `2.54.0`, Node is `v24.14.1`, and tag `v1.41.2` points to `e35865f33bd8f000cc8a82a04f16147a8eab8463`. Confidence level: HIGH.
+**Project:** GSD Fork — v2.1.0-d Whole-Integer Step Numbering
+**Researched:** 2026-05-30
+**Scope:** What Node.js utilities/patterns already exist and are reusable vs. what must be built from scratch for STEP-01 (scanner test) and STEP-03 (normalization script).
 
 ---
-*Stack research for: Git Commit History Refactoring*
-*Researched: 2026-05-21*
+
+## Existing Tooling
+
+### Runtime and Module Format
+
+- **Node.js >=22.0.0** — confirmed in `package.json` (root)
+- **CommonJS (.cjs)** — all lib modules, all test files, all maintenance scripts use `require`/`module.exports`; no ES modules in this layer
+- **Node.js built-in `--test` runner** — all tests in `tests/*.test.cjs`; no external test framework
+
+### Shared Test Infrastructure (`tests/helpers.cjs`)
+
+The helpers file exports the following utilities:
+
+| Helper | Purpose | Reusability for STEP-01 |
+|--------|---------|------------------------|
+| `captureConsole(fn)` | Captures console.log/warn/error output | Potentially useful if the scanner emits warnings |
+| `parseFrontmatter(content)` | Parses YAML frontmatter | Not needed — step-number scanning works on body content |
+| `createTempDir` / `createTempProject` | Temp directory scaffolding | Not needed — corpus scan uses live repo files |
+| `cleanup(tmpDir)` | Temp dir teardown | Not needed |
+
+**Key finding:** `tests/helpers.cjs` does NOT export `collectMarkdownFiles`. The negative-framing scanner defines its own inline `collectMarkdownFiles` function and calls it at module scope. The STEP-01 scanner test follows the same pattern — inline definition, not imported from helpers.
+
+### The Canonical Scanner Test Pattern (`tests/negative-framing-scan.test.cjs`)
+
+This file is the direct structural template for the new step-number scanner test. Reusable conventions:
+
+1. **Module-scope file collection** — collect all `.md` files from `SCAN_DIRS` once at module top, shared across all `describe` blocks
+2. **`SCAN_DIRS` constant** — array of directories relative to `PROJECT_ROOT`; the same dirs apply: `agents`, `get-shit-done/workflows`, `commands/gsd`
+3. **Pure `scanContent(content)` function** — takes a string, returns a result object with violation arrays; no filesystem I/O inside the scan logic
+4. **Code-fence tracking** — `let inCodeBlock = false` + toggle on `/^```/` lines; step labels inside fenced blocks must be skipped
+5. **Unit tests first** — `describe` blocks for synthetic content test the scanner logic in isolation before corpus tests run
+6. **Corpus tests** — per-directory `describe` + `test` pairs: load files, call scanner, collect violations, `assert.equal(violations.length, 0, diagnosticMessage)`
+7. **Diagnostic message format** — `violations.map(v => \` \${v.file}:\n\${v.lines.map(l => \` line \${l.lineNumber}: \${l.line}\`).join('\n')}\`).join('\n')`
+
+The `{ lineNumber, line }` violation object shape (trimmed line text + 1-based line number) is the established convention.
+
+### Maintenance Script Pattern (`scripts/convert-refs.cjs`, `scripts/strip-prose-atrefs.cjs`)
+
+Both existing maintenance scripts share a structure directly applicable to `scripts/normalize-step-numbers.cjs`:
+
+| Pattern | Both Scripts | Implication for normalize script |
+|---------|-------------|----------------------------------|
+| `--dry-run` flag via `process.argv.includes('--dry-run')` | Yes | Implement the same flag |
+| Inline `collectMdFiles(dir)` recursive collector | Yes | Inline the same collector |
+| `TARGET_DIRS` array of absolute paths | Yes | Same four scan directories |
+| Line-by-line transform: `content.split('\n')`, map, `out.join('\n')` | Yes | Same split/join approach |
+| Idempotent write: compare result to original before writing | Yes — `if (result === original) return false` | Apply the same guard |
+| `process.stdout.write` for progress output | Yes | Consistent with existing scripts |
+| Summary at end: files processed / changed / lines changed | Yes | Replicate same summary shape |
+| `process.exit(0)` explicit exit | Yes | Required — Node.js sometimes hangs on implicit exit in CJS scripts |
+
+The `transformLine(line)` → `string | null` (null = no change) contract in `convert-refs.cjs` is clean for line-level transforms. For the normalizer, the transform requires file-level state (a renumbering map built in a first pass), so the right unit is `transformFile(filePath, options)` that processes full file content rather than individual lines.
+
+---
+
+## Reusable Patterns
+
+### 1. Inline `collectMarkdownFiles` Function
+
+Used verbatim in `negative-framing-scan.test.cjs` (lines 374–392). The ENOENT-tolerant pattern is required:
+
+```javascript
+function collectMarkdownFiles(dir) {
+  const results = [];
+  try {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) results.push(...collectMarkdownFiles(fullPath));
+      else if (entry.name.endsWith('.md')) results.push(fullPath);
+    }
+  } catch (err) {
+    if (err.code !== 'ENOENT') throw err;
+  }
+  return results;
+}
+```
+
+Both the scanner test and the normalizer script inline this — extracting to helpers is not necessary and would require updating the helpers test count assertion.
+
+### 2. Code-Fence Skip Guard
+
+The `inCodeBlock` toggle from `negative-framing-scan.test.cjs` (lines 253–263):
+
+```javascript
+let inCodeBlock = false;
+// inside the per-line loop:
+if (/^```/.test(trimmed)) { inCodeBlock = !inCodeBlock; continue; }
+if (inCodeBlock) continue;
+```
+
+Step labels inside fenced code blocks are examples, not behavioral steps. Both the scanner and the normalizer must apply this guard.
+
+### 3. SCAN_DIRS + ALL_FILES Module-Scope Initialization
+
+The pattern of building `ALL_FILES` once at module scope from `SCAN_DIRS` (lines 34–48 of the scanner test) avoids redundant filesystem traversals across describe blocks and is the established convention for corpus scanner tests.
+
+---
+
+## What Must Be Built From Scratch
+
+### A. `scanForDecimalSteps(content)` Function
+
+No existing scanner handles step numbering. Must build from scratch. Returns:
+
+```javascript
+{
+  violations: Array<{ lineNumber: number, line: string }>
+}
+```
+
+### B. Cross-Reference Detection
+
+The corpus (23 occurrences across 7 files) shows two forms of decimal step labels:
+
+1. **Section headers** — lines that define a step (the heading itself):
+   - `## Step 1.3: Load Graph Context` (`gsd-phase-researcher.md`)
+   - `### Step 6.5: Self-Check` (`gsd-intel-updater.md`)
+   - `**Step 2.5: Runtime State Inventory**` (`gsd-phase-researcher.md`)
+   - `**Step 1.5: Check for unaddressed UAT gaps**` (`progress.md`)
+
+2. **Inline cross-references** — prose that mentions a step by its decimal label:
+   - `continue to Step 1.5 without graph context` (`gsd-phase-researcher.md`)
+   - `Proceed to Step 7.8 (or Step 8 if pattern mapper is disabled)` (`plan-phase.md`)
+   - `Proceed to Step 5.5.` (`new-project.md`)
+
+Both forms must be detected by the scanner. The normalizer must renumber both forms consistently within each file.
+
+### C. Per-File Renumbering Algorithm (`scripts/normalize-step-numbers.cjs`)
+
+No existing script does multi-step renumbering with cross-reference tracking. Must build:
+
+1. **Pass 1 — collect all decimal step labels** in the file in document order, building a `Map<originalDecimalLabel, newWholeIntegerLabel>` that respects ordering and avoids collisions with pre-existing whole-integer step numbers
+2. **Pass 2 — apply replacements** to every line, replacing both section headings and inline cross-references using the map from Pass 1
+3. **File-scoped operation** — the renumbering map is built fresh per file; no state crosses file boundaries
+
+---
+
+## Regex Strategy
+
+### Detection Regex (for scanner)
+
+One regex covers all surface forms:
+
+```javascript
+/\bStep\s+\d+\.\d+/i
+```
+
+This matches `Step 2.5`, `Step 4.75`, `Step 7.0`, `Step 1.3` regardless of whether they appear in a heading or prose. Deliberately broad — any `Step N.M` is a violation by definition (the milestone goal is whole-integer-only). Code-fence exclusion is the only filter needed.
+
+**Note on `Step 7.0` in `execute-phase.md`:** The corpus contains `Step 7.0`, `Step 7.1`, `Step 7.2`, `Step 7.3` (lines 925–949 of `execute-phase.md`) used as a sub-step group. `N.0` is technically decimal by the regex but semantically "the whole step". Whether to treat `N.0` as a violation is a scope decision for the implementation phase. The recommended default is to flag it — "whole integer only" means no decimal point.
+
+### Heading vs. Cross-Reference Identification (for normalizer)
+
+To distinguish step-defining headings from inline references, test the line start:
+
+```javascript
+// Markdown heading form
+/^(#{1,6})\s+(Step\s+\d+\.\d+)(.*)/i
+
+// Bold inline heading form (common in workflows)
+/^(\*\*Step\s+\d+\.\d+)(.*)/i
+```
+
+Any line that matches `/\bStep\s+\d+\.\d+/i` but does NOT match the heading patterns is an inline cross-reference.
+
+### Word-Boundary-Safe Replacement (for normalizer)
+
+When replacing `Step 2.5` with `Step 3`, the regex must not match `Step 2.50`:
+
+```javascript
+// decimalNumber = "2.5", escape the dot
+line.replace(
+  new RegExp(`\\bStep\\s+${decimalNumber.replace('.', '\\.')}(?!\\d)`, 'gi'),
+  newLabel
+)
+```
+
+The negative lookahead `(?!\d)` prevents `2.5` from matching inside `2.50`.
+
+---
+
+## Corpus Summary
+
+Decimal step labels found across all three scan directories (as of 2026-05-30):
+
+| File | Decimal Step Labels (headers) | Inline Cross-References |
+|------|------------------------------|------------------------|
+| `agents/gsd-phase-researcher.md` | Step 1.3, Step 1.5, Step 2.5, Step 2.6 | Step 1.5, Step 2.6 (in skip note) |
+| `agents/gsd-intel-updater.md` | Step 6.5 | — |
+| `get-shit-done/workflows/progress.md` | Step 1.5, Step 1.6 | — |
+| `get-shit-done/workflows/execute-phase.md` | Step 7.0, Step 7.1, Step 7.2, Step 7.3 | — |
+| `get-shit-done/workflows/quick.md` | Step 2.5, Step 4.5, Step 4.75, Step 5.5, Step 5.6, Step 6.25, Step 6.5 | — |
+| `get-shit-done/workflows/plan-phase.md` | — | Step 3.5, Step 7.8 (cross-refs in prose) |
+| `get-shit-done/workflows/new-project.md` | — | Step 5.5 (cross-ref in prose) |
+
+Total: ~23 occurrences across 7 files. All in agents and workflows; zero in commands.
+
+---
+
+## Compatibility Notes
+
+- All new files (scanner test + normalizer script) use `.cjs` extension and CommonJS `require`/`module.exports`
+- No new npm dependencies required — `fs`, `path`, `node:test`, `node:assert/strict` are all built-in
+- `scripts/normalize-step-numbers.cjs` runs standalone via `node scripts/normalize-step-numbers.cjs`; does not need to be registered in `package.json` scripts (like other maintenance scripts in `scripts/`)

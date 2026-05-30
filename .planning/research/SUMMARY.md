@@ -1,156 +1,162 @@
 # Project Research Summary
 
-**Project:** GSD — Prompt-Engineered Fork (v2.1.0-c Install-Time Content Materialization)
-**Domain:** Installer pipeline extension — static file inlining at install time
-**Researched:** 2026-05-28
+**Project:** GSD Fork -- v2.1.0-d Whole-Integer Step Numbering
+**Domain:** Static text analysis, corpus normalization, test tooling
+**Researched:** 2026-05-30
 **Confidence:** HIGH
 
 ## Executive Summary
 
-The v2.1.0-c milestone solves a runtime reliability problem: GSD currently ships agent, workflow, and command files containing `@~/.claude/...` and `` !`cat` `` include directives, relying on Claude to inject referenced content at runtime. This creates a brittle dependency on the AI tool's file-injection feature. The fix is an install-time `resolveIncludes()` pass in `bin/install.js` that inlines all referenced content into installed files before they are written to disk, so every installed file is fully self-contained.
+The v2.1.0-d milestone enforces a whole-integer-only step labeling convention across the GSD fork prompt content files (agents, commands, workflows). Currently, 23 decimal step labels exist across 7 files -- none in the 67 command files, 2 in agents, and 21 across workflows. The work requires three deliverables: a scanner test (STEP-01) that fails on any decimal step label and is added to the permanent test suite, a normalization pass (STEP-02) that manually fixes all known violations while co-updating the 14+ test assertions that pin to the old step text, and a maintenance script (STEP-03) that can be re-run after upstream merges to detect and optionally fix future regressions.
 
-The research establishes a clear, bounded scope: 107 `@` references across 4 layers (commands, workflows, agents, references) and 117 `` !`cat` `` references (exclusively in `commands/gsd/`). Two insertion points in `install.js` cover the entire corpus: `copyWithPathReplacement()` at line 6432 handles commands, workflows, and references; the agent install loop at line 8646 handles agents. The include corpus is static leaf-node content — reference files do not chain more than two hops — which means the resolver requires only a shallow recursive implementation with a cycle guard. No external template engine dependency is necessary; a focused `resolveIncludes()` pure function of ~80 lines is the right implementation unit.
+The recommended build order is scanner first, then manual normalization, then maintenance script. Building the scanner before touching any files makes the scanner the ground truth -- normalization is complete when the scanner reports zero violations. The manual normalization step is high risk because whole-integer steps shift significantly (quick.md goes from 8 top-level steps to 15), and at least 14 test files assert on exact step text. Every file rename must be accompanied by co-updated tests in the same commit or the test suite will produce misleading failures.
 
-The highest-risk element is a single conditional include in `execute-phase.md` (line 619) embedded inside a JavaScript template literal: `${CONTEXT_WINDOW < 200000 ? '' : '@~/.claude/...'}`. Any resolver that matches `@~` without confirming the reference is a bare standalone line will corrupt the conditional expression or unconditionally inline a 200+ line file into every agent dispatch. This is the gate constraint the implementation must satisfy before any other inlining logic is written. Everything else — agent size budgets, tool-name transform ordering, single-brace placeholder preservation — follows from it.
+The primary risk in this milestone is silent test corruption: content.indexOf() returning -1 is truthy in JavaScript, so a renamed step that is not reflected in a test will silently pass rather than fail. The prevention strategy is mandatory test co-update enforced by a GATE-01 requirement (npm test must pass at 0 regressions before the milestone closes). Three open scope decisions -- Pattern C files, Step N.0 treatment, and execute-phase.md nested sub-step labels -- must be resolved before normalization begins, as each decision changes which files and tests are in scope.
 
-## Key Findings
+## Key Scope Decisions Needed
 
-### Recommended Stack
+Before writing a single line of code, the implementer must decide:
 
-No external template engine is required for this milestone. The scope is bounded to `@~/.claude/...` and `` !`cat ~/.claude/...` `` patterns only — no variable substitution, no conditionals beyond the one that must be preserved verbatim. A focused `resolveIncludes(content, sourceRoot, seen)` function handles the full use case without introducing a new dependency.
+**Decision 1: Pattern C files** (plan-phase.md, new-project.md, new-milestone.md use ## N.N. section headings with no "Step" keyword). Body text refers to them as "step N.N". Are these in scope for v2.1.0-d? They have 13+ decimal section headers in plan-phase.md alone, and 6 test files assert on their exact text. **Recommendation: defer Pattern C to a separate milestone** -- different format, dense test coverage, and the scanner regex can simply exclude headings that lack the "Step" keyword.
 
-If future requirements extend to variable substitution or conditional includes authored in source files, **Eta v4.6.0** is the recommended engine: zero runtime dependencies, 204 KB unpacked, actively maintained (last release 2026-04-25), configurable delimiters (avoids `{{ }}` collision with existing agent prose), and synchronous `render()` API compatible with `install.js`'s synchronous pipeline. Eta would be added as a `devDependency` and bundled into the installer via the existing esbuild build step, preserving the zero-runtime-dependency constraint. LiquidJS v10.27.0 is a viable fallback (actively maintained, familiar Liquid syntax) but 9x larger and carries one transitive dependency. Nunjucks and Mustache are eliminated due to being unmaintained.
+**Decision 2: Step N.0 treatment** (execute-phase.md has Step 7.0). Is Step 7.0 a violation? The regex /Step\s+\d+\.\d+/i flags it. Semantically it means "the whole step 7". **Recommendation: flag it as a violation** -- the milestone goal is whole-integer-only and decimal points are decimal points regardless of the fractional digit.
 
-**Core technologies:**
-- **Custom `resolveIncludes()` function**: Inline `@~` and `` !`cat` `` references — sufficient for current scope, zero footprint
-- **Eta v4.6.0** (future devDep, if needed): Template engine for variable/conditional needs — zero runtime deps, esbuild-bundlable, `autoEscape: false` required for Markdown
-- **esbuild** (already present): Bundle step infrastructure for any future installer pre-compilation
+**Decision 3: execute-phase.md nested sub-steps** (**Step 7.0 -- ...** through **Step 7.3 -- ...** are indented labels inside list item 7, not peer step headings). Renaming them as Step 8-11 would destroy the parent-child failure-classification structure. **Recommendation: rename to lettered branches** (7a, 7b, etc.) and exclude from the automatic normalizer.
 
-### Scope of Changes (Features Research)
+## Violation Inventory
 
-The research audited all reference injection patterns across the entire codebase. The scope is well-defined.
+Files requiring changes and their decimal step counts:
 
-**Must implement:**
-- Inline `@~/.claude/get-shit-done/references/*.md` in workflows (57 occurrences, 20 files) and agents (42 occurrences, 7 files)
-- Inline `` !`cat ~/.claude/get-shit-done/workflows/*.md` `` and `` !`cat ~/.claude/get-shit-done/references/*.md` `` in commands (117 occurrences, 55 files)
-- Fix 4 command files: `complete-milestone.md` (still on `@` notation); `extract-learnings.md`, `mvp-phase.md`, `ship.md` (mixed notation with duplicate references)
-- Remove the duplicate workflow references in the 3 mixed-notation files (each loads the same workflow twice, wasting context)
+| File | Layer | Label Definitions | Inline Cross-Refs | Total |
+|------|-------|------------------|-------------------|-------|
+| agents/gsd-intel-updater.md | Agent | 1 (Step 6.5) | 0 | 1 |
+| agents/gsd-phase-researcher.md | Agent | 4 (Step 1.3, 1.5, 2.5, 2.6) | 2 (line 657, line 776 output string) | 6 |
+| get-shit-done/workflows/progress.md | Workflow | 2 (Step 1.5, 1.6) | 1 (line 242, same-file) | 3 |
+| get-shit-done/workflows/quick.md | Workflow | 7 (Step 2.5, 4.5, 4.75, 5.5, 5.6, 6.25, 6.5) | 5 (lines 310, 580, 639, 764, 901) | 12 |
+| get-shit-done/workflows/execute-phase.md | Workflow | 8 (list items 2.5, 5.5-5.8; sub-steps 7.0-7.3) | 6 (lines 356, 527, 660, 809, 811, 813) | 14 |
+| execute-phase/steps/post-merge-gate.md | Sub-step | 0 | 1 ("same as step 5.8", cross-file) | 1 |
 
-**Preserve verbatim (must not inline):**
-- `.planning/STATE.md` and `.planning/ROADMAP.md` in `add-tests.md` — runtime project files that vary per session
-- Conditional `@~` in `execute-phase.md` line 619 — JS template literal evaluated at agent dispatch time
-- Agent definition reference in `discuss-phase/modes/advisor.md` — semantically incorrect to inline an agent definition into an orchestrator prompt
+**In-scope for v2.1.0-d (excluding Pattern C):** approximately 37 violations across 6 files.
 
-**Defer:**
-- Auditing 8 unreferenced files in `references/` (`artifact-types.md`, `decimal-phase-calculation.md`, `git-planning-commit.md`, `planner-graphify-auto-update.md`, `planner-human-verify-mode.md`, `planning-config.md`, `workstream-flag.md`, `model-profile-resolution.md`-external) — determine orphaned vs prose-loaded after the main inlining work ships
+**Pattern C files (recommended deferral):** plan-phase.md (13 heading definitions + 7 cross-refs), new-project.md (3+1), new-milestone.md (4+1) -- approximately 29 additional violations; defer to follow-on milestone.
 
-### Architecture Approach
+**Cross-file references requiring updates when primary files are renamed:**
 
-`resolveIncludes()` is a pure transform function inserted at **position 0** in the existing install pipeline — before path substitution, before runtime-specific converters, before attribution. The pipeline per file becomes: (1) readFileSync raw content, (2) `resolveIncludes()` to expand all static includes against source repo paths, (3) path substitution (`~/.claude/` → runtime prefix), (4) runtime converter (`convertClaudeTo*`), (5) attribution + namespace normalization, (6) writeFileSync.
+| Source File | Lines | References |
+|-------------|-------|-----------|
+| execute-plan.md | 143, 369, 475 | execute-phase.md step 5.5 |
+| execute-phase/steps/post-merge-gate.md | 60 | execute-phase.md list item 5.8 |
+| fast.md | 75, 83 | quick.md Step 7 (comment text only) |
 
-This ordering is non-negotiable: reference files contain canonical Claude tool names (`Read`, `Bash`) and `~/.claude/` paths that must be present as input to the runtime transform steps. Inlining after any transform step means inlined content bypasses tool-name conversion.
+**Test files requiring co-update (minimum 14):**
 
-**Two insertion points cover the entire corpus:**
-1. `copyWithPathReplacement()` at line 6432 — immediately after `fs.readFileSync(srcPath)`. Covers commands, workflows, references, templates.
-2. Agent install loop at line 8646 — immediately after `fs.readFileSync(agentsSrc/entry.name)`. Covers all 7 agent files with `@` references.
+quick.md renames affect: quick-branching.test.cjs, bug-2432-quick-plan-predispatch-commit.test.cjs, bug-2523-quick-deferred-items.test.cjs, quick-commit-boundary.test.cjs, bug-3805-fast-md-log-to-state-schema.test.cjs, bug-2334-quick-gsd-sdk-preflight.test.cjs, bug-3426-codex-windows-hooks.test.cjs, quick-research.test.cjs
 
-**`resolveIncludes()` design contract:**
-- Input: raw content string, absolute sourceRoot, optional `seen: Set<string>` for cycle detection
-- Path resolution: strip `~/.claude/` or `$HOME/.claude/` prefix, join with sourceRoot (repo layout mirrors install layout)
-- Only expand `@~` that appears as a standalone bare reference on its own line — never inside `${}`, backtick expressions, or fenced code blocks
-- Missing files: abort with a clear error naming the source file and unresolvable path
-- Cycles: abort with the full include chain in the error message
-- Max depth: 3 levels (current corpus max is 2 hops; depth 3 is belt-and-suspenders)
-- Verbatim insertion only — no substitution on `{{}}` or `{}` tokens in inserted content
-- Defined near top of `install.js` alongside existing pure transform functions (`processAttribution`, `replaceRelativePathReference`)
+execute-phase.md renames affect: execute-phase-step-5-5-deviation-doc.test.cjs
 
-**Skills path note:** `applyRuntimeContentRewritesInPlace` handles `SKILL.md` files (staged copies of commands). Whether this path needs a separate resolver call depends on staging timing — if commands are resolved before staging, skill files inherit the resolved content automatically. If not, a resolver call inside the `walkAndRewrite` loop is needed.
+gsd-phase-researcher.md renames affect: agent-frontmatter.test.cjs (line 344)
 
-### Critical Pitfalls
+## Architecture Recommendation
 
-1. **Conditional include corruption in `execute-phase.md`** — Line 619 embeds `@~` inside a JS template literal conditional. A naive line-matching regex inlines unconditionally or produces broken syntax. The bare-line detection rule must be implemented first, before any inlining code runs. Automated test required: assert `${CONTEXT_WINDOW < 200000 ?` survives verbatim in installed `execute-phase.md`.
+### Build Order
 
-2. **Transform ordering — inlined content bypasses runtime converters** — Inlining after Copilot's `convertClaudeToCopilotContent` leaves `Read`/`Bash` in inlined sections rather than `read`/`execute`. The inline-before-transform invariant must be enforced at both insertion points. Test: install `gsd-executor.md` for Copilot and assert tool names in the inlined `checkpoints.md` section are lowercased.
+**STEP-01: Scanner test** (tests/step-number-scan.test.cjs)
 
-3. **Circular include chain** — Current corpus has one two-hop chain (`model-profile-resolution.md` → `model-profiles.md`). Cycles can hang the installer. `Set<string>` visit stack with throw-on-cycle must be present in the initial implementation, not added as hardening later.
+Structure mirrors tests/negative-framing-scan.test.cjs exactly: module-scope file collection via inline collectMarkdownFiles, pure scanContent(content) function, unit tests before corpus tests, per-directory describe blocks.
 
-4. **Agent size budget violation** — `gsd-executor.md` at 771 lines plus `checkpoints.md` at 814 lines approaches the LARGE budget (1,000 lines). The `executor-examples.md` conditional guard (pitfall #1) prevents the worst case, but a post-install line count check is required. Existing `agent-size-budget.test.cjs` runs against source files — it must also run against installed output.
+Scan dirs: agents/, get-shit-done/workflows/, commands/gsd/
 
-5. **Single-brace placeholder corruption** — Reference files contain intentional literal `{N}`, `{resolved_model}`, `{EXPECTED_BASE}`, `{SOURCE}` patterns. The inliner must insert file content verbatim with zero substitution. Test: assert `{N}` survives in installed output of any file that includes `references/revision-loop.md`.
+Detection regexes:
+- Pattern A/B/C ("Step" keyword): /Step\s+\d+\.\d+/i
+- Pattern D (ordered-list items): /^\s*\d+\.\d+\./
 
-6. **Double-load in mixed-notation command files** — `extract-learnings.md`, `mvp-phase.md`, and `ship.md` each load the same workflow via both `@` and `` !`cat` ``, duplicating content in the context window. Fix mixed files before wiring the resolver — not after.
+Guards required: code-fence skip (inCodeBlock toggle), indentation check to exclude nested sub-steps (leading 3+ spaces = skip for sub-step classification), letter-suffix exclusion (require \.[0-9] not \.[a-z0-9]).
 
-## Implications for Roadmap
+The scanner starts RED (fails against current corpus). STEP-02 normalization is complete when all corpus tests go green.
 
-Based on research, suggested phase structure:
+**STEP-02: Manual normalization** (edit each in-scope file)
 
-### Phase 1: Resolver Core + Conditional Guard
-**Rationale:** The conditional include guard is the gate constraint — write and unit-test `resolveIncludes()` in isolation before wiring into the install pipeline. Validate the hardest constraint first in a controlled environment.
-**Delivers:** `resolveIncludes()` pure function with bare-line detection, cycle guard (`Set<string>` visit stack), max depth 3, missing-file abort, and verbatim insertion. Unit tests: happy path, conditional passthrough, cycle detection, missing file, depth limit.
-**Avoids:** Pitfall #1 (conditional corruption), Pitfall #3 (circular chain), Pitfall #5 (placeholder corruption)
+Fix files in order of increasing complexity and test impact:
+1. gsd-intel-updater.md (1 violation, no test impact)
+2. progress.md (3 violations, no test impact)
+3. gsd-phase-researcher.md (6 violations, 1 test file)
+4. execute-phase.md (14 violations including nested sub-steps, 1 test file, 3 cross-file refs)
+5. quick.md (12 violations, 8 test files -- highest risk, save for last)
 
-### Phase 2: Mixed-File Cleanup + Pipeline Integration
-**Rationale:** Fix mixed-notation files first so the resolver sees clean input. Then wire into both `install.js` insertion points and validate end-to-end for the Claude runtime.
-**Delivers:** `extract-learnings.md`, `mvp-phase.md`, `ship.md` duplicate references removed. `complete-milestone.md` migrated from `@` to inlining. `resolveIncludes()` called at lines 6432 and 8646. End-to-end Claude runtime install produces zero surviving `@~/.claude/get-shit-done/references/` patterns.
-**Avoids:** Pitfall #2 (transform ordering confirmed by integration), Pitfall #6 (double-load removed before wiring)
+For each file: rename heading -> whole-file substitution sweep replacing old label with new label -> update cross-file references -> update co-located tests -> run npm test before moving to next file.
 
-### Phase 3: Regression Test Suite
-**Rationale:** Tests must run against installed output, not source files, for size budget and tool-name transform checks. Build the safety net before expanding to the full runtime matrix.
-**Delivers:** Six regression tests — (1) no unresolved `@~` in installed output, (2) conditional include preserved in `execute-phase.md`, (3) tool names transformed inside inlined content for Copilot, (4) circular reference detection throws, (5) missing reference file throws, (6) installed agent line count within budget.
-**Uses:** Existing `tests/helpers.cjs` `createTempDir()` and install invocation patterns
-**Avoids:** Pitfall #4 (size budget tested on installed output)
+**STEP-03: Maintenance script** (scripts/normalize-step-numbers.cjs)
 
-### Phase 4: Full Runtime Matrix + Verification
-**Rationale:** Validate all supported runtimes produce self-contained files. `npm test` 0 new failures confirms no regressions.
-**Delivers:** Zero `@~` or `` !`cat ~/.claude/` `` patterns in installed output across Claude, Copilot, Codex, Gemini, OpenCode, Cursor, and Antigravity runtimes. Full `npm test` green.
+Build after STEP-02 completes. Structure: --dry-run flag, inline collectMdFiles, TARGET_DIRS array, two-pass per-file algorithm (Pass 1: build rename Map<oldLabel, newLabel>; Pass 2: apply substitutions). Idempotency guard: compare transformed content to original before writing. Print summary of files changed and lines changed.
 
-### Phase Ordering Rationale
+### Component Design
 
-- Phase 1 before Phase 2: the resolver must be correct in isolation before it processes real corpus data. Discovering the conditional guard bug during install testing costs far more than catching it in a targeted unit test.
-- Mixed-file cleanup in Phase 2, not Phase 3: cleanup changes the inputs to the resolver — doing it after integration would require re-running integration tests.
-- Phase 3 before Phase 4: the regression tests must exist before running the runtime matrix, so failures produce reproducible test cases rather than manual observation.
+Scanner function:
 
-### Research Flags
 
-Phases likely needing deeper research during planning:
-- **Phase 2 (Pipeline integration):** The `applyRuntimeContentRewritesInPlace` path for skills (`SKILL.md`) needs investigation — determine whether skills are staged before or after command-path resolution runs, and whether a third resolver call is needed.
-- **Phase 4 (Runtime matrix):** Copilot and Codex have the most bespoke tool-name transformation logic. Verify that `references/checkpoints.md` and `references/mandatory-initial-read.md` (both contain `Read`/`Bash` in prose) are correctly transformed when inlined for all non-Claude runtimes.
+Normalizer function:
 
-Phases with standard patterns (skip research-phase):
-- **Phase 1 (Resolver core):** Algorithm fully specified by ARCHITECTURE.md. Implement against the provided pseudocode.
-- **Phase 3 (Regression tests):** Testing patterns established in `tests/helpers.cjs`. Follow existing install-smoke-test patterns.
+
+Both inline the same collectMarkdownFiles ENOENT-tolerant recursive collector. Neither extracted to tests/helpers.cjs (would require updating the helpers test count assertion).
+
+## Critical Pitfalls
+
+**1. Silent test false-passes from indexOf returning -1 (highest risk)**
+content.indexOf("Step 2.5") returns -1 when Step 2.5 is renamed. -1 is truthy in JavaScript. assert.ok(content.indexOf("Step 2.5")) passes silently. Every test using indexOf as a positional delimiter will silently produce wrong assertions. Prevention: run npm test after every single file rename and examine which tests now pass that previously located step content by label. Update tests before moving to the next file.
+
+**2. Whole-integer steps shifting by large offsets in quick.md**
+quick.md expands from 8 top-level steps to 15. Old Step 3 becomes Step 4, old Step 6 becomes Step 11, old Step 8 becomes Step 15. At least 8 test files pin to the old numbers. These must be co-updated atomically in the same commit as the quick.md edits. Attempting GATE-01 without test updates produces a mixed state where some tests fail for wrong reasons and others silently pass for wrong reasons. Prevention: treat test co-updates as first-class deliverables listed explicitly in the STEP-02 task plan.
+
+**3. Cross-file reference breakage (execute-plan.md -> execute-phase.md step 5.5)**
+Three occurrences in execute-plan.md reference execute-phase.md step 5.5 by label. After renaming, these references become stale without any automatic test failure because execute-plan.md tests do not assert on this cross-reference text. Prevention: before normalizing any file, run grep -rn across all three scan dirs to build the cross-file reference index.
+
+**4. Ordered-list decimal items in execute-phase.md are structurally different from step headings**
+Items 2.5., 5.5., 5.6., 5.7., 5.8. are ordered-list decimals (Pattern D), not step-heading declarations. The scanner needs a second regex. The normalizer must renumber them as list items, not as **Step N** headings. Step 7.0-7.3 sub-steps are further special-cased: indented branch labels within list item 7 that should become lettered branches (7a, 7b, etc.).
+
+**5. plan-phase.md triple-decimal and sub-step nesting is a scope trap**
+plan-phase.md has ## 5.55. (triple-decimal) and ## 8.5.1/## 8.5.2 (sub-sub-steps). Any attempt to normalize it in v2.1.0-d risks breaking 6 test files and requires a sub-step policy decision the current milestone does not cover. Prevention: defer all Pattern C files to a follow-on milestone and exclude them from the STEP-01 scanner via explicit path exclusion.
+
+## Watch Out For
+
+- gsd-phase-researcher.md:776 contains a runtime-emitted literal string ("Step 2.6: SKIPPED ..."). It must be updated or the AI model emits a stale step label at runtime.
+- gsd-verifier.md uses Step Nb letter-suffix steps that look decimal to a naive regex. Ensure the scanner requires \.[0-9] not \.[a-z0-9].
+- quick.md lines 691 and 706 contain Step 1 and Step 2 inside a code block describing git invariants -- must not be renumbered.
+- fast.md lines 75 and 83 reference "quick.md Step 7" in comment text. After quick.md Step 7 becomes Step 14, these comments become stale but cause no test failures.
+- Step 0 is a valid label in gsd-verifier.md, gsd-planner.md, and commands/gsd/graphify.md. Do not normalize Step 0 to Step 1.
+- ARCHITECTURE.md research covered install.js template resolution (install-time content materialization), which is out of scope for v2.1.0-d. Disregard it for this milestone.
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | npm registry data confirmed; Eta v4.6.0 version, deps, date verified directly. Custom-function recommendation based on bounded scope analysis. |
-| Features | HIGH | Reference counts derived from direct grep of source corpus. Mixed-notation files and dynamic exceptions confirmed by line-level inspection. |
-| Architecture | HIGH | Pipeline structure derived from direct reading of `bin/install.js` lines 6399–8727. Two insertion points identified with exact line numbers. |
-| Pitfalls | HIGH | Each pitfall traced to a specific file and line. Test requirements mapped to existing test infrastructure. |
+| Violation inventory | HIGH | Researcher directly inspected all files; exact line numbers and counts provided |
+| Stack / tooling patterns | HIGH | Reusable patterns confirmed by reading negative-framing-scan.test.cjs and maintenance scripts directly |
+| Pitfalls / test impact | HIGH | Full test suite grep performed; 14+ affected tests enumerated by file and assertion |
+| Architecture (install.js) | NOT APPLICABLE | Covered wrong scope for this milestone |
+| Scope decisions | MEDIUM | Three open decisions require human judgment; research provides clear recommendation but not binding decision |
 
-**Overall confidence:** HIGH
+**Overall confidence:** HIGH for in-scope files. The risk is known and enumerated, not unknown.
 
 ### Gaps to Address
 
-- **Skills path (`applyRuntimeContentRewritesInPlace`):** Right answer depends on whether skills are staged before or after command-path resolution. Resolve at Phase 2 planning time.
-- **`discuss-phase/modes/advisor.md` agent reference:** The `@` reference targets an agent definition file inside a spawn string. Bare-line detection should exclude it, but verify during Phase 2 that it is not expanded.
-- **8 unreferenced reference files:** Determine during or after Phase 2 whether each needs `@` wiring added or can be deleted as dead code.
+- **Pattern C decision:** Must be made before STEP-01 scanner is written (affects regex and scan directory inclusions). Recommendation: exclude.
+- **execute-phase.md Step 7.0-7.3 decision:** Must be made before STEP-02 normalization for execute-phase.md. Recommendation: rename to lettered branches.
+- **Architecture research mis-scope:** ARCHITECTURE.md covered install.js pipeline (relevant to v2.1.0-c, not v2.1.0-d). This does not block execution.
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- Direct inspection of `bin/install.js` (11,522 lines) — pipeline structure, insertion points at lines 6432 and 8646
-- Direct grep of `agents/*.md`, `get-shit-done/workflows/*.md`, `commands/gsd/*.md`, `get-shit-done/references/*.md` — reference counts, dynamic exceptions identified by line
-- `tests/agent-size-budget.test.cjs` — budget thresholds (XL=1600, LARGE=1000, DEFAULT=500)
-- npm registry `npm info eta --json` — v4.6.0, 0 deps, published 2026-04-25, 204 KB unpacked
-- Context7 `/eta-dev/eta` — Eta configuration, CJS/ESM build, `useWith`, `autoEscape`, delimiter customization
-- npm registry for LiquidJS v10.27.0, Nunjucks v3.2.4, Mustache v4.2.0 — eliminated alternatives
+
+- Direct file inspection: agents/gsd-phase-researcher.md, agents/gsd-intel-updater.md, get-shit-done/workflows/quick.md, get-shit-done/workflows/execute-phase.md, get-shit-done/workflows/plan-phase.md, get-shit-done/workflows/progress.md, get-shit-done/workflows/new-project.md, get-shit-done/workflows/new-milestone.md
+- Test suite grep: tests/quick-branching.test.cjs, tests/bug-2432-quick-plan-predispatch-commit.test.cjs, tests/execute-phase-step-5-5-deviation-doc.test.cjs, tests/agent-frontmatter.test.cjs, tests/quick-research.test.cjs, tests/plan-bounce.test.cjs, tests/enh-2310-chunked-plan-phase.test.cjs, tests/milestone.test.cjs, and 6 more
+- Canonical scanner pattern: tests/negative-framing-scan.test.cjs
+- Canonical maintenance script pattern: scripts/convert-refs.cjs, scripts/strip-prose-atrefs.cjs
 
 ### Secondary (MEDIUM confidence)
-- esbuild bundling strategy for devDep installers — standard ecosystem practice, no single canonical source
-- Community consensus on regex-based parsers being fragile for structured text (Markdown `{`, `}`, `%` in code fences)
+
+- Cross-reference index: grep -rn across full corpus -- confirmed one cross-file reference chain (execute-plan.md -> execute-phase.md step 5.5)
+- Format inventory: all 90+ workflow/agent/command files scanned for step heading patterns -- confirmed 4 distinct formats
 
 ---
-*Research completed: 2026-05-28*
+*Research completed: 2026-05-30*
 *Ready for roadmap: yes*

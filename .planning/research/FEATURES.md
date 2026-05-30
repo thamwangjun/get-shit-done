@@ -1,283 +1,345 @@
-# Features Research: Current Reference Map
+# Step-Label Pattern Inventory
 
-**Audit date:** 2026-05-28
-**Scope:** `commands/gsd/`, `get-shit-done/workflows/`, `agents/`, `get-shit-done/references/`
-
----
-
-## Summary
-
-- `@` references: **107 total** across **4 layers** (5 in commands, 57 in workflows, 42 in agents, 3 in references)
-- `` !`<cmd>` `` references: **117 total**, **entirely in commands/gsd/** (0 in workflows, agents, or references)
-- Unique `@` target files: **62** (49 references/, 5 templates/, 7 workflows/, 1 agent)
-- Unique `` !`cat` `` static target files: **90** (66 workflows, 19 references, 4 templates)
-- Dynamic `.planning/` references via shell injection: **2** (both in `add-tests.md`)
-
-The split is clean by layer: `commands/gsd/` was converted wholesale to `` !`cat $HOME/.claude/...` `` notation (task 260525-o1n, 117 occurrences, 55 files), while `workflows/`, `agents/`, and `references/` use `@` notation exclusively. Four command files were **not** converted and remain on `@` notation. Three command files have **mixed notation** (both `@` and `` !`cat` `` in the same file).
+**Project:** GSD — v2.1.0-d Whole-Integer Step Numbering
+**Researched:** 2026-05-30
+**Scope:** `agents/*.md`, `commands/gsd/*.md`, `get-shit-done/workflows/**/*.md`
 
 ---
 
-## Reference Inventory
+## Pattern Taxonomy
 
-### commands/gsd/ — `` !`cat` `` notation (post-conversion)
+Four distinct step-label styles exist across the corpus. The normalization goal applies to patterns that use the literal word "Step":
 
-55 of 67 command files use `` !`cat` ``. All references point to `$HOME/.claude/...` paths.
+| Pattern Style | Format | Examples | In Scope? |
+|---------------|--------|---------|-----------|
+| **A — Bold label** | `**Step N: Title**` | `**Step 2.5: Handle branching**` | YES |
+| **B — H2/H3 heading with "Step"** | `## Step N: Title` / `### Step N: Title` | `## Step 1.3: Load Graph Context` | YES |
+| **C — Numbered section heading** (no "Step" keyword) | `## N.N. Title` | `## 5.5. Resolve Model Profile` | Borderline — see note |
+| **D — Ordered-list item** | `N.N. **bold**` | `2.5. **Per-plan worktree decision**` | YES |
 
-| File | `` !`cat` `` targets |
-|------|---------------------|
-| add-tests.md | workflows/add-tests.md, .planning/STATE.md, .planning/ROADMAP.md |
-| ai-integration-phase.md | workflows/ai-integration-phase.md, references/ai-frameworks.md, references/ai-evals.md |
-| audit-fix.md | workflows/audit-fix.md |
-| audit-milestone.md | workflows/audit-milestone.md |
-| audit-uat.md | workflows/audit-uat.md |
-| autonomous.md | workflows/autonomous.md, references/ui-brand.md |
-| capture.md | workflows/add-todo.md, workflows/note.md, workflows/add-backlog.md, workflows/plant-seed.md, workflows/check-todos.md, references/ui-brand.md |
-| cleanup.md | workflows/cleanup.md |
-| code-review.md | workflows/code-review.md |
-| config.md | workflows/settings.md, workflows/settings-advanced.md, workflows/settings-integrations.md |
-| debug.md | workflows/debug.md |
-| docs-update.md | workflows/docs-update.md |
-| eval-review.md | workflows/eval-review.md, references/ai-evals.md |
-| execute-phase.md | workflows/execute-phase.md, references/ui-brand.md |
-| explore.md | workflows/explore.md |
-| extract-learnings.md | workflows/extract-learnings.md **(MIXED — also has `@`)** |
-| fast.md | workflows/fast.md |
-| forensics.md | workflows/forensics.md |
-| health.md | workflows/health.md |
-| help.md | workflows/help.md |
-| import.md | workflows/import.md, references/ui-brand.md, references/gate-prompts.md, references/doc-conflict-engine.md |
-| inbox.md | workflows/inbox.md |
-| ingest-docs.md | workflows/ingest-docs.md, references/ui-brand.md, references/gate-prompts.md, references/doc-conflict-engine.md |
-| manager.md | workflows/manager.md, references/ui-brand.md |
-| map-codebase.md | workflows/map-codebase.md |
-| milestone-summary.md | workflows/milestone-summary.md |
-| mvp-phase.md | workflows/mvp-phase.md, references/spidr-splitting.md, references/user-story-template.md **(MIXED — also has `@`)** |
-| new-milestone.md | workflows/new-milestone.md, references/questioning.md, references/ui-brand.md, templates/project.md, templates/requirements.md |
-| new-project.md | workflows/new-project.md, references/questioning.md, references/ui-brand.md, templates/project.md, templates/requirements.md |
-| pause-work.md | workflows/pause-work.md |
-| phase.md | workflows/add-phase.md, workflows/insert-phase.md, workflows/remove-phase.md, workflows/edit-phase.md |
-| plan-phase.md | workflows/plan-phase.md, references/ui-brand.md |
-| plan-review-convergence.md | workflows/plan-review-convergence.md, references/revision-loop.md, references/gates.md, references/agent-contracts.md |
-| pr-branch.md | workflows/pr-branch.md |
-| profile-user.md | workflows/profile-user.md, references/ui-brand.md |
-| progress.md | workflows/progress.md, workflows/next.md, workflows/do.md, references/ui-brand.md |
-| quick.md | workflows/quick.md |
-| resume-work.md | workflows/resume-project.md |
-| review.md | workflows/review.md |
-| secure-phase.md | workflows/secure-phase.md |
-| settings.md | workflows/settings.md |
-| ship.md | workflows/ship.md **(MIXED — also has `@`)** |
-| sketch.md | workflows/sketch.md, workflows/sketch-wrap-up.md, references/ui-brand.md, references/sketch-theme-system.md, references/sketch-interactivity.md, references/sketch-tooling.md, references/sketch-variant-patterns.md |
-| spec-phase.md | workflows/spec-phase.md, templates/spec.md |
-| spike.md | workflows/spike.md, workflows/spike-wrap-up.md, references/ui-brand.md |
-| stats.md | workflows/stats.md |
-| thread.md | workflows/thread.md |
-| ui-phase.md | workflows/ui-phase.md, references/ui-brand.md |
-| ui-review.md | workflows/ui-review.md, references/ui-brand.md |
-| ultraplan-phase.md | workflows/ultraplan-phase.md, references/ui-brand.md |
-| undo.md | workflows/undo.md, references/ui-brand.md, references/gate-prompts.md |
-| update.md | workflows/update.md, workflows/sync-skills.md, workflows/reapply-patches.md |
-| validate-phase.md | workflows/validate-phase.md |
-| verify-work.md | workflows/verify-work.md, templates/UAT.md |
-| workspace.md | workflows/new-workspace.md, workflows/list-workspaces.md, workflows/remove-workspace.md, references/ui-brand.md |
-
-**Commands NOT converted — still use `@` notation (4 files):**
-
-| File | Notation | `@` targets |
-|------|----------|-------------|
-| complete-milestone.md | `@` only | workflows/complete-milestone.md, templates/milestone-archive.md |
-| extract-learnings.md | MIXED | workflows/extract-learnings.md (both `@` line 23 and `` !`cat` `` line 20) |
-| mvp-phase.md | MIXED | workflows/mvp-phase.md (both `@` line 43 and `` !`cat` `` line 27) |
-| ship.md | MIXED | workflows/ship.md (both `@` line 24 and `` !`cat` `` line 21) |
-
-The three mixed files each reference the **same workflow** via both notations simultaneously — the `@` reference is a narrative sentence ("Execute X from @~/.claude/...") while the `` !`cat` `` line injects the workflow content. This means the workflow file is mentioned twice, which is redundant and likely unintentional.
+**Note on Pattern C:** Files `new-project.md`, `new-milestone.md`, and `plan-phase.md` use `## N.N.` section headers with no "Step" keyword. Prose within those files refers to these sections as "step N.N" (lowercase, no label). These sections are numbered chapters, not step-label declarations. They contain decimal fractions. Whether Pattern C is in scope depends on the scanner regex. If the scanner matches `[Ss]tep [0-9]+\.[0-9]`, body-text references (e.g., "proceed to Step 5.5") will fire but the section header itself will not. This document catalogs both.
 
 ---
 
-### get-shit-done/workflows/ — `@` notation only (57 occurrences, 20 files)
+## Decimal Step Inventory — Files Requiring Changes
 
-| File | `@` targets |
-|------|-------------|
-| ai-integration-phase.md | references/ai-frameworks.md, references/ai-evals.md |
-| discuss-phase.md | references/domain-probes.md, references/gate-prompts.md, references/universal-anti-patterns.md; inline body prose: references/scout-codebase.md |
-| discuss-phase/modes/advisor.md | agents/gsd-advisor-researcher.md (unusual — agent file, not a reference fragment) |
-| discuss-phase/modes/power.md | workflows/discuss-phase-power.md |
-| eval-review.md | references/ai-evals.md |
-| execute-phase.md | references/agent-contracts.md, references/context-budget.md, references/gates.md, workflows/execute-plan.md, templates/summary.md, references/checkpoints.md, references/tdd.md, references/worktree-path-safety.md, references/executor-examples.md (conditional) |
-| execute-plan.md | references/git-integration.md |
-| explore.md | references/questioning.md, references/domain-probes.md |
-| mvp-phase.md | references/user-story-template.md, references/spidr-splitting.md, references/planner-mvp-mode.md, references/phase-argument-parsing.md (inline) |
-| plan-phase.md | references/ui-brand.md, references/revision-loop.md, references/gate-prompts.md, references/agent-contracts.md, references/gates.md, references/tdd.md (x2), references/skeleton-template.md, references/planner-mvp-mode.md (x2) |
-| resume-project.md | references/continuation-format.md |
-| secure-phase.md | references/ui-brand.md |
-| sketch.md | references/sketch-theme-system.md, references/sketch-variant-patterns.md, references/sketch-interactivity.md, references/sketch-tooling.md |
-| transition.md | workflows/graduation.md |
-| ui-phase.md | references/ui-brand.md |
-| ui-review.md | references/ui-brand.md |
-| undo.md | references/ui-brand.md, references/gate-prompts.md |
-| validate-phase.md | references/ui-brand.md |
-| verify-phase.md | references/verification-patterns.md, templates/verification-report.md |
-| verify-work.md | templates/UAT.md, references/verify-mvp-mode.md (inline), workflows/diagnose-issues.md |
+### 1. `agents/gsd-intel-updater.md`
 
----
+**Pattern:** `### Step N:` heading style (Pattern B)
+**Decimal violations:** 1
 
-### agents/ — `@` notation only (42 occurrences, 7 files)
-
-| File | `@` targets |
-|------|-------------|
-| gsd-debugger.md | references/mandatory-initial-read.md, references/common-bug-patterns.md (x2), references/project-skills-discovery.md, references/debugger-philosophy.md, references/thinking-models-debug.md |
-| gsd-executor.md | references/mandatory-initial-read.md, references/project-skills-discovery.md, references/thinking-models-execution.md, references/ios-scaffold.md, references/executor-examples.md, references/checkpoints.md, references/execute-mvp-tdd.md, templates/summary.md |
-| gsd-phase-researcher.md | references/mandatory-initial-read.md, references/project-skills-discovery.md, references/thinking-models-research.md |
-| gsd-plan-checker.md | references/gates.md, references/thinking-models-planning.md, references/few-shot-examples/plan-checker.md |
-| gsd-planner.md | references/mandatory-initial-read.md, references/project-skills-discovery.md, references/planner-source-audit.md (x2), references/planner-antipatterns.md (x2), references/tdd.md, references/planner-mvp-mode.md (x2), references/user-story-template.md, references/skeleton-template.md, workflows/execute-plan.md, templates/summary.md, references/thinking-models-planning.md, references/planner-chunked.md |
-| gsd-user-profiler.md | references/user-profiling.md |
-| gsd-verifier.md | references/mandatory-initial-read.md, references/verification-overrides.md, references/gates.md, references/project-skills-discovery.md, references/thinking-models-verification.md, references/few-shot-examples/verifier.md, references/verify-mvp-mode.md |
-
----
-
-### get-shit-done/references/ — `@` notation, cross-references only (3 occurrences, 3 files)
-
-| File | `@` target | Nature |
-|------|------------|--------|
-| model-profile-resolution.md | references/model-profiles.md | Load directive to sibling file |
-| planner-mvp-mode.md | references/skeleton-template.md | Inline prose reference to sibling file |
-| verification-patterns.md | references/checkpoints.md | Bold-text inline mention (not a load directive) |
-
----
-
-## Shared Fragments Inventory
-
-63 total files in `get-shit-done/references/` (including `few-shot-examples/` subdir with 2 files).
-
-| Fragment | Referenced By | Status |
-|----------|--------------|--------|
-| agent-contracts.md | workflows/plan-phase, commands/plan-review-convergence | Active |
-| ai-evals.md | workflows/ai-integration-phase + eval-review, commands/ai-integration-phase + eval-review | Active |
-| ai-frameworks.md | workflows/ai-integration-phase, commands/ai-integration-phase | Active |
-| artifact-types.md | — | **UNREFERENCED** |
-| autonomous-smart-discuss.md | — | Unreferenced via path (may be loaded by prose) |
-| checkpoints.md | workflows/execute-phase, agents/gsd-executor, references/verification-patterns (inline mention) | Active |
-| common-bug-patterns.md | agents/gsd-debugger (x2) | Active |
-| context-budget.md | workflows/execute-phase | Active |
-| continuation-format.md | workflows/resume-project | Active |
-| debugger-philosophy.md | agents/gsd-debugger | Active |
-| decimal-phase-calculation.md | — | **UNREFERENCED** |
-| doc-conflict-engine.md | commands/import + ingest-docs | Active |
-| domain-probes.md | workflows/discuss-phase + explore | Active |
-| execute-mvp-tdd.md | agents/gsd-executor | Active |
-| executor-examples.md | workflows/execute-phase (conditional), agents/gsd-executor | Active |
-| few-shot-examples/plan-checker.md | agents/gsd-plan-checker | Active |
-| few-shot-examples/verifier.md | agents/gsd-verifier | Active |
-| gate-prompts.md | workflows/discuss-phase + plan-phase + undo, commands/import + ingest-docs + undo | Active |
-| gates.md | workflows/execute-phase + plan-phase, agents/gsd-plan-checker + gsd-verifier, commands/plan-review-convergence | Active |
-| git-integration.md | workflows/execute-plan | Active |
-| git-planning-commit.md | — | **UNREFERENCED** |
-| ios-scaffold.md | agents/gsd-executor | Active |
-| mandatory-initial-read.md | agents/gsd-debugger + gsd-executor + gsd-phase-researcher + gsd-planner + gsd-verifier (5 agents) | Active |
-| model-profile-resolution.md | Only from within references/ itself | Effectively unreferenced from outside |
-| model-profiles.md | references/model-profile-resolution.md | Active (indirect only) |
-| mvp-concepts.md | — | Unreferenced via path (may be loaded by prose) |
-| phase-argument-parsing.md | workflows/mvp-phase (inline prose) | Active |
-| planner-antipatterns.md | workflows/execute-phase (inline), agents/gsd-planner (x2) | Active |
-| planner-chunked.md | agents/gsd-planner | Active |
-| planner-gap-closure.md | — | Unreferenced via path (may be loaded by prose) |
-| planner-graphify-auto-update.md | — | **UNREFERENCED** |
-| planner-human-verify-mode.md | — | **UNREFERENCED** |
-| planner-interface-context.md | — | Unreferenced via path (may be loaded by prose) |
-| planner-mvp-mode.md | workflows/plan-phase (x2) + mvp-phase, agents/gsd-planner (x2), references/planner-mvp-mode (self-ref) | Active |
-| planner-reviews.md | — | Unreferenced via path (may be loaded by prose) |
-| planner-revision.md | — | Unreferenced via path (may be loaded by prose) |
-| planner-source-audit.md | agents/gsd-planner (x2) | Active |
-| planning-config.md | — | **UNREFERENCED** |
-| project-skills-discovery.md | agents/gsd-debugger + gsd-executor + gsd-phase-researcher + gsd-planner + gsd-verifier (5 agents) | Active |
-| questioning.md | workflows/explore, commands/new-milestone + new-project | Active |
-| revision-loop.md | workflows/plan-phase, commands/plan-review-convergence | Active |
-| scout-codebase.md | workflows/discuss-phase (inline prose) | Active |
-| skeleton-template.md | workflows/plan-phase (inline), agents/gsd-planner, references/planner-mvp-mode | Active |
-| sketch-interactivity.md | workflows/sketch, commands/sketch | Active |
-| sketch-theme-system.md | workflows/sketch, commands/sketch | Active |
-| sketch-tooling.md | workflows/sketch, commands/sketch | Active |
-| sketch-variant-patterns.md | workflows/sketch, commands/sketch | Active |
-| spidr-splitting.md | workflows/mvp-phase, commands/mvp-phase | Active |
-| tdd.md | workflows/execute-phase + plan-phase (x2), agents/gsd-planner | Active |
-| thinking-models-debug.md | agents/gsd-debugger | Active |
-| thinking-models-execution.md | agents/gsd-executor | Active |
-| thinking-models-planning.md | agents/gsd-plan-checker + gsd-planner | Active |
-| thinking-models-research.md | agents/gsd-phase-researcher | Active |
-| thinking-models-verification.md | agents/gsd-verifier | Active |
-| thinking-partner.md | — | Unreferenced via path (may be loaded by prose) |
-| ui-brand.md | 18 `` !`cat` `` in commands + 7 `@` in workflows = **most-referenced fragment** | Active |
-| universal-anti-patterns.md | workflows/discuss-phase | Active |
-| user-profiling.md | agents/gsd-user-profiler | Active |
-| user-story-template.md | workflows/mvp-phase (x2), agents/gsd-planner, commands/mvp-phase | Active |
-| verification-overrides.md | agents/gsd-verifier | Active |
-| verification-patterns.md | workflows/verify-phase | Active |
-| verify-mvp-mode.md | workflows/verify-work (inline), agents/gsd-verifier | Active |
-| workstream-flag.md | — | **UNREFERENCED** |
-| worktree-path-safety.md | workflows/execute-phase | Active |
-
-**Confirmed unreferenced via path-based grep (6 files):**
-`artifact-types.md`, `decimal-phase-calculation.md`, `git-planning-commit.md`, `planner-graphify-auto-update.md`, `planner-human-verify-mode.md`, `planning-config.md`, `workstream-flag.md`
-
-`model-profile-resolution.md` is only referenced from within `references/` itself (by `model-profiles.md` as its cross-reference), making it unreachable from any workflow, agent, or command.
-
----
-
-## Static vs Dynamic Analysis
-
-### Truly Static — safe to inline at install time
-
-All 55 active `references/` fragment files contain fixed instructional prose with no runtime interpolation. A template engine can inline these at install time without loss of correctness. Both `@` and `` !`cat` `` produce identical results for this category.
-
-All `templates/` files (project.md, requirements.md, spec.md, UAT.md, summary.md, verification-report.md, milestone-archive.md) are static boilerplate. Content is agent-filled after loading, not by the reference mechanism itself.
-
-Workflow files referenced via `` !`cat` `` from commands (66 unique workflow targets) are static install-time files. They contain no runtime variable substitution at the point of injection by the command.
-
-### Dynamic — must NOT be inlined at install time
-
-**`.planning/STATE.md` and `.planning/ROADMAP.md`** (`commands/gsd/add-tests.md` lines 35-36):
-
+Complete ordered step sequence:
 ```
-!`cat .planning/STATE.md`
-!`cat .planning/ROADMAP.md`
+### Step 1: Orientation        (line 211)
+### Step 2: Stack Detection    (line 218)
+### Step 3: File Graph         (line 225)
+### Step 4: API Surface        (line 236)
+### Step 5: Dependencies       (line 245)
+### Step 6: Architecture       (line 254)
+### Step 6.5: Self-Check       (line 259)  <- DECIMAL
+### Step 7: Snapshot           (line 271)
 ```
 
-These are project-specific files that change per-project and per-session. They must remain as runtime shell executions. A template engine must exclude these from any install-time inlining pass and preserve the shell injection form.
+**Renumbering plan:** Step 6.5 becomes Step 7; current Step 7 becomes Step 8.
 
-**Conditional `@` reference** (`get-shit-done/workflows/execute-phase.md` line 619):
+**Inline body-text cross-references to decimal steps:** None found.
 
-```
-${CONTEXT_WINDOW < 200000 ? '' : '@~/.claude/get-shit-done/references/executor-examples.md'}
-```
-
-This is a JavaScript template-literal expression inside a workflow prompt string. The `@` reference is conditionally included based on `CONTEXT_WINDOW` resolved at workflow execution time. This is the only conditional `@` reference in the entire codebase. A template engine cannot inline this at install time; the JavaScript conditional expression must be preserved as-is, or the template engine must implement conditional include syntax.
-
-**Agent file reference in a spawn prompt** (`get-shit-done/workflows/discuss-phase/modes/advisor.md`):
-
-```
-prompt="First, read @~/.claude/agents/gsd-advisor-researcher.md for your role and instructions.
-```
-
-This `@` reference is injected into a dynamically-constructed agent spawn string. It targets an agent definition file in `agents/`, not a reference fragment. Inlining the full agent definition into the workflow prompt would be semantically wrong — the intent is for the spawned subagent to read its own role file, not for the orchestrator to load it.
+**Cross-file references to these steps:** None found.
 
 ---
 
-## Coverage Gaps
+### 2. `agents/gsd-phase-researcher.md`
 
-### Four command files not converted from `@` notation
+**Pattern:** `## Step N:` heading style (Pattern B). Note: lines 272-313 use a separate `### Step N` sequence for a sub-section (supply-chain check); these are whole integers and not affected.
 
-`complete-milestone.md` was skipped entirely by the conversion task. `extract-learnings.md`, `mvp-phase.md`, and `ship.md` were partially converted — each now has both notations for the same target workflow file. These are the files that need to be fixed in the revert-and-unify milestone.
+**Decimal violations:** 4 label definitions + 2 inline body-text references
 
-### Mixed-notation files introduce double-load risk
+Complete ordered step sequence (main section, lines 591+):
+```
+## Step 1: Receive Scope and Load Context         (line 591)
+## Step 1.3: Load Graph Context                   (line 624)  <- DECIMAL
+## Step 1.5: Architectural Responsibility Mapping (line 659)  <- DECIMAL
+## Step 2: Identify Research Domains              (line 686)
+## Step 2.5: Runtime State Inventory              (line 696)  <- DECIMAL
+## Step 2.6: Environment Availability Audit       (line 716)  <- DECIMAL
+## Step 3: Execute Research Protocol              (line 778)
+## Step 4: Validation Architecture Research       (line 782)
+## Step 5: Quality Check                          (line 795)
+## Step 6: Write RESEARCH.md                      (line 803)
+## Step 7: Commit Research (optional)             (line 842)
+## Step 8: Return Structured Result               (line 848)
+```
 
-In `extract-learnings.md`, `mvp-phase.md`, and `ship.md`, the workflow content file is referenced by both an `@` inline-read line and a `` !`cat` `` injection line. At runtime this causes the workflow content to appear twice in the context window, wasting tokens. These three files must have one notation removed.
+**Inline body-text cross-references to decimal steps (within this file):**
+- Line 657: `continue to Step 1.5 without graph context.` — references `## Step 1.5`
+- Line 776: `output: "Step 2.6: SKIPPED (no external dependencies identified)"` — literal output string the agent writes; must be updated when Step 2.6 is renumbered
 
-### 8 unreferenced files in references/
+**Renumbering plan:**
+- Step 1 stays Step 1
+- Step 1.3 becomes Step 2
+- Step 1.5 becomes Step 3
+- Step 2 becomes Step 4
+- Step 2.5 becomes Step 5
+- Step 2.6 becomes Step 6
+- Step 3 becomes Step 7
+- Step 4 becomes Step 8
+- Step 5 becomes Step 9
+- Step 6 becomes Step 10
+- Step 7 becomes Step 11
+- Step 8 becomes Step 12
 
-These exist but are not reachable via any formal path reference. They are either: (a) orphaned and can be removed, or (b) loaded via prose instruction without a path (e.g., "read planner-reviews.md"). The template unification work should audit these to determine whether they need `@` or `` !`cat` `` wiring added, or whether they are dead code.
+Update line 657: `continue to Step 3 without graph context.`
+Update line 776: change `"Step 2.6: SKIPPED ..."` to `"Step 6: SKIPPED ..."`
 
-The 8 files: `artifact-types.md`, `decimal-phase-calculation.md`, `git-planning-commit.md`, `model-profile-resolution.md` (external), `planner-graphify-auto-update.md`, `planner-human-verify-mode.md`, `planning-config.md`, `workstream-flag.md`.
+**Cross-file references to these steps:** None found (agents are self-contained).
 
-### No circular references detected
+---
 
-No file in `references/` chains through more than one level of `@` references. The three intra-references/ cross-references are all leaf references. The `model-profile-resolution.md` → `model-profiles.md` chain is two hops but the second file has no further references.
+### 3. `get-shit-done/workflows/progress.md`
+
+**Pattern:** `**Step N: Title**` bold label style (Pattern A)
+**Decimal violations:** 2
+
+Complete ordered step sequence:
+```
+**Step 1: Count plans, summaries, and issues in current phase**  (line 182)
+**Step 1.5: Check for unaddressed UAT gaps**                     (line 194)  <- DECIMAL
+**Step 1.6: Cross-phase health check**                           (line 207)  <- DECIMAL
+**Step 2: Route based on counts**                                (line 235)
+**Step 3: Check milestone status (only when phase complete)**    (line 395)
+```
+
+**Renumbering plan:**
+- Step 1 stays Step 1
+- Step 1.5 becomes Step 2
+- Step 1.6 becomes Step 3
+- Step 2 becomes Step 4
+- Step 3 becomes Step 5
+
+**Inline body-text cross-references to decimal steps (within this file):**
+- Line 242: `Go to Step 3` — references current Step 2 "Route based on counts". After renumbering Step 2 becomes Step 4, so this must become `Go to Step 4`.
+
+**Cross-file references to these steps:** None found.
+
+---
+
+### 4. `get-shit-done/workflows/quick.md`
+
+**Pattern:** `**Step N: Title**` bold label style (Pattern A)
+**Decimal violations:** 6
+
+Complete ordered step sequence:
+```
+**Step 1: Parse arguments and get task description**           (line 30)
+**Step 2: Initialize**                                         (line 125)
+**Step 2.5: Handle quick-task branching**                      (line 185)  <- DECIMAL
+**Step 3: Create task directory**                              (line 241)
+**Step 4: Create quick task directory**                        (line 249)
+**Step 4.5: Discussion phase (only when $DISCUSS_MODE)**       (line 268)  <- DECIMAL
+**Step 4.75: Research phase (only when $RESEARCH_MODE)**       (line 395)  <- DECIMAL
+**Step 5: Spawn planner (quick mode)**                         (line 462)
+**Step 5.5: Plan-checker loop (only when $VALIDATE_MODE)**     (line 521)  <- DECIMAL
+**Step 5.6: Pre-dispatch plan commit (worktree mode only)**    (line 635)  <- DECIMAL
+**Step 6: Spawn executor**                                     (line 667)
+**Step 6.25: Code review (auto)**                              (line 807)  <- DECIMAL
+**Step 6.5: Verification (only when $VALIDATE_MODE)**          (line 858)  <- DECIMAL
+**Step 7: Update STATE.md**                                    (line 907)
+**Step 8: Final commit and completion**                        (line 962)
+```
+
+**Renumbering plan:**
+- Step 1 stays Step 1
+- Step 2 stays Step 2
+- Step 2.5 becomes Step 3
+- Step 3 becomes Step 4
+- Step 4 becomes Step 5
+- Step 4.5 becomes Step 6
+- Step 4.75 becomes Step 7
+- Step 5 becomes Step 8
+- Step 5.5 becomes Step 9
+- Step 5.6 becomes Step 10
+- Step 6 becomes Step 11
+- Step 6.25 becomes Step 12
+- Step 6.5 becomes Step 13
+- Step 7 becomes Step 14
+- Step 8 becomes Step 15
+
+**Inline body-text cross-references to decimal steps (within this file):**
+- Line 310: `skip to Step 5 (no CONTEXT.md written)` — references current Step 5 "Spawn planner"; after renumbering becomes Step 8.
+- Line 580: `proceed to step 6` — references current Step 6 "Spawn executor"; after renumbering becomes Step 11.
+- Line 639: `PLAN.md is committed in Step 8 as usual` — references current Step 8 "Final commit"; after renumbering becomes Step 15.
+- Line 764: `the orchestrator handles the docs commit in Step 8` — same as above, becomes Step 15.
+- Line 901: `continue to step 7` — references current Step 7 "Update STATE.md"; after renumbering becomes Step 14.
+
+Note: Lines 691 and 706 contain `Step 1` and `Step 2` inside a code-block snippet describing executor git invariants — these are internal sub-step labels within a code block, not top-level step labels. They should not be renumbered.
+
+**Cross-file references to these steps:** See Cross-File References section below. `fast.md` lines 75 and 83 reference "quick.md Step 7" in comments.
+
+---
+
+### 5. `get-shit-done/workflows/execute-phase.md`
+
+**Pattern:** Main content uses `<step name="...">` XML tags (no numeric step labels). Decimal instances are of two kinds.
+
+**Kind A — Ordered-list sub-items (Pattern D) within `<step name="execute_waves">`:**
+```
+1.   Intra-wave files_modified overlap check    (line 451)
+2.   Describe what's being built               (line 484)
+2.5. Per-plan worktree decision                (line 510)  <- DECIMAL list item
+3.   Spawn executor agents                     (line 516)
+4.   Wait for all agents                       (line 686)
+5.   Post-wave hook validation                 (line 728)
+5.5. Worktree cleanup                          (line 741)  <- DECIMAL list item
+5.6. Post-merge build & test gate              (line 819)  <- DECIMAL list item
+5.7. Post-wave shared artifact update          (line 832)  <- DECIMAL list item
+5.8. Handle test gate failures                 (line 864)  <- DECIMAL list item
+6.   Report completion                         (line 893)
+7.   Handle failures                           (line 924)
+8.   Execute checkpoint plans                  (line 958)
+9.   Proceed to next wave                      (line 959)
+```
+
+Within list item 7, failure-handling branches are labeled with the "Step" keyword:
+```
+**Step 7.0 — classify before branching**  (line 925)  <- DECIMAL inline label
+**Step 7.1 — quota-exceeded**             (line 934)  <- DECIMAL inline label
+**Step 7.2 — classify-handoff-bug**       (line 947)  <- DECIMAL inline label
+**Step 7.3 — unknown-failure**            (line 949)  <- DECIMAL inline label
+```
+
+**Kind B — Prose body-text references within this file:**
+- Line 356: `**Optional step 2.5 —` (section label for the `cross_ai_delegation` step, not a list item)
+- Line 527: `evaluated per-plan in step 2.5`
+- Line 660: `forced it false in step 2.5`
+- Line 809: `**When to skip step 5.5:**`
+- Line 811: `WAVE_WORKTREE_PLANS from step 2.5 is empty`
+- Line 813: `proceed to step 5.6`
+
+**Complexity note:** The Step 7.0-7.3 sub-labels are branch labels within list item 7, not independent top-level steps. The question of whether to renumber these depends on whether the scanner targets `**Step N.N**` inside list items. These can be renamed to labeled branches (e.g., `**7a —`, `**7b —`) without using decimal step numbers.
+
+**Cross-file references to this file's decimal steps:** See Cross-File References section below.
+
+---
+
+### 6. `get-shit-done/workflows/execute-phase/steps/post-merge-gate.md`
+
+**Pattern:** Prose body-text cross-reference only; no decimal step label definitions in this file.
+
+- Line 60: `same as step 5.8` — references list item 5.8 in `execute-phase.md`
+
+**No decimal step label definitions in this file.** When `execute-phase.md` list item 5.8 is renumbered, this reference must be updated.
+
+---
+
+## Numbered-Section Files (Pattern C — "Step" keyword not in heading)
+
+These files use `## N.N. Title` section headings. The word "Step" does not appear in the heading itself. Body text within these files uses "step N.N" prose references pointing at those sections.
+
+### `get-shit-done/workflows/new-project.md`
+
+Decimal section headings:
+```
+## 5.1. Sub-Repo Detection         (line 778)
+## 5.5. Resolve Model Profile      (line 810)
+## 7.5. Project Structure Mode     (line 1226)
+```
+
+Body-text reference to decimal section:
+- Line 502: `Proceed to Step 5.5.` — references section `## 5.5.`
+
+### `get-shit-done/workflows/new-milestone.md`
+
+Decimal section headings:
+```
+## 2.5. Scan Planted Seeds                          (line 49)
+## 3.5. Verify Milestone Understanding              (line 104)
+## 7.5 Reset-phase safety                           (line 255)
+## 10.5. Link Pending Todos to Roadmap Phases       (line 547)
+```
+
+Body-text reference:
+- Line 398: `from step 2.5` — references section `## 2.5.`
+
+### `get-shit-done/workflows/plan-phase.md`
+
+Decimal section headings (extensive — 13 entries):
+```
+## 1.5. Closed-Phase Gate            (line 67)
+## 2.5. Validate --reviews           (line 186)
+## 3.5. Handle PRD Express Path      (line 217)
+## 3.6. Handle ADR Ingest            (line 321)
+## 4.5. Check AI-SPEC                (line 386)
+## 5.5. Create Validation Strategy   (line 565)
+## 5.55. Security Threat Model Gate  (line 595)
+## 5.6. UI Design Contract Gate      (line 621)
+## 5.7. Schema Push Detection Gate   (line 693)
+## 7.5. Verify Nyquist Artifacts     (line 786)
+## 7.8. Spawn gsd-pattern-mapper     (line 809)
+## 8.5. Chunked Planning Mode        (line 1006)
+## 12.5. Plan Bounce                 (line 1385)
+```
+
+Body-text references to decimal sections:
+- Line 159: `The PRD express path (Step 3.5) creates CONTEXT.md` — references `## 3.5.`
+- Line 338: `step 3.5/3.6` — references `## 3.5.` and `## 3.6.`
+- Line 605: `Skip to step 5.6` — references `## 5.6.`
+- Line 619: `Continue to step 5.6` — references `## 5.6.`
+- Line 691: `Skip silently to step 5.7` — references `## 5.7.`
+- Line 807: `Proceed to Step 7.8` — references `## 7.8.`
+- Line 1004: `proceed to step 8.5 instead` — references `## 8.5.`
+
+---
+
+## Cross-File References
+
+References in one file to a step number defined in another file.
+
+| Source File | Line | Reference Text | Target File | Target Step |
+|-------------|------|---------------|-------------|-------------|
+| `execute-plan.md` | 143 | `execute-phase.md step 5.5)` | `execute-phase.md` | ordered-list item 5.5 |
+| `execute-plan.md` | 369 | `execute-phase.md step 5.5)` | `execute-phase.md` | ordered-list item 5.5 |
+| `execute-plan.md` | 475 | `execute-phase.md step 5.5)` | `execute-phase.md` | ordered-list item 5.5 |
+| `execute-phase/steps/post-merge-gate.md` | 60 | `same as step 5.8` | `execute-phase.md` | ordered-list item 5.8 |
+| `fast.md` | 75 | `quick.md Step 7 creates a 5-column table` | `quick.md` | Step 7 "Update STATE.md" |
+| `fast.md` | 83 | `5-column schema from quick.md Step 7` | `quick.md` | Step 7 "Update STATE.md" |
+
+**Cross-file reference impact summary:**
+- If `execute-phase.md` list item 5.5 is renumbered, `execute-plan.md` lines 143, 369, 475 must be updated.
+- If `execute-phase.md` list item 5.8 is renumbered, `post-merge-gate.md` line 60 must be updated.
+- If `quick.md` Step 7 is renumbered (to Step 14), `fast.md` lines 75 and 83 (comment text only) must be updated.
+
+---
+
+## Whole-Integer-Only Files (No Changes Needed)
+
+All 67 command files in `commands/gsd/` are clean — no decimal step labels found in any of them.
+
+Of the 33 agents, 31 are clean. Violations: `gsd-intel-updater.md`, `gsd-phase-researcher.md`.
+
+Of the 90 workflow files plus 3 sub-step files:
+- Files with decimal label definitions: `execute-phase.md`, `quick.md`, `progress.md`
+- Files with cross-file references only (no label definitions): `execute-plan.md`, `execute-phase/steps/post-merge-gate.md`, `fast.md`
+- Files with Pattern C sections (no "Step" keyword): `new-project.md`, `new-milestone.md`, `plan-phase.md`
+- All remaining files are clean.
+
+---
+
+## Scope Clarification for Scanner Design
+
+The scanner for STEP-01 must decide which patterns to flag. Recommendation based on this inventory:
+
+**Definite in-scope (the word "Step" in the label):**
+1. `**Step N.N` — bold label format (quick.md, progress.md, execute-phase.md inline)
+2. `## Step N.N` or `### Step N.N` — heading format with "Step" keyword (gsd-intel-updater.md, gsd-phase-researcher.md)
+
+**Ordered-list items (no "Step" keyword):**
+3. `^N.N. ` at start of line — decimal ordered list items (execute-phase.md items 2.5, 5.5-5.8) — violations if the scope includes all decimal step numbering regardless of "Step" keyword
+
+**Pattern C sections (no "Step" keyword in heading):**
+4. `^## N.N.` headings — borderline; body-text prose references say "step N.N" but the headings themselves do not contain "Step". These are in scope for renumbering only if the project decision includes numbered-chapter files.
+
+**Recommended scanner regex for "Step" keyword violations:**
+```
+[Ss]tep\s+\d+\.\d
+```
+This captures Patterns A, B, and inline references. Ordered-list items (Pattern D) require a separate regex: `^\s*\d+\.\d+\.`.
