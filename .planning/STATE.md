@@ -82,9 +82,10 @@ Resolved: `tests/bug-2992-check-latest-version.test.cjs` rewritten for SHA-based
 | 260529-gn2 | Fix 25 npm test failures: RC1 remove semver extract, RC2 update VERSION assertions, RC3 skip fork-diverged tests | 2026-05-29 | a81c4a8a | [260529-gn2-fix-25-npm-test-failures-rc1-remove-semv](./quick/260529-gn2-fix-25-npm-test-failures-rc1-remove-semv/) |
 | 260529-inw | Compare test suite of current branch vs upstream v1.01.0 (13c64e02) — full file structure and test case diff | 2026-05-29 | — | [260529-inw-compare-test-suite-of-current-branch-vs-](./quick/260529-inw-compare-test-suite-of-current-branch-vs-/) |
 | 260529-nyk | Revert observability layer to v1.01.0: delete tests/observability/, tests/dispatch/, get-shit-done/bin/lib/observability/, revert command-routing-hub.cjs | 2026-05-29 | bef58d60 | [260529-nyk-revert-observability-layer-to-v1-01-0](./quick/260529-nyk-revert-observability-layer-to-v1-01-0/) |
+| 260530-6ks | Fix 3 test failures: remove dead semver tests from gsd-statusline.test.cjs, fix eta regex in ingest-docs.test.cjs | 2026-05-30 | ffa2703b | [260530-6ks-investigate-3-test-failures-isinstalleda](./quick/260530-6ks-investigate-3-test-failures-isinstalleda/) |
 
 ## Session Continuity
 
-Last session: 2026-05-29T11:15:00.000Z
-Stopped at: Completed quick task 260529-dxz — address phase 45 and phase 46 tech debts
+Last session: 2026-05-30T04:44:09.117Z
+Stopped at: Completed quick task 260530-6ks — fix 3 test failures (semver tests removed, eta regex fixed)
 Resume file: None
