@@ -5,7 +5,7 @@ Post-merge build & test gate. Runs after all worktrees in a wave are merged
 cross-plan integration failures that individual worktree self-checks cannot
 detect.
 
-**Step A — Build gate:**
+**Step 1 — Build gate:**
 
 ```bash
 # Resolve build command: project config > Xcode > Makefile > language sniff
@@ -59,7 +59,7 @@ fi
 
 **If `BUILD_EXIT` is non-zero (build failure):** Increment `WAVE_FAILURE_COUNT` (same semantics as test failures). Present failure output and offer "Fix now" or "Continue" options (same as step 5.8).
 
-**Step B — Test gate:**
+**Step 2 — Test gate:**
 
 ```bash
 # Resolve test command: project config > Xcode > Makefile > language sniff
