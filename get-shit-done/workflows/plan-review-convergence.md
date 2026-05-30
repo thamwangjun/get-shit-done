@@ -40,7 +40,7 @@ GSD_WS=""
 echo "$ARGUMENTS" | grep -qE '\-\-ws\s+\S+' && GSD_WS=$(echo "$ARGUMENTS" | grep -oE '\-\-ws\s+\S+')
 ```
 
-## 1.5. Config Gate (feature disabled by default)
+## 2. Config Gate (feature disabled by default)
 
 ```bash
 # SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk (#3668)
@@ -70,7 +70,7 @@ Enable it with:
 Then re-run: /gsd:plan-review-convergence {PHASE}
 ```
 
-## 2. Initialize
+## 3. Initialize
 
 ```bash
 INIT=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init plan-phase "$PHASE")
@@ -83,7 +83,7 @@ Parse JSON for: `phase_dir`, `phase_number`, `padded_phase`, `phase_name`, `has_
 
 Set `TEXT_MODE=true` if `--text` is present in $ARGUMENTS OR `text_mode` from init JSON is `true`. When `TEXT_MODE` is active, replace every `AskUserQuestion` call with a plain-text numbered list and ask the user to type their choice number.
 
-## 3. Validate Phase + Pre-flight Gate
+## 4. Validate Phase + Pre-flight Gate
 
 ```bash
 PHASE_INFO=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" roadmap get-phase "${PHASE}")
@@ -102,9 +102,9 @@ Display startup banner:
  Max cycles: {MAX_CYCLES}
 ```
 
-## 4. Initial Planning (if no plans exist)
+## 5. Initial Planning (if no plans exist)
 
-**If `has_plans` is true:** Skip to step 5. Display: `Plans found: {plan_count} PLAN.md files — skipping initial planning.`
+**If `has_plans` is true:** Skip to step 6. Display: `Plans found: {plan_count} PLAN.md files — skipping initial planning.`
 
 **If `has_plans` is false:**
 
@@ -131,7 +131,7 @@ If PLAN_COUNT == 0: Error — initial planning failed. Exit.
 
 Display: `Initial planning complete: ${PLAN_COUNT} PLAN.md files created.`
 
-## 5. Convergence Loop
+## 6. Convergence Loop
 
 Initialize loop variables:
 
@@ -140,7 +140,7 @@ cycle = 0
 prev_high_count = Infinity
 ```
 
-### 5a. Review (Spawn Agent)
+### 7. Review (Spawn Agent)
 
 Increment `cycle`.
 
@@ -193,7 +193,7 @@ REVIEWS_FILE=$(ls ${phase_dir}/${padded_phase}-REVIEWS.md 2>/dev/null)
 
 If REVIEWS_FILE is empty: Error — review agent did not produce REVIEWS.md. Exit.
 
-### 5b. Extract HIGH Count from CYCLE_SUMMARY Contract
+### 8. Extract HIGH Count from CYCLE_SUMMARY Contract
 
 **Do NOT grep REVIEWS.md for HIGH count.** REVIEWS.md accumulates history across cycles — resolved HIGHs from prior cycles remain in the file as audit trail, inflating a raw grep count and causing false stall detection.
 
@@ -244,7 +244,7 @@ Exit — convergence achieved.
 
 **If HIGH_COUNT > 0:** Continue to 5c.
 
-### 5c. Stall Detection + Escalation Check
+### 9. Stall Detection + Escalation Check
 
 Display: `◆ Cycle {cycle}/{MAX_CYCLES} — {HIGH_COUNT} HIGH concerns found`
 
@@ -296,7 +296,7 @@ To restart loop:     /gsd:plan-review-convergence {PHASE} {REVIEWER_FLAGS}
 ```
 Exit workflow.
 
-### 5d. Replan (Spawn Agent)
+### 10. Replan (Spawn Agent)
 
 **If under max cycles:**
 
@@ -319,7 +319,7 @@ IMPORTANT: When gsd-plan-phase outputs '## PLANNING COMPLETE', that means replan
 )
 ```
 
-After agent returns → go back to **step 5a** (review again).
+After agent returns → go back to **step 7** (review again).
 
 </process>
 
