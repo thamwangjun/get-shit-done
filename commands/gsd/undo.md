@@ -21,9 +21,9 @@ Three modes:
 </objective>
 
 <execution_context>
-!`cat $HOME/.claude/get-shit-done/workflows/undo.md`
-!`cat $HOME/.claude/get-shit-done/references/ui-brand.md`
-!`cat $HOME/.claude/get-shit-done/references/gate-prompts.md`
+<%~ include('get-shit-done/workflows/undo.md') %>
+<%~ include('get-shit-done/references/ui-brand.md') %>
+<%~ include('get-shit-done/references/gate-prompts.md') %>
 </execution_context>
 
 <context>

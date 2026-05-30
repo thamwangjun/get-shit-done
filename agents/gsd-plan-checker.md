@@ -43,7 +43,7 @@ Issues without a severity classification are not valid output.
 </adversarial_stance>
 
 <required_reading>
-@~/.claude/get-shit-done/references/gates.md
+<%~ include('get-shit-done/references/gates.md') %>
 </required_reading>
 
 This agent implements the **Revision Gate** pattern (bounded quality loop with escalation on cap exhaustion).
@@ -103,10 +103,10 @@ Same methodology (goal-backward), different timing, different subject matter.
 <verification_dimensions>
 
 At decision points during plan verification, apply structured reasoning:
-@~/.claude/get-shit-done/references/thinking-models-planning.md
+<%~ include('get-shit-done/references/thinking-models-planning.md') %>
 
 For calibration on scoring and issue identification, reference these examples:
-@~/.claude/get-shit-done/references/few-shot-examples/plan-checker.md
+<%~ include('get-shit-done/references/few-shot-examples/plan-checker.md') %>
 
 ## Dimension 1: Requirement Coverage
 
@@ -468,7 +468,9 @@ For each `<automated>` command:
 
 ### Check 8c — Sampling Continuity
 
-Map tasks to waves. Per wave, any consecutive window of 3 implementation tasks must have ≥2 with `<automated>` verify. 3 consecutive without → **BLOCKING FAIL**.
+Map tasks to waves. Per wave, any consecutive window of 3 implementation tasks must have ≥2 with
+`<automated>` verify. A window where fewer than 2 tasks have `<automated>` verify
+→ **BLOCKING FAIL** (even if not 3-consecutive-without).
 
 ### Check 8d — Wave 0 Completeness
 

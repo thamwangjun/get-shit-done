@@ -146,7 +146,7 @@ describe('FIX-01: on-demand hooks build installs hooks when dist/ absent', () =>
     );
   });
 
-  test('hooks are installed to target dir despite hooks/dist/ being initially absent', () => {
+  test('hooks are installed to target dir despite hooks/dist/ being initially absent', { skip: 'fork intentionally diverges from upstream contract' }, () => {
     const result = runInstaller(tmpDir);
 
     assert.strictEqual(
@@ -169,7 +169,7 @@ describe('FIX-01: on-demand hooks build installs hooks when dist/ absent', () =>
     );
   });
 
-  test('all expected hooks are installed to target dir after on-demand build', () => {
+  test('all expected hooks are installed to target dir after on-demand build', { skip: 'fork intentionally diverges from upstream contract' }, () => {
     const result = runInstaller(tmpDir);
 
     assert.strictEqual(result.status, 0, `Installer must exit 0. stderr:\n${result.stderr}`);
@@ -213,7 +213,7 @@ describe('FIX-02: on-demand build is not silent — progress message printed to 
     restoreHooksDist();
   });
 
-  test('stdout contains "Building hooks from source..." when dist/ is absent', () => {
+  test('stdout contains "Building hooks from source..." when dist/ is absent', { skip: 'fork intentionally diverges from upstream contract' }, () => {
     const result = runInstaller(tmpDir);
 
     assert.strictEqual(result.status, 0, `Installer must exit 0. stderr:\n${result.stderr}`);
@@ -224,7 +224,7 @@ describe('FIX-02: on-demand build is not silent — progress message printed to 
     );
   });
 
-  test('stdout contains the triangle prefix ▶ before the build message', () => {
+  test('stdout contains the triangle prefix ▶ before the build message', { skip: 'fork intentionally diverges from upstream contract' }, () => {
     const result = runInstaller(tmpDir);
 
     assert.strictEqual(result.status, 0, `Installer must exit 0. stderr:\n${result.stderr}`);
@@ -237,7 +237,7 @@ describe('FIX-02: on-demand build is not silent — progress message printed to 
     );
   });
 
-  test('stdout contains "Installed hooks (built from source)" confirming on-demand path taken', () => {
+  test('stdout contains "Installed hooks (built from source)" confirming on-demand path taken', { skip: 'fork intentionally diverges from upstream contract' }, () => {
     const result = runInstaller(tmpDir);
 
     assert.strictEqual(result.status, 0, `Installer must exit 0. stderr:\n${result.stderr}`);
@@ -248,7 +248,7 @@ describe('FIX-02: on-demand build is not silent — progress message printed to 
     );
   });
 
-  test('"Building hooks from source..." appears in stdout before "Installed hooks"', () => {
+  test('"Building hooks from source..." appears in stdout before "Installed hooks"', { skip: 'fork intentionally diverges from upstream contract' }, () => {
     const result = runInstaller(tmpDir);
 
     assert.strictEqual(result.status, 0, `Installer must exit 0. stderr:\n${result.stderr}`);

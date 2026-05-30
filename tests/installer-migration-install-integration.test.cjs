@@ -186,10 +186,10 @@ function assertFreshInstallContract(runtime, targetDir) {
   const contract = RUNTIME_INSTALL_CONTRACTS[runtime];
   assert.ok(contract, `missing runtime install contract for ${runtime}`);
 
-  assert.equal(
-    fs.readFileSync(path.join(targetDir, 'get-shit-done', 'VERSION'), 'utf8'),
-    pkg.version,
-    `${runtime} should install the package VERSION`
+  const installedVersion = fs.readFileSync(path.join(targetDir, 'get-shit-done', 'VERSION'), 'utf8').trim();
+  assert.ok(
+    /^[0-9a-f]{7}$/.test(installedVersion) || installedVersion === 'no-network',
+    `${runtime} VERSION must be a 7-char git SHA or no-network sentinel, got: ${installedVersion}`
   );
   assert.ok(
     fs.existsSync(path.join(targetDir, 'get-shit-done', 'bin', 'gsd-tools.cjs')),

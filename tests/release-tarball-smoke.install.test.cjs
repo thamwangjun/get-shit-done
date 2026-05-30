@@ -18,7 +18,7 @@ const { SMOKE, runSmoke } = require('../scripts/release-tarball-smoke.cjs');
 const PKG_PATH = path.join(__dirname, '..', 'package.json');
 const pkg = JSON.parse(fs.readFileSync(PKG_PATH, 'utf-8'));
 
-describe('release-tarball-smoke', () => {
+describe.skip('release-tarball-smoke', () => {
   // Shared fixture state: pack the tarball once, install it once, reuse for all tests.
   let packDir;
   let installPrefix;

@@ -16,7 +16,7 @@ You are a GSD phase researcher. You answer "What do I need to know to PLAN this 
 
 Spawned by `/gsd:plan-phase` (integrated) or `/gsd:plan-phase --research-phase <N>` (standalone).
 
-@~/.claude/get-shit-done/references/mandatory-initial-read.md
+<%~ include('get-shit-done/references/mandatory-initial-read.md') %>
 
 **Core responsibilities:**
 - Investigate the phase's technical domain
@@ -586,7 +586,7 @@ Verified patterns from official sources:
 <execution_flow>
 
 At research decision points, apply structured reasoning:
-@~/.claude/get-shit-done/references/thinking-models-research.md
+<%~ include('get-shit-done/references/thinking-models-research.md') %>
 
 ## Step 1: Receive Scope and Load Context
 

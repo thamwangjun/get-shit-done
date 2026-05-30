@@ -232,7 +232,7 @@ describe('workspace worktree integration', () => {
     execSync('git config user.email "test@test.com"', { cwd: sourceRepo, stdio: 'pipe' });
     execSync('git config user.name "Test"', { cwd: sourceRepo, stdio: 'pipe' });
     fs.writeFileSync(path.join(sourceRepo, 'README.md'), '# Test Repo\n');
-    execSync('git add -A', { cwd: sourceRepo, stdio: 'pipe' });
+    execSync('git add README.md', { cwd: sourceRepo, stdio: 'pipe' });
     execSync('git commit -m "initial"', { cwd: sourceRepo, stdio: 'pipe' });
   });
 
@@ -372,6 +372,11 @@ describe('workspace command files', () => {
             .replace(/`$/, '')
             .replace(/^\$HOME\/(?:\.claude\/)?(?:get-shit-done\/)?/, '')
             .replace(/^~\/(?:\.claude\/)?(?:get-shit-done\/)?/, '');
+        } else if (/^<%~?\s+include\('get-shit-done\//.test(t)) {
+          // Eta include tag: <%~ include('get-shit-done/X') %>
+          const m = /include\('get-shit-done\/([^']+)'\)/.exec(t);
+          if (m) rel = m[1];
+          else continue;
         } else {
           continue;
         }

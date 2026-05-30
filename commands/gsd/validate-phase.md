@@ -23,7 +23,7 @@ Output: updated VALIDATION.md + generated test files.
 </objective>
 
 <execution_context>
-!`cat $HOME/.claude/get-shit-done/workflows/validate-phase.md`
+<%~ include('get-shit-done/workflows/validate-phase.md') %>
 </execution_context>
 
 <context>

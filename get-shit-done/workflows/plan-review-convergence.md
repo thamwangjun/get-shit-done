@@ -8,9 +8,9 @@ Orchestrator only does: init, loop control, parse CYCLE_SUMMARY for HIGH count, 
 <required_reading>
 Read all files referenced by the invoking prompt's execution_context before starting.
 
-@$HOME/.claude/get-shit-done/references/revision-loop.md
-@$HOME/.claude/get-shit-done/references/gates.md
-@$HOME/.claude/get-shit-done/references/agent-contracts.md
+<%~ include('get-shit-done/references/revision-loop.md') %>
+<%~ include('get-shit-done/references/gates.md') %>
+<%~ include('get-shit-done/references/agent-contracts.md') %>
 </required_reading>
 
 <process>

@@ -53,6 +53,7 @@
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "^0.2.84",
+    "eta": "^4.6.0",
     "ws": "8.20.1"
   },
   "devDependencies": {

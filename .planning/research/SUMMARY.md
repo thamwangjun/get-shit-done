@@ -1,161 +1,156 @@
 # Project Research Summary
 
-**Project:** GSD — Prompt-Engineered Fork
-**Domain:** Git Commit History Refactoring / Repository Maintenance
-**Researched:** 2026-05-21
+**Project:** GSD — Prompt-Engineered Fork (v2.1.0-c Install-Time Content Materialization)
+**Domain:** Installer pipeline extension — static file inlining at install time
+**Researched:** 2026-05-28
 **Confidence:** HIGH
 
 ## Executive Summary
 
-This research outlines the findings and plan for the **v1.41.5 Refactor Git Commit History** milestone. The core objective is to squash and reorganize the fork's commit history since tag `v1.41.2` (comprising 829 commits) into exactly 5 feature-focused commits. Experienced Git practitioners handle large-scale history consolidation using selective staging and branch pointer manipulation (specifically a soft/mixed reset) rather than interactive rebasing when commit counts are extremely high. This avoids massive, repetitive merge conflict overhead.
+The v2.1.0-c milestone solves a runtime reliability problem: GSD currently ships agent, workflow, and command files containing `@~/.claude/...` and `` !`cat` `` include directives, relying on Claude to inject referenced content at runtime. This creates a brittle dependency on the AI tool's file-injection feature. The fix is an install-time `resolveIncludes()` pass in `bin/install.js` that inlines all referenced content into installed files before they are written to disk, so every installed file is fully self-contained.
 
-The recommended approach starts with establishing a dual-layer backup (a local git branch backup and a physical directory copy) to protect against any data loss. Next, a soft reset is executed to tag `v1.41.2`, keeping all modifications unstaged in the working directory. Files are then staged and committed in 5 distinct batches based on logical layers, using precise file and path targeting. Finally, a zero-diff parity audit is run against the backup branch alongside the complete Node.js test runner suite to guarantee zero functional regressions and 100% file content parity.
+The research establishes a clear, bounded scope: 107 `@` references across 4 layers (commands, workflows, agents, references) and 117 `` !`cat` `` references (exclusively in `commands/gsd/`). Two insertion points in `install.js` cover the entire corpus: `copyWithPathReplacement()` at line 6432 handles commands, workflows, and references; the agent install loop at line 8646 handles agents. The include corpus is static leaf-node content — reference files do not chain more than two hops — which means the resolver requires only a shallow recursive implementation with a cycle guard. No external template engine dependency is necessary; a focused `resolveIncludes()` pure function of ~80 lines is the right implementation unit.
 
-Key risks include accidental code loss due to destructive hard resets, staging untracked or ignored local files, classification errors (staging files in the wrong batch), and broken intermediate commit states. These are mitigated by avoiding catch-all staging commands like `git add .`, auditing each batch commit with `git show --stat`, running a final comparative diff against the original branch SHA, and executing the test runner suite to ensure all 8300+ tests pass.
+The highest-risk element is a single conditional include in `execute-phase.md` (line 619) embedded inside a JavaScript template literal: `${CONTEXT_WINDOW < 200000 ? '' : '@~/.claude/...'}`. Any resolver that matches `@~` without confirming the reference is a bare standalone line will corrupt the conditional expression or unconditionally inline a 200+ line file into every agent dispatch. This is the gate constraint the implementation must satisfy before any other inlining logic is written. Everything else — agent size budgets, tool-name transform ordering, single-brace placeholder preservation — follows from it.
 
 ## Key Findings
 
 ### Recommended Stack
 
-The recommended stack is built on Git (v2.54.0) for history manipulation and Node.js (v24.14.1) / npm (v11.11.0) to run GSD validation gates. No external dependencies are required because the core stack is pre-installed. Local helper scripts automate test execution and tag compliance verification. Standard interactive rebasing (`git rebase -i`) is explicitly rejected because the volume of divergent commits (829) makes merge conflict resolution highly error-prone and time-consuming.
+No external template engine is required for this milestone. The scope is bounded to `@~/.claude/...` and `` !`cat ~/.claude/...` `` patterns only — no variable substitution, no conditionals beyond the one that must be preserved verbatim. A focused `resolveIncludes(content, sourceRoot, seen)` function handles the full use case without introducing a new dependency.
+
+If future requirements extend to variable substitution or conditional includes authored in source files, **Eta v4.6.0** is the recommended engine: zero runtime dependencies, 204 KB unpacked, actively maintained (last release 2026-04-25), configurable delimiters (avoids `{{ }}` collision with existing agent prose), and synchronous `render()` API compatible with `install.js`'s synchronous pipeline. Eta would be added as a `devDependency` and bundled into the installer via the existing esbuild build step, preserving the zero-runtime-dependency constraint. LiquidJS v10.27.0 is a viable fallback (actively maintained, familiar Liquid syntax) but 9x larger and carries one transitive dependency. Nunjucks and Mustache are eliminated due to being unmaintained.
 
 **Core technologies:**
-- **Git (v2.54.0):** Version control system for history manipulation — Standard tool for managing commit histories, supporting mixed reset and selective staging options safely.
-- **Node.js (v24.14.1) & npm (v11.11.0):** Runtime and package manager for tests — Required to run GSD validation gates (`npm test`) with the native test runner to guarantee functional parity.
-- **Custom Scripts (Local):** Automation of tag/rules audits and test execution — Executes `scripts/run-tests.cjs` and `scripts/audit-tags.js` to verify tag compliance and test suite sanity.
+- **Custom `resolveIncludes()` function**: Inline `@~` and `` !`cat` `` references — sufficient for current scope, zero footprint
+- **Eta v4.6.0** (future devDep, if needed): Template engine for variable/conditional needs — zero runtime deps, esbuild-bundlable, `autoEscape: false` required for Markdown
+- **esbuild** (already present): Bundle step infrastructure for any future installer pre-compilation
 
-### Expected Features
+### Scope of Changes (Features Research)
 
-The primary feature set focuses on flattening 800+ commits into 5 distinct, logically grouped, and dependency-ordered commits without changing file contents or causing regressions.
+The research audited all reference injection patterns across the entire codebase. The scope is well-defined.
 
-**Must have (table stakes):**
-- **Soft Reset to `v1.41.2`:** Moves branch HEAD back to the target upstream release tag without modifying the working tree files.
-- **5-Batch Grouping:** Collects related modifications into logical, reviewable blocks.
-- **Zero-Diff Content Parity:** The final commit tree must match the original tree with 100% byte-for-byte correctness.
-- **Full Test Validation:** All 8300+ tests must pass to verify no regressions were introduced.
-- **Coherent Commit Messages:** Each of the 5 commits needs a clear, semantic commit message.
+**Must implement:**
+- Inline `@~/.claude/get-shit-done/references/*.md` in workflows (57 occurrences, 20 files) and agents (42 occurrences, 7 files)
+- Inline `` !`cat ~/.claude/get-shit-done/workflows/*.md` `` and `` !`cat ~/.claude/get-shit-done/references/*.md` `` in commands (117 occurrences, 55 files)
+- Fix 4 command files: `complete-milestone.md` (still on `@` notation); `extract-learnings.md`, `mvp-phase.md`, `ship.md` (mixed notation with duplicate references)
+- Remove the duplicate workflow references in the 3 mixed-notation files (each loads the same workflow twice, wasting context)
 
-**Should have (competitive):**
-- **Dependency-Ordered Commits:** Committing files in their order of dependency (Configs -> Scanners -> Prompts -> Tests -> Logs) preserves logical readability in Git history.
-- **Dry-Run Diff Audit:** Verifies the staging boundaries before making final commits using `git diff --cached --name-only`.
-- **Automated Staging Script:** Prevents human error in manually staging hundreds of files across 5 complex batches.
+**Preserve verbatim (must not inline):**
+- `.planning/STATE.md` and `.planning/ROADMAP.md` in `add-tests.md` — runtime project files that vary per session
+- Conditional `@~` in `execute-phase.md` line 619 — JS template literal evaluated at agent dispatch time
+- Agent definition reference in `discuss-phase/modes/advisor.md` — semantically incorrect to inline an agent definition into an orchestrator prompt
 
-**Defer (v2+):**
-- **Automated staging CLI tool / Pre-commit validation hook:** A CLI tool or pre-commit hook that automates staging and checks if a commit violates the zero-diff rule.
-- **Divergence tracking system:** An automated pipeline that warns when a PR exceeds a commit threshold, alerting maintainers that history consolidation is needed.
+**Defer:**
+- Auditing 8 unreferenced files in `references/` (`artifact-types.md`, `decimal-phase-calculation.md`, `git-planning-commit.md`, `planner-graphify-auto-update.md`, `planner-human-verify-mode.md`, `planning-config.md`, `workstream-flag.md`, `model-profile-resolution.md`-external) — determine orphaned vs prose-loaded after the main inlining work ships
 
 ### Architecture Approach
 
-The architecture defines a linear, secure history refactoring workflow comprising backup, reset, batch staging, and validation. To protect against data loss, a dual-layer backup is established. The staging pipeline divides the unstaged working tree into 5 distinct batches, which are then passed through three verification gates: custom prompt scanners, the Node.js test runner, and a final zero-diff validation gate against the backup branch.
+`resolveIncludes()` is a pure transform function inserted at **position 0** in the existing install pipeline — before path substitution, before runtime-specific converters, before attribution. The pipeline per file becomes: (1) readFileSync raw content, (2) `resolveIncludes()` to expand all static includes against source repo paths, (3) path substitution (`~/.claude/` → runtime prefix), (4) runtime converter (`convertClaudeTo*`), (5) attribution + namespace normalization, (6) writeFileSync.
 
-**Major components:**
-1. **Hard Backup:** Safety copy of the full repository tree and git branch to prevent data loss before reset.
-2. **Git Soft Reset:** Moves HEAD back to tag `v1.41.2` while keeping all modified files intact in the working tree.
-3. **Batch Stager:** Segregates unstaged files into 5 distinct staging batches for clean, coherent commit history.
-4. **Custom Scanners:** Verifies prompt compliance with positive framing rules and blocks read-injection risks.
-5. **Node.js Runner:** Runs the 8300+ tests concurrently to verify workspace runtime sanity.
-6. **Zero-Diff Validator:** Assures that the refactored commits produce 100% file content parity with the original tree.
+This ordering is non-negotiable: reference files contain canonical Claude tool names (`Read`, `Bash`) and `~/.claude/` paths that must be present as input to the runtime transform steps. Inlining after any transform step means inlined content bypasses tool-name conversion.
+
+**Two insertion points cover the entire corpus:**
+1. `copyWithPathReplacement()` at line 6432 — immediately after `fs.readFileSync(srcPath)`. Covers commands, workflows, references, templates.
+2. Agent install loop at line 8646 — immediately after `fs.readFileSync(agentsSrc/entry.name)`. Covers all 7 agent files with `@` references.
+
+**`resolveIncludes()` design contract:**
+- Input: raw content string, absolute sourceRoot, optional `seen: Set<string>` for cycle detection
+- Path resolution: strip `~/.claude/` or `$HOME/.claude/` prefix, join with sourceRoot (repo layout mirrors install layout)
+- Only expand `@~` that appears as a standalone bare reference on its own line — never inside `${}`, backtick expressions, or fenced code blocks
+- Missing files: abort with a clear error naming the source file and unresolvable path
+- Cycles: abort with the full include chain in the error message
+- Max depth: 3 levels (current corpus max is 2 hops; depth 3 is belt-and-suspenders)
+- Verbatim insertion only — no substitution on `{{}}` or `{}` tokens in inserted content
+- Defined near top of `install.js` alongside existing pure transform functions (`processAttribution`, `replaceRelativePathReference`)
+
+**Skills path note:** `applyRuntimeContentRewritesInPlace` handles `SKILL.md` files (staged copies of commands). Whether this path needs a separate resolver call depends on staging timing — if commands are resolved before staging, skill files inherit the resolved content automatically. If not, a resolver call inside the `walkAndRewrite` loop is needed.
 
 ### Critical Pitfalls
 
-1. **Destructive Hard Reset (Loss of Code):** Executing `git reset --hard` instead of `--soft` which deletes all modifications. Avoid by creating a temporary branch backup and directory copy before reset, and double-checking the command.
-2. **Staging Untracked or Ignored Artifacts (Repository Pollution):** Staging temporary local files via catch-all `git add .` commands. Avoid by staging files explicitly using paths and glob patterns, and reviewing `git status` before commit.
-3. **Tree Parity Mismatch (Losing Content Equivalency):** Discrepancies between the final commit state and the original tree. Avoid by recording the original HEAD SHA and running `git diff <original-SHA>` after final batch commits to verify zero difference.
-4. **Staging Classification Misalignment (Incorrect Batch Cohorts):** Staging files in the wrong batch due to imprecise glob patterns. Avoid by mapping files precisely and running `git show --stat HEAD` after each commit.
-5. **Dependency Fragmentation (Intermediate Test Breakages):** Non-runnable states of intermediate commits because of category-based batching. Avoid by documenting it as a known trade-off, and ensuring the final HEAD commit passes 100% of the test suite.
+1. **Conditional include corruption in `execute-phase.md`** — Line 619 embeds `@~` inside a JS template literal conditional. A naive line-matching regex inlines unconditionally or produces broken syntax. The bare-line detection rule must be implemented first, before any inlining code runs. Automated test required: assert `${CONTEXT_WINDOW < 200000 ?` survives verbatim in installed `execute-phase.md`.
+
+2. **Transform ordering — inlined content bypasses runtime converters** — Inlining after Copilot's `convertClaudeToCopilotContent` leaves `Read`/`Bash` in inlined sections rather than `read`/`execute`. The inline-before-transform invariant must be enforced at both insertion points. Test: install `gsd-executor.md` for Copilot and assert tool names in the inlined `checkpoints.md` section are lowercased.
+
+3. **Circular include chain** — Current corpus has one two-hop chain (`model-profile-resolution.md` → `model-profiles.md`). Cycles can hang the installer. `Set<string>` visit stack with throw-on-cycle must be present in the initial implementation, not added as hardening later.
+
+4. **Agent size budget violation** — `gsd-executor.md` at 771 lines plus `checkpoints.md` at 814 lines approaches the LARGE budget (1,000 lines). The `executor-examples.md` conditional guard (pitfall #1) prevents the worst case, but a post-install line count check is required. Existing `agent-size-budget.test.cjs` runs against source files — it must also run against installed output.
+
+5. **Single-brace placeholder corruption** — Reference files contain intentional literal `{N}`, `{resolved_model}`, `{EXPECTED_BASE}`, `{SOURCE}` patterns. The inliner must insert file content verbatim with zero substitution. Test: assert `{N}` survives in installed output of any file that includes `references/revision-loop.md`.
+
+6. **Double-load in mixed-notation command files** — `extract-learnings.md`, `mvp-phase.md`, and `ship.md` each load the same workflow via both `@` and `` !`cat` ``, duplicating content in the context window. Fix mixed files before wiring the resolver — not after.
 
 ## Implications for Roadmap
 
 Based on research, suggested phase structure:
 
-### Phase 1: Backup and Soft Reset
-**Rationale:** Establishes a safety baseline and resets the HEAD pointer to v1.41.2 while keeping all modified files intact in the working tree.
-**Delivers:** Dual-layer backup (branch + physical copy) and an unstaged working tree reset to v1.41.2.
-**Addresses:** Soft Reset to v1.41.2.
-**Avoids:** Pitfall 1 (Destructive Hard Reset).
+### Phase 1: Resolver Core + Conditional Guard
+**Rationale:** The conditional include guard is the gate constraint — write and unit-test `resolveIncludes()` in isolation before wiring into the install pipeline. Validate the hardest constraint first in a controlled environment.
+**Delivers:** `resolveIncludes()` pure function with bare-line detection, cycle guard (`Set<string>` visit stack), max depth 3, missing-file abort, and verbatim insertion. Unit tests: happy path, conditional passthrough, cycle detection, missing file, depth limit.
+**Avoids:** Pitfall #1 (conditional corruption), Pitfall #3 (circular chain), Pitfall #5 (placeholder corruption)
 
-### Phase 2: Stage and Commit Configuration & Rules (Batch 1)
-**Rationale:** Placed first to establish linting, formatting, and behavioral constraints before code or prompts are staged.
-**Delivers:** Commit of rules and configuration files.
-**Uses:** Git selective staging commands.
-**Implements:** Rules and Config components.
+### Phase 2: Mixed-File Cleanup + Pipeline Integration
+**Rationale:** Fix mixed-notation files first so the resolver sees clean input. Then wire into both `install.js` insertion points and validate end-to-end for the Claude runtime.
+**Delivers:** `extract-learnings.md`, `mvp-phase.md`, `ship.md` duplicate references removed. `complete-milestone.md` migrated from `@` to inlining. `resolveIncludes()` called at lines 6432 and 8646. End-to-end Claude runtime install produces zero surviving `@~/.claude/get-shit-done/references/` patterns.
+**Avoids:** Pitfall #2 (transform ordering confirmed by integration), Pitfall #6 (double-load removed before wiring)
 
-### Phase 3: Stage and Commit Scanner Logic (Batch 2)
-**Rationale:** Placed next so custom verification tools are in place to validate all prompt files introduced in subsequent phases.
-**Delivers:** Commit of scanner logic, worker hooks, and audit-tags script.
-**Uses:** Git selective staging commands.
-**Implements:** Custom Scanners component.
+### Phase 3: Regression Test Suite
+**Rationale:** Tests must run against installed output, not source files, for size budget and tool-name transform checks. Build the safety net before expanding to the full runtime matrix.
+**Delivers:** Six regression tests — (1) no unresolved `@~` in installed output, (2) conditional include preserved in `execute-phase.md`, (3) tool names transformed inside inlined content for Copilot, (4) circular reference detection throws, (5) missing reference file throws, (6) installed agent line count within budget.
+**Uses:** Existing `tests/helpers.cjs` `createTempDir()` and install invocation patterns
+**Avoids:** Pitfall #4 (size budget tested on installed output)
 
-### Phase 4: Stage and Commit Workflows, Agents, & Templates (Batch 3)
-**Rationale:** Committed third as they represent the core prompt content of the GSD fork, which is immediately scannable by the Batch 2 rules.
-**Delivers:** Commit of workflows, agents, commands, and templates.
-**Uses:** Git selective staging commands.
-**Implements:** Prompts/Workflows/Agents component.
-
-### Phase 5: Stage and Commit Tests & SDK Validation (Batch 4)
-**Rationale:** Committed fourth to introduce unit/integration tests and SDK cli helpers that verify the prompt changes.
-**Delivers:** Commit of core tests, unit tests, and validation gates.
-**Uses:** Git selective staging commands and Node.js.
-**Implements:** Node.js Runner component.
-
-### Phase 6: Stage and Commit Maintenance, Logs, & State (Batch 5)
-**Rationale:** Placed last to record the final milestone outputs, historical logs, and state metadata.
-**Delivers:** Commit of quick tasks, maintenance, logs, and state updates.
-**Uses:** Git selective staging commands.
-**Implements:** Maintenance & Logs component.
-
-### Phase 7: Final Verification & Parity Audit
-**Rationale:** Final gate to verify the entire workspace matches the backup state exactly and passes all tests before shipment.
-**Delivers:** Zero-diff validation report and full test suite run results.
-**Uses:** Git diff and npm test.
-**Implements:** Zero-Diff Validator component.
+### Phase 4: Full Runtime Matrix + Verification
+**Rationale:** Validate all supported runtimes produce self-contained files. `npm test` 0 new failures confirms no regressions.
+**Delivers:** Zero `@~` or `` !`cat ~/.claude/` `` patterns in installed output across Claude, Copilot, Codex, Gemini, OpenCode, Cursor, and Antigravity runtimes. Full `npm test` green.
 
 ### Phase Ordering Rationale
 
-- **Dependency-ordered progression:** Configs and rules are staged first as they define the project baseline. The scanner is staged next to scan the workflows/agents staged in the following phase. Tests are staged fifth to verify the workflows/agents. Maintenance and state logs are staged last to reflect the completed state.
-- **Logical architectural grouping:** Groups are categorized by GSD layers (Configs -> Scanners -> Prompts -> Tests -> Logs) to keep history clean and logically segmented.
-- **Risk mitigation:** Prevents staging classification error by committing one batch at a time and auditing the commit content before moving on; avoids parity mismatch by comparing the final head to the original backup branch.
+- Phase 1 before Phase 2: the resolver must be correct in isolation before it processes real corpus data. Discovering the conditional guard bug during install testing costs far more than catching it in a targeted unit test.
+- Mixed-file cleanup in Phase 2, not Phase 3: cleanup changes the inputs to the resolver — doing it after integration would require re-running integration tests.
+- Phase 3 before Phase 4: the regression tests must exist before running the runtime matrix, so failures produce reproducible test cases rather than manual observation.
 
 ### Research Flags
 
 Phases likely needing deeper research during planning:
-- **Phase 2 (Batch 1 Configs) & Phase 6 (Batch 5 Logs):** Both contain `.planning/` files. Since configuration files reside in `.planning/config.json` and logs reside in `.planning/quick/` or `.planning/research/`, staging whole directories will cause cross-contamination. Precise path staging rules must be verified.
-- **Phase 5 (Batch 4 Tests & SDK):** Unit tests and custom validation gates cross-cut across SDK files (`sdk/src/cli.ts`), runner scripts (`scripts/run-tests.cjs`), and tests (`tests/`). Staging patterns must ensure no test helper is omitted.
+- **Phase 2 (Pipeline integration):** The `applyRuntimeContentRewritesInPlace` path for skills (`SKILL.md`) needs investigation — determine whether skills are staged before or after command-path resolution runs, and whether a third resolver call is needed.
+- **Phase 4 (Runtime matrix):** Copilot and Codex have the most bespoke tool-name transformation logic. Verify that `references/checkpoints.md` and `references/mandatory-initial-read.md` (both contain `Read`/`Bash` in prose) are correctly transformed when inlined for all non-Claude runtimes.
 
 Phases with standard patterns (skip research-phase):
-- **Phase 1 (Backup & Reset):** Uses standard, well-documented git commands (`git branch`, `cp -R`, `git reset --soft`).
-- **Phase 7 (Verification):** Standard GSD validation using `git diff` and `npm test`.
+- **Phase 1 (Resolver core):** Algorithm fully specified by ARCHITECTURE.md. Implement against the provided pseudocode.
+- **Phase 3 (Regression tests):** Testing patterns established in `tests/helpers.cjs`. Follow existing install-smoke-test patterns.
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | Git, Node, and npm versions are locally verified. |
-| Features | HIGH | Batch mappings and MVP criteria are clearly defined. |
-| Architecture | HIGH | Backup, reset, and validation gates are standard, well-understood patterns. |
-| Pitfalls | HIGH | Critical pitfalls (especially destructive hard reset and staging classification) are mapped with clear recovery strategies. |
+| Stack | HIGH | npm registry data confirmed; Eta v4.6.0 version, deps, date verified directly. Custom-function recommendation based on bounded scope analysis. |
+| Features | HIGH | Reference counts derived from direct grep of source corpus. Mixed-notation files and dynamic exceptions confirmed by line-level inspection. |
+| Architecture | HIGH | Pipeline structure derived from direct reading of `bin/install.js` lines 6399–8727. Two insertion points identified with exact line numbers. |
+| Pitfalls | HIGH | Each pitfall traced to a specific file and line. Test requirements mapped to existing test infrastructure. |
 
 **Overall confidence:** HIGH
 
 ### Gaps to Address
 
-- **Path Contamination in `.planning/`:** Staging files under `.planning/` requires exact file lists rather than general folders to prevent mixing Batch 1 (configs) and Batch 5 (logs). Handled during planning by writing a strict file-by-file staging map.
-- **Dependency breakages at intermediate commits:** Intermediate commits will not pass tests because tests are only committed in Batch 4. Handled by documenting this as a known limitation and only enforcing test gates at the final HEAD.
+- **Skills path (`applyRuntimeContentRewritesInPlace`):** Right answer depends on whether skills are staged before or after command-path resolution. Resolve at Phase 2 planning time.
+- **`discuss-phase/modes/advisor.md` agent reference:** The `@` reference targets an agent definition file inside a spawn string. Bare-line detection should exclude it, but verify during Phase 2 that it is not expanded.
+- **8 unreferenced reference files:** Determine during or after Phase 2 whether each needs `@` wiring added or can be deleted as dead code.
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- `file:///Users/thamw/development/local/get-shit-done/.planning/research/STACK.md` — Git & Node version specifications and mixed reset alternative verification.
-- `file:///Users/thamw/development/local/get-shit-done/.planning/research/FEATURES.md` — 5-batch file classification mappings and zero-diff validation procedure.
-- `file:///Users/thamw/development/local/get-shit-done/.planning/research/ARCHITECTURE.md` — Dual-layer backup pattern, validation gates, and directory/batch structures.
-- `file:///Users/thamw/development/local/get-shit-done/.planning/research/PITFALLS.md` — Destructive hard reset recovery, classification errors, and tree parity warning signs.
-- `file:///Users/thamw/development/local/get-shit-done/.planning/PROJECT.md` — Milestone target definitions and current fork state context.
-- Git Reset & Add Docs: `https://git-scm.com/docs` — mixed reset and staging behavior.
-- Node.js Test Runner: `https://nodejs.org/api/test.html` — test runner execution.
+- Direct inspection of `bin/install.js` (11,522 lines) — pipeline structure, insertion points at lines 6432 and 8646
+- Direct grep of `agents/*.md`, `get-shit-done/workflows/*.md`, `commands/gsd/*.md`, `get-shit-done/references/*.md` — reference counts, dynamic exceptions identified by line
+- `tests/agent-size-budget.test.cjs` — budget thresholds (XL=1600, LARGE=1000, DEFAULT=500)
+- npm registry `npm info eta --json` — v4.6.0, 0 deps, published 2026-04-25, 204 KB unpacked
+- Context7 `/eta-dev/eta` — Eta configuration, CJS/ESM build, `useWith`, `autoEscape`, delimiter customization
+- npm registry for LiquidJS v10.27.0, Nunjucks v3.2.4, Mustache v4.2.0 — eliminated alternatives
 
 ### Secondary (MEDIUM confidence)
-- Conventional Commits: `https://www.conventionalcommits.org/` — commit message conventions.
+- esbuild bundling strategy for devDep installers — standard ecosystem practice, no single canonical source
+- Community consensus on regex-based parsers being fragile for structured text (Markdown `{`, `}`, `%` in code fences)
 
 ---
-*Research completed: 2026-05-21*
+*Research completed: 2026-05-28*
 *Ready for roadmap: yes*

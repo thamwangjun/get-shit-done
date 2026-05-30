@@ -18,6 +18,7 @@
 // See docs/TESTING-SUITES.md for full grouping policy.
 'use strict';
 
+const os = require('os');
 const { readdirSync } = require('fs');
 const { join } = require('path');
 const { execFileSync } = require('child_process');
@@ -139,7 +140,7 @@ function main() {
   //     they could flush. Reducing to 2 halves the peak concurrent worker count.
   //
   // Operator override via TEST_CONCURRENCY env var for local debugging.
-  const defaultConcurrency = process.platform === 'win32' ? 2 : 4;
+  const defaultConcurrency = process.platform === 'win32' ? 2 : os.availableParallelism();
   const concurrency = process.env.TEST_CONCURRENCY
     ? `--test-concurrency=${process.env.TEST_CONCURRENCY}`
     : `--test-concurrency=${defaultConcurrency}`;

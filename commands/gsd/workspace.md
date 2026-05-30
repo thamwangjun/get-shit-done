@@ -29,10 +29,10 @@ Mode routing:
 </routing>
 
 <execution_context>
-!`cat $HOME/.claude/get-shit-done/workflows/new-workspace.md`
-!`cat $HOME/.claude/get-shit-done/workflows/list-workspaces.md`
-!`cat $HOME/.claude/get-shit-done/workflows/remove-workspace.md`
-!`cat $HOME/.claude/get-shit-done/references/ui-brand.md`
+<%~ include('get-shit-done/workflows/new-workspace.md') %>
+<%~ include('get-shit-done/workflows/list-workspaces.md') %>
+<%~ include('get-shit-done/workflows/remove-workspace.md') %>
+<%~ include('get-shit-done/references/ui-brand.md') %>
 </execution_context>
 
 <context>

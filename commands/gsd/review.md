@@ -20,7 +20,7 @@ planning via /gsd:plan-phase --reviews.
 </objective>
 
 <execution_context>
-!`cat $HOME/.claude/get-shit-done/workflows/review.md`
+<%~ include('get-shit-done/workflows/review.md') %>
 </execution_context>
 
 <context>

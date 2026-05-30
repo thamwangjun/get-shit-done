@@ -18,7 +18,7 @@ Spawned by `/gsd:execute-phase` orchestrator.
 
 Your job: Execute the plan completely, commit each task, create SUMMARY.md, update STATE.md.
 
-@~/.claude/get-shit-done/references/mandatory-initial-read.md
+<%~ include('get-shit-done/references/mandatory-initial-read.md') %>
 </role>
 
 <documentation_lookup>
@@ -118,10 +118,10 @@ grep -n "type=\"checkpoint" [plan-path]
 
 <step name="execute_tasks">
 At execution decision points, apply structured reasoning:
-@~/.claude/get-shit-done/references/thinking-models-execution.md
+<%~ include('get-shit-done/references/thinking-models-execution.md') %>
 
 **iOS app scaffolding:** If this plan creates an iOS app target, follow ios-scaffold guidance:
-@~/.claude/get-shit-done/references/ios-scaffold.md
+<%~ include('get-shit-done/references/ios-scaffold.md') %>
 
 For each task:
 
@@ -239,7 +239,7 @@ Track auto-fix attempts per task. After 3 auto-fix attempts on a single task:
 
 **Extended examples and edge case guide:**
 For detailed deviation rule examples, checkpoint examples, and edge case decision guidance:
-@~/.claude/get-shit-done/references/executor-examples.md
+<%~ include('get-shit-done/references/executor-examples.md') %>
 </deviation_rules>
 
 <analysis_paralysis_guard>
@@ -451,7 +451,18 @@ not from a `pwd` captured in the orchestrator context.
 **0. Pre-commit HEAD safety assertion (worktree mode only, MANDATORY before every commit — #2924):**
 When running inside a Claude Code worktree (`.git` is a file, not a directory), assert HEAD is on a per-agent branch BEFORE staging or committing. If HEAD has drifted onto a protected ref, HALT — never self-recover via `git update-ref refs/heads/<protected>`:
 ```bash
-if [ -f .git ]; then  # worktree
+if [ -f .git ]; then
+  # Distinguish worktree (gitdir: .git/worktrees/...) from submodule (gitdir: ../.git/modules/...)
+  GIT_CONTENT=$(cat .git 2>/dev/null)
+  if echo "$GIT_CONTENT" | command grep -q "^gitdir:.*\.git/worktrees/"; then
+    # This is a worktree — apply worktree guards below
+    :
+  else
+    # This is a submodule or other non-worktree .git file — skip worktree guards
+    GIT_CONTENT=
+  fi
+fi
+if [ -f .git ] && echo "${GIT_CONTENT:-}" | command grep -q "^gitdir:.*\.git/worktrees/"; then  # worktree (not submodule)
   HEAD_REF=$(git symbolic-ref --quiet HEAD || echo "DETACHED")
   ACTUAL_BRANCH=$(git rev-parse --abbrev-ref HEAD)
   # Deny-list: never commit on a protected ref.
@@ -730,12 +741,7 @@ one of three shapes:
 - `{committed: false, reason: 'nothing_to_commit' | 'commit_failed', ...}` —
   no-op / genuine failure; surface in the completion notes.
 
-**Do not fall back to raw `git add` / `git commit` / `git add -f`** when the
-SDK returns `skipped: true`. The SDK's skip is the user's deliberate choice
-to keep `.planning/` files out of git history. Force-staging gitignored
-content via `git add -f .planning/...` is forbidden — that bug is exactly
-the regression #3678 reported, where the agent leaks `.planning/` artifacts
-into the user's project history.
+**When the SDK returns `skipped: true`, accept the skip and move on.** The SDK's skip is the user's deliberate choice to keep `.planning/` files out of git history. Always use the SDK commit path — force-staging gitignored content via `git add -f .planning/...` causes the exact regression #3678 reported, where the agent leaks `.planning/` artifacts into the user's project history.
 </final_commit>
 
 <completion_format>

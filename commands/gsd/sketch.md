@@ -30,13 +30,13 @@ Does not require prior new-project setup — auto-creates `.planning/sketches/` 
 </objective>
 
 <execution_context>
-!`cat $HOME/.claude/get-shit-done/workflows/sketch.md`
-!`cat $HOME/.claude/get-shit-done/workflows/sketch-wrap-up.md`
-!`cat $HOME/.claude/get-shit-done/references/ui-brand.md`
-!`cat $HOME/.claude/get-shit-done/references/sketch-theme-system.md`
-!`cat $HOME/.claude/get-shit-done/references/sketch-interactivity.md`
-!`cat $HOME/.claude/get-shit-done/references/sketch-tooling.md`
-!`cat $HOME/.claude/get-shit-done/references/sketch-variant-patterns.md`
+<%~ include('get-shit-done/workflows/sketch.md') %>
+<%~ include('get-shit-done/workflows/sketch-wrap-up.md') %>
+<%~ include('get-shit-done/references/ui-brand.md') %>
+<%~ include('get-shit-done/references/sketch-theme-system.md') %>
+<%~ include('get-shit-done/references/sketch-interactivity.md') %>
+<%~ include('get-shit-done/references/sketch-tooling.md') %>
+<%~ include('get-shit-done/references/sketch-variant-patterns.md') %>
 </execution_context>
 
 <runtime_note>

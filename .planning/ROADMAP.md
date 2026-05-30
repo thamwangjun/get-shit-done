@@ -14,6 +14,8 @@
 - ✅ **v1.41.3 Upstream v1.41.2 Fork Compliance** — Phases 32–34 (shipped 2026-05-19)
 - ✅ **v1.41.5 Refactor Git Commit History** — Phases 35–41 (shipped 2026-05-24)
 - ✅ **v2.1.0-a SHA Versioning Reimplementation** — Phases 42–43 (shipped 2026-05-26)
+- ✗ **v2.1.0-b Workflow Compliance Reinforcement** — Phases 44–48 (abandoned 2026-05-28, 0/5 phases complete)
+- ✅ **v2.1.0-c Install-Time Content Materialization** — Phases 44–47.1 (shipped 2026-05-29)
 
 ## Phases
 
@@ -179,6 +181,35 @@ Full details: `.planning/milestones/v2.1.0-a-ROADMAP.md`
 
 </details>
 
+<details>
+<summary>✗ v2.1.0-b Workflow Compliance Reinforcement (Phases 44–48) — ABANDONED 2026-05-28</summary>
+
+**Goal:** *(Abandoned before any phase started — milestone scope invalidated by v2.1.0-c decision to address install-time content materialization first)*
+**Abandoned after:** 0/5 phases complete
+
+- [x] Phase 44: Investigation — not started (completed 2026-05-28)
+- [x] Phase 45: Command Layer Fixes — not started (completed 2026-05-28)
+- [x] Phase 46: Workflow Layer Fixes — not started (completed 2026-05-29)
+- [ ] Phase 47: Agent Layer Fixes — not started
+- [ ] Phase 48: Quality Gate — not started
+
+</details>
+
+<details>
+<summary>✅ v2.1.0-c Install-Time Content Materialization (Phases 44–47.1) — SHIPPED 2026-05-29</summary>
+
+**Milestone Goal:** Replace runtime `@` and `` !`<bash>` `` content injection with install-time template substitution so every installed file is fully self-contained — no reliance on Claude to inject referenced content at runtime.
+
+- [x] **Phase 44: Resolver Core** — Build and unit-test `resolveIncludes()` in isolation; pivoted in Phase 45 to Eta v4 (completed 2026-05-28)
+- [x] **Phase 45: Pipeline Integration** — Wire Eta v4 into install.js; convert ~180 static ref lines to `<%~ include() %>` tags across 82 files; remove resolveIncludes() (completed 2026-05-28)
+- [x] **Phase 46: Regression Test Suite** — 5 regression tests running against installed output; TEST-06 dropped per D-11 (completed 2026-05-29)
+- [x] **Phase 47: Full Runtime Matrix + Verification** — Validate all supported runtimes produce zero unresolved references; `npm test` green (completed 2026-05-29)
+- [x] **Phase 47.1: Close Gap INTG-04/GATE-03** — Wire renderEtaContent into skills path; expand TEST-01 to detect `<%~` survivors (completed 2026-05-29)
+
+Full details: `.planning/milestones/v2.1.0-c-ROADMAP.md`
+
+</details>
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -228,7 +259,18 @@ Full details: `.planning/milestones/v2.1.0-a-ROADMAP.md`
 | 41. Final Verification & Parity Audit | v1.41.5 | 1/1 | Complete | 2026-05-23 |
 | 42. SHA Hook and Install Reimplementation | v2.1.0-a | 1/1 | Complete | 2026-05-25 |
 | 43. Update Workflow SHA Migration + Full Gate | v2.1.0-a | 1/1 | Complete | 2026-05-26 |
+| 44. Investigation | v2.1.0-b | 1/1 | Complete    | 2026-05-28 |
+| 45. Command Layer Fixes | v2.1.0-b | 4/4 | Complete    | 2026-05-28 |
+| 46. Workflow Layer Fixes | v2.1.0-b | 2/2 | Complete    | 2026-05-29 |
+| 47. Agent Layer Fixes | v2.1.0-b | 0/0 | Abandoned | - |
+| 48. Quality Gate | v2.1.0-b | 0/0 | Abandoned | - |
+| 44. Resolver Core | v2.1.0-c | 1/1 | Complete | 2026-05-28 |
+| 45. Pipeline Integration | v2.1.0-c | 5/5 | Complete | 2026-05-28 |
+| 46. Regression Test Suite | v2.1.0-c | 2/2 | Complete | 2026-05-29 |
+| 47. Full Runtime Matrix + Verification | v2.1.0-c | 1/1 | Complete | 2026-05-29 |
+| 47.1. Close gap: INTG-04/GATE-03 — wire renderEtaContent into skills path | v2.1.0-c | 2/2 | Complete   | 2026-05-29 |
 
 *v1.41.3 shipped 2026-05-19 — see `.planning/milestones/v1.41.3-ROADMAP.md`*
 *v1.41.5 shipped 2026-05-24 — see `.planning/milestones/v1.41.5-ROADMAP.md`*
 *v2.1.0-a shipped 2026-05-26 — see `.planning/milestones/v2.1.0-a-ROADMAP.md`*
+*v2.1.0-c shipped 2026-05-29 — see `.planning/milestones/v2.1.0-c-ROADMAP.md`*

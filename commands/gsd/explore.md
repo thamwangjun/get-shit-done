@@ -19,7 +19,7 @@ Accepts an optional topic argument: `/gsd:explore authentication strategy`
 </objective>
 
 <execution_context>
-!`cat $HOME/.claude/get-shit-done/workflows/explore.md`
+<%~ include('get-shit-done/workflows/explore.md') %>
 </execution_context>
 
 <process>

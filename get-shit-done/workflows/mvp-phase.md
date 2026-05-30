@@ -3,9 +3,9 @@ Guide the user through MVP-mode planning for a phase. Prompts for an "As a / I w
 </purpose>
 
 <required_reading>
-@~/.claude/get-shit-done/references/user-story-template.md
-@~/.claude/get-shit-done/references/spidr-splitting.md
-@~/.claude/get-shit-done/references/planner-mvp-mode.md
+<%~ include('get-shit-done/references/user-story-template.md') %>
+<%~ include('get-shit-done/references/spidr-splitting.md') %>
+<%~ include('get-shit-done/references/planner-mvp-mode.md') %>
 </required_reading>
 
 <runtime_note>

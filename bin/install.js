@@ -285,7 +285,7 @@ if (process.platform === 'win32') {
   }
 
   if (isWSL) {
-    console.error(`
+    process.stderr.write(`
 ${yellow}⚠ Detected WSL with Windows-native Node.js.${reset}
 
 This causes path resolution issues that prevent correct installation.
@@ -295,7 +295,7 @@ Please install a Linux-native Node.js inside WSL:
   fnm install --lts
 
 Then re-run: npx @opengsd/get-shit-done-redux@latest
-`);
+\n`);
     process.exit(1);
   }
 }
@@ -1743,6 +1743,13 @@ function replaceRelativePathReference(content, fromPath, toPath) {
     (_, prefix) => `${prefix}${toPath}`,
   );
 }
+
+// ─── Eta Template Engine ─────────────────────────────────────────────────────
+
+const { Eta } = require('eta');
+// sourceRoot = repo root (contains get-shit-done/, agents/, commands/)
+// bin/install.js lives one level inside: path.join(__dirname, '..') resolves to repo root
+const _etaSourceRoot = path.join(__dirname, '..');
 
 /**
  * Convert a Claude Code tool name to GitHub Copilot format.
@@ -6387,6 +6394,34 @@ function uninstallRuntimeArtifacts(runtime, configDir, scope) {
 }
 
 /**
+ * Render Eta template content with circular-include detection.
+ * Creates a fresh Eta instance scoped to viewsRoot so each call is isolated —
+ * tests can pass a temp dir as viewsRoot without any global state side effects.
+ * @param {string} content - Template content to render
+ * @param {string} srcPath - Source file path (used in error messages)
+ * @param {string} viewsRoot - Views root for Eta include resolution
+ * @returns {string} Rendered content
+ */
+function renderEtaContent(content, srcPath, viewsRoot) {
+  const renderEta = new Eta({
+    views: viewsRoot,
+    useWith: true,
+    autoEscape: false,
+  });
+  renderEta.resolvePath = function(templatePath, _options) {
+    return path.join(viewsRoot, templatePath);
+  };
+  try {
+    return renderEta.renderString(content, {});
+  } catch (e) {
+    if (e instanceof RangeError) {
+      throw new Error('Circular include detected in: ' + srcPath);
+    }
+    throw e;
+  }
+}
+
+/**
  * Recursively copy directory, replacing paths in .md files
  * Deletes existing destDir first to remove orphaned files from previous versions
  * @param {string} srcDir - Source directory
@@ -6430,6 +6465,7 @@ function copyWithPathReplacement(srcDir, destDir, pathPrefix, runtime, isCommand
       // Replace ~/.claude/ and $HOME/.claude/ and ./.claude/ with runtime-appropriate paths
       // Skip generic replacement for Copilot — convertClaudeToCopilotContent handles all paths
       let content = fs.readFileSync(srcPath, 'utf8');
+      content = renderEtaContent(content, srcPath, _etaSourceRoot);
       if (!isCopilot && !isAntigravity) {
         const globalClaudeRegex = /~\/\.claude\//g;
         const globalClaudeHomeRegex = /\$HOME\/\.claude\//g;
@@ -8643,7 +8679,9 @@ function install(isGlobal, runtime = 'claude', options = {}) {
     const agentEntries = fs.readdirSync(agentsSrc, { withFileTypes: true });
     for (const entry of agentEntries) {
       if (entry.isFile() && entry.name.endsWith('.md')) {
-        let content = fs.readFileSync(path.join(agentsSrc, entry.name), 'utf8');
+        const srcPath = path.join(agentsSrc, entry.name);
+        let content = fs.readFileSync(srcPath, 'utf8');
+        content = renderEtaContent(content, srcPath, _etaSourceRoot);
         // Replace ~/.claude/ and $HOME/.claude/ as they are the source of truth in the repo
         const dirRegex = /~\/\.claude\//g;
         const homeDirRegex = /\$HOME\/\.claude\//g;
@@ -11463,6 +11501,7 @@ module.exports = {
     ensureCodexHooksJsonSessionStart,
     readGsdCommandNames,
     installRuntimeArtifacts,
+    renderEtaContent,
     uninstallRuntimeArtifacts,
   };
 

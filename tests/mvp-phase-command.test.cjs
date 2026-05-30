@@ -44,9 +44,21 @@ function parseCommandContract(content) {
   const executionContextEnd = lines.findIndex(
     (line, idx) => idx > executionContextStart && line.trim() === '</execution_context>'
   );
-  const executionContextRefs = executionContextStart >= 0 && executionContextEnd > executionContextStart
+  const rawContextLines = executionContextStart >= 0 && executionContextEnd > executionContextStart
     ? lines.slice(executionContextStart + 1, executionContextEnd).map(line => line.trim()).filter(Boolean)
     : [];
+  // Resolve @-notation and Eta include tags to normalized path tails
+  const executionContextRefs = [];
+  for (const t of rawContextLines) {
+    if (t.startsWith('@')) {
+      executionContextRefs.push(t.replace(/^@~?\/?(?:\.claude\/)?(?:get-shit-done\/)?/, ''));
+    } else if (/^<%~?\s+include\('get-shit-done\//.test(t)) {
+      const m = /include\('get-shit-done\/([^']+)'\)/.exec(t);
+      if (m) executionContextRefs.push(m[1]);
+    } else {
+      executionContextRefs.push(t);
+    }
+  }
 
   return {
     name: frontmatter.name || '',

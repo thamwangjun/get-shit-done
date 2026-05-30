@@ -34,11 +34,11 @@ Initialize a new project through unified flow: questioning → research (optiona
 </objective>
 
 <execution_context>
-!`cat $HOME/.claude/get-shit-done/workflows/new-project.md`
-!`cat $HOME/.claude/get-shit-done/references/questioning.md`
-!`cat $HOME/.claude/get-shit-done/references/ui-brand.md`
-!`cat $HOME/.claude/get-shit-done/templates/project.md`
-!`cat $HOME/.claude/get-shit-done/templates/requirements.md`
+<%~ include('get-shit-done/workflows/new-project.md') %>
+<%~ include('get-shit-done/references/questioning.md') %>
+<%~ include('get-shit-done/references/ui-brand.md') %>
+<%~ include('get-shit-done/templates/project.md') %>
+<%~ include('get-shit-done/templates/requirements.md') %>
 </execution_context>
 
 <process>

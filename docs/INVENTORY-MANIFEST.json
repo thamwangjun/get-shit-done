@@ -1,5 +1,5 @@
 {
-  "generated": "2026-05-24",
+  "generated": "2026-05-29",
   "families": {
     "agents": [
       "gsd-advisor-researcher",
@@ -144,6 +144,7 @@
       "inbox.md",
       "ingest-docs.md",
       "insert-phase.md",
+      "join-discord.md",
       "list-phase-assumptions.md",
       "list-workspaces.md",
       "manager.md",
@@ -173,6 +174,7 @@
       "scan.md",
       "secure-phase.md",
       "session-report.md",
+      "set-profile.md",
       "settings-advanced.md",
       "settings-integrations.md",
       "settings.md",
@@ -321,7 +323,6 @@
       "secrets.cjs",
       "secrets.generated.cjs",
       "security.cjs",
-      "semver-compare.cjs",
       "shell-command-projection.cjs",
       "state-command-router.cjs",
       "state-document.cjs",

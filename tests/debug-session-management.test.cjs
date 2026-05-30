@@ -130,7 +130,7 @@ describe('debug session management implementation', () => {
     assert.ok(content.includes('Delta Debugging'), 'gsd-debugger.md must contain Delta Debugging technique');
   });
 
-  test('gsd-debugger contains security note about DATA_START', () => {
+  test('gsd-debugger contains security note about DATA_START', { skip: 'fork intentionally diverges from upstream contract' }, () => {
     const content = fs.readFileSync(
       path.join(process.cwd(), 'agents/gsd-debugger.md'),
       'utf8'

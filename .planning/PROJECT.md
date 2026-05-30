@@ -8,11 +8,11 @@ An opinionated fork of the GSD (Get Shit Done) framework that applies systematic
 
 Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships — upstream content additions are modified, not accepted verbatim.
 
-## Current State: v2.1.0-a Shipped 2026-05-26
+## Shipped: v2.1.0-c Install-Time Content Materialization (2026-05-29)
 
-**Shipped:** SHA Versioning Reimplementation — all installation and update-check logic now uses 7-char SHA via GitHub Commits API. npmjs.com removed from update path entirely.
+Every file installed by `bin/install.js` is now fully self-contained. Eta v4 is wired as the install-time template engine in both copy loops; all 82 source files converted from bare-line `@~/` static refs to `<%~ include() %>` tags. Zero unresolved references in any installed runtime — verified by `tests/install-eta-regression.test.cjs` (6/6) and full Claude install walk (TEST-01 with 27-entry `ALLOWED_INLINE_REFS`).
 
-**Next milestone:** Planning in progress — `/gsd-new-milestone` to define next cycle
+**Next milestone:** TBD — run `/gsd-new-milestone` to define v2.1.0-d or v2.2.0 goals.
 
 ## Requirements
 
@@ -77,10 +77,23 @@ Every agent, command, and workflow file on `main` meets the fork's prompt engine
 - ✓ TEST-02: `version-detection.test.cjs` 4/4 pass — v2.1.0-a
 - ✓ TEST-03: `bug-2992-check-latest-version.test.cjs` SHA-based assertions 9/9 pass — v2.1.0-a
 - ✓ GATE-01: Full `npm test` 0 regressions beyond 2 pre-existing ai-evals failures — v2.1.0-a
+- ✓ INTG-01: Eta v4 wired as install-time engine with default `<%`/`%>` delimiters, `autoEscape: false`, `useWith: true`, `views` = repo root — v2.1.0-c
+- ✓ INTG-02: All 82 source files converted from bare-line `@~/` static refs to `<%~ include() %>` Eta tags; post-conversion grep returns 0 survivors — v2.1.0-c
+- ✓ INTG-03: Runtime `.planning/` bare-line refs in agents layer converted to `` !`cat .planning/X` `` form — v2.1.0-c
+- ✓ INTG-04: Eta renderer wired into `copyWithPathReplacement()` and `wrappedConverter` (skills path); all 11 skills-based runtimes render `<%~ include()` at install time — v2.1.0-c
+- ✓ INTG-05: Eta renderer wired into agent install loop as first transform step — v2.1.0-c
+- ✓ INTG-06: Skills path (`applyRuntimeContentRewritesInPlace`) confirmed as not requiring renderer — `SKILL.md` files contain 0 install-time include refs — v2.1.0-c
+- ✓ TEST-01: Full Claude install walk with 27-entry `ALLOWED_INLINE_REFS`; TEST-01 also detects `<%~` survivors in installed output — v2.1.0-c
+- ✓ TEST-02: Conditional `@~` expression in `execute-phase.md` preserved verbatim in installed output — v2.1.0-c
+- ✓ TEST-04: Circular include detection verified by regression test — v2.1.0-c
+- ✓ TEST-05: Missing-file handling verified by regression test — v2.1.0-c
+- ✓ GATE-01: Full `npm test` 7459/49 (better than pre-milestone baseline 7458/50) — v2.1.0-c
+- ✓ GATE-02: Negative-framing scanner passes at 99/99 after all edits — v2.1.0-c
+- ✓ GATE-03: Zero unresolved `@~/.claude/` refs in fresh install across all runtimes; skills path `<%~` gap closed by Phase 47.1 — v2.1.0-c
 
 ### Active
 
-*(No active requirements — planning next milestone)*
+*(Next milestone not yet defined — run `/gsd-new-milestone` to scope v2.1.0-d or v2.2.0)*
 
 ### Out of Scope
 
@@ -104,7 +117,7 @@ Every agent, command, and workflow file on `main` meets the fork's prompt engine
   - `.planning/fork_plans/B0-SYNC_CATALOGUE_V01.md` — CATALOGUE.json sync process
   - `.planning/fork_plans/C0-POSITIVE_FRAMING_PASS_V01.md` — positive framing pass across all prompt content files
 
-- **Current state**: v2.1.0-a shipped 2026-05-26. SHA versioning fully reimplemented — all installation and update-check logic uses 7-char SHA via GitHub Commits API. npm test at 185 non-ai-evals failures (2 pre-existing ai-evals), zero fork regressions. Historical milestone delivery records and validated requirements are in `.planning/PROJECT_HISTORY.md`.
+- **Current state**: v2.1.0-c shipped 2026-05-29. Eta v4 is the install-time template engine — `eta.renderString()` in both copy loops (`copyWithPathReplacement` and agent install loop) and in `wrappedConverter` for skills-based runtimes. 82 source files converted (0 bare-line `@~/` survivors). `tests/install-eta-regression.test.cjs` 6/6 passing. Full `npm test` 7459 pass / 49 fail (0 new regressions). Negative-framing scanner 99/99. Historical milestone delivery records and validated requirements are in `.planning/PROJECT_HISTORY.md`.
 - **Test suite**: `npm test` runs Node.js built-in test runner. `agent-frontmatter.test.cjs` is the critical gate — all agent YAML frontmatter is validated there. Fork-side tests: negative-framing-scan (99/99), ios-scaffold-safety (6/6), bug-1924-ensure-hooks-dist-on-demand (8/8), agent-frontmatter (155/155), execute-phase-wave (15/15), semver-compare (12/17 — 5 failing: HOOK-03 writeResult, HOOK-04 GitHub API), version-detection (2/4 — 2 failing: INST-01 git rev-parse, INST-02 no-network sentinel), debug-session-management (HDOC subtest intentionally skipped), qwen-install (16/16), read-injection-scanner (19/19).
 - **File-writing agents** (those with `Write` in their tools list) must retain the string `Only use the Write tool` in their prompt body. Dynamic `FILE_WRITING_AGENTS` list used (WR-04: no longer hardcoded).
 - **Scanner precedence**: When tests conflict with fork standards (e.g., test asserts for upstream negative-framing strings), modify the test to reflect fork behavior — established precedent in v1.36.0 Phase 3.
@@ -140,6 +153,10 @@ Every agent, command, and workflow file on `main` meets the fork's prompt engine
 | Changelog extraction removed from update.md; GitHub commits link substituted | Changeset CLI `extract` requires semver ranges; SHA ranges not supported — GitHub link is simpler and always accurate | ✓ Good — v2.1.0-a |
 | `check-latest-version.cjs` injectable request seam (`opts.request`) | Enables deterministic unit tests without network; avoids subprocess spawning in tests | ✓ Good — v2.1.0-a |
 | `{{GSD_REPO}}`/`{{GSD_BRANCH}}` placeholders in worker source, hardcoded in check-latest-version.cjs | Worker is a hook file processed by installer's template engine; cjs module is not — asymmetry is intentional and documented | ✓ Good — v2.1.0-a |
+| Pivot from custom `resolveIncludes()` (Phase 44) to Eta v4 (Phase 45) as install-time template engine | Eta v4 is a production-grade zero-config engine with proper include resolution; custom resolver had growing edge-case complexity | ✓ Good — v2.1.0-c |
+| Use Eta default `<%`/`%>` delimiters (not custom `{%~`/`~%}`) | Custom delimiters caused double-processing artifacts when files passed through both installer and Eta; defaults with `autoEscape: false` resolved all issues | ✓ Good — v2.1.0-c Phase 46 |
+| Insert Phase 47.1 after audit found skills-path gap | Integration audit (post-Phase 47) found `wrappedConverter` in `runtime-artifact-layout.cjs` did not call `renderEtaContent`; inserted phase rather than treating as tech debt | ✓ Good — v2.1.0-c |
+| Drop TEST-06 (installed agent size budgets) and descope TEST-03 (Copilot tool-name transformation) | Size varies by platform/profile (no testing value); tool-name transformation is orthogonal to Eta include resolution | ✓ Good — v2.1.0-c |
 
 > Historical Key Decisions (implementation-specific, settled) are archived in .planning/PROJECT_HISTORY.md.
 
@@ -163,4 +180,4 @@ This document evolves at phase transitions and milestone boundaries.
 ---
 ---
 ---
-*Last updated: 2026-05-26 after v2.1.0-a milestone*
+*Last updated: 2026-05-29 after v2.1.0-c milestone*

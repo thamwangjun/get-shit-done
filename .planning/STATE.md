@@ -1,14 +1,15 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.1.0-a
-milestone_name: SHA Versioning Reimplementation
-status: archived (shipped 2026-05-26)
-last_updated: "2026-05-27T11:37:12.935Z"
+milestone: v2.1.0-c
+milestone_name: Install-Time Content Materialization
+status: complete
+last_updated: "2026-05-29T11:30:00.000Z"
+last_activity: 2026-05-29
 progress:
-  total_phases: 2
-  completed_phases: 2
-  total_plans: 2
-  completed_plans: 2
+  total_phases: 5
+  completed_phases: 5
+  total_plans: 11
+  completed_plans: 11
   percent: 100
 ---
 
@@ -16,22 +17,23 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-05-26 after v2.1.0-a milestone)
+See: .planning/PROJECT.md (updated 2026-05-29 after v2.1.0-c milestone)
 
 **Core value:** Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships
-**Current focus:** Planning next milestone — run `/gsd-new-milestone`
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Milestone: v2.1.0-a — SHA Versioning Reimplementation
-Status: archived (shipped 2026-05-26)
-Next: `/gsd-new-milestone` to start next milestone cycle
+Milestone v2.1.0-c complete — SHIPPED 2026-05-29
+All 5 phases, 11 plans complete.
+Status: Milestone archived — ready for next milestone planning
+Last activity: 2026-05-30 - Completed quick task 260530-7yv: implement the 1-line os.availableParallelism() fix in run-tests.cjs
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 56 (v1.37.1 Phases 7–12, v1.37.1a Phases 13–17, v1.37.1b Phases 18–19)
+- Total plans completed: 65 (v1.37.1 Phases 7–12, v1.37.1a Phases 13–17, v1.37.1b Phases 18–19)
 - Average duration: — (metrics not retroactively enabled for completed phases)
 
 ## Accumulated Context
@@ -73,9 +75,20 @@ Resolved: `tests/bug-2992-check-latest-version.test.cjs` rewritten for SHA-based
 | 260525-igz | Update CLAUDE.md architecture counts to reflect current project state (67 cmds, 90 workflows, 33 agents, 79 lib modules) | 2026-05-25 | e55d6831 | [260525-update-claude-md](./quick/260525-update-claude-md/) |
 | 260526-enb | Fix 8 v2.1.0-a tech debt items — stale update.md metadata and tracking inconsistencies | 2026-05-26 | a62f5357 | [20260526-v2-1-0-a-tech-debt-cleanup](./quick/20260526-v2-1-0-a-tech-debt-cleanup/) |
 | 260527-g3f | Fix installer banner to display 7-char SHA via gsdVersion instead of semver pkg.version | 2026-05-27 | 44ad13c1 | [260527-g3f-fix-install-banner-sha-instead-of-semver](./quick/260527-g3f-fix-install-banner-sha-instead-of-semver/) |
+| 260529-c7a | Address v2.1.0-c milestone audit tech debt | 2026-05-29 | 541b79f2 | [260529-c7a-address-v2-1-0-c-milestone-audit-tech-de](./quick/260529-c7a-address-v2-1-0-c-milestone-audit-tech-de/) |
+| 260529-dxz | Address phase 45 and phase 46 tech debts. | 2026-05-29 | 1e54d94e | [260529-dxz-address-phase-45-and-phase-46-tech-debts](./quick/260529-dxz-address-phase-45-and-phase-46-tech-debts/) |
+| 260529-f6o | Compare npm test failures vs upstream/v1.01.0 — fix eta template regex, skip stale tests, regenerate inventory | 2026-05-29 | 57f6579d | [260529-f6o-compare-npm-test-failures-between-curren](./quick/260529-f6o-compare-npm-test-failures-between-curren/) |
+| 260529-g0y | Compare npm test failures: dev HEAD vs upstream v1.01.0 (investigation only) | 2026-05-29 | — | [260529-g0y-compare-npm-test-failures-current-head-v](./quick/260529-g0y-compare-npm-test-failures-current-head-v/) |
+| 260529-gn2 | Fix 25 npm test failures: RC1 remove semver extract, RC2 update VERSION assertions, RC3 skip fork-diverged tests | 2026-05-29 | a81c4a8a | [260529-gn2-fix-25-npm-test-failures-rc1-remove-semv](./quick/260529-gn2-fix-25-npm-test-failures-rc1-remove-semv/) |
+| 260529-inw | Compare test suite of current branch vs upstream v1.01.0 (13c64e02) — full file structure and test case diff | 2026-05-29 | — | [260529-inw-compare-test-suite-of-current-branch-vs-](./quick/260529-inw-compare-test-suite-of-current-branch-vs-/) |
+| 260529-nyk | Revert observability layer to v1.01.0: delete tests/observability/, tests/dispatch/, get-shit-done/bin/lib/observability/, revert command-routing-hub.cjs | 2026-05-29 | bef58d60 | [260529-nyk-revert-observability-layer-to-v1-01-0](./quick/260529-nyk-revert-observability-layer-to-v1-01-0/) |
+| 260530-6ks | Fix 3 test failures: remove dead semver tests from gsd-statusline.test.cjs, fix eta regex in ingest-docs.test.cjs | 2026-05-30 | ffa2703b | [260530-6ks-investigate-3-test-failures-isinstalleda](./quick/260530-6ks-investigate-3-test-failures-isinstalleda/) |
+| 260530-6xt | Investigate failing test: import command loads doc-conflict-engine reference | 2026-05-30 | — | [260530-6xt-investigate-failing-test-import-command-](./quick/260530-6xt-investigate-failing-test-import-command-/) |
+| 260530-710 | fix the regex with option A | 2026-05-30 | 5e0fd08b | [260530-710-fix-the-regex-with-option-a](./quick/260530-710-fix-the-regex-with-option-a/) |
+| 260530-7yv | implement the 1-line os.availableParallelism() fix in run-tests.cjs | 2026-05-30 | 131ad843 | [260530-7yv-implement-the-1-line-os-availableparalle](./quick/260530-7yv-implement-the-1-line-os-availableparalle/) |
 
 ## Session Continuity
 
-Last session: 2026-05-26
-Stopped at: v2.1.0-a milestone archived — all phases complete, all docs updated
-Resume: `/gsd-new-milestone` to define next milestone
+Last session: 2026-05-30T04:44:09.117Z
+Stopped at: Completed quick task 260530-6ks — fix 3 test failures (semver tests removed, eta regex fixed)
+Resume file: None
