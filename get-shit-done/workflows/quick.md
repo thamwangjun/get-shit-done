@@ -182,7 +182,7 @@ Quick tasks can run mid-phase - validation only checks ROADMAP.md exists, not ph
 
 ---
 
-**Step 2.5: Handle quick-task branching**
+**Step 3: Handle quick-task branching**
 
 **If `branch_name` is empty/null:** Skip and continue on the current branch.
 
@@ -238,7 +238,7 @@ All quick-task commits for this run stay on that branch. User handles merge/reba
 
 ---
 
-**Step 3: Create task directory**
+**Step 4: Create task directory**
 
 ```bash
 mkdir -p "${task_dir}"
@@ -246,7 +246,7 @@ mkdir -p "${task_dir}"
 
 ---
 
-**Step 4: Create quick task directory**
+**Step 5: Create quick task directory**
 
 Create the directory for this quick task:
 
@@ -265,7 +265,7 @@ Store `$QUICK_DIR` for use in orchestration.
 
 ---
 
-**Step 4.5: Discussion phase (only when `$DISCUSS_MODE`)**
+**Step 6: Discussion phase (only when `$DISCUSS_MODE`)**
 
 Skip this step entirely if NOT `$DISCUSS_MODE`.
 
@@ -307,7 +307,7 @@ AskUserQuestion(
 )
 ```
 
-If user selects "All clear" → skip to Step 5 (no CONTEXT.md written).
+If user selects "All clear" → skip to Step 8 (no CONTEXT.md written).
 
 **4.5c. Discuss selected areas**
 
@@ -392,7 +392,7 @@ Report: `Context captured: ${QUICK_DIR}/${quick_id}-CONTEXT.md`
 
 ---
 
-**Step 4.75: Research phase (only when `$RESEARCH_MODE`)**
+**Step 7: Research phase (only when `$RESEARCH_MODE`)**
 
 Skip this step entirely if NOT `$RESEARCH_MODE`.
 
@@ -459,7 +459,7 @@ If research file not found, warn but continue: "Research agent did not produce o
 
 ---
 
-**Step 5: Spawn planner (quick mode)**
+**Step 8: Spawn planner (quick mode)**
 
 **If `$VALIDATE_MODE`:** Use `quick-full` mode with stricter constraints.
 
@@ -518,7 +518,7 @@ If plan not found, error: "Planner failed to create ${quick_id}-PLAN.md"
 
 ---
 
-**Step 5.5: Plan-checker loop (only when `$VALIDATE_MODE`)**
+**Step 9: Plan-checker loop (only when `$VALIDATE_MODE`)**
 
 Skip this step entirely if NOT `$VALIDATE_MODE`.
 
@@ -577,7 +577,7 @@ Agent(
 
 **Handle checker return:**
 
-- **`## VERIFICATION PASSED`:** Display confirmation, proceed to step 6.
+- **`## VERIFICATION PASSED`:** Display confirmation, proceed to step 11.
 - **`## ISSUES FOUND`:** Display issues, check iteration count, enter revision loop.
 
 **Revision loop (max 2 iterations):**
@@ -632,11 +632,11 @@ Offer: 1) Force proceed, 2) Abort
 
 ---
 
-**Step 5.6: Pre-dispatch plan commit (worktree mode only)**
+**Step 10: Pre-dispatch plan commit (worktree mode only)**
 
 When `USE_WORKTREES !== "false"`, commit PLAN.md to the current branch **before** spawning the executor. This ensures the worktree inherits PLAN.md at its branch HEAD so the executor can read it via a worktree-rooted path — avoiding the main-repo path priming that triggers CC #36182 path-resolution drift.
 
-Skip this step entirely if `USE_WORKTREES === "false"` (non-worktree mode: PLAN.md is committed in Step 8 as usual).
+Skip this step entirely if `USE_WORKTREES === "false"` (non-worktree mode: PLAN.md is committed in Step 15 as usual).
 
 ```bash
 if [ "${USE_WORKTREES}" != "false" ]; then
@@ -664,7 +664,7 @@ fi
 
 ---
 
-**Step 6: Spawn executor**
+**Step 11: Spawn executor**
 
 Capture current HEAD before spawning (used for worktree branch check):
 ```bash
@@ -761,7 +761,7 @@ SUMMARY.md and stop — the user must rerun with worktrees disabled.
 - Commit each task atomically (code changes only)
 - Run the <submodule_commit_guard> bash block before every \`git commit\` if SUBMODULE_PATHS is non-empty
 - Create summary at: ${QUICK_DIR}/${quick_id}-SUMMARY.md
-- Do NOT commit docs artifacts (SUMMARY.md, STATE.md, PLAN.md) — the orchestrator handles the docs commit in Step 8
+- Do NOT commit docs artifacts (SUMMARY.md, STATE.md, PLAN.md) — the orchestrator handles the docs commit in Step 15
 - Do NOT update ROADMAP.md (quick tasks are separate from planned phases)
 </constraints>
 ",
@@ -804,7 +804,7 @@ Note: For quick tasks producing multiple plans (rare), spawn executors in parall
 
 ---
 
-**Step 6.25: Code review (auto)**
+**Step 12: Code review (auto)**
 
 Skip this step entirely if `$FULL_MODE` is false.
 
@@ -855,7 +855,7 @@ If review produces findings, display advisory message. **Error handling:** Failu
 
 ---
 
-**Step 6.5: Verification (only when `$VALIDATE_MODE`)**
+**Step 13: Verification (only when `$VALIDATE_MODE`)**
 
 Skip this step entirely if NOT `$VALIDATE_MODE`.
 
@@ -898,13 +898,13 @@ Store as `$VERIFICATION_STATUS`.
 
 | Status | Action |
 |--------|--------|
-| `passed` | Store `$VERIFICATION_STATUS = "Verified"`, continue to step 7 |
+| `passed` | Store `$VERIFICATION_STATUS = "Verified"`, continue to step 14 |
 | `human_needed` | Display items needing manual check, store `$VERIFICATION_STATUS = "Needs Review"`, continue |
 | `gaps_found` | Display gap summary, offer: 1) Re-run executor to fix gaps, 2) Accept as-is. Store `$VERIFICATION_STATUS = "Gaps"` |
 
 ---
 
-**Step 7: Update STATE.md**
+**Step 14: Update STATE.md**
 
 Update STATE.md with quick task completion record.
 
@@ -959,7 +959,7 @@ Use Edit tool to make these changes atomically
 
 ---
 
-**Step 8: Final commit and completion**
+**Step 15: Final commit and completion**
 
 Stage and commit quick task artifacts. This step MUST always run — even if the executor already committed some files (e.g. when running without worktree isolation). The `gsd-sdk query commit` command (or legacy `gsd-tools.cjs` commit) handles already-committed files gracefully.
 
