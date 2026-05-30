@@ -231,7 +231,8 @@ Full details: `.planning/milestones/v2.1.0-c-ROADMAP.md`
   2. Scanner correctly detects Pattern A/B (`**Step N.M**` headings) and Pattern D (ordered-list decimal items like `2.5.`) without false-positives on letter-suffix steps (e.g., `Step 7a`) or code-fenced content
   3. Scanner correctly detects out-of-order step sequences (e.g., Step 1 then Step 3 then Step 2) in each file
   4. Running `npm test -- tests/step-numbering-scan.test.cjs` shows failures attributable to the 6 known violating files (not unrelated files)
-**Plans**: TBD
+**Plans**: 1 plan
+- [ ] 48-01-PLAN.md — Write step-numbering scanner test (tests/step-numbering-scan.test.cjs)
 
 ### Phase 49: Survey and Normalization
 **Goal**: Every decimal step label across all in-scope prompt content files is renamed to whole-integer sequential numbering; all same-file cross-references and co-located test assertions are updated in the same commits; the Phase 48 scanner goes GREEN
@@ -325,7 +326,7 @@ Full details: `.planning/milestones/v2.1.0-c-ROADMAP.md`
 | 46. Regression Test Suite | v2.1.0-c | 2/2 | Complete | 2026-05-29 |
 | 47. Full Runtime Matrix + Verification | v2.1.0-c | 1/1 | Complete | 2026-05-29 |
 | 47.1. Close gap: INTG-04/GATE-03 — wire renderEtaContent into skills path | v2.1.0-c | 2/2 | Complete   | 2026-05-29 |
-| 48. TDD Red Gate | v2.1.0-d | 0/TBD | Not started | - |
+| 48. TDD Red Gate | v2.1.0-d | 0/1 | Not started | - |
 | 49. Survey and Normalization | v2.1.0-d | 0/TBD | Not started | - |
 | 50. Maintenance Script and Cross-Ref Scanner | v2.1.0-d | 0/TBD | Not started | - |
 | 51. Quality Gate | v2.1.0-d | 0/TBD | Not started | - |
