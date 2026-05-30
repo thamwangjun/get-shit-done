@@ -141,12 +141,13 @@ function scanForOutOfOrder(content) {
     // Whole-integer step only — anchored to line start to avoid mid-sentence cross-references
     // (e.g. "in Step 8, see..." must not trigger); negative lookahead excludes decimal labels,
     // other digits, and letter-suffix labels (a-z); handles Step 0 as a valid starting label.
-    // KNOWN LIMITATION: `^\s*\*?\*?` allows leading whitespace and bold markers only — a step
-    // label preceded by a list marker (`- **Step 3:**`, `1. **Step 3:**`) or blockquote (`>`)
-    // will not be detected. The current corpus has no such patterns (verified 2026-05-30), but
-    // upstream merges could introduce them. Phase 50 hardening should replace `^\s*\*?\*?` with
-    // `^[\s*]*` (allows any leading whitespace/asterisks) and add list-marker stripping.
-    const stepMatch = line.match(/^\s*\*?\*?Step\s+(\d+)(?![\.\da-z])/i);
+    // Phase 50 Plan 1 hardening: list markers (`- **Step 3:**`, `* **Step 3:**`, `+ **Step 3:**`,
+    // `1. **Step 3:**`) and blockquote markers (`> **Step 3:**`) are now detected. The corpus
+    // had no such patterns as of 2026-05-30, but upstream merges could introduce them. The fix
+    // strips leading list/blockquote markers via `/^(\s*(?:[-*+]|\d+\.|>)\s*)+/` before matching,
+    // and widens the anchor from `^\s*\*?\*?` to `^[\s*]*` (allows leading whitespace/asterisks).
+    const stripped = line.replace(/^(\s*(?:[-*+]|\d+\.|>)\s*)+/, '');
+    const stepMatch = stripped.match(/^[\s*]*Step\s+(\d+)(?![\.\da-z])/i);
     if (stepMatch) {
       const n = parseInt(stepMatch[1], 10);
       if (expectedNext === null) {
