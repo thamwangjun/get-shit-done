@@ -1,10 +1,11 @@
 ---
 phase: 49
 slug: survey-and-normalization
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: complete
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-05-30
+audited: 2026-05-30
 ---
 
 # Phase 49 — Validation Strategy
@@ -38,19 +39,19 @@ created: 2026-05-30
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 49-01-01 | 01 | 1 | MAP-01 | — | N/A | integration | `node --test tests/step-numbering-scan.test.cjs` | ✅ | ⬜ pending |
-| 49-02-01 | 02 | 2 | NORM-01 | — | N/A | integration | `npm test` | ✅ | ⬜ pending |
-| 49-03-01 | 03 | 2 | NORM-01 | — | N/A | integration | `npm test` | ✅ | ⬜ pending |
-| 49-04-01 | 04 | 2 | NORM-01 | — | N/A | integration | `npm test` | ✅ | ⬜ pending |
-| 49-05-01 | 05 | 3 | NORM-01 | — | N/A | integration | `npm test` | ✅ | ⬜ pending |
-| 49-06-01 | 06 | 3 | NORM-01 | — | N/A | integration | `npm test` | ✅ | ⬜ pending |
-| 49-07-01 | 07 | 3 | NORM-01 | — | N/A | integration | `npm test` | ✅ | ⬜ pending |
-| 49-08-01 | 08 | 3 | NORM-01 | — | N/A | integration | `npm test` | ✅ | ⬜ pending |
-| 49-09-01 | 09 | 3 | NORM-01 | — | N/A | integration | `npm test` | ✅ | ⬜ pending |
-| 49-10-01 | 10 | 3 | NORM-01 | — | N/A | integration | `npm test` | ✅ | ⬜ pending |
-| 49-11-01 | 11 | 3 | NORM-01 | — | N/A | integration | `npm test` | ✅ | ⬜ pending |
-| 49-12-01 | 12 | 4 | NORM-01 | — | N/A | integration | `npm test` | ✅ | ⬜ pending |
-| 49-13-01 | 13 | 4 | NORM-01 | — | N/A | integration | `npm test` | ✅ | ⬜ pending |
+| 49-01-01 | 01 | 1 | MAP-01 | — | N/A | integration | `node --test tests/step-numbering-scan.test.cjs` | ✅ | ✅ green |
+| 49-02-01 | 02 | 2 | NORM-01 | — | N/A | integration | `npm test` | ✅ | ✅ green |
+| 49-03-01 | 03 | 2 | NORM-01 | — | N/A | integration | `npm test` | ✅ | ✅ green |
+| 49-04-01 | 04 | 2 | NORM-01 | — | N/A | integration | `npm test` | ✅ | ✅ green |
+| 49-05-01 | 05 | 3 | NORM-01 | — | N/A | integration | `npm test` | ✅ | ✅ green |
+| 49-06-01 | 06 | 3 | NORM-01 | — | N/A | integration | `npm test` | ✅ | ✅ green |
+| 49-07-01 | 07 | 3 | NORM-01 | — | N/A | integration | `npm test` | ✅ | ✅ green |
+| 49-08-01 | 08 | 3 | NORM-01 | — | N/A | integration | `npm test` | ✅ | ✅ green |
+| 49-09-01 | 09 | 3 | NORM-01 | — | N/A | integration | `npm test` | ✅ | ✅ green |
+| 49-10-01 | 10 | 3 | NORM-01 | — | N/A | integration | `npm test` | ✅ | ✅ green |
+| 49-11-01 | 11 | 3 | NORM-01 | — | N/A | integration | `npm test` | ✅ | ✅ green |
+| 49-12-01 | 12 | 4 | NORM-01 | — | N/A | integration | `npm test` | ✅ | ✅ green |
+| 49-13-01 | 13 | 4 | NORM-01 | — | N/A | integration | `npm test` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -72,11 +73,23 @@ Existing infrastructure covers all phase requirements — `tests/step-numbering-
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 15s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 15s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** 2026-05-30
+
+---
+
+## Validation Audit 2026-05-30
+
+| Metric | Count |
+|--------|-------|
+| Gaps found | 7 |
+| Resolved | 7 |
+| Escalated | 0 |
+
+**Notes:** All 7 gaps were PARTIAL (stale test assertions). Phase 49 plan 03 renumbered `gsd-phase-researcher.md` ARM step from `## Step 1.5:` → `## Step 3:`, and plan 12 renumbered `quick.md` research step from `Step 4.75` → `Step 7`. Tests in `quick-research.test.cjs` and `gsd-researcher-app-aware.test.cjs` were updated to match. Full suite: 8057 tests, 0 failures.
