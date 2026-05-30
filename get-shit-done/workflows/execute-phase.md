@@ -353,7 +353,7 @@ Report:
 </step>
 
 <step name="cross_ai_delegation">
-**Optional step 2.5 — Delegate plans to an external AI runtime.**
+**Optional step 3 — Delegate plans to an external AI runtime.**
 
 This step runs after plan discovery and before normal wave execution. It identifies plans
 that should be delegated to an external AI command and executes them via stdin-based prompt
@@ -507,13 +507,13 @@ increases monotonically across waves. `{status}` is `complete` (success),
    - Bad: "Executing terrain generation plan"
    - Good: "Procedural terrain generator using Perlin noise — creates height maps, biome zones, and collision meshes. Required before vehicle physics can interact with ground."
 
-2.5. **Per-plan worktree decision (run for each plan in this wave BEFORE its dispatch):**
+3. **Per-plan worktree decision (run for each plan in this wave BEFORE its dispatch):**
 
    Read and execute `get-shit-done/workflows/execute-phase/steps/per-plan-worktree-gate.md` for each plan. It extracts `PLAN_FILES` from the plan's JSON, intersects against `SUBMODULE_PATHS` (with normalization, bidirectional matching, and glob-prefix handling), and sets `USE_WORKTREES_FOR_PLAN` to `false` when the plan touches a submodule path. Append `plan_id` to a `WAVE_WORKTREE_PLANS` accumulator when `USE_WORKTREES_FOR_PLAN != false`.
 
-   The dispatch branches in step 3 below MUST gate on `USE_WORKTREES_FOR_PLAN` for the current plan, not on the project-level `USE_WORKTREES`.
+   The dispatch branches in step 4 below MUST gate on `USE_WORKTREES_FOR_PLAN` for the current plan, not on the project-level `USE_WORKTREES`.
 
-3. **Spawn executor agents:**
+4. **Spawn executor agents:**
 
    **Emit a plan-start heartbeat (literal line, no tool call) immediately before
    each `Agent()` dispatch (#2410):**
@@ -524,7 +524,7 @@ increases monotonically across waves. `{status}` is `complete` (success),
    For 200k models, this keeps orchestrator context lean (~10-15%).
    For 1M+ models (Opus 4.6, Sonnet 4.6), richer context can be passed directly.
 
-   **Worktree mode** (`USE_WORKTREES_FOR_PLAN` is not `false` — evaluated per-plan in step 2.5):
+   **Worktree mode** (`USE_WORKTREES_FOR_PLAN` is not `false` — evaluated per-plan in step 3):
 
    Before spawning, capture the current HEAD:
    ```bash
@@ -657,7 +657,7 @@ increases monotonically across waves. `{status}` is `complete` (success),
 
    > **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Agent() above to spawn executor agent(s), stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
 
-   **Sequential mode** (`USE_WORKTREES_FOR_PLAN` is `false` — either project-level `USE_WORKTREES=false`, or per-plan submodule intersection forced it false in step 2.5):
+   **Sequential mode** (`USE_WORKTREES_FOR_PLAN` is `false` — either project-level `USE_WORKTREES=false`, or per-plan submodule intersection forced it false in step 3):
 
    Omit `isolation="worktree"` from the Agent call. Replace the `<parallel_execution>` block with:
 
@@ -683,7 +683,7 @@ increases monotonically across waves. `{status}` is `complete` (success),
 
    When worktrees are disabled for a plan (per-plan or project-level), that plan's executor runs on the main working tree. If **any** plan in the current wave dropped to sequential mode, execute the affected plan(s) **one at a time** to avoid concurrent writes to the main working tree — plans in the same wave that retained worktree isolation can still run in parallel alongside the sequential ones, but two non-worktree plans in the same wave must serialize. When the project-level `USE_WORKTREES=false`, all plans in the wave serialize regardless of the `PARALLELIZATION` setting.
 
-4. **Wait for all agents in wave to complete.**
+5. **Wait for all agents in wave to complete.**
 
    **Plan-complete heartbeat (#2410):** as each executor returns (or is verified
    via spot-check below), emit one line — `complete` advances `{P}`, `failed`
@@ -725,7 +725,7 @@ increases monotonically across waves. `{status}` is `complete` (success),
    **This fallback applies automatically to all runtimes.** Claude Code's Agent() normally
    returns synchronously, but the fallback ensures resilience if it doesn't.
 
-5. **Post-wave hook validation (parallel mode only):** Hooks run on every executor commit by default (#2924); this post-wave run only fires when `workflow.worktree_skip_hooks=true` opted out of per-commit hooks:
+6. **Post-wave hook validation (parallel mode only):** Hooks run on every executor commit by default (#2924); this post-wave run only fires when `workflow.worktree_skip_hooks=true` opted out of per-commit hooks:
    ```bash
    SKIP_HOOKS=$($GSD_SDK query config-get workflow.worktree_skip_hooks 2>/dev/null || echo "false")
    if [ "$SKIP_HOOKS" = "true" ]; then
@@ -738,7 +738,7 @@ increases monotonically across waves. `{status}` is `complete` (success),
    ```
    If hooks fail: report the failure and ask "Fix hook issues now?" or "Continue to next wave?"
 
-5.5. **Worktree cleanup (when `isolation="worktree"` was used):**
+7. **Worktree cleanup (when `isolation="worktree"` was used):**
 
    **Standard wave contract:** Each wave's worktrees merge to main via the templated path below before the next wave's worktrees fork. The cleanup loop runs once per wave at the end of the wave lifecycle. Worktrees created in wave N must be fully removed before wave N+1 forks new ones.
 
@@ -746,7 +746,7 @@ increases monotonically across waves. `{status}` is `complete` (success),
 
    When executor agents ran in worktree isolation, their commits land on temporary branches in separate working trees. After the wave completes, merge these changes back and clean up:
 
-   **Manifest source of truth (#3384):** Cleanup consumes the `WAVE_WORKTREE_MANIFEST` created and populated during executor dispatch in step 3. Do not recreate or truncate it here.
+   **Manifest source of truth (#3384):** Cleanup consumes the `WAVE_WORKTREE_MANIFEST` created and populated during executor dispatch in step 4. Do not recreate or truncate it here.
 
    Prefer the bounded helper, which validates branch identity, expected base, deletion
    diffs, merge result, and worktree removal before deleting the temporary branch.
@@ -806,17 +806,17 @@ increases monotonically across waves. `{status}` is `complete` (success),
    git worktree prune
    ```
 
-   **When to skip step 5.5:**
+   **When to skip step 7:**
 
-   **If no plan in this wave used worktree isolation** (project-level `USE_WORKTREES=false` OR every plan in the wave had `USE_WORKTREES_FOR_PLAN=false` — i.e. `WAVE_WORKTREE_PLANS` from step 2.5 is empty): all agents ran on the main working tree — skip this step entirely.
+   **If no plan in this wave used worktree isolation** (project-level `USE_WORKTREES=false` OR every plan in the wave had `USE_WORKTREES_FOR_PLAN=false` — i.e. `WAVE_WORKTREE_PLANS` from step 3 is empty): all agents ran on the main working tree — skip this step entirely.
 
-   **If the orchestrator merged via custom messages (cross-wave-dependency deviation):** the templated cleanup loop above was not triggered for those merges. Run the cleanup-tail snippet above instead. After the snippet completes, proceed to step 5.6.
+   **If the orchestrator merged via custom messages (cross-wave-dependency deviation):** the templated cleanup loop above was not triggered for those merges. Run the cleanup-tail snippet above instead. After the snippet completes, proceed to step 8.
 
    **If at least one plan used worktrees but others did not:** still run this cleanup — it iterates over actual `git worktree list` output and only merges back the worktrees that were created, leaving sequential plans' commits on the main tree untouched.
 
    **If no worktrees found at runtime:** Skip silently — agents may have been spawned without worktree isolation, or the orchestrator already cleaned them up.
 
-5.6. **Post-merge build & test gate:**
+8. **Post-merge build & test gate:**
 
    After merging all worktrees in a wave (parallel mode), or after the last plan completes
    (serial mode), run a build and then the project's test suite to catch cross-plan
@@ -829,7 +829,7 @@ increases monotonically across waves. `{status}` is `complete` (success),
 
    Read and execute `get-shit-done/workflows/execute-phase/steps/post-merge-gate.md`.
 
-5.7. **Post-wave shared artifact update (when at least one plan used worktrees, skip if tests failed):**
+9. **Post-wave shared artifact update (when at least one plan used worktrees, skip if tests failed):**
 
    When **any** executor agent in this wave ran with `isolation="worktree"`, that agent skipped STATE.md and ROADMAP.md updates to avoid last-merge-wins overwrites. The orchestrator is the single writer for these files. After worktrees are merged back, update shared artifacts once for every completed plan in the wave (worktree-mode plans **and** sequential plans that ran on the main tree but deferred to the orchestrator for tracking writes).
 
@@ -861,7 +861,7 @@ increases monotonically across waves. `{status}` is `complete` (success),
 
    **If no plan in this wave used worktrees** (project-level `USE_WORKTREES=false` OR `WAVE_WORKTREE_PLANS` is empty): sequential agents already updated STATE.md and ROADMAP.md themselves — skip this step.
 
-5.8. **Handle test gate failures (when `WAVE_FAILURE_COUNT > 0`):**
+10. **Handle test gate failures (when `WAVE_FAILURE_COUNT > 0`):**
 
    ```
    ## ⚠ Post-Merge Test Failure (cumulative failures: ${WAVE_FAILURE_COUNT})
@@ -890,7 +890,7 @@ increases monotonically across waves. `{status}` is `complete` (success),
    CLI entry points) can silently drop code. The post-merge gate catches this before
    the next wave builds on a broken foundation.
 
-6. **Report completion — spot-check claims first:**
+11. **Report completion — spot-check claims first:**
 
    **Wave-close heartbeat (#2410):** after spot-checks finish (pass or fail),
    before the `## Wave {N} Complete` summary, emit as a literal line:
@@ -921,8 +921,8 @@ increases monotonically across waves. `{status}` is `complete` (success),
    ---
    ```
 
-7. **Handle failures:**
-   **Step 7.0 — classify before branching (#3095):**
+12. **Handle failures:**
+   **Step 7 — classify before branching (#3095):**
    ```bash
    CLASS_JSON=$($GSD_SDK query agent.classify-failure -- "$AGENT_RETURN_BODY")
    CLASS=$(echo "$CLASS_JSON" | jq -r '.class')
@@ -931,7 +931,7 @@ increases monotonically across waves. `{status}` is `complete` (success),
    if [ -n "$RETRY_AFTER" ]; then RETRY_HINT="  Provider hinted retry-after: ${RETRY_AFTER}s"; else RETRY_HINT=""; fi
    ```
    One classifier branch handles sentinels across Claude/Copilot/Codex/Gemini. Reference: `docs/research/provider-rate-limit-signals.md`.
-   **Step 7.1 — `class == "quota-exceeded"`:**
+   **Step 8 — `class == "quota-exceeded"`:**
    Do not offer "retry now". Run step-5 spot-check first; if SUMMARY.md is missing but commits exist, route to safe-resume (`state.verify-against-disk`) instead of immediate redispatch.
    ```text
    ⚠ Plan {plan_id} terminated by provider quota / rate limit
@@ -944,19 +944,19 @@ increases monotonically across waves. `{status}` is `complete` (success),
    3. Abort phase and report partial state
    ```
    Re-run `/gsd:execute-phase` after quota reset for Option 1.
-   **Step 7.2 — `class == "classify-handoff-bug"`:**
+   **Step 9 — `class == "classify-handoff-bug"`:**
    If error contains `classifyHandoffIfNeeded is not defined`, treat as Claude runtime bug. Run the same step-5 spot-checks; PASS => treat as success, FAIL => fall through.
-   **Step 7.3 — `class == "unknown-failure"`:**
+   **Step 10 — `class == "unknown-failure"`:**
    Report failed plan and ask Continue/Stop; continuing may cascade into dependent plan failures.
 
-7b. **Pre-wave dependency check (waves 2+ only):**
+12b. **Pre-wave dependency check (waves 2+ only):**
     Before wave N+1, run `gsd-sdk query verify.key-links {phase_dir}/{plan}-PLAN.md` for each upcoming plan.
     If any PRIOR-wave artifact link fails, present:
     - `## Cross-Plan Wiring Gap` with plan/link/from/pattern rows
     - Options: investigate+fix before continue, or continue with cascade risk
     Skip key-links that reference files in the CURRENT (upcoming) wave.
-8. **Execute checkpoint plans between waves** — see `<checkpoint_handling>`.
-9. **Proceed to next wave.**
+13. **Execute checkpoint plans between waves** — see `<checkpoint_handling>`.
+14. **Proceed to next wave.**
 </step>
 <step name="checkpoint_handling">
 Plans with `autonomous: false` require user interaction.
@@ -1215,6 +1215,8 @@ $GSD_SDK query commit "docs(phase-${PARENT_PHASE}): resolve UAT gaps and debug s
 Run prior phases' test suites to catch cross-phase regressions BEFORE verification.
 
 **Skip if:** This is the first phase (no prior phases), or no prior VERIFICATION.md files exist.
+
+### Regression Gate Execution
 
 **Step 1: Discover prior phases' test files**
 ```bash
