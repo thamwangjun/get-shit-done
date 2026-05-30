@@ -57,7 +57,7 @@ fi
 
 **If `BUILD_EXIT` is 124 (timeout):** Log warning, treat as non-blocking, continue to Test gate.
 
-**If `BUILD_EXIT` is non-zero (build failure):** Increment `WAVE_FAILURE_COUNT` (same semantics as test failures). Present failure output and offer "Fix now" or "Continue" options (same as step 5.8).
+**If `BUILD_EXIT` is non-zero (build failure):** Increment `WAVE_FAILURE_COUNT` (same semantics as test failures). Present failure output and offer "Fix now" or "Continue" options (same as step 10).
 
 **Step 2 — Test gate:**
 

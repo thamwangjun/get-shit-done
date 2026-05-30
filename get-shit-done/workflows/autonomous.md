@@ -403,7 +403,7 @@ After execute-phase returns (or the execute agent completes), read the verificat
 VERIFY_STATUS=$(grep "^status:" "${PHASE_DIR}"/*-VERIFICATION.md 2>/dev/null | head -1 | cut -d: -f2 | tr -d ' ')
 ```
 
-Where `PHASE_DIR` comes from the `init phase-op` call already made in step 3a. If the variable is not in scope, re-fetch:
+Where `PHASE_DIR` comes from the `init phase-op` call already made in the Smart Discuss sub-step (3a). If the variable is not in scope, re-fetch:
 
 ```bash
 PHASE_STATE=$($GSD_SDK query init.phase-op ${PHASE_NUM})
@@ -493,7 +493,7 @@ On **"Stop autonomous mode"**: Go to handle_blocker with "User stopped — gaps 
 
 > Run after any successful execution routing (passed, human_needed accepted, or gaps deferred/accepted) — before proceeding to the iterate step.
 
-Check if this phase had a UI-SPEC (created in step 3a.5 or pre-existing):
+Check if this phase had a UI-SPEC (created in the UI Design Contract sub-step (3a.5) or pre-existing):
 
 ```bash
 UI_SPEC_FILE=$(ls "${PHASE_DIR}"/*-UI-SPEC.md 2>/dev/null | head -1)
@@ -780,8 +780,8 @@ When any phase operation fails or a blocker is detected, present 3 options via A
 - [ ] Final completion banner displayed after lifecycle
 - [ ] Progress bar uses phase number / total milestone phases (not position among incomplete), with fallback display when phase numbers exceed total
 - [ ] Smart discuss documents relationship to discuss-phase with CTRL-03 note
-- [ ] Frontend phases get UI-SPEC generated before planning (step 3a.5) if not already present
-- [ ] Frontend phases get UI review audit after successful execution (step 3d.5) if UI-SPEC exists
+- [ ] Frontend phases get UI-SPEC generated before planning (UI Design Contract sub-step) if not already present
+- [ ] Frontend phases get UI review audit after successful execution (UI Review sub-step) if UI-SPEC exists
 - [ ] UI phase and UI review respect workflow.ui_phase and workflow.ui_review config toggles
 - [ ] UI review is advisory (non-blocking) — phase proceeds to iterate regardless of score
 - [ ] `--only N` restricts execution to exactly one phase

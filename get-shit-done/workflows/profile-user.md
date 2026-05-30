@@ -60,7 +60,7 @@ Continue to step 2.
 
 ## 2. Consent Gate (ACTV-06)
 
-**Skip if** `--questionnaire` flag is set (no JSONL reading occurs -- jump directly to step 4b).
+**Skip if** `--questionnaire` flag is set (no JSONL reading occurs -- jump directly to the Questionnaire Path).
 
 Display consent screen:
 
@@ -119,7 +119,7 @@ Use AskUserQuestion:
 - question: "Ready to analyze your sessions?"
 - options:
   - "Let's go" -- Proceed to step 3 (session analysis)
-  - "Use questionnaire instead" -- Jump to step 4b (questionnaire path)
+  - "Use questionnaire instead" -- Jump to the Questionnaire Path
   - "Not now" -- Display "No worries. Run /gsd:profile-user when ready." and exit
 
 ---
@@ -150,8 +150,8 @@ Display: "✓ Found N sessions across M projects"
 
 **Determine data sufficiency:**
 - Count total messages available from the scan result (sum sessions across projects)
-- If 0 sessions found: Display "No sessions found. Switching to questionnaire." and jump to step 4b
-- If sessions found: Continue to step 4a
+- If 0 sessions found: Display "No sessions found. Switching to questionnaire." and jump to the Questionnaire Path
+- If sessions found: Continue to the Session Analysis Path
 
 ---
 

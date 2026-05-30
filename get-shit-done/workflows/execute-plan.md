@@ -140,7 +140,7 @@ Pattern B only (verify-only checkpoints). Skip for A/C.
 3. **Critical ordering — write and commit SUMMARY.md as one atomic block.** Do NOT
    emit narrative output between the Write tool call and the commit tool call.
    Truncation at this boundary is a known failure mode (see #2070 rescue logic in
-   execute-phase.md step 5.5).
+   execute-phase.md step 7).
 
    After ALL segments: aggregate files/deviations/decisions → create SUMMARY.md → self-check:
    - Verify key-files.created exist on disk with `[ -f ]`
@@ -366,7 +366,7 @@ If user_setup exists: create `{phase}-USER-SETUP.md` using template `~/.claude/g
 **Critical ordering — write and commit SUMMARY.md as one atomic block.** Do NOT
 emit narrative output between the Write tool call and the commit tool call.
 Truncation at this boundary is a known failure mode (see #2070 rescue logic in
-execute-phase.md step 5.5).
+execute-phase.md step 7).
 
 Create `{phase}-{plan}-SUMMARY.md` at `.planning/phases/XX-name/`. Use `~/.claude/get-shit-done/templates/summary.md`.
 
@@ -472,7 +472,7 @@ Extract requirement IDs from the plan's frontmatter (e.g., `requirements: [AUTH-
 **Critical ordering — write and commit SUMMARY.md as one atomic block.** Do NOT
 emit narrative output between the Write tool call and the commit tool call.
 Truncation at this boundary is a known failure mode (see #2070 rescue logic in
-execute-phase.md step 5.5).
+execute-phase.md step 7).
 
 Task code already committed per-task. Commit plan metadata:
 
