@@ -215,7 +215,7 @@ Full details: `.planning/milestones/v2.1.0-c-ROADMAP.md`
 
 **Milestone Goal:** Enforce whole-integer-only step labels across all prompt content files and provide a durable maintenance script to re-enforce after every upstream merge.
 
-- [ ] **Phase 48: TDD Red Gate** — Write step-numbering scanner tests confirmed RED against unmodified corpus
+- [x] **Phase 48: TDD Red Gate** — Write step-numbering scanner tests confirmed RED against unmodified corpus (completed 2026-05-30)
 - [ ] **Phase 49: Survey and Normalization** — Build cross-file reference index then renumber all violating files with test co-updates
 - [ ] **Phase 50: Maintenance Script and Cross-Ref Scanner** — Maintenance script (cross-file-aware, idempotent) plus cross-file reference integrity scanner
 - [ ] **Phase 51: Quality Gate** — Full npm test at 0 regressions
@@ -332,7 +332,7 @@ Full details: `.planning/milestones/v2.1.0-c-ROADMAP.md`
 | 45. Command Layer Fixes | v2.1.0-b | 4/4 | Complete    | 2026-05-28 |
 | 46. Workflow Layer Fixes | v2.1.0-b | 2/2 | Complete    | 2026-05-29 |
 | 47. Agent Layer Fixes | v2.1.0-b | 0/0 | Abandoned | - |
-| 48. Quality Gate | v2.1.0-b | 1/1 | Complete    | 2026-05-30 |
+| 48. Quality Gate | v2.1.0-b | 2/2 | Complete   | 2026-05-30 |
 | 44. Resolver Core | v2.1.0-c | 1/1 | Complete | 2026-05-28 |
 | 45. Pipeline Integration | v2.1.0-c | 5/5 | Complete | 2026-05-28 |
 | 46. Regression Test Suite | v2.1.0-c | 2/2 | Complete | 2026-05-29 |
