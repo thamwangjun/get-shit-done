@@ -192,7 +192,7 @@ Full details: `.planning/milestones/v2.1.0-a-ROADMAP.md`
 - [x] Phase 45: Command Layer Fixes — not started (completed 2026-05-28)
 - [x] Phase 46: Workflow Layer Fixes — not started (completed 2026-05-29)
 - [ ] Phase 47: Agent Layer Fixes — not started
-- [ ] Phase 48: Quality Gate — not started
+- [x] Phase 48: Quality Gate — not started (completed 2026-05-30)
 
 </details>
 
@@ -233,7 +233,7 @@ Full details: `.planning/milestones/v2.1.0-c-ROADMAP.md`
   2. Scanner correctly detects Pattern A/B (`**Step N.M**` headings) and Pattern D (ordered-list decimal items like `2.5.`) without false-positives on letter-suffix steps (e.g., `Step 7a`) or code-fenced content
   3. Scanner correctly detects out-of-order step sequences (e.g., Step 1 then Step 3 then Step 2) in each file
   4. Running `npm test -- tests/step-numbering-scan.test.cjs` shows failures attributable to the 6 known violating files (not unrelated files)**Plans**: 1 plan
-- [ ] 48-01-PLAN.md — Write step-numbering scanner test (tests/step-numbering-scan.test.cjs)
+- [x] 48-01-PLAN.md — Write step-numbering scanner test (tests/step-numbering-scan.test.cjs)
 
 ### Phase 49: Survey and Normalization
 
@@ -330,7 +330,7 @@ Full details: `.planning/milestones/v2.1.0-c-ROADMAP.md`
 | 45. Command Layer Fixes | v2.1.0-b | 4/4 | Complete    | 2026-05-28 |
 | 46. Workflow Layer Fixes | v2.1.0-b | 2/2 | Complete    | 2026-05-29 |
 | 47. Agent Layer Fixes | v2.1.0-b | 0/0 | Abandoned | - |
-| 48. Quality Gate | v2.1.0-b | 0/0 | Abandoned | - |
+| 48. Quality Gate | v2.1.0-b | 1/1 | Complete    | 2026-05-30 |
 | 44. Resolver Core | v2.1.0-c | 1/1 | Complete | 2026-05-28 |
 | 45. Pipeline Integration | v2.1.0-c | 5/5 | Complete | 2026-05-28 |
 | 46. Regression Test Suite | v2.1.0-c | 2/2 | Complete | 2026-05-29 |

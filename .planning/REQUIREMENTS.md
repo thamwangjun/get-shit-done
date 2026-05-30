@@ -9,8 +9,8 @@ Requirements for whole-integer step numbering enforcement. Each maps to roadmap 
 
 ### Step Numbering Scanners
 
-- [ ] **SCAN-01**: Scanner test (`tests/step-numbering-scan.test.cjs`) detects decimal step labels (e.g. `Step 2.5`, `Step 1.3`, `Step 7.0`) in `agents/`, `commands/gsd/`, and `get-shit-done/workflows/` and fails — confirmed RED against unmodified corpus before any file fixes
-- [ ] **SCAN-02**: Scanner test detects out-of-order step numbering (e.g., Step 1, Step 3, Step 2) in agents, commands, and workflows and fails
+- [x] **SCAN-01**: Scanner test (`tests/step-numbering-scan.test.cjs`) detects decimal step labels (e.g. `Step 2.5`, `Step 1.3`, `Step 7.0`) in `agents/`, `commands/gsd/`, and `get-shit-done/workflows/` and fails — confirmed RED against unmodified corpus before any file fixes
+- [x] **SCAN-02**: Scanner test detects out-of-order step numbering (e.g., Step 1, Step 3, Step 2) in agents, commands, and workflows and fails
 
 ### Cross-File Reference Mapping
 
@@ -47,8 +47,8 @@ Requirements for whole-integer step numbering enforcement. Each maps to roadmap 
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| SCAN-01 | Phase 48 | Pending |
-| SCAN-02 | Phase 48 | Pending |
+| SCAN-01 | Phase 48 | Complete |
+| SCAN-02 | Phase 48 | Complete |
 | MAP-01 | Phase 49 | Pending |
 | NORM-01 | Phase 49 | Pending |
 | NORM-02 | Phase 50 | Pending |
@@ -56,6 +56,7 @@ Requirements for whole-integer step numbering enforcement. Each maps to roadmap 
 | GATE-01 | Phase 51 | Pending |
 
 **Coverage:**
+
 - v2.1.0-d requirements: 7 total
 - Mapped to phases: 7
 - Unmapped: 0 ✓
