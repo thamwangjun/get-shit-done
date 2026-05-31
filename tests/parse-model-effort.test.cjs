@@ -111,6 +111,50 @@ test('parseModelEffort tolerates non-string input without throwing', () => {
   assert.deepStrictEqual(core.parseModelEffort(obj), { model: obj, effort: null });
 });
 
+// ─── _resolveAgentSlot tests (52-02) ─────────────────────────────────────────
+
+describe('_resolveAgentSlot — shared tier resolver (52-02)', () => {
+  test('_resolveAgentSlot is exported as a function', () => {
+    assert.strictEqual(typeof core._resolveAgentSlot, 'function');
+  });
+
+  test('_resolveAgentSlot returns a single slot string for gsd-executor on balanced', () => {
+    const d = makeTmpWithConfig({ model_profile: 'balanced' });
+    const slot = core._resolveAgentSlot(d, 'gsd-executor');
+    assert.strictEqual(slot, 'sonnet');
+  });
+
+  test('_resolveAgentSlot returns inherit when profile is inherit and no phase-type override', () => {
+    const d = makeTmpWithConfig({ model_profile: 'inherit' });
+    const slot = core._resolveAgentSlot(d, 'gsd-executor');
+    assert.strictEqual(slot, 'inherit');
+  });
+
+  test('_resolveAgentSlot honors phase-type override over profile', () => {
+    // execution phase-type → gsd-executor; override to opus
+    const d = makeTmpWithConfig({ model_profile: 'balanced', models: { execution: 'opus' } });
+    const slot = core._resolveAgentSlot(d, 'gsd-executor');
+    assert.strictEqual(slot, 'opus');
+  });
+});
+
+// ─── Shell-safety regression (52-02, T-52-SC) ────────────────────────────────
+
+describe('resolveModelInternal shell-safety — override path strips ";" (52-02)', () => {
+  test('model_overrides with "model;effort" value returns .model with no ";"', () => {
+    const d = makeTmpWithConfig({ model_overrides: { 'gsd-executor': 'opus;high' } });
+    const resolved = core.resolveModelInternal(d, 'gsd-executor');
+    assert.strictEqual(resolved.includes(';'), false, `resolved model must not contain ";": got "${resolved}"`);
+    assert.strictEqual(resolved, 'opus');
+  });
+
+  test('model_overrides with bare full ID (no ";") passes through verbatim', () => {
+    const d = makeTmpWithConfig({ model_overrides: { 'gsd-executor': 'openai/gpt-5.4' } });
+    const resolved = core.resolveModelInternal(d, 'gsd-executor');
+    assert.strictEqual(resolved, 'openai/gpt-5.4');
+  });
+});
+
 // ─── Pre-change golden snapshot (52-02) ──────────────────────────────────────
 // Frozen before the _resolveAgentSlot / parseModelEffort refactor in Task 2.
 // Must pass byte-identical BEFORE and AFTER the refactor lands.

@@ -1316,14 +1316,54 @@ function _resolveRuntimeTier(config, tier) {
   });
 }
 
+/**
+ * #52-02 — Shared tier/slot resolver used by both resolveModelInternal and
+ * (in Phase 53) the effort resolver. Extracts the duplicated phase-type-tier
+ * lookup from resolveModelInternal so model and effort resolution share a
+ * single path (eliminates the #3023 divergence class — PARSE-03).
+ *
+ * Returns the raw tier/slot string BEFORE alias-map expansion (i.e. one of
+ * 'opus'|'sonnet'|'haiku'|'inherit'|null) so a ';effort' suffix in the slot
+ * survives for Phase 53 to consume.
+ *
+ * @param {string} cwd      - project root (passed straight through to loadConfig)
+ * @param {string} agentType - e.g. 'gsd-executor'
+ * @returns {string|null}
+ */
+function _resolveAgentSlot(cwd, agentType) {
+  const config = loadConfig(cwd);
+  const profile = String(config.model_profile || 'balanced').toLowerCase();
+  const agentModels = MODEL_PROFILES[agentType];
+  const phaseType = AGENT_TO_PHASE_TYPE[agentType];
+  const phaseTypeTier = (phaseType && config.models && typeof config.models === 'object')
+    ? config.models[phaseType]
+    : undefined;
+  // Only honor phase-type tier if it's one of the recognized aliases.
+  // 'inherit' is intentionally included here (model resolver's set) — the
+  // effort resolver layers its own opt-out on top in Phase 53.
+  const VALID_TIERS = new Set(['opus', 'sonnet', 'haiku', 'inherit']);
+  // CR Major (#3030): honor phase-type tier when valid; otherwise synthesize
+  // 'inherit' only when profile==='inherit' (no phase-type override present)
+  // so a config like { model_profile:'inherit', models:{execution:'opus'} }
+  // correctly returns 'opus' not 'inherit'.
+  return (phaseTypeTier && VALID_TIERS.has(phaseTypeTier))
+    ? phaseTypeTier
+    : (profile === 'inherit'
+      ? 'inherit'
+      : (agentModels ? (agentModels[profile] || agentModels['balanced']) : null));
+}
+
 function resolveModelInternal(cwd, agentType) {
   const config = loadConfig(cwd);
 
   // 1. Per-agent override — always respected; highest precedence.
   // Users who set fully-qualified model IDs (e.g., "openai/gpt-5.4") get exactly that.
+  // D3: run through parseModelEffort so a bare full ID (no ';') returns verbatim
+  // and a 'model;effort' override returns only .model — keeping ';' out of the
+  // resolved string (shell-safety, T-52-SC).
   const override = config.model_overrides?.[agentType];
   if (override) {
-    return override;
+    return parseModelEffort(override).model;
   }
 
   // 2. Compute the tier (opus/sonnet/haiku/inherit) for this agent.
@@ -1336,27 +1376,7 @@ function resolveModelInternal(cwd, agentType) {
   // (step 5) all stay correct without further branching.
   const profile = String(config.model_profile || 'balanced').toLowerCase();
   const agentModels = MODEL_PROFILES[agentType];
-  const phaseType = AGENT_TO_PHASE_TYPE[agentType];
-  const phaseTypeTier = (phaseType && config.models && typeof config.models === 'object')
-    ? config.models[phaseType]
-    : undefined;
-  // Only honor phase-type tier if it's one of the recognized aliases.
-  // Anything else falls through to profile lookup so a typo doesn't
-  // silently break tier resolution.
-  const VALID_TIERS = new Set(['opus', 'sonnet', 'haiku', 'inherit']);
-  // Resolve tier: phase-type wins when valid; else profile-derived; else
-  // (when profile === 'inherit') propagate inherit so the later short-
-  // circuit fires. CR Major (#3030): a config like
-  //   { model_profile: 'inherit', models: { execution: 'opus' } }
-  // must honor the phase-type opus, not return 'inherit'. Synthesizing
-  // tier='inherit' only when there's no phase-type override keeps the
-  // original inherit semantics intact while letting a valid phase-type
-  // tier win.
-  const tier = (phaseTypeTier && VALID_TIERS.has(phaseTypeTier))
-    ? phaseTypeTier
-    : (profile === 'inherit'
-      ? 'inherit'
-      : (agentModels ? (agentModels[profile] || agentModels['balanced']) : null));
+  const tier = _resolveAgentSlot(cwd, agentType);
 
   // 3. Runtime-aware resolution (#2517) — only when `runtime` is explicitly set
   // to a non-Claude runtime. `runtime: "claude"` is the implicit default and is
@@ -1930,6 +1950,7 @@ module.exports = {
   getArchivedPhaseDirs,
   getRoadmapPhaseInternal,
   resolveModelInternal,
+  _resolveAgentSlot,
   resolveModelForTier,
   resolveReasoningEffortInternal,
   RUNTIME_PROFILE_MAP,
