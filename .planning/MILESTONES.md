@@ -1,5 +1,22 @@
 # Milestones
 
+## v2.1.0-d Whole-Integer Step Numbering (Shipped: 2026-05-31)
+
+**Phases completed:** 4 phases, 19 plans
+**Git range:** 76797cc8d..b59b86df · 165 commits · 103 files, +10,364 / -370 lines
+**Timeline:** 2026-05-30 → 2026-05-31 (1 day)
+
+**Key accomplishments:**
+
+- Wrote `tests/step-numbering-scan.test.cjs` — TDD red gate with decimal, letter-suffix, and out-of-order detection across all in-scope prompt content files; confirmed RED against unmodified corpus then expanded for letter-suffix violations (Phase 48)
+- Produced `49-MAP-01.md` — cross-file step reference index enumerating every prose ref of the form `<file>.md step N` before any renaming began (Phase 49)
+- Renormalized 7 violating files to sequential whole-integer steps — agents (intel-updater, phase-researcher, verifier) and workflows (execute-phase, plan-review-convergence, progress, quick, reapply-patches, post-merge-gate, graphify, discuss-phase-assumptions, autonomous, profile-user), co-updating test assertions and cross-file refs in the same commits (Phase 49)
+- Built `scripts/normalize-step-numbers.cjs` — cross-file-aware, idempotent CLI with `--dry-run`; hardened scanner anchor to handle list-marker/blockquote-prefixed step labels (Phase 50)
+- Built `tests/cross-file-step-refs.test.cjs` — 219/219 pass on clean corpus, RED test confirms stale ref detection; locks in XREF-01 invariant for future upstream merges (Phase 50)
+- Quality gate: `npm test` 11,728 pass / 3 fail (vs v2.1.0-c baseline 7,459/49); negative-framing 99/99; step-numbering 632/632; cross-file-step-refs 219/219 (Phase 51)
+
+---
+
 ## v2.1.0-c Install-Time Content Materialization (Shipped: 2026-05-29)
 
 **Phases completed:** 5 phases, 11 plans

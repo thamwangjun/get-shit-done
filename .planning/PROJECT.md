@@ -8,14 +8,9 @@ An opinionated fork of the GSD (Get Shit Done) framework that applies systematic
 
 Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships — upstream content additions are modified, not accepted verbatim.
 
-## Current Milestone: v2.1.0-d Whole-Integer Step Numbering
+## Shipped: v2.1.0-d Whole-Integer Step Numbering (2026-05-31)
 
-**Goal:** Enforce whole-integer-only step labels across all prompt content files and provide a durable maintenance script to re-enforce after every upstream merge.
-
-**Target features:**
-- Scanner/test that detects decimal step numbering (e.g. `Step 2.5`, `Step 1.3`) and fails
-- Normalize all violating files: renumber steps to sequential whole integers in original order, updating inline cross-references within each file
-- Maintenance script (`scripts/normalize-step-numbers.cjs`) that can be run standalone after upstream merges — detects violations and renumbers automatically
+Every step label across all prompt content files is a whole integer. Three new enforcement layers: `tests/step-numbering-scan.test.cjs` (decimal + letter-suffix + out-of-order detection, 632/632), `scripts/normalize-step-numbers.cjs` (cross-file-aware idempotent CLI with `--dry-run`), and `tests/cross-file-step-refs.test.cjs` (stale cross-file ref detector, 219/219). Quality gate: `npm test` 11,728 pass / 3 fail, negative-framing 99/99.
 
 ## Shipped: v2.1.0-c Install-Time Content Materialization (2026-05-29)
 
@@ -97,13 +92,17 @@ Every file installed by `bin/install.js` is now fully self-contained. Eta v4 is 
 - ✓ GATE-01: Full `npm test` 7459/49 (better than pre-milestone baseline 7458/50) — v2.1.0-c
 - ✓ GATE-02: Negative-framing scanner passes at 99/99 after all edits — v2.1.0-c
 - ✓ GATE-03: Zero unresolved `@~/.claude/` refs in fresh install across all runtimes; skills path `<%~` gap closed by Phase 47.1 — v2.1.0-c
+- ✓ SCAN-01: `tests/step-numbering-scan.test.cjs` detects decimal step labels in agents, commands, and workflows — v2.1.0-d
+- ✓ SCAN-02: Scanner detects out-of-order step numbering — v2.1.0-d
+- ✓ MAP-01: Pre-normalization cross-file step reference index produced before renaming — v2.1.0-d
+- ✓ NORM-01: All violating files renumbered to sequential whole integers; cross-refs co-updated — v2.1.0-d
+- ✓ NORM-02: `scripts/normalize-step-numbers.cjs` cross-file-aware idempotent CLI with `--dry-run` — v2.1.0-d
+- ✓ XREF-01: `tests/cross-file-step-refs.test.cjs` detects stale cross-file step references — v2.1.0-d
+- ✓ GATE-01: `npm test` 11,728 pass / 3 fail, negative-framing 99/99 — v2.1.0-d
 
 ### Active
 
-- [ ] STEP-01: Scanner/test detects decimal step numbering in agents, commands, and workflows and fails
-- [ ] STEP-02: All violating files renumbered to sequential whole integers with inline cross-references updated
-- [ ] STEP-03: `scripts/normalize-step-numbers.cjs` standalone script detects and renumbers decimal steps automatically
-- [ ] GATE-01: Full `npm test` passes at 0 regressions after all changes
+*(None — all active requirements shipped with v2.1.0-d)*
 
 ### Out of Scope
 
@@ -127,7 +126,7 @@ Every file installed by `bin/install.js` is now fully self-contained. Eta v4 is 
   - `.planning/fork_plans/B0-SYNC_CATALOGUE_V01.md` — CATALOGUE.json sync process
   - `.planning/fork_plans/C0-POSITIVE_FRAMING_PASS_V01.md` — positive framing pass across all prompt content files
 
-- **Current state**: v2.1.0-c shipped 2026-05-29. Eta v4 is the install-time template engine — `eta.renderString()` in both copy loops (`copyWithPathReplacement` and agent install loop) and in `wrappedConverter` for skills-based runtimes. 82 source files converted (0 bare-line `@~/` survivors). `tests/install-eta-regression.test.cjs` 6/6 passing. Full `npm test` 7459 pass / 49 fail (0 new regressions). Negative-framing scanner 99/99. Historical milestone delivery records and validated requirements are in `.planning/PROJECT_HISTORY.md`.
+- **Current state**: v2.1.0-d shipped 2026-05-31. All prompt content step labels are whole integers. Three enforcement layers: `tests/step-numbering-scan.test.cjs` (632/632: decimal + letter-suffix + out-of-order detection), `scripts/normalize-step-numbers.cjs` (cross-file-aware idempotent CLI), `tests/cross-file-step-refs.test.cjs` (219/219: stale cross-file ref detection). `npm test` 11,728 pass / 3 fail. Negative-framing scanner 99/99. Historical milestone delivery records in `.planning/MILESTONES.md`.
 - **Test suite**: `npm test` runs Node.js built-in test runner. `agent-frontmatter.test.cjs` is the critical gate — all agent YAML frontmatter is validated there. Fork-side tests: negative-framing-scan (99/99), ios-scaffold-safety (6/6), bug-1924-ensure-hooks-dist-on-demand (8/8), agent-frontmatter (155/155), execute-phase-wave (15/15), semver-compare (12/17 — 5 failing: HOOK-03 writeResult, HOOK-04 GitHub API), version-detection (2/4 — 2 failing: INST-01 git rev-parse, INST-02 no-network sentinel), debug-session-management (HDOC subtest intentionally skipped), qwen-install (16/16), read-injection-scanner (19/19).
 - **File-writing agents** (those with `Write` in their tools list) must retain the string `Only use the Write tool` in their prompt body. Dynamic `FILE_WRITING_AGENTS` list used (WR-04: no longer hardcoded).
 - **Scanner precedence**: When tests conflict with fork standards (e.g., test asserts for upstream negative-framing strings), modify the test to reflect fork behavior — established precedent in v1.36.0 Phase 3.
@@ -167,6 +166,12 @@ Every file installed by `bin/install.js` is now fully self-contained. Eta v4 is 
 | Use Eta default `<%`/`%>` delimiters (not custom `{%~`/`~%}`) | Custom delimiters caused double-processing artifacts when files passed through both installer and Eta; defaults with `autoEscape: false` resolved all issues | ✓ Good — v2.1.0-c Phase 46 |
 | Insert Phase 47.1 after audit found skills-path gap | Integration audit (post-Phase 47) found `wrappedConverter` in `runtime-artifact-layout.cjs` did not call `renderEtaContent`; inserted phase rather than treating as tech debt | ✓ Good — v2.1.0-c |
 | Drop TEST-06 (installed agent size budgets) and descope TEST-03 (Copilot tool-name transformation) | Size varies by platform/profile (no testing value); tool-name transformation is orthogonal to Eta include resolution | ✓ Good — v2.1.0-c |
+| Step-numbering scanner with TDD red gate (write test first, confirm RED against unmodified corpus) | Consistent with v1.38.6/v1.41.3 scanner-first precedent — avoid unnecessary edits by enumerating violations before fixing | ✓ Good — v2.1.0-d |
+| Letter-suffix steps (Step 7a, Step 2a) are violations — treated as Pattern A/B decimal equivalents | Letter suffixes are functionally decimal sub-steps; the scanner's STEP_DECIMAL_RE requires `(?:\.\d\|[a-z])` alternation | ✓ Good — v2.1.0-d |
+| Pattern C files (`plan-phase.md`, `new-milestone.md`, `new-project.md`) explicitly excluded — `## N.N.` headings without "Step" keyword | Different semantic pattern (section numbering vs step labeling); separate scope decision for future milestone | ✓ Good — v2.1.0-d |
+| `normalize-step-numbers.cjs` uses dynamic corpus grep (discoverCrossFileRefs) rather than consuming static MAP-01 index at runtime | Dynamic discovery is strictly more capable — handles any corpus state including future upstream merges; static index was Phase 49 scaffolding | ✓ Good — v2.1.0-d |
+| `scanForOutOfOrder` strip-then-match anchor: strip list markers/blockquotes before matching `Step N` pattern | List-marker and blockquote prefixed step labels exist in the corpus; G-01 limitation test flipped from asserting failure to asserting detection | ✓ Good — v2.1.0-d |
+| Cross-file ref scanner only validates whole-integer refs (`(\d+)`), not decimal | Decimal cross-file refs are the normalize script's domain; this scanner locks in the invariant for whole-integer integrity after normalization | ✓ Good — v2.1.0-d |
 
 > Historical Key Decisions (implementation-specific, settled) are archived in .planning/PROJECT_HISTORY.md.
 
@@ -190,4 +195,4 @@ This document evolves at phase transitions and milestone boundaries.
 ---
 ---
 ---
-*Last updated: 2026-05-30 after v2.1.0-d milestone start*
+*Last updated: 2026-05-31 after v2.1.0-d milestone*

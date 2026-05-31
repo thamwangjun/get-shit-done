@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v2.1.0-d
 milestone_name: Whole-Integer Step Numbering
-status: executing
+status: Awaiting next milestone
 stopped_at: context exhaustion at 75% (2026-05-31)
-last_updated: "2026-05-31T08:32:49.255Z"
-last_activity: 2026-05-31
+last_updated: "2026-05-31T09:53:31.298Z"
+last_activity: 2026-05-31 — Milestone v2.1.0-d completed and archived
 progress:
   total_phases: 4
   completed_phases: 4
@@ -25,12 +25,10 @@ See: .planning/PROJECT.md (updated 2026-05-31 after Phase 51)
 
 ## Current Position
 
-Phase: 50
-Plan: Not started
-Status: Executing Phase 49
-Last activity: 2026-05-31
-
-Progress: [██████████] 100%
+Phase: Milestone v2.1.0-d complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-05-31 — Milestone v2.1.0-d completed and archived
 
 ## Performance Metrics
 
@@ -71,3 +69,7 @@ None. Research is HIGH confidence. Violation inventory is enumerated (6 files, ~
 Last session: 2026-05-31T08:31:06.954Z
 Stopped at: context exhaustion at 75% (2026-05-31)
 Resume file: None
+
+## Operator Next Steps
+
+- Start the next milestone with /gsd-new-milestone
