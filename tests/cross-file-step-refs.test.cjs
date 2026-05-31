@@ -197,12 +197,10 @@ function findCrossFileRefs(sourceFile, content) {
         }
 
         const targetBasename = path.basename(matchedFile);
+        // stepNum is always a valid integer: XREF_PATTERNS use (\d+) which
+        // guarantees non-empty digit characters; parseInt on non-empty digits
+        // is always a finite integer, never NaN.
         const stepNum = parseInt(matchedStep, 10);
-
-        // Skip NaN step numbers (e.g., from a decimal ref like "step 7.5") —
-        // decimal refs are the normalize script's domain; cross-file integrity
-        // validates whole-integer refs only.
-        if (isNaN(stepNum)) continue;
 
         // Same-file ref skip (D-04 + RESEARCH.md Pitfall 4):
         // Require BOTH basename equality AND path-suffix endsWith to agree
@@ -309,12 +307,10 @@ describe('findCrossFileRefs() — synthetic content', () => {
     assert.equal(refs.length, 0, 'Refs inside code fences must be skipped');
   });
 
-  test('skips decimal step refs (whole-integer only — NaN guard)', () => {
-    // The XREF_PATTERNS capture only (\d+) — no fractional part — so "step 5.5"
-    // matches with step="5" (the "5" before ".5"). This is by design: the scanner
-    // captures the integer prefix. A ref like "step 5.5" would be captured as step 5.
-    // Testing that a ref like "execute-phase.md step 5" is detected correctly.
-    // For a truly NaN case (impossible with \d+ pattern), NaN guard exists as defense-in-depth.
+  test('detects plain integer step refs in cross-file references', () => {
+    // XREF_PATTERNS capture only (\d+) — whole integers. "step 5.5" would be
+    // captured as step 5 (integer prefix before the fractional dot), not NaN.
+    // This test verifies that a plain integer ref is detected and parsed correctly.
     const sourceFile = '/tmp/fake/source.md';
     const content = 'See execute-phase.md step 5 for this.\n';
     const refs = findCrossFileRefs(sourceFile, content);
