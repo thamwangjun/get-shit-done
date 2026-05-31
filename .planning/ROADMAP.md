@@ -218,7 +218,7 @@ Full details: `.planning/milestones/v2.1.0-c-ROADMAP.md`
 - [x] **Phase 48: TDD Red Gate** — Write step-numbering scanner tests confirmed RED against unmodified corpus (completed 2026-05-30)
 - [x] **Phase 49: Survey and Normalization** — Build cross-file reference index then renumber all violating files with test co-updates (completed 2026-05-30)
 - [x] **Phase 50: Maintenance Script and Cross-Ref Scanner** — Maintenance script (cross-file-aware, idempotent) plus cross-file reference integrity scanner (completed 2026-05-30)
-- [ ] **Phase 51: Quality Gate** — Full npm test at 0 regressions
+- [x] **Phase 51: Quality Gate** — Full npm test at 0 regressions (completed 2026-05-31)
 
 ## Phase Details
 
@@ -290,7 +290,7 @@ Full details: `.planning/milestones/v2.1.0-c-ROADMAP.md`
 **Plans**: 1 plan
 Plans:
 
-- [ ] 51-01-PLAN.md — Run npm test gate, produce 51-VERIFICATION.md and 51-01-SUMMARY.md closing Phase 51 [GATE-01]
+- [x] 51-01-PLAN.md — Run npm test gate, produce 51-VERIFICATION.md and 51-01-SUMMARY.md closing Phase 51 [GATE-01]
 
 ## Progress
 
@@ -354,7 +354,7 @@ Plans:
 | 48. TDD Red Gate | v2.1.0-d | 0/1 | Not started | - |
 | 49. Survey and Normalization | v2.1.0-d | 14/13 | Complete    | 2026-05-30 |
 | 50. Maintenance Script and Cross-Ref Scanner | v2.1.0-d | 3/3 | Complete   | 2026-05-30 |
-| 51. Quality Gate | v2.1.0-d | 0/1 | Not started | - |
+| 51. Quality Gate | v2.1.0-d | 1/1 | Complete   | 2026-05-31 |
 
 *v1.41.3 shipped 2026-05-19 — see `.planning/milestones/v1.41.3-ROADMAP.md`*
 *v1.41.5 shipped 2026-05-24 — see `.planning/milestones/v1.41.5-ROADMAP.md`*
