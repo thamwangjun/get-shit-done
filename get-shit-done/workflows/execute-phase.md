@@ -613,11 +613,15 @@ increases monotonically across waves. `{status}` is `complete` (success),
        <execution_context>
        <%~ include('get-shit-done/workflows/execute-plan.md') %>
        <%~ include('get-shit-done/templates/summary.md') %>
-       <%~ include('get-shit-done/references/checkpoints.md') %>
+       @~/.claude/get-shit-done/references/checkpoints.md
        <%~ include('get-shit-done/references/tdd.md') %>
        <%~ include('get-shit-done/references/worktree-path-safety.md') %>
        ${CONTEXT_WINDOW < 200000 ? '' : '@~/.claude/get-shit-done/references/executor-examples.md'}
        </execution_context>
+
+       <reference_usage>
+       Consult `~/.claude/get-shit-done/references/checkpoints.md` when a plan task carries a checkpoint (`none`, `human-verify`, `decision`, or `human-action`): it defines how to segment execution around each checkpoint type and which work returns to MAIN vs. continues in the SUBAGENT. Read it before acting on any checkpoint; otherwise execution proceeds task-by-task without consulting it.
+       </reference_usage>
 
        <files_to_read>
        Read these files at execution start using the Read tool:

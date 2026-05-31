@@ -6,7 +6,9 @@ Execute a phase prompt (PLAN.md) and create the outcome summary (SUMMARY.md).
 Read STATE.md before any operation to load project context.
 Read config.json for planning behavior settings.
 
-<%~ include('get-shit-done/references/git-integration.md') %>
+Consult `~/.claude/get-shit-done/references/git-integration.md` before creating any commit or branch during plan execution: it defines the atomic-commit sequence, commit-message conventions, and branch/worktree handling rules this workflow must follow. Read it at execution start so every commit conforms; skip it only for read-only steps that create no commits.
+
+@~/.claude/get-shit-done/references/git-integration.md
 </required_reading>
 
 <atomic_close_out_invariant>
