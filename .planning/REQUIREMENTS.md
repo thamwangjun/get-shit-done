@@ -84,24 +84,46 @@ Acknowledged but deferred — not in this roadmap.
 
 ## Traceability
 
-Populated during roadmap creation.
+Populated during roadmap creation (2026-05-31). All 30 v1 requirements mapped to phases 52–58; each requirement maps to exactly one phase.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PARSE-01..04 | TBD | Pending |
-| RESOLVE-01..06 | TBD | Pending |
-| CONFIG-01..04 | TBD | Pending |
-| CATALOG-01..03 | TBD | Pending |
-| EXPOSE-01..03 | TBD | Pending |
-| SPAWN-01..03 | TBD | Pending |
-| INSTALL-01..02 | TBD | Pending |
-| TEST-01..05 | TBD | Pending |
+| PARSE-01 | Phase 52 | Pending |
+| PARSE-02 | Phase 52 | Pending |
+| PARSE-03 | Phase 52 | Pending |
+| PARSE-04 | Phase 52 | Pending |
+| RESOLVE-01 | Phase 53 | Pending |
+| RESOLVE-02 | Phase 53 | Pending |
+| RESOLVE-03 | Phase 53 | Pending |
+| RESOLVE-04 | Phase 53 | Pending |
+| RESOLVE-05 | Phase 53 | Pending |
+| RESOLVE-06 | Phase 53 | Pending |
+| CONFIG-01 | Phase 53 | Pending |
+| CONFIG-02 | Phase 53 | Pending |
+| CONFIG-03 | Phase 53 | Pending |
+| CONFIG-04 | Phase 53 | Pending |
+| EXPOSE-01 | Phase 54 | Pending |
+| EXPOSE-02 | Phase 54 | Pending |
+| EXPOSE-03 | Phase 54 | Pending |
+| CATALOG-01 | Phase 55 | Pending |
+| CATALOG-02 | Phase 55 (USER-HANDOVER) | Pending |
+| CATALOG-03 | Phase 55 | Pending |
+| SPAWN-01 | Phase 56 | Pending |
+| SPAWN-02 | Phase 56 | Pending |
+| SPAWN-03 | Phase 56 | Pending |
+| INSTALL-01 | Phase 57 | Pending |
+| INSTALL-02 | Phase 57 | Pending |
+| TEST-01 | Phase 58 | Pending |
+| TEST-02 | Phase 58 | Pending |
+| TEST-03 | Phase 58 | Pending |
+| TEST-04 | Phase 58 | Pending |
+| TEST-05 | Phase 58 | Pending |
 
 **Coverage:**
 - v1 requirements: 30 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 30 ⚠️
+- Mapped to phases: 30 ✓
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-05-31*
-*Last updated: 2026-05-31 after initial definition*
+*Last updated: 2026-05-31 after roadmap creation (traceability populated, phases 52–58)*

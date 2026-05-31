@@ -2,11 +2,12 @@
 gsd_state_version: 1.0
 milestone: v2.1.0-e
 milestone_name: Per-Agent Thinking Effort
-status: planning
-last_updated: "2026-05-31T12:42:18.262Z"
-last_activity: 2026-05-31
+status: Roadmap created
+stopped_at: roadmap creation complete (2026-05-31)
+last_updated: "2026-05-31T13:20:32.202Z"
+last_activity: 2026-05-31 — Roadmap created for v2.1.0-e (Phases 52–58)
 progress:
-  total_phases: 0
+  total_phases: 7
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -20,20 +21,20 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-31 after Phase 51)
 
 **Core value:** Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships
-**Current focus:** Phase 49 — survey-and-normalization
+**Current focus:** Phase 52 — Parser Foundation (parseModelEffort + shared _resolveAgentSlot)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: Not started (roadmap created, ready to plan Phase 52)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-05-31 — Milestone v2.1.0-e started
+Status: Roadmap created
+Last activity: 2026-05-31 — Roadmap created for v2.1.0-e (Phases 52–58)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 98 (v1.37.1 Phases 7–12, v1.37.1a Phases 13–17, v1.37.1b Phases 18–19)
+- Total plans completed: 98 (prior milestones; v2.1.0-e plans not yet started)
 - Average duration: — (metrics not retroactively enabled for completed phases)
 
 ## Accumulated Context
@@ -42,18 +43,22 @@ Last activity: 2026-05-31 — Milestone v2.1.0-e started
 
 Decisions are logged in PROJECT.md Key Decisions table.
 
-- [Phase 31]: All prompt content files pass expanded scanner at 0 violations, 0 warnings (v1.38.6 baseline)
-- [v2.1.0-d research]: Pattern C files (plan-phase.md, new-milestone.md, new-project.md) deferred — `## N.N.` headings without "Step" keyword are a different pattern, out of v2.1.0-d scope
-- [v2.1.0-d research]: execute-phase.md Step 7.0–7.3 sub-steps to be renamed as lettered branches (7a, 7b, etc.) — not renumbered as peer steps
-- [v2.1.0-d research]: Step N.0 labels (e.g., Step 7.0) are treated as violations — decimal point is a decimal point regardless of fractional digit
+- [v2.1.0-e roadmap]: 7-phase convergent build order from research — parser → resolver → SDK/JSON exposure → [USER-HANDOVER catalog] → spawn wiring → install translation → regression. Phases are strongly dependency-sequenced; no phase can safely be reordered.
+- [v2.1.0-e roadmap]: Phase 55 is a USER-HANDOVER boundary — Claude widens the catalog schema/type (CATALOG-01, CATALOG-03) but the user hand-assigns per-agent `model:effort` values (CATALOG-02). All plumbing before this is inert against a bare catalog.
+- [v2.1.0-e roadmap]: Phase 57 (install translation) is independent of Phases 55–56 and may proceed in parallel after Phase 54; it depends only on the Phase 53 resolver.
 
-### Prompt Content File State
+### Plan-Time Verification Flags
 
-All prompt content files (agents, commands, workflows) pass the expanded negative framing scanner at 0 violations, 0 warnings as of v1.38.6 (2026-05-03). Scanner at 99/99 subtests passing.
+- **Phase 53:** Verify whether `effort: max` is accepted in Claude Code subagent frontmatter before emitting it on the Claude path. If rejected, add a `max`→`xhigh` clamp on the Claude spawn path (mirroring the Codex path).
+- **Phase 56:** Enumerate spawn-template blocks before committing scope — grep `agents/*.md`, `commands/gsd/*.md`, `get-shit-done/workflows/*.md` for `subagent_type` + `model=` patterns to size the edit list (count not pre-enumerated by research).
 
-### Key Risk: Silent Test False-Passes
+### Key Risk: Regression, Not Greenfield
 
-`content.indexOf("Step 2.5")` returns -1 when Step 2.5 is renamed. `-1` is truthy in JavaScript — `assert.ok(content.indexOf(...))` passes silently with stale label. Run `npm test` after every individual file rename and update tests before moving to the next file.
+The change is purely additive — bare configs must resolve identically before and after. Critical pitfalls (from research): naive `split(':')` corrupts provider IDs (use `lastIndexOf` + allowlist), #3023 model/effort divergence (shared `_resolveAgentSlot`), effort leak to unsupported runtimes (explicit `{claude,codex}` allowlist), `indexOf`-as-boolean false-pass tests (use strict equality, confirm RED first).
+
+### Coverage
+
+All 30 v1 requirements mapped to Phases 52–58; each maps to exactly one phase. No orphans, no duplicates. Traceability populated in REQUIREMENTS.md.
 
 ### Pending Todos
 
@@ -61,7 +66,7 @@ None.
 
 ### Blockers/Concerns
 
-None. Research is HIGH confidence. Violation inventory is enumerated (6 files, ~37 violations). 14+ test files identified for co-update.
+None. Research is HIGH confidence. Two plan-time verification flags noted above (not blockers).
 
 ### Quick Tasks Completed
 
@@ -71,10 +76,10 @@ None. Research is HIGH confidence. Violation inventory is enumerated (6 files, ~
 
 ## Session Continuity
 
-Last session: 2026-05-31T08:31:06.954Z
-Stopped at: context exhaustion at 75% (2026-05-31)
+Last session: 2026-05-31 — roadmap creation
+Stopped at: roadmap creation complete (2026-05-31)
 Resume file: None
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- Plan the first phase with `/gsd-plan-phase 52`

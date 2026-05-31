@@ -17,6 +17,7 @@
 - ✗ **v2.1.0-b Workflow Compliance Reinforcement** — Phases 44–48 (abandoned 2026-05-28, 0/5 phases complete)
 - ✅ **v2.1.0-c Install-Time Content Materialization** — Phases 44–47.1 (shipped 2026-05-29)
 - ✅ **v2.1.0-d Whole-Integer Step Numbering** — Phases 48–51 (shipped 2026-05-31)
+- 🚧 **v2.1.0-e Per-Agent Thinking Effort** — Phases 52–58 (in progress)
 
 ## Phases
 
@@ -227,6 +228,10 @@ Full details: `.planning/milestones/v2.1.0-d-ROADMAP.md`
 
 ## Phase Details
 
+<details>
+<summary>✅ v2.1.0-d Phase Details (Phases 48–51) — SHIPPED 2026-05-31</summary>
+
+
 ### Phase 48: TDD Red Gate
 
 **Goal**: Scanner tests for decimal step labels, letter-suffix step labels (e.g., Step 7a), and out-of-order step numbering exist and fail against the current unmodified corpus
@@ -297,6 +302,92 @@ Plans:
 
 - [x] 51-01-PLAN.md — Run npm test gate, produce 51-VERIFICATION.md and 51-01-SUMMARY.md closing Phase 51 [GATE-01]
 
+</details>
+
+### 🚧 v2.1.0-e Per-Agent Thinking Effort (In Progress)
+
+**Milestone Goal:** Add a unified, Claude-first thinking-effort dimension encoded inline as `model:effort` labels, resolved through the existing model machinery and passed to `Agent()` spawns. The work is purely additive — bare configs must resolve identically to today.
+
+#### Phase 52: Parser Foundation
+**Goal**: A correct, exported `parseModelEffort` parser and a shared `_resolveAgentSlot` helper exist so model and effort always derive from the same resolved tier slot, with the colon-in-provider-ID pitfall structurally avoided
+**Depends on**: Phase 51 (previous milestone complete)
+**Requirements**: PARSE-01, PARSE-02, PARSE-03, PARSE-04
+**Success Criteria** (what must be TRUE):
+  1. `parseModelEffort('opus:high')` returns `{model: 'opus', effort: 'high'}`, and `parseModelEffort('openrouter:anthropic/claude-opus')` returns `{model: 'openrouter:anthropic/claude-opus', effort: null}` — the suffix is stripped only when it is an exact member of `{low, medium, high, xhigh, max}`
+  2. A bare model string with no recognized effort suffix returns `effort: null` (backward-compatible omit)
+  3. A shared `_resolveAgentSlot(cwd, agentType)` helper returns the single raw slot string, so both the model resolver and the effort resolver read from the identical tier entry (structurally eliminates the #3023 divergence class)
+  4. `parseModelEffort` is exported from the JS lib (`core.cjs`) and mirrored in `sdk/src/model-catalog.ts` with identical semantics, verified by a parity test
+**Plans**: TBD
+
+#### Phase 53: Unified Effort Resolver
+**Goal**: `resolveReasoningEffortInternal` resolves effort for the `claude` runtime (Claude gate lifted via an explicit `{claude, codex}` allowlist), follows the same precedence chain as the model resolver, and accepts `model:effort` in all three config override sites — while bare configs continue to omit effort everywhere
+**Depends on**: Phase 52
+**Requirements**: RESOLVE-01, RESOLVE-02, RESOLVE-03, RESOLVE-04, RESOLVE-05, RESOLVE-06, CONFIG-01, CONFIG-02, CONFIG-03, CONFIG-04
+**Plan-time verification**: Confirm whether `effort: max` is accepted in Claude Code subagent frontmatter before emitting it on the Claude path. If rejected (the settings file rejects it; frontmatter behavior is undocumented), add a `max`→`xhigh` clamp on the Claude spawn path as well.
+**Success Criteria** (what must be TRUE):
+  1. With effort assigned in a profile slot, the resolver emits that effort for the `claude` runtime — the Claude gate is lifted via an explicit static `{claude, codex}` allowlist, never a data-derived "any tier carrying reasoning_effort" set
+  2. Effort resolution follows the model precedence chain exactly: per-agent override → phase-type slot → profile slot → adaptiveTierMap → omit; the `inherit` profile and bare adaptive entries omit effort
+  3. Profile-slot effort overrides the Codex per-tier `reasoning_effort`; the per-tier value is used only as fallback when the resolved slot carries no effort suffix; `max`→`xhigh` when emitted for Codex and `xhigh` is never emitted for the Codex haiku tier
+  4. Every runtime outside `{claude, codex}` omits effort (hard no-op for the 8 null-tier runtimes)
+  5. `model:effort` is accepted in `model_overrides.<agent>`, `models.<phase-type>`, and `model_profile_overrides.<runtime>`; config validation rejects/warns on malformed effort tokens consistent with existing tier-typo handling
+**Plans**: TBD
+
+#### Phase 54: SDK & Tools JSON Exposure
+**Goal**: Resolved effort is observable in init/agent-skills JSON via `*_effort` siblings and a canonical `effort` field, with SDK and CLI producing identical model+effort shapes — plumbing that no-ops on a bare catalog
+**Depends on**: Phase 53
+**Requirements**: EXPOSE-01, EXPOSE-02, EXPOSE-03
+**Success Criteria** (what must be TRUE):
+  1. The init JSON exposes a `*_effort` sibling for every resolved `*_model` field consumed by workflows
+  2. `cmdResolveModel` / agent-skills output includes a canonical resolved `effort` field
+  3. SDK (`sdk/src/`) and CLI (`bin/lib/`) resolution produce byte-identical model+effort shapes for the same inputs, verified by a parity test
+  4. On a bare (un-assigned) catalog, every exposed `*_effort` value is `null`/omitted — confirming the exposure layer is inert until catalog values are assigned
+**Plans**: TBD
+
+#### Phase 55: Catalog Schema + User Handover
+**Goal**: The catalog schema/type widens to carry `model:effort` slot strings (Claude-built), then the user hand-assigns per-agent effort values across all 33 agents during an explicit execution handover
+**Depends on**: Phase 54
+**Requirements**: CATALOG-01, CATALOG-02, CATALOG-03
+**⚠️ USER-HANDOVER BOUNDARY**: This phase contains a manual handover. Claude prepares the schema/type widening (CATALOG-01 in `model-catalog.json`, CATALOG-03 in the `sdk/src/model-catalog.ts` mirror) but does NOT auto-fill effort values. The user hand-assigns the per-agent `model:effort` values in `sdk/shared/model-catalog.json` and its TS mirror themselves (CATALOG-02), then hands back. Before handover, all plumbing is inert (every slot returns `effort: null`); after assignment, the first real integration test exercises live values.
+**Success Criteria** (what must be TRUE):
+  1. `model-catalog.json` profile slots (`golden`/`balanced`/`budget`) and `adaptiveTierMap` entries accept inline `model:effort` labels — the schema/type widens from the fixed alias union to a string (Claude-built, CATALOG-01)
+  2. `sdk/src/model-catalog.ts` mirror is widened to accept `model:effort` slot strings (Claude-built, CATALOG-03)
+  3. Per-agent effort values are assigned across all 33 agents' slots by the user during handover (guidance heuristic: heavy → high, light → none/low, default → medium; higher is not monotonically better); `inherit` stays effort-free (user-owned, CATALOG-02)
+  4. After handover, resolving a heavy agent yields its assigned effort and a light agent yields its assigned (or omitted) effort — confirming the hand-assigned values flow through the resolver built in Phase 53
+**Plans**: TBD
+
+#### Phase 56: Spawn-Template Wiring
+**Goal**: Spawn templates across `agents/`, `commands/`, and `get-shit-done/workflows/` conditionally pass resolved effort to spawned agents, omitting it entirely when absent, while preserving all fork quality gates
+**Depends on**: Phase 55 (catalog values assigned so the first integration test exercises live effort)
+**Requirements**: SPAWN-01, SPAWN-02, SPAWN-03
+**Plan-time verification**: Enumerate the spawn-template blocks before committing scope — grep `agents/*.md`, `commands/gsd/*.md`, `get-shit-done/workflows/*.md` for `subagent_type` + `model=` patterns to size the edit list (count not pre-enumerated by research).
+**Success Criteria** (what must be TRUE):
+  1. The verified Claude effort carrier (subagent frontmatter `effort:` vs an `Agent()` argument, resolved at plan time against the current Agent/Task API) is wired so resolved effort reaches spawned agents
+  2. Spawn templates across `agents/`, `commands/`, and `get-shit-done/workflows/` pass effort conditionally, omitting it entirely when resolved effort is absent
+  3. Spawn-template edits preserve every fork quality gate (agent-frontmatter 155/155, negative-framing 99/99, step-numbering 632/632, cross-file-refs 219/219, eta-include) — achieved by extending existing `model=` lines rather than renumbering steps
+**Plans**: TBD
+
+#### Phase 57: Install-Time Translation
+**Goal**: `bin/install.js` translates canonical Claude effort to Codex `reasoning_effort` only at the Codex emit boundary, with each runtime materializing effort correctly at install time
+**Depends on**: Phase 53 (resolver); independent of Phases 55–56 and may proceed in parallel after Phase 54
+**Requirements**: INSTALL-01, INSTALL-02
+**Success Criteria** (what must be TRUE):
+  1. `bin/install.js` translates Claude `effort` to Codex `model_reasoning_effort` only at the Codex emit boundary; the runtime-agnostic resolver stays effort-format-neutral
+  2. Effort materializes correctly per runtime at install time — Claude effort preserved, Codex translated (`max`→`xhigh`, haiku tier never `xhigh`), unsupported runtimes omit
+  3. The omit guard is preserved — installing a bare (un-assigned) config produces zero effort emission in every runtime's output
+**Plans**: TBD
+
+#### Phase 58: Regression Coverage
+**Goal**: A comprehensive regression suite locks in the additive-only guarantee — a pre-change golden snapshot proves bare configs resolve identically, parser fixtures cover all edge cases, and per-runtime omit/translate contracts hold, with `npm test` green and coverage maintained
+**Depends on**: Phase 57 (and spans Phases 52–57)
+**Requirements**: TEST-01, TEST-02, TEST-03, TEST-04, TEST-05
+**Success Criteria** (what must be TRUE):
+  1. A pre-change golden snapshot of model resolution proves the change is additive — existing bare configs resolve identically before and after across all 33 agents and all profile variants
+  2. Parser fixtures cover effort suffixes, bare models, and colon-containing provider IDs (e.g. `openrouter:anthropic/claude-opus` → effort null)
+  3. Precedence and omit-contract tests pass per runtime: claude emits, codex translates with `max`→`xhigh`, all other runtimes omit
+  4. Regression assertions use strict equality on parsed structures — no `indexOf`-as-boolean false-passes and no substring collisions on `medium`/`high`; each new test confirmed RED before its fix lands
+  5. Full `npm test` passes with zero new regressions versus the pre-milestone baseline; ≥70% line coverage on `get-shit-done/bin/lib/*.cjs` maintained
+**Plans**: TBD
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -360,9 +451,17 @@ Plans:
 | 49. Survey and Normalization | v2.1.0-d | 14/13 | Complete | 2026-05-31 |
 | 50. Maintenance Script and Cross-Ref Scanner | v2.1.0-d | 3/3 | Complete | 2026-05-30 |
 | 51. Quality Gate | v2.1.0-d | 1/1 | Complete | 2026-05-31 |
+| 52. Parser Foundation | v2.1.0-e | 0/TBD | Not started | - |
+| 53. Unified Effort Resolver | v2.1.0-e | 0/TBD | Not started | - |
+| 54. SDK & Tools JSON Exposure | v2.1.0-e | 0/TBD | Not started | - |
+| 55. Catalog Schema + User Handover | v2.1.0-e | 0/TBD | Not started | - |
+| 56. Spawn-Template Wiring | v2.1.0-e | 0/TBD | Not started | - |
+| 57. Install-Time Translation | v2.1.0-e | 0/TBD | Not started | - |
+| 58. Regression Coverage | v2.1.0-e | 0/TBD | Not started | - |
 
 *v1.41.3 shipped 2026-05-19 — see `.planning/milestones/v1.41.3-ROADMAP.md`*
 *v1.41.5 shipped 2026-05-24 — see `.planning/milestones/v1.41.5-ROADMAP.md`*
 *v2.1.0-a shipped 2026-05-26 — see `.planning/milestones/v2.1.0-a-ROADMAP.md`*
 *v2.1.0-c shipped 2026-05-29 — see `.planning/milestones/v2.1.0-c-ROADMAP.md`*
 *v2.1.0-d shipped 2026-05-31 — see `.planning/milestones/v2.1.0-d-ROADMAP.md`*
+*v2.1.0-e in progress — Phases 52–58, started 2026-05-31*
