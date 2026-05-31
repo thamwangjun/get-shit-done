@@ -287,7 +287,10 @@ Full details: `.planning/milestones/v2.1.0-c-ROADMAP.md`
   2. Negative-framing scanner remains at 99/99 subtests passing
   3. `tests/step-numbering-scan.test.cjs` and `tests/cross-file-step-refs.test.cjs` both pass in the full suite run
 
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 51-01-PLAN.md — Run npm test gate, produce 51-VERIFICATION.md and 51-01-SUMMARY.md closing Phase 51 [GATE-01]
 
 ## Progress
 
@@ -351,7 +354,7 @@ Full details: `.planning/milestones/v2.1.0-c-ROADMAP.md`
 | 48. TDD Red Gate | v2.1.0-d | 0/1 | Not started | - |
 | 49. Survey and Normalization | v2.1.0-d | 14/13 | Complete    | 2026-05-30 |
 | 50. Maintenance Script and Cross-Ref Scanner | v2.1.0-d | 3/3 | Complete   | 2026-05-30 |
-| 51. Quality Gate | v2.1.0-d | 0/TBD | Not started | - |
+| 51. Quality Gate | v2.1.0-d | 0/1 | Not started | - |
 
 *v1.41.3 shipped 2026-05-19 — see `.planning/milestones/v1.41.3-ROADMAP.md`*
 *v1.41.5 shipped 2026-05-24 — see `.planning/milestones/v1.41.5-ROADMAP.md`*
