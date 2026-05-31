@@ -352,7 +352,7 @@ Plans:
 | 47. Full Runtime Matrix + Verification | v2.1.0-c | 1/1 | Complete | 2026-05-29 |
 | 47.1. Close gap: INTG-04/GATE-03 — wire renderEtaContent into skills path | v2.1.0-c | 2/2 | Complete   | 2026-05-29 |
 | 48. TDD Red Gate | v2.1.0-d | 0/1 | Not started | - |
-| 49. Survey and Normalization | v2.1.0-d | 14/13 | Complete    | 2026-05-30 |
+| 49. Survey and Normalization | v2.1.0-d | 14/13 | Complete    | 2026-05-31 |
 | 50. Maintenance Script and Cross-Ref Scanner | v2.1.0-d | 3/3 | Complete   | 2026-05-30 |
 | 51. Quality Gate | v2.1.0-d | 1/1 | Complete    | 2026-05-31 |
 
