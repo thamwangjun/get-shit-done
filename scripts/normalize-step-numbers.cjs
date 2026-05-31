@@ -195,13 +195,14 @@ function buildRenameMap(content) {
  *
  * @param {string} content
  * @param {Map<string, string>} renameMap
- * @returns {string}
+ * @returns {{ content: string, renamed: number }}
  */
 function applyRenameMap(content, renameMap) {
-  if (renameMap.size === 0) return content;
+  if (renameMap.size === 0) return { content, renamed: 0 };
 
   const lines = content.split('\n');
   let inCodeBlock = false;
+  let replacementCount = 0;
   const out = [];
 
   for (let i = 0; i < lines.length; i++) {
@@ -223,7 +224,9 @@ function applyRenameMap(content, renameMap) {
     for (const [oldLabel, newLabel] of renameMap) {
       // Only replace if the line actually contains this label
       if (line.includes(oldLabel)) {
-        line = line.split(oldLabel).join(newLabel);
+        const newLine = line.split(oldLabel).join(newLabel);
+        if (newLine !== line) replacementCount++;
+        line = newLine;
       }
     }
 
@@ -234,14 +237,16 @@ function applyRenameMap(content, renameMap) {
       const oldDecimal = `${integer}.${fractional}.`;
       if (renameMap.has(oldDecimal)) {
         const newNum = renameMap.get(oldDecimal);
-        line = `${leading}${newNum}${trailing}`;
+        const newLine = `${leading}${newNum}${trailing}`;
+        if (newLine !== line) replacementCount++;
+        line = newLine;
       }
     }
 
     out.push(line);
   }
 
-  return out.join('\n');
+  return { content: out.join('\n'), renamed: replacementCount };
 }
 
 // ─── Cross-file ref discovery ─────────────────────────────────────────────────
@@ -375,7 +380,8 @@ function processFile(filePath, renameMap, xrefUpdates) {
   const original = fs.readFileSync(filePath, 'utf-8');
 
   // Apply same-file rename map
-  let result = applyRenameMap(original, renameMap);
+  const { content: rewritten, renamed: renamedCount } = applyRenameMap(original, renameMap);
+  let result = rewritten;
 
   // Apply cross-file ref updates for this source file
   const fileUpdates = xrefUpdates.filter(u => u.sourceFile === filePath);
@@ -418,8 +424,8 @@ function processFile(filePath, renameMap, xrefUpdates) {
 
   if (!DRY_RUN) fs.writeFileSync(filePath, result, 'utf-8');
 
-  const renamed = renameMap.size > 0 && result !== original ? renameMap.size : 0;
-  return { renamed, xref: xrefCount };
+  // renamedCount is the actual number of line replacements made by applyRenameMap (WR-03)
+  return { renamed: renamedCount, xref: xrefCount };
 }
 
 // ─── Main driver ──────────────────────────────────────────────────────────────
