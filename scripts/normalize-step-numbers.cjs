@@ -316,22 +316,23 @@ function discoverCrossFileRefs(corpusFiles, renameMaps) {
             if (isSameBasename) continue;
           }
 
-          // Find the rename map for the target file
-          // Look up by basename match across all known files
-          let targetRenameMap = null;
+          // Find the rename map for the target file.
+          // Merge rename maps from ALL files sharing the basename (CR-03: 52 basenames
+          // are shared across agents/, workflows/, commands/gsd/; first-match-break would
+          // pick the wrong map for files appearing later in iteration order).
+          const mergedRenameMap = new Map();
           for (const [filePath, rMap] of renameMaps) {
             if (path.basename(filePath) === targetBasename) {
-              targetRenameMap = rMap;
-              break;
+              for (const [k, v] of rMap) mergedRenameMap.set(k, v);
             }
           }
 
-          if (!targetRenameMap || targetRenameMap.size === 0) continue;
+          if (mergedRenameMap.size === 0) continue;
 
           // Check if this step label is in the rename map
           // The step in the cross-ref is a number like "1.5" or "7a"
           // Match against Pattern A/B rename map keys (which look like "Step 2.5")
-          for (const [oldLabel, newLabel] of targetRenameMap) {
+          for (const [oldLabel, newLabel] of mergedRenameMap) {
             // Extract the numeric part from oldLabel (e.g., "Step 2.5" → "2.5")
             const labelMatch = oldLabel.match(/Step\s+(\d+(?:\.\d+|[a-z]))/i);
             if (!labelMatch) continue;
