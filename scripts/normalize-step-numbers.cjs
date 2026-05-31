@@ -131,7 +131,8 @@ function buildRenameMap(content) {
   const renameMap = new Map();
   const lines = content.split('\n');
   let inCodeBlock = false;
-  let sectionCounter = 0;   // sequential counter per section
+  let sectionCounter = 0;     // sequential counter for Pattern A/B per section
+  let patternDCounter = 0;    // sequential counter for Pattern D per section
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -144,31 +145,24 @@ function buildRenameMap(content) {
     }
     if (inCodeBlock) continue;
 
-    // Section boundary: ## or ### heading resets the per-section counter (Pattern 5)
-    // Reset counter but do NOT continue — heading lines may also contain decimal step labels.
+    // Section boundary: ## or ### heading resets the per-section counters (Pattern 5)
+    // Reset counters but do NOT continue — heading lines may also contain decimal step labels.
     if (/^#{2,3}\s/.test(line)) {
       sectionCounter = 0;
+      patternDCounter = 0;
     }
 
     // Pattern A/B: "Step N.M" or "Step Na" — any decimal or letter-suffix step label
+    // Use a global regex loop to capture ALL matches per line (CR-02: no /g flag was missing)
     if (STEP_DECIMAL_RE.test(line)) {
-      // Extract the old step label (e.g., "Step 2.5" or "Step 7a")
-      const match = line.match(/(?:^|\s|\*\*)(Step\s+(\d+)(?:\.(\d+)|([a-z])))/i);
-      if (match) {
+      const lineRe = /(?:^|\s|\*\*)(Step\s+(\d+)(?:\.(\d+)|([a-z])))/gi;
+      let match;
+      while ((match = lineRe.exec(line)) !== null) {
         const oldLabel = match[1]; // e.g., "Step 2.5"
-        const baseNum  = parseInt(match[2], 10);
-        // Determine if this is a new counter start or continuation
-        // Each decimal/letter step increments the counter
+        // Each decimal/letter step increments the counter; use counter as target (CR-01)
         sectionCounter++;
-        const newNum = baseNum + 1; // The step after the base integer gets the next number
-        const newLabel = oldLabel.replace(/Step\s+\d+(?:\.\d+|[a-z])/i, (m) => {
-          // Extract just the "Step N.X" part and replace with "Step N+1"
-          const stepPart = m.match(/Step\s+(\d+)(?:\.(\d+)|([a-z]))/i);
-          if (stepPart) {
-            return `Step ${newNum}`;
-          }
-          return m;
-        });
+        const newNum = sectionCounter;
+        const newLabel = oldLabel.replace(/Step\s+\d+(?:\.\d+|[a-z])/i, `Step ${newNum}`);
         if (oldLabel !== newLabel) {
           renameMap.set(oldLabel, newLabel);
         }
@@ -179,16 +173,13 @@ function buildRenameMap(content) {
     const patternDMatch = line.match(PATTERN_D_RE);
     if (patternDMatch) {
       const [, leading, integer, , trailing] = patternDMatch;
-      const intNum = parseInt(integer, 10);
-      const newNum = intNum + 1;
-      const oldItem = `${integer}.`;
-      const newItem = `${newNum}.`;
-      if (oldItem !== newItem) {
-        // Store as a positional replacement keyed by the decimal form
-        const oldFull = `${integer}.${patternDMatch[3]}.`;
-        const newFull = `${newNum}.`;
-        renameMap.set(oldFull, newFull);
-      }
+      // Use patternDCounter for sequential whole-integer target (CR-01)
+      patternDCounter++;
+      const newNum = patternDCounter;
+      // Store as a positional replacement keyed by the decimal form
+      const oldFull = `${integer}.${patternDMatch[3]}.`;
+      const newFull = `${newNum}.`;
+      renameMap.set(oldFull, newFull);
     }
   }
 
