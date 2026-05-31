@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-05-31 after Phase 51)
 Phase: 52 (parser-foundation) — EXECUTING
 Plan: 1 of 3
 Status: Executing Phase 52
-Last activity: 2026-05-31 -- Completed quick task 260531-m4s: Trim and compress CLAUDE.md to moderate readable density
+Last activity: 2026-05-31 -- Completed quick task 260531-mg7: Convert summary.md/tdd.md eta includes to @-refs in workflows/execute-phase.md
 
 ## Performance Metrics
 
@@ -76,6 +76,7 @@ None. Research is HIGH confidence. Two plan-time verification flags noted above 
 | 260531-l3h | execute-phase context analysis | 2026-05-31 | 42d22510 | [260531-l3h-execute-phase-context-analysis](./quick/260531-l3h-execute-phase-context-analysis/) |
 | 260531-lpp | Switch checkpoints.md and git-integration.md eta includes to @-references | 2026-05-31 | dffd99a9 | [260531-lpp-switch-checkpoints-md-and-git-integratio](./quick/260531-lpp-switch-checkpoints-md-and-git-integratio/) |
 | 260531-m4s | Trim and compress CLAUDE.md to moderate readable density (339→162 lines) | 2026-05-31 | 25e30a1f | [260531-m4s-trim-and-compress-claude-md-to-moderate-](./quick/260531-m4s-trim-and-compress-claude-md-to-moderate-/) |
+| 260531-mg7 | Convert summary.md/tdd.md eta includes to @-refs in workflows/execute-phase.md + reference_usage guidance | 2026-05-31 | caee50fa | [260531-mg7-convert-eta-includes-of-summary-md-and-t](./quick/260531-mg7-convert-eta-includes-of-summary-md-and-t/) |
 
 ## Session Continuity
 
