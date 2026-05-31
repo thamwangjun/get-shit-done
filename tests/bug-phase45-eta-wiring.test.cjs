@@ -97,6 +97,33 @@ describe('INTG-01: eta dependency and Eta instance wiring', () => {
 
 describe('INTG-02: zero bare-line @~ survivors across source layers', () => {
   /**
+   * Allowlist of intentional bare-line @~ refs.
+   *
+   * Quick tasks 260531-lpp / 260531-mg7 / 260531-mvd deliberately converted a
+   * handful of eta includes to bare-line `@~` need-based runtime-loading refs in
+   * the execute-phase / execute-plan workflows. Those refs are intentional and
+   * must NOT be reverted (see quick task 260531-ncu, D-02).
+   *
+   * The allowlist is keyed by EXACT relative file path (forward-slash separators,
+   * matching `path.relative(REPO_ROOT, fullPath)`) mapping to a Set of the EXACT
+   * trimmed line content for each allowed ref. Because each ref is bare-line, the
+   * trimmed line IS the ref string. Matching on both the exact path AND the exact
+   * trimmed string means any NEW bare-line @~ ref — a different ref, or the same
+   * ref appearing in a different file — is still flagged as a survivor (D-01).
+   */
+  const ALLOWLIST = {
+    'get-shit-done/workflows/execute-phase.md': new Set([
+      '@~/.claude/get-shit-done/templates/summary.md',
+      '@~/.claude/get-shit-done/references/checkpoints.md',
+      '@~/.claude/get-shit-done/references/tdd.md',
+      '@~/.claude/get-shit-done/references/executor-examples.md',
+    ]),
+    'get-shit-done/workflows/execute-plan.md': new Set([
+      '@~/.claude/get-shit-done/references/git-integration.md',
+    ]),
+  };
+
+  /**
    * A line is "bare" only if the trimmed content starts with the pattern,
    * i.e. the entire trimmed line IS the @~ reference (not inline prose,
    * not backtick-wrapped, not a list-item with trailing prose).
@@ -138,7 +165,15 @@ describe('INTG-02: zero bare-line @~ survivors across source layers', () => {
 
     assert.ok(fs.existsSync(dir), `Source directory must exist for this check: ${dir}`);
     walkDir(dir);
-    return survivors;
+
+    // Drop a survivor only when its relative file path is an allowlist key AND
+    // its trimmed line content is in that key's Set (exact match on both). Any
+    // other bare-line @~ ref — new ref, or allowed ref in a different file — is
+    // retained as a survivor (D-01).
+    return survivors.filter(s => {
+      const allowed = ALLOWLIST[s.file];
+      return !(allowed && allowed.has(s.content.trim()));
+    });
   }
 
   const SOURCE_LAYERS = [
