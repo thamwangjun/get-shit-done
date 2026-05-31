@@ -1,9 +1,29 @@
 'use strict';
 
-const { test } = require('node:test');
+const { test, describe } = require('node:test');
 const assert = require('node:assert');
+const fs = require('node:fs');
+const path = require('node:path');
+const os = require('node:os');
 
 const core = require('../get-shit-done/bin/lib/core.cjs');
+const {
+  MODEL_PROFILES,
+} = require('../get-shit-done/bin/lib/model-profiles.cjs');
+
+// ─── Shared helper ───────────────────────────────────────────────────────────
+
+function writeConfig(projectDir, config) {
+  const planningDir = path.join(projectDir, '.planning');
+  fs.mkdirSync(planningDir, { recursive: true });
+  fs.writeFileSync(path.join(planningDir, 'config.json'), JSON.stringify(config, null, 2));
+}
+
+function makeTmpWithConfig(config) {
+  const d = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-snap-'));
+  writeConfig(d, config);
+  return d;
+}
 
 test('parseModelEffort is exported as a function', () => {
   assert.strictEqual(typeof core.parseModelEffort, 'function');
@@ -89,4 +109,81 @@ test('parseModelEffort tolerates non-string input without throwing', () => {
   assert.deepStrictEqual(core.parseModelEffort(undefined), { model: undefined, effort: null });
   const obj = {};
   assert.deepStrictEqual(core.parseModelEffort(obj), { model: obj, effort: null });
+});
+
+// ─── Pre-change golden snapshot (52-02) ──────────────────────────────────────
+// Frozen before the _resolveAgentSlot / parseModelEffort refactor in Task 2.
+// Must pass byte-identical BEFORE and AFTER the refactor lands.
+
+describe('resolveModelInternal golden snapshot — pre-change baseline (52-02)', () => {
+  // Frozen expected values captured against the UNMODIFIED core.cjs.
+  const EXPECTED = {
+    'gsd-planner':              { quality: 'opus',   balanced: 'opus',   budget: 'sonnet', inherit: 'inherit' },
+    'gsd-roadmapper':           { quality: 'opus',   balanced: 'sonnet', budget: 'sonnet', inherit: 'inherit' },
+    'gsd-executor':             { quality: 'opus',   balanced: 'sonnet', budget: 'sonnet', inherit: 'inherit' },
+    'gsd-phase-researcher':     { quality: 'opus',   balanced: 'sonnet', budget: 'haiku',  inherit: 'inherit' },
+    'gsd-project-researcher':   { quality: 'opus',   balanced: 'sonnet', budget: 'haiku',  inherit: 'inherit' },
+    'gsd-research-synthesizer': { quality: 'sonnet', balanced: 'sonnet', budget: 'haiku',  inherit: 'inherit' },
+    'gsd-debugger':             { quality: 'opus',   balanced: 'sonnet', budget: 'sonnet', inherit: 'inherit' },
+    'gsd-codebase-mapper':      { quality: 'sonnet', balanced: 'haiku',  budget: 'haiku',  inherit: 'inherit' },
+    'gsd-verifier':             { quality: 'sonnet', balanced: 'sonnet', budget: 'haiku',  inherit: 'inherit' },
+    'gsd-plan-checker':         { quality: 'sonnet', balanced: 'sonnet', budget: 'haiku',  inherit: 'inherit' },
+    'gsd-integration-checker':  { quality: 'sonnet', balanced: 'sonnet', budget: 'haiku',  inherit: 'inherit' },
+    'gsd-nyquist-auditor':      { quality: 'sonnet', balanced: 'sonnet', budget: 'haiku',  inherit: 'inherit' },
+    'gsd-pattern-mapper':       { quality: 'sonnet', balanced: 'sonnet', budget: 'haiku',  inherit: 'inherit' },
+    'gsd-ui-researcher':        { quality: 'opus',   balanced: 'sonnet', budget: 'haiku',  inherit: 'inherit' },
+    'gsd-ui-checker':           { quality: 'sonnet', balanced: 'sonnet', budget: 'haiku',  inherit: 'inherit' },
+    'gsd-ui-auditor':           { quality: 'sonnet', balanced: 'sonnet', budget: 'haiku',  inherit: 'inherit' },
+    'gsd-doc-writer':           { quality: 'opus',   balanced: 'sonnet', budget: 'haiku',  inherit: 'inherit' },
+    'gsd-doc-verifier':         { quality: 'sonnet', balanced: 'sonnet', budget: 'haiku',  inherit: 'inherit' },
+    'gsd-advisor-researcher':   { quality: 'opus',   balanced: 'sonnet', budget: 'haiku',  inherit: 'inherit' },
+    'gsd-ai-researcher':        { quality: 'opus',   balanced: 'sonnet', budget: 'haiku',  inherit: 'inherit' },
+    'gsd-assumptions-analyzer': { quality: 'opus',   balanced: 'sonnet', budget: 'sonnet', inherit: 'inherit' },
+    'gsd-code-fixer':           { quality: 'opus',   balanced: 'sonnet', budget: 'sonnet', inherit: 'inherit' },
+    'gsd-code-reviewer':        { quality: 'opus',   balanced: 'sonnet', budget: 'sonnet', inherit: 'inherit' },
+    'gsd-debug-session-manager':{ quality: 'opus',   balanced: 'sonnet', budget: 'sonnet', inherit: 'inherit' },
+    'gsd-doc-classifier':       { quality: 'sonnet', balanced: 'haiku',  budget: 'haiku',  inherit: 'inherit' },
+    'gsd-doc-synthesizer':      { quality: 'opus',   balanced: 'sonnet', budget: 'haiku',  inherit: 'inherit' },
+    'gsd-domain-researcher':    { quality: 'opus',   balanced: 'sonnet', budget: 'haiku',  inherit: 'inherit' },
+    'gsd-eval-auditor':         { quality: 'opus',   balanced: 'sonnet', budget: 'haiku',  inherit: 'inherit' },
+    'gsd-eval-planner':         { quality: 'opus',   balanced: 'opus',   budget: 'sonnet', inherit: 'inherit' },
+    'gsd-framework-selector':   { quality: 'opus',   balanced: 'sonnet', budget: 'sonnet', inherit: 'inherit' },
+    'gsd-intel-updater':        { quality: 'opus',   balanced: 'sonnet', budget: 'haiku',  inherit: 'inherit' },
+    'gsd-security-auditor':     { quality: 'opus',   balanced: 'sonnet', budget: 'sonnet', inherit: 'inherit' },
+    'gsd-user-profiler':        { quality: 'opus',   balanced: 'sonnet', budget: 'sonnet', inherit: 'inherit' },
+  };
+
+  const PROFILES = ['quality', 'balanced', 'budget', 'inherit'];
+
+  test('all MODEL_PROFILES agents × profiles match frozen snapshot', () => {
+    const agents = Object.keys(MODEL_PROFILES);
+    // Verify every agent in snapshot is present in MODEL_PROFILES (guard against catalog shrink)
+    for (const agent of Object.keys(EXPECTED)) {
+      assert.ok(agents.includes(agent), `snapshot agent '${agent}' missing from MODEL_PROFILES`);
+    }
+    const actual = {};
+    for (const agent of agents) {
+      actual[agent] = {};
+      for (const p of PROFILES) {
+        const d = makeTmpWithConfig({ model_profile: p });
+        actual[agent][p] = core.resolveModelInternal(d, agent);
+      }
+    }
+    assert.deepStrictEqual(actual, EXPECTED);
+  });
+
+  test('representative config: resolve_model_ids omit returns empty string', () => {
+    const d = makeTmpWithConfig({ resolve_model_ids: 'omit' });
+    assert.strictEqual(core.resolveModelInternal(d, 'gsd-executor'), '');
+  });
+
+  test('representative config: non-claude runtime returns runtime model', () => {
+    const d = makeTmpWithConfig({ runtime: 'codex' });
+    assert.strictEqual(core.resolveModelInternal(d, 'gsd-executor'), 'gpt-5.3-codex');
+  });
+
+  test('representative config: model_profile:inherit + models.execution:opus returns opus (#3030)', () => {
+    const d = makeTmpWithConfig({ model_profile: 'inherit', models: { execution: 'opus' } });
+    assert.strictEqual(core.resolveModelInternal(d, 'gsd-executor'), 'opus');
+  });
 });
