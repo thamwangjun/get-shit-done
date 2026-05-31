@@ -338,7 +338,7 @@ function discoverCrossFileRefs(corpusFiles, renameMaps) {
             if (!labelMatch) continue;
             const labelNum = labelMatch[1]; // e.g., "2.5"
 
-            if (oldStep === labelNum || oldStep.replace('.', '.') === labelNum) {
+            if (oldStep === labelNum) {
               const newNum = newLabel.match(/Step\s+(\d+)/i);
               if (newNum) {
                 updates.push({
