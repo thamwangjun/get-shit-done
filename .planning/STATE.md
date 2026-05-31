@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-05-31 after Phase 51)
 Phase: 52 (parser-foundation) — EXECUTING
 Plan: 1 of 3
 Status: Executing Phase 52
-Last activity: 2026-05-31 -- Completed quick task 260531-mvd: Replace dead CONTEXT_WINDOW ternary gates with need-based reference loading
+Last activity: 2026-05-31 -- Completed quick task 260531-ncu: Add precise INTG-02 allowlist for deliberate bare-line @~ refs; verify + mark W016 resolved
 
 ## Performance Metrics
 
@@ -78,6 +78,7 @@ None. Research is HIGH confidence. Two plan-time verification flags noted above 
 | 260531-m4s | Trim and compress CLAUDE.md to moderate readable density (339→162 lines) | 2026-05-31 | 25e30a1f | [260531-m4s-trim-and-compress-claude-md-to-moderate-](./quick/260531-m4s-trim-and-compress-claude-md-to-moderate-/) |
 | 260531-mg7 | Convert summary.md/tdd.md eta includes to @-refs in workflows/execute-phase.md + reference_usage guidance | 2026-05-31 | caee50fa | [260531-mg7-convert-eta-includes-of-summary-md-and-t](./quick/260531-mg7-convert-eta-includes-of-summary-md-and-t/) |
 | 260531-mvd | Replace dead CONTEXT_WINDOW ternary gates with need-based reference loading (619/636/1397 + prose) | 2026-05-31 | 817348c7 | [260531-mvd-replace-dead-context-window-ternary-gate](./quick/260531-mvd-replace-dead-context-window-ternary-gate/) |
+| 260531-ncu | Add precise INTG-02 allowlist for deliberate bare-line @~ refs; verify + mark W016 deferred item resolved | 2026-05-31 | 4b8fcba2 | [260531-ncu-address-intg-02-test-exclusion-list-todo](./quick/260531-ncu-address-intg-02-test-exclusion-list-todo/) |
 
 ## Session Continuity
 
