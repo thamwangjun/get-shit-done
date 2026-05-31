@@ -581,6 +581,47 @@ The decision was made to stop after Phase 20 and not continue with Phases 21–2
 
 ---
 
+## Milestone: v2.1.0-d — Whole-Integer Step Numbering
+
+**Shipped:** 2026-05-31
+**Phases:** 4 | **Plans:** 19
+
+### What Was Built
+- `tests/step-numbering-scan.test.cjs` — decimal, letter-suffix, and out-of-order step label detection (632/632)
+- `49-MAP-01.md` — pre-normalization cross-file step reference index
+- Renumbered 7+ violating files to whole-integer steps across agents, workflows, and commands
+- `scripts/normalize-step-numbers.cjs` — cross-file-aware, idempotent maintenance CLI with `--dry-run`
+- `tests/cross-file-step-refs.test.cjs` — stale cross-file reference integrity scanner (219/219)
+- Quality gate: 11,728 pass / 3 fail (46 fewer failures than v2.1.0-c baseline)
+
+### What Worked
+- TDD red gate (write test, confirm RED, then fix) produced high-confidence scanner subtests
+- Pre-normalization survey (MAP-01) eliminated guesswork on cross-file refs that needed co-updating
+- One-commit-per-file renumbering kept each change atomic and reversible
+- The maintenance script's dynamic discovery is more robust than consuming a static index
+
+### What Was Inefficient
+- REQUIREMENTS.md checkboxes fell out of sync during execution — discovered at audit time
+- Phase 49 at 14 plans was larger than ideal for a single phase
+- Audit was run before Phase 50 VERIFICATION.md was written, creating stale findings
+
+### Patterns Established
+- `PATTERN_C_EXCLUDES` for excluding files by naming convention (not just directory)
+- Strip-then-match anchor pattern for scanners: remove list markers/blockquotes before matching
+- Dynamic cross-file reference discovery vs static manifest consumption
+
+### Key Lessons
+1. Maintenance scripts should be cross-file-aware from day one — works on any future upstream merge
+2. Run the audit right before milestone close, not mid-execution
+3. Write VERIFICATION.md at phase close, not retroactively
+
+### Cost Observations
+- Model mix: balanced profile (Opus for planning/research, Sonnet for execution)
+- Sessions: ~4 sessions across 2 days
+- Notable: 165 commits — per-file-rename approach drove volume but kept each change auditable
+
+---
+
 ## Cross-Milestone Trends
 
 ### Process Evolution
