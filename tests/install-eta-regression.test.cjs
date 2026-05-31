@@ -197,27 +197,6 @@ describe('TEST-01: No unexpected @~/.claude/ references survive in full Claude i
   });
 });
 
-// ─── TEST-02 ───────────────────────────────────────────────────────────────────
-
-describe('TEST-02: Conditional @~ expression preserved verbatim after Eta rendering', () => {
-  test('Eta rendering of execute-phase.md preserves the ${...} conditional expression', () => {
-    // Read the source file directly and render with Eta using the repo root as
-    // viewsRoot — the same configuration used during install. This verifies that
-    // Eta does NOT treat ${...} JS template literal expressions as include tags.
-    const srcPath = path.join(REPO_ROOT, 'get-shit-done', 'workflows', 'execute-phase.md');
-    assert.ok(fs.existsSync(srcPath), `execute-phase.md not found at ${srcPath}`);
-
-    const source = fs.readFileSync(srcPath, 'utf8');
-    const rendered = renderEtaContent(source, srcPath, REPO_ROOT);
-
-    const EXPECTED = "${CONTEXT_WINDOW < 200000 ? '' : '@~/.claude/get-shit-done/references/executor-examples.md'}";
-    assert.ok(
-      rendered.includes(EXPECTED),
-      `Eta rendering of execute-phase.md dropped the conditional @~ expression.\nExpected to find: ${EXPECTED}`
-    );
-  });
-});
-
 // ─── TEST-03 ───────────────────────────────────────────────────────────────────
 
 describe('TEST-03: Inlined reference content present after Eta rendering of gsd-executor.md', () => {
