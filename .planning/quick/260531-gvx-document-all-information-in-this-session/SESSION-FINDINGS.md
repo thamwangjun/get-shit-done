@@ -46,90 +46,92 @@ There are **33 agents** defined in the GSD framework.
 
 ## 2. Agent Complexity Groups
 
+Determined by: breadth of reasoning, number of input sources synthesized, output artifact complexity, adversarial/judgment-heavy stance, and tool surface area.
+
 ### Higher Task Complexity (17 agents)
 
 - `gsd-planner`
-- `gsd-roadmapper`
 - `gsd-executor`
+- `gsd-debugger`
+- `gsd-debug-session-manager`
+- `gsd-verifier`
+- `gsd-nyquist-auditor`
 - `gsd-phase-researcher`
 - `gsd-project-researcher`
-- `gsd-research-synthesizer`
-- `gsd-debugger`
-- `gsd-codebase-mapper`
-- `gsd-verifier`
-- `gsd-plan-checker`
-- `gsd-integration-checker`
-- `gsd-nyquist-auditor`
-- `gsd-pattern-mapper`
+- `gsd-ai-researcher`
+- `gsd-eval-planner`
+- `gsd-eval-auditor`
+- `gsd-roadmapper`
+- `gsd-doc-synthesizer`
 - `gsd-ui-researcher`
-- `gsd-ui-checker`
-- `gsd-ui-auditor`
-- `gsd-doc-writer`
+- `gsd-framework-selector`
+- `gsd-code-fixer`
+- `gsd-security-auditor`
 
 ### Lower Task Complexity (16 agents)
 
-- `gsd-doc-verifier`
-- `gsd-advisor-researcher`
-- `gsd-ai-researcher`
-- `gsd-assumptions-analyzer`
-- `gsd-code-fixer`
-- `gsd-code-reviewer`
-- `gsd-debug-session-manager`
 - `gsd-doc-classifier`
-- `gsd-doc-synthesizer`
-- `gsd-domain-researcher`
-- `gsd-eval-auditor`
-- `gsd-eval-planner`
-- `gsd-framework-selector`
+- `gsd-doc-verifier`
+- `gsd-doc-writer`
+- `gsd-research-synthesizer`
+- `gsd-pattern-mapper`
+- `gsd-advisor-researcher`
+- `gsd-assumptions-analyzer`
 - `gsd-intel-updater`
-- `gsd-security-auditor`
+- `gsd-codebase-mapper`
+- `gsd-plan-checker`
+- `gsd-integration-checker`
+- `gsd-code-reviewer`
+- `gsd-ui-checker`
+- `gsd-ui-auditor`
+- `gsd-domain-researcher`
 - `gsd-user-profiler`
 
 ## 3. Agent Routing Tiers
 
-Source: `model-catalog.json`. Each agent is assigned a `routingTier` that determines which model the `adaptive` profile resolves to.
+Source: `routingTier` field in `sdk/shared/model-catalog.json`. Determines which model the `adaptive` profile resolves to.
 
-### Heavy tier (→ opus in adaptive profile)
+### Heavy tier (→ opus in adaptive profile, 9 agents)
 
 - `gsd-planner`
 - `gsd-roadmapper`
+- `gsd-debugger`
+- `gsd-debug-session-manager`
+- `gsd-assumptions-analyzer`
+- `gsd-eval-planner`
+- `gsd-framework-selector`
+- `gsd-security-auditor`
+- `gsd-user-profiler`
+
+### Standard tier (→ sonnet in adaptive profile, 13 agents)
+
 - `gsd-executor`
 - `gsd-phase-researcher`
 - `gsd-project-researcher`
-- `gsd-research-synthesizer`
-- `gsd-debugger`
-- `gsd-codebase-mapper`
 - `gsd-verifier`
+- `gsd-ui-researcher`
+- `gsd-doc-writer`
+- `gsd-advisor-researcher`
+- `gsd-ai-researcher`
+- `gsd-code-fixer`
+- `gsd-code-reviewer`
+- `gsd-doc-synthesizer`
+- `gsd-domain-researcher`
+- `gsd-eval-auditor`
+
+### Light tier (→ haiku in adaptive profile, 11 agents)
+
+- `gsd-research-synthesizer`
+- `gsd-codebase-mapper`
 - `gsd-plan-checker`
 - `gsd-integration-checker`
 - `gsd-nyquist-auditor`
 - `gsd-pattern-mapper`
-- `gsd-ui-researcher`
 - `gsd-ui-checker`
 - `gsd-ui-auditor`
-- `gsd-doc-writer`
-
-### Standard tier (→ sonnet in adaptive profile)
-
 - `gsd-doc-verifier`
-- `gsd-advisor-researcher`
-- `gsd-ai-researcher`
-- `gsd-assumptions-analyzer`
-- `gsd-code-fixer`
-- `gsd-code-reviewer`
-- `gsd-debug-session-manager`
 - `gsd-doc-classifier`
-- `gsd-doc-synthesizer`
-- `gsd-domain-researcher`
-- `gsd-eval-auditor`
-- `gsd-eval-planner`
-- `gsd-framework-selector`
 - `gsd-intel-updater`
-- `gsd-security-auditor`
-
-### Light tier (→ haiku in adaptive profile)
-
-- `gsd-user-profiler`
 
 ## 4. Model Profiles
 
