@@ -13,15 +13,15 @@ Out-of-scope failures discovered during execution. NOT caused by this plan's cha
 
 These bare-line @~ refs were introduced by prior quick tasks (260531-lpp converting checkpoints.md/git-integration.md, 260531-mg7 converting summary.md/tdd.md) which left INTG-02 red. This plan's added `executor-examples.md` @-ref (line 607) deliberately matches the same established sibling form so it introduces no new pattern. Fixing the bare-line convention across all workflow refs is a separate concern.
 
-### TODO (address later): add new @-refs to the test exclusion list
+### TODO (address later): add new @-refs to the test exclusion list — RESOLVED 2026-05-31
 
-`tests/bug-phase45-eta-wiring.test.cjs` ("zero bare-line @~ survivors") needs its exclusion/allowlist updated to cover the intentional bare-line `@~` references introduced by the recent @-ref conversion tasks (260531-lpp, 260531-mg7, 260531-mvd). New refs to add to the exclusion list:
+**RESOLVED (2026-05-31, quick task 260531-ncu).** `tests/bug-phase45-eta-wiring.test.cjs` ("zero bare-line @~ survivors") now carries a precise `ALLOWLIST` (keyed by exact relative file path + exact trimmed ref string) covering the intentional bare-line `@~` references introduced by the recent @-ref conversion tasks (260531-lpp, 260531-mg7, 260531-mvd):
 
 - `get-shit-done/workflows/execute-phase.md` — `templates/summary.md`, `references/checkpoints.md`, `references/tdd.md`, `references/executor-examples.md`
 - `get-shit-done/workflows/execute-plan.md` — `references/git-integration.md`
 
-Once the allowlist covers these, INTG-02 goes green without reverting the deliberate @-ref conversions.
+INTG-02 is now green without reverting the deliberate @-ref conversions. The allowlist is exact, so any new bare-line `@~` ref (different ref, or same ref in a different file) is still flagged as a survivor.
 
-## W016 / addAiIntegrationPhaseKey (pre-existing, unrelated)
+## W016 / addAiIntegrationPhaseKey (pre-existing, unrelated) — RESOLVED 2026-05-31
 
-`tests/verify-health.test.cjs` (and repair counterpart) for `workflow.ai_integration_phase` config-health key fail independently of execute-phase.md content. Not touched by this plan.
+**RESOLVED / no longer reproducing (2026-05-31, verified by quick task 260531-ncu).** `tests/verify-health.test.cjs` now reports `fail 0` (37 pass) — the `workflow.ai_integration_phase` config-health key / `addAiIntegrationPhaseKey` no longer fails. No further action needed.
