@@ -317,7 +317,16 @@ Plans:
   2. A bare model string with no recognized effort suffix returns `effort: null` (backward-compatible omit)
   3. A shared `_resolveAgentSlot(cwd, agentType)` helper returns the single raw slot string, so both the model resolver and the effort resolver read from the identical tier entry (structurally eliminates the #3023 divergence class)
   4. `parseModelEffort` is exported from the JS lib (`core.cjs`) and mirrored in `sdk/src/model-catalog.ts` with identical semantics, verified by a parity test
-**Plans**: TBD
+**Plans**: 3 plans
+
+**Wave 1**
+
+- [ ] 52-01-PLAN.md — Implement and export `parseModelEffort(label)` with one-time typo warning [PARSE-01, PARSE-02]
+
+**Wave 2** *(both blocked on Wave 1; parallel, no file overlap)*
+
+- [ ] 52-02-PLAN.md — Extract `_resolveAgentSlot` + refactor `resolveModelInternal` behind a pre-change golden snapshot [PARSE-03]
+- [ ] 52-03-PLAN.md — Mirror `parseModelEffort` into the SDK + shared parity fixture + cross-runner parity suites [PARSE-04]
 
 #### Phase 53: Unified Effort Resolver
 **Goal**: `resolveReasoningEffortInternal` resolves effort for the `claude` runtime (Claude gate lifted via an explicit `{claude, codex}` allowlist), follows the same precedence chain as the model resolver, and accepts `model;effort` in all three config override sites — while bare configs continue to omit effort everywhere
