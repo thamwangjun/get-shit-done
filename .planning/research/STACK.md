@@ -1,212 +1,131 @@
-# Technology Stack: Step-Number Normalization Tooling
+# Stack Research — Per-Agent Thinking Effort (v2.1.0-e)
 
-**Project:** GSD Fork — v2.1.0-d Whole-Integer Step Numbering
-**Researched:** 2026-05-30
-**Scope:** What Node.js utilities/patterns already exist and are reusable vs. what must be built from scratch for STEP-01 (scanner test) and STEP-03 (normalization script).
+**Domain:** Cross-runtime reasoning/effort control plumbing for the GSD agent-spawn layer
+**Researched:** 2026-05-31
+**Confidence:** HIGH (Claude + Codex param semantics verified against current vendor docs; Gemini analogous; OpenCode/Qwen/Copilot inferred from runtime architecture)
 
----
-
-## Existing Tooling
-
-### Runtime and Module Format
-
-- **Node.js >=22.0.0** — confirmed in `package.json` (root)
-- **CommonJS (.cjs)** — all lib modules, all test files, all maintenance scripts use `require`/`module.exports`; no ES modules in this layer
-- **Node.js built-in `--test` runner** — all tests in `tests/*.test.cjs`; no external test framework
-
-### Shared Test Infrastructure (`tests/helpers.cjs`)
-
-The helpers file exports the following utilities:
-
-| Helper | Purpose | Reusability for STEP-01 |
-|--------|---------|------------------------|
-| `captureConsole(fn)` | Captures console.log/warn/error output | Potentially useful if the scanner emits warnings |
-| `parseFrontmatter(content)` | Parses YAML frontmatter | Not needed — step-number scanning works on body content |
-| `createTempDir` / `createTempProject` | Temp directory scaffolding | Not needed — corpus scan uses live repo files |
-| `cleanup(tmpDir)` | Temp dir teardown | Not needed |
-
-**Key finding:** `tests/helpers.cjs` does NOT export `collectMarkdownFiles`. The negative-framing scanner defines its own inline `collectMarkdownFiles` function and calls it at module scope. The STEP-01 scanner test follows the same pattern — inline definition, not imported from helpers.
-
-### The Canonical Scanner Test Pattern (`tests/negative-framing-scan.test.cjs`)
-
-This file is the direct structural template for the new step-number scanner test. Reusable conventions:
-
-1. **Module-scope file collection** — collect all `.md` files from `SCAN_DIRS` once at module top, shared across all `describe` blocks
-2. **`SCAN_DIRS` constant** — array of directories relative to `PROJECT_ROOT`; the same dirs apply: `agents`, `get-shit-done/workflows`, `commands/gsd`
-3. **Pure `scanContent(content)` function** — takes a string, returns a result object with violation arrays; no filesystem I/O inside the scan logic
-4. **Code-fence tracking** — `let inCodeBlock = false` + toggle on `/^```/` lines; step labels inside fenced blocks must be skipped
-5. **Unit tests first** — `describe` blocks for synthetic content test the scanner logic in isolation before corpus tests run
-6. **Corpus tests** — per-directory `describe` + `test` pairs: load files, call scanner, collect violations, `assert.equal(violations.length, 0, diagnosticMessage)`
-7. **Diagnostic message format** — `violations.map(v => \` \${v.file}:\n\${v.lines.map(l => \` line \${l.lineNumber}: \${l.line}\`).join('\n')}\`).join('\n')`
-
-The `{ lineNumber, line }` violation object shape (trimmed line text + 1-based line number) is the established convention.
-
-### Maintenance Script Pattern (`scripts/convert-refs.cjs`, `scripts/strip-prose-atrefs.cjs`)
-
-Both existing maintenance scripts share a structure directly applicable to `scripts/normalize-step-numbers.cjs`:
-
-| Pattern | Both Scripts | Implication for normalize script |
-|---------|-------------|----------------------------------|
-| `--dry-run` flag via `process.argv.includes('--dry-run')` | Yes | Implement the same flag |
-| Inline `collectMdFiles(dir)` recursive collector | Yes | Inline the same collector |
-| `TARGET_DIRS` array of absolute paths | Yes | Same four scan directories |
-| Line-by-line transform: `content.split('\n')`, map, `out.join('\n')` | Yes | Same split/join approach |
-| Idempotent write: compare result to original before writing | Yes — `if (result === original) return false` | Apply the same guard |
-| `process.stdout.write` for progress output | Yes | Consistent with existing scripts |
-| Summary at end: files processed / changed / lines changed | Yes | Replicate same summary shape |
-| `process.exit(0)` explicit exit | Yes | Required — Node.js sometimes hangs on implicit exit in CJS scripts |
-
-The `transformLine(line)` → `string | null` (null = no change) contract in `convert-refs.cjs` is clean for line-level transforms. For the normalizer, the transform requires file-level state (a renumbering map built in a first pass), so the right unit is `transformFile(filePath, options)` that processes full file content rather than individual lines.
+This is an **internal-API** research task, not a package-dependency task. No new npm packages are required. The "stack" here is the set of vendor reasoning-control parameters the feature must target, plus the existing GSD machinery that already resolves model + effort. The template's package tables are adapted to document **param semantics and accepted value sets** the planner needs to wire spawn calls.
 
 ---
 
-## Reusable Patterns
+## 1. Claude effort vs thinking vs taskBudget — the three distinct controls
 
-### 1. Inline `collectMarkdownFiles` Function
+These are **three orthogonal parameters**. The feature targets exactly one of them (`effort`). Do NOT conflate.
 
-Used verbatim in `negative-framing-scan.test.cjs` (lines 374–392). The ENOENT-tolerant pattern is required:
+| Control | Where it lives | What it sets | Accepted values | Use in this feature |
+|---------|----------------|--------------|-----------------|---------------------|
+| **`effort`** | API: `output_config.effort`; Claude Code: `effortLevel` setting + skill/subagent frontmatter `effort:` | Soft ceiling + bias on how much Claude reasons AND how aggressively it uses tools (reads extra files, runs extra commands before acting) | `low`, `medium`, `high` (default), `xhigh`, `max` | **THIS is the target.** Canonical 5-level vocabulary. |
+| **`thinking`** (ThinkingConfig) | API: `thinking={"type": "adaptive"}` (or legacy `enabled`/budget) | Whether extended/interleaved thinking is on, and the reasoning *mode* (adaptive vs fixed-budget). Enables thinking *between* tool calls. | `{"type":"adaptive"}`, `{"type":"enabled","budget_tokens":N}` | **Out of scope.** A separate axis (mode), not effort magnitude. Do not set. |
+| **`taskBudget`** / `max_tokens` | API request | Hard cap on total output tokens (thinking + text). | integer token count | **Out of scope.** A hard limit, not a reasoning dial. Do not add. |
 
-```javascript
-function collectMarkdownFiles(dir) {
-  const results = [];
-  try {
-    const entries = fs.readdirSync(dir, { withFileTypes: true });
-    for (const entry of entries) {
-      const fullPath = path.join(dir, entry.name);
-      if (entry.isDirectory()) results.push(...collectMarkdownFiles(fullPath));
-      else if (entry.name.endsWith('.md')) results.push(fullPath);
-    }
-  } catch (err) {
-    if (err.code !== 'ENOENT') throw err;
-  }
-  return results;
-}
-```
+**Key distinctions for the planner:**
+- `effort` is a *soft* guidance dial; `max_tokens`/taskBudget is a *hard* cap. They are complementary but independent — encoding effort does not require touching token budgets.
+- `effort` and `thinking` are independent: effort sets *how much*, adaptive thinking sets *the mode*. The feature sets only `effort`.
+- **Claude default is `high` on all surfaces** (API + Claude Code). A passed value overrides the default. → Omitting effort (bare `model` label) is therefore safely backward-compatible: the runtime applies its `high` default.
 
-Both the scanner test and the normalizer script inline this — extracting to helpers is not necessary and would require updating the helpers test count assertion.
+**Claude Code surface specifics (load-bearing for spawn templates):**
+- `effortLevel` in settings accepts only `low`, `medium`, `high`, `xhigh`. **`max` and `ultracode` are session-only and rejected in the settings file.**
+- **Subagent/skill frontmatter accepts `effort:`** to override effort when that subagent/skill runs. This is the documented mechanism for per-agent effort — aligns directly with GSD's per-agent model-catalog design.
+- `ultracode` is NOT a sixth level — it pairs `xhigh` with auto multi-agent permission. Ignore for mapping.
+- The `ultrathink` keyword is an in-context prompt nudge; it does NOT change the API effort value. Not a parameter; ignore.
 
-### 2. Code-Fence Skip Guard
+**`max` caveat (confirm during planning):** `max` is a valid *API* effort value but is **session-only / rejected in the Claude Code `effortLevel` settings file**. Whether `max` is accepted in *subagent frontmatter* is not explicitly documented. The feature's canonical vocabulary includes `max`, but on the Claude Code install path `max` may need to be treated like `xhigh` (or passed only via the SDK `effort` param, not settings). Flag for the planner: verify `max` acceptance in subagent frontmatter before emitting it there.
 
-The `inCodeBlock` toggle from `negative-framing-scan.test.cjs` (lines 253–263):
+## 2. `@anthropic-ai/claude-agent-sdk` `query()` — per-spawn effort surface
 
-```javascript
-let inCodeBlock = false;
-// inside the per-line loop:
-if (/^```/.test(trimmed)) { inCodeBlock = !inCodeBlock; continue; }
-if (inCodeBlock) continue;
-```
+| Question | Finding | Confidence |
+|----------|---------|------------|
+| Does the Agent/Task tool accept an `effort` param per subagent spawn? | **Partially / emerging.** Per-subagent `effort` via the Task tool is an area of active development (open feature request anthropics/claude-code#25669 to add `effort` + optional thinking config to Task-tool subagent spawns, aligned to `AgentDefinition`). The **documented, available** per-agent mechanism today is **subagent/skill markdown frontmatter `effort:`** — which GSD already uses for its install-time agent files. | MEDIUM |
+| Where does effort live in the raw API? | `output_config.effort` (sibling to `thinking`). Not a top-level `query()` field. | HIGH |
+| Recommendation | Drive per-agent effort through the **frontmatter `effort:` field** (the supported, stable path) rather than a programmatic Task-tool argument that may not yet exist in the installed SDK version. GSD spawns agents from markdown, so frontmatter is the natural carrier. | — |
 
-Step labels inside fenced code blocks are examples, not behavioral steps. Both the scanner and the normalizer must apply this guard.
+**Implication:** The GSD plumbing should resolve an `effort` string and surface it (a) in init/agent-skills JSON for orchestrators, and (b) into agent-file frontmatter / spawn templates — matching how `model` is already threaded. It should NOT assume a `query({ effort })` programmatic field exists; treat the frontmatter path as authoritative.
 
-### 3. SCAN_DIRS + ALL_FILES Module-Scope Initialization
+## 3. Codex `reasoning_effort` vocabulary and ceiling — confirms `max`→`xhigh`
 
-The pattern of building `ALL_FILES` once at module scope from `SCAN_DIRS` (lines 34–48 of the scanner test) avoids redundant filesystem traversals across describe blocks and is the established convention for corpus scanner tests.
+| Property | Finding | Confidence |
+|----------|---------|------------|
+| Config key | `model_reasoning_effort` (config.toml / `-c model_reasoning_effort=…` / `/effort` TUI) | HIGH |
+| Accepted values | `minimal`, `low`, `medium` (default), `high`, `xhigh` | HIGH |
+| **Ceiling** | **`xhigh` IS the top level. `max` does NOT exist in Codex.** | HIGH |
+| Aliases | `extra_high` / `extra-high` normalize to `xhigh` | MEDIUM |
+| Model caveat | `gpt-5.4-mini` (the catalog's codex **haiku** tier) does **not** support `xhigh` — supports only `minimal`/`low`/`medium`/`high`. The catalog already sets haiku→`medium`, so this is safe. **Do not map any effort to `xhigh` on the haiku/`gpt-5.4-mini` tier.** | HIGH |
 
----
+**Mapping confirmed:** Claude `max` → Codex `xhigh` is correct and required (Codex has no `max`). Note the asymmetry below.
 
-## What Must Be Built From Scratch
+### Claude→Codex effort mapping table (canonical Claude vocabulary is source of truth)
 
-### A. `scanForDecimalSteps(content)` Function
+| Claude (canonical) | Codex | Notes |
+|--------------------|-------|-------|
+| `low` | `low` | direct |
+| `medium` | `medium` | direct (Codex default) |
+| `high` | `high` | direct |
+| `xhigh` | `xhigh` | direct (Codex ceiling) |
+| `max` | `xhigh` | **collapse** — Codex has no `max`; ceiling clamp |
+| *(omitted)* | *(omit; tier default applies)* | bare model label stays effort-free |
 
-No existing scanner handles step numbering. Must build from scratch. Returns:
+Codex also exposes `minimal` (below `low`); the Claude vocabulary has no equivalent, so `minimal` is never produced by this mapping. Per PROJECT.md, **profile-slot effort overrides the catalog's per-tier `reasoning_effort`** when present; when the label is bare, the existing per-tier Codex `reasoning_effort` continues to apply (backward-compatible).
 
-```javascript
-{
-  violations: Array<{ lineNumber: number, line: string }>
-}
-```
+## 4. Per-runtime applicability — which runtimes get an effort mapping
 
-### B. Cross-Reference Detection
+| Runtime | Has analogous control? | Param / vocabulary | GSD action |
+|---------|------------------------|--------------------|------------|
+| **claude** | Yes (native) | `effort`: low/medium/high/xhigh/max (frontmatter accepts low–xhigh; `max` API-only) | **Canonical.** Emit `effort:` in frontmatter / spawn. |
+| **codex** | Yes | `model_reasoning_effort`: minimal/low/medium/high/xhigh | **Map** per table above; `max`→`xhigh`. Already in `runtimeTierDefaults.codex`. |
+| **gemini** | Yes (different model) | `thinkingLevel` (ThinkingConfig): LOW/MEDIUM/HIGH (Pro); Flash adds minimal/medium. OpenAI-compat layer maps `reasoning_effort`→`thinkingLevel`. | **Defer / omit for now.** Vocabulary differs (3-level, model-dependent; gemini-3-pro rejects MEDIUM on some paths). Not in current allowlist. Mapping is *possible* but is a distinct value set — flag as optional future extension, not v2.1.0-e scope. |
+| **opencode** | Indirect (proxies Anthropic models) | Routes `anthropic/claude-*`; effort would flow via the underlying Anthropic API `effort`, but OpenCode's config surface for it is not GSD-modeled. | **Omit.** Not in `RUNTIMES_WITH_REASONING_EFFORT`; no GSD-owned emit path today. |
+| **qwen** | Model-dependent / not GSD-modeled | No GSD-tracked effort field; catalog entries carry `model` only. | **Omit.** |
+| **copilot** | No GSD-owned effort surface | Catalog entries `model` only. | **Omit.** |
+| **hermes / kilo / cline / cursor / windsurf / augment / trae / codebuddy / antigravity** | No (catalog tiers null or model-only) | — | **Omit.** |
 
-The corpus (23 occurrences across 7 files) shows two forms of decimal step labels:
-
-1. **Section headers** — lines that define a step (the heading itself):
-   - `## Step 1.3: Load Graph Context` (`gsd-phase-researcher.md`)
-   - `### Step 6.5: Self-Check` (`gsd-intel-updater.md`)
-   - `**Step 2.5: Runtime State Inventory**` (`gsd-phase-researcher.md`)
-   - `**Step 1.5: Check for unaddressed UAT gaps**` (`progress.md`)
-
-2. **Inline cross-references** — prose that mentions a step by its decimal label:
-   - `continue to Step 1.5 without graph context` (`gsd-phase-researcher.md`)
-   - `Proceed to Step 7.8 (or Step 8 if pattern mapper is disabled)` (`plan-phase.md`)
-   - `Proceed to Step 5.5.` (`new-project.md`)
-
-Both forms must be detected by the scanner. The normalizer must renumber both forms consistently within each file.
-
-### C. Per-File Renumbering Algorithm (`scripts/normalize-step-numbers.cjs`)
-
-No existing script does multi-step renumbering with cross-reference tracking. Must build:
-
-1. **Pass 1 — collect all decimal step labels** in the file in document order, building a `Map<originalDecimalLabel, newWholeIntegerLabel>` that respects ordering and avoids collisions with pre-existing whole-integer step numbers
-2. **Pass 2 — apply replacements** to every line, replacing both section headings and inline cross-references using the map from Pass 1
-3. **File-scoped operation** — the renumbering map is built fresh per file; no state crosses file boundaries
+**The allowlist gate (`RUNTIMES_WITH_REASONING_EFFORT`) is the single switch.** It currently admits only runtimes whose install path actually consumes `reasoning_effort` — today that is **codex** (the only runtime with `reasoning_effort` entries in `runtimeTierDefaults`, detected dynamically by `runtimesWithReasoningEffort()` in `sdk/src/model-catalog.ts:64`). For v2.1.0-e, per PROJECT.md, the Claude block in `resolveReasoningEffortInternal` is **lifted** so Claude effort resolves natively; the allowlist stops gating Claude out. Gemini stays omitted unless explicitly added.
 
 ---
 
-## Regex Strategy
+## Existing machinery to extend (NOT rebuild)
 
-### Detection Regex (for scanner)
+| Asset | Role | v2.1.0-e change |
+|-------|------|-----------------|
+| `sdk/shared/model-catalog.json` | `runtimeTierDefaults.codex.*.reasoning_effort` (xhigh/medium) already present | Add inline effort to profile slots / `adaptiveTierMap`; profile-slot effort becomes source of truth |
+| `sdk/src/model-catalog.ts` | TS mirror; `reasoning_effort?` field + `runtimesWithReasoningEffort()` (line 64) | Extend to surface resolved per-agent effort |
+| `get-shit-done/bin/lib/core.cjs:1454` `resolveReasoningEffortInternal` | Resolves effort; gated to non-Claude via `RUNTIMES_WITH_REASONING_EFFORT` (core.cjs:1463) | **Lift Claude gating**; profile-slot effort overrides Codex per-tier; `max`→`xhigh` on Codex emit |
+| `get-shit-done/bin/lib/commands.cjs:243-250` | Already exposes `model` + `reasoning_effort` in init/agent-skills JSON | Surface resolved `effort` (unified) |
+| `core.cjs:1267` `resolveModelInternal` | Model resolution; effort must mirror its tier lookup (per #3023 comment) | Parser splits `model:effort`; keep tier-lookup parity |
 
-One regex covers all surface forms:
+## What NOT to use / NOT to add
 
-```javascript
-/\bStep\s+\d+\.\d+/i
-```
+| Avoid | Why | Instead |
+|-------|-----|---------|
+| `taskBudget` / `max_tokens` to express effort | Hard token cap, orthogonal to reasoning dial; would conflate magnitude with truncation | Use `effort` only |
+| `thinking` / ThinkingConfig (`adaptive`) | Separate axis (mode, not magnitude); enabling it changes behavior beyond effort | Leave untouched; set only `effort` |
+| `ultracode` / `ultrathink` as effort levels | Not API effort levels (permission mode / prompt keyword respectively) | Stick to low/medium/high/xhigh/max |
+| Codex `max` | Does not exist in Codex (ceiling is `xhigh`) | Map Claude `max`→`xhigh` |
+| `xhigh` on codex haiku tier (`gpt-5.4-mini`) | Model rejects `xhigh` | Keep haiku→`medium` (already set) |
+| A new parallel effort resolver | Duplicates `resolveReasoningEffortInternal` | Lift/extend the existing function |
+| Programmatic `query({ effort })` assumption | Per-subagent Task-tool effort param is an open feature request, not stable SDK surface | Carry effort via subagent **frontmatter `effort:`** |
+| Gemini effort mapping in this milestone | 3-level model-dependent vocabulary differs; out of allowlist | Omit; flag as optional future extension |
 
-This matches `Step 2.5`, `Step 4.75`, `Step 7.0`, `Step 1.3` regardless of whether they appear in a heading or prose. Deliberately broad — any `Step N.M` is a violation by definition (the milestone goal is whole-integer-only). Code-fence exclusion is the only filter needed.
+## Confidence Assessment
 
-**Note on `Step 7.0` in `execute-phase.md`:** The corpus contains `Step 7.0`, `Step 7.1`, `Step 7.2`, `Step 7.3` (lines 925–949 of `execute-phase.md`) used as a sub-step group. `N.0` is technically decimal by the regex but semantically "the whole step". Whether to treat `N.0` as a violation is a scope decision for the implementation phase. The recommended default is to flag it — "whole integer only" means no decimal point.
+| Area | Confidence | Basis |
+|------|------------|-------|
+| Claude effort vocabulary (5 levels, default high) | HIGH | platform.claude.com effort + adaptive-thinking docs, code.claude.com model-config |
+| effort vs thinking vs taskBudget distinction | HIGH | Same vendor docs (separate `output_config.effort`, `thinking`, `max_tokens`) |
+| Claude Code `effortLevel` rejects `max`/`ultracode`; frontmatter `effort:` exists | HIGH (settings) / MEDIUM (`max` in frontmatter unverified) | code.claude.com model-config |
+| Per-subagent programmatic effort = emerging | MEDIUM | anthropics/claude-code#25669 (open) |
+| Codex ceiling = `xhigh`, no `max`; default medium; gpt-5.4-mini no xhigh | HIGH | developers.openai.com Codex config-sample + reasoning guide; openai/codex issues |
+| Gemini `thinkingLevel` LOW/MEDIUM/HIGH | HIGH | ai.google.dev gemini-3 / thinking docs |
+| OpenCode/Qwen/Copilot omit | MEDIUM | Inferred from catalog (model-only entries, no `reasoning_effort`) + allowlist design |
 
-### Heading vs. Cross-Reference Identification (for normalizer)
+## Sources
 
-To distinguish step-defining headings from inline references, test the line start:
-
-```javascript
-// Markdown heading form
-/^(#{1,6})\s+(Step\s+\d+\.\d+)(.*)/i
-
-// Bold inline heading form (common in workflows)
-/^(\*\*Step\s+\d+\.\d+)(.*)/i
-```
-
-Any line that matches `/\bStep\s+\d+\.\d+/i` but does NOT match the heading patterns is an inline cross-reference.
-
-### Word-Boundary-Safe Replacement (for normalizer)
-
-When replacing `Step 2.5` with `Step 3`, the regex must not match `Step 2.50`:
-
-```javascript
-// decimalNumber = "2.5", escape the dot
-line.replace(
-  new RegExp(`\\bStep\\s+${decimalNumber.replace('.', '\\.')}(?!\\d)`, 'gi'),
-  newLabel
-)
-```
-
-The negative lookahead `(?!\d)` prevents `2.5` from matching inside `2.50`.
-
----
-
-## Corpus Summary
-
-Decimal step labels found across all three scan directories (as of 2026-05-30):
-
-| File | Decimal Step Labels (headers) | Inline Cross-References |
-|------|------------------------------|------------------------|
-| `agents/gsd-phase-researcher.md` | Step 1.3, Step 1.5, Step 2.5, Step 2.6 | Step 1.5, Step 2.6 (in skip note) |
-| `agents/gsd-intel-updater.md` | Step 6.5 | — |
-| `get-shit-done/workflows/progress.md` | Step 1.5, Step 1.6 | — |
-| `get-shit-done/workflows/execute-phase.md` | Step 7.0, Step 7.1, Step 7.2, Step 7.3 | — |
-| `get-shit-done/workflows/quick.md` | Step 2.5, Step 4.5, Step 4.75, Step 5.5, Step 5.6, Step 6.25, Step 6.5 | — |
-| `get-shit-done/workflows/plan-phase.md` | — | Step 3.5, Step 7.8 (cross-refs in prose) |
-| `get-shit-done/workflows/new-project.md` | — | Step 5.5 (cross-ref in prose) |
-
-Total: ~23 occurrences across 7 files. All in agents and workflows; zero in commands.
-
----
-
-## Compatibility Notes
-
-- All new files (scanner test + normalizer script) use `.cjs` extension and CommonJS `require`/`module.exports`
-- No new npm dependencies required — `fs`, `path`, `node:test`, `node:assert/strict` are all built-in
-- `scripts/normalize-step-numbers.cjs` runs standalone via `node scripts/normalize-step-numbers.cjs`; does not need to be registered in `package.json` scripts (like other maintenance scripts in `scripts/`)
+- [Effort — Claude API Docs](https://platform.claude.com/docs/en/build-with-claude/effort)
+- [Adaptive thinking — Claude API Docs](https://platform.claude.com/docs/en/build-with-claude/adaptive-thinking)
+- [Model configuration — Claude Code Docs](https://code.claude.com/docs/en/model-config)
+- [Feature: effort/thinking configuration for Task tool subagents (anthropics/claude-code#25669)](https://github.com/anthropics/claude-code/issues/25669)
+- [Sample Configuration — Codex | OpenAI Developers](https://developers.openai.com/codex/config-sample)
+- [Reasoning models | OpenAI API](https://developers.openai.com/api/docs/guides/reasoning)
+- [Models And Reasoning — Codex SDK](https://hexdocs.pm/codex_sdk/07-models-and-reasoning.html)
+- [Codex automation reasoning effort issue (openai/codex#13536)](https://github.com/openai/codex/issues/13536)
+- [Gemini 3 Developer Guide — generateContent API](https://ai.google.dev/gemini-api/docs/gemini-3)
+- [Gemini thinking — generateContent API](https://ai.google.dev/gemini-api/docs/thinking)

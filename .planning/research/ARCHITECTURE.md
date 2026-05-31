@@ -1,237 +1,171 @@
-# Architecture Research: install.js Template Integration
+# Architecture Patterns
 
-**Researched:** 2026-05-28
-**Confidence:** HIGH (based on direct source reading)
+**Domain:** Per-agent thinking-effort dimension for GSD (v2.1.0-e)
+**Researched:** 2026-05-31
+**Confidence:** HIGH (all integration points read directly from source)
 
----
+## Recommended Architecture
 
-## Current install.js Pipeline
-
-The installer is a single 11,000+ line Node.js CommonJS file. The install flow for prompt content files (agents, commands, workflows) runs as follows:
-
-### Step 1 — Staging
-
-`_stageSkills(commandsDir)` and `_stageAgents(agentsDir)` filter source files into a temporary staging directory based on the active install profile (core vs full). This produces a filtered set of source `.md` files but does not modify their content.
-
-### Step 2 — Content Read + Path Substitution
-
-For **agents** (lines 8643–8719): the loop reads each `.md` file with `fs.readFileSync`, then immediately runs path substitution — replacing `~/.claude/`, `$HOME/.claude/`, etc. with the runtime-specific `pathPrefix`. This happens inline in the install loop.
-
-For **commands/get-shit-done** (lines 6399–6562 in `copyWithPathReplacement`): the same pattern — read file, apply path substitution regex, then hand off to the runtime converter.
-
-For **skills** (layout-driven runtimes via `installRuntimeArtifacts`): staging happens via `kind.stage()`, then `applyRuntimeContentRewritesInPlace(staged, runtime, pathPrefix)` walks the staged directory and applies `_applyRuntimeRewrites()` per-file.
-
-### Step 3 — Runtime-Specific Transform
-
-After path substitution, content is passed through one of these converters depending on runtime:
-
-| Runtime | Converter |
-|---------|-----------|
-| opencode | `convertClaudeToOpencodeFrontmatter()` |
-| kilo | `convertClaudeToKiloFrontmatter()` |
-| gemini | `convertClaudeToGeminiMarkdown()` / `convertClaudeToGeminiAgent()` |
-| codex | `convertClaudeToCodexMarkdown()` / `convertClaudeAgentToCodexAgent()` |
-| copilot | `convertClaudeToCopilotContent()` / `convertClaudeAgentToCopilotAgent()` |
-| cursor | `convertClaudeToCursorMarkdown()` / `convertClaudeAgentToCursorAgent()` |
-| antigravity | `convertClaudeToAntigravityContent()` / `convertClaudeAgentToAntigravityAgent()` |
-| windsurf, augment, trae, codebuddy, cline, qwen, hermes | similar per-runtime converters |
-
-The converters mutate frontmatter (tool name lists, permission schemas) and body (path strings, command namespace `/gsd:` → `/gsd-`).
-
-### Step 4 — Attribution + Namespace Normalization
-
-`processAttribution(content, getCommitAttribution(runtime))` and `normalizeAgentBodyForRuntime(content, runtime, cmdNames)` run after the runtime converter for some paths.
-
-### Step 5 — Write to Destination
-
-`fs.writeFileSync(destPath, content)` writes the final transformed content.
-
----
-
-## Key Functions / Entry Points
-
-| Function | File Location | Role |
-|----------|--------------|------|
-| `copyWithPathReplacement(srcDir, destDir, pathPrefix, runtime, isCommand, isGlobal)` | ~line 6399 | Recursive directory copy for commands and get-shit-done subtree. The `.md` file read + transform happens inside the loop at line 6432. |
-| `applyRuntimeContentRewritesInPlace(stagedDir, runtime, pathPrefix)` | line 5898 | Walks staged skills dirs and rewrites each `SKILL.md` in place before `_copyStaged` writes to dest. |
-| `_applyRuntimeRewrites(content, runtime, pathPrefix)` | line 5926 | Pure function applying per-runtime regex substitutions. Unit-testable. |
-| Agent install loop | lines 8639–8727 in `install()` | Directly reads each agent `.md`, applies path substitution and runtime conversion inline. |
-| `installRuntimeArtifacts(runtime, configDir, scope, resolvedProfile)` | line 6279 | Orchestrator for layout-driven runtimes: calls `kind.stage()`, then `applyRuntimeContentRewritesInPlace`, then `_copyStaged`. |
-
-**The single best entry point for adding a template resolution step is the content read point**, which occurs in three distinct code sites:
-
-1. `copyWithPathReplacement` at line 6432: `let content = fs.readFileSync(srcPath, 'utf8');` — all commands and the `get-shit-done/` subtree (workflows, references, templates) flow through here.
-2. The agent loop at line 8646: `let content = fs.readFileSync(path.join(agentsSrc, entry.name), 'utf8');` — all agents flow through here.
-3. `applyRuntimeContentRewritesInPlace` → `_applyRuntimeRewrites` — skills (`SKILL.md`) flow through here, but they are already transformed copies of commands.
-
----
-
-## Proposed Integration Design
-
-Template resolution must run **before** runtime-specific transforms. The path substitution step (`~/.claude/` → runtime prefix) must also run before resolution, because `@` include paths in source files reference `~/.claude/get-shit-done/references/...` — those paths need to be resolved to actual filesystem paths pointing into the source repo, not the installed destination.
-
-However, the cleaner design is to resolve includes **against the source repo** before any path substitution, using the repo-relative source paths directly. This avoids a chicken-and-egg problem with path rewriting.
-
-### Recommended pipeline order per file
+The effort dimension extends the **existing Codex-only `reasoning_effort` machinery** rather than building parallel logic. The central design rule is **same-slot derivation**: model and effort must come from the SAME resolved profile/phase-type slot, because the slot itself now carries the effort inline as `model:effort` (e.g. `opus:high`). This structurally prevents the #3023-class divergence bug where `model` and `reasoning_effort` derived from different tier sources.
 
 ```
-1. readFileSync(srcPath)             <- raw source content
-2. resolveIncludes(content, srcDir)  <- inline all @ and !`<bash>` references
-                                        using source repo paths
-3. path substitution regexes         <- ~/.claude/ → pathPrefix
-4. runtime-specific converter        <- frontmatter, tool names, etc.
-5. processAttribution()              <- attribution line
-6. normalizeAgentBodyForRuntime()    <- namespace normalization
-7. writeFileSync(destPath, content)  <- write final output
+                       ┌─────────────────────────────────────────┐
+   model-catalog.json  │ agents.<name>.golden|balanced|budget     │  "opus:high"
+   (single source) ────│ adaptiveTierMap.heavy|standard|light     │  "opus:high"
+                       │ runtimeTierDefaults.codex.<tier>         │  fallback effort
+                       └────────────────────┬────────────────────┘
+                                            │ loaded by
+              ┌─────────────────────────────┴──────────────────────────┐
+   model-catalog.cjs (CJS)                              model-catalog.ts (TS mirror)
+   MODEL_PROFILES carries "opus:high"                   MODEL_PROFILES carries "opus:high"
+              │                                                          │
+   ┌──────────┴───────────┐                              ┌──────────────┴───────────┐
+   │ NEW parseModelEffort │  splits "opus:high"          │ install.js readGsdRuntime │
+   │  → {model, effort}   │  → {model:"opus",effort}     │ ProfileResolver (Codex TOML)│
+   └──────────┬───────────┘                              └──────────────┬───────────┘
+              │ used by                                                  │ emits
+   resolveModelInternal ──► returns bare "opus" (strips effort)   reasoning_effort=
+   resolveReasoningEffortInternal ──► returns effort from SAME slot   model_reasoning_effort
+              │
+   commands.cjs cmdResolveModel ─► init.cjs *_model + NEW *_effort fields
+              │
+   workflows/agents/commands spawn templates ─► Agent(model=, effort=?)
 ```
 
-### Pseudocode for resolveIncludes()
+### Component Boundaries
 
-```javascript
-/**
- * Inline all @path and !`<bash>` path include references in content.
- * Paths are resolved relative to sourceRoot (the repo root).
- * @param {string} content      - Raw file content
- * @param {string} sourceRoot   - Absolute path to GSD repo root (path.join(__dirname, '..'))
- * @param {Set<string>} [seen]  - Already-resolved paths for cycle detection
- * @returns {string}            - Content with includes replaced by file content
- */
-function resolveIncludes(content, sourceRoot, seen = new Set()) {
-  // Matches:
-  //   @~/.claude/get-shit-done/references/foo.md
-  //   @$HOME/.claude/get-shit-done/references/foo.md
-  //   !`cat ~/.claude/get-shit-done/references/foo.md`
-  //   !`cat $HOME/.claude/get-shit-done/references/foo.md`
-  const INCLUDE_PATTERN = /(?:^|(?<=\s))[@!`cat\s]+~\/\.claude\/|(?:^|(?<=\s))[@!`cat\s]+\$HOME\/\.claude\//;
+| Component | Responsibility | Communicates With |
+|-----------|---------------|-------------------|
+| `model-catalog.json` | Single source of truth: effort inline in profile slots + `adaptiveTierMap`; `inherit` stays effort-free | catalog loaders (cjs + ts) |
+| **NEW** `parseModelEffort(slot)` in `core.cjs` | Split `"model:effort"` → `{ model, effort }`; bare model → `{ model, effort: null }` | both resolvers |
+| `resolveModelInternal` (`core.cjs`) | Returns the bare **model** (effort stripped) — back-compat string return preserved | `parseModelEffort` |
+| `resolveReasoningEffortInternal` (`core.cjs`) | Returns the **effort** derived from the SAME slot the model came from; Claude-first (block lifted from runtime-only gate) | `parseModelEffort`, `_resolveRuntimeTier` |
+| `cmdResolveModel` (`commands.cjs`) | Exposes `{ model, effort? }` to CLI consumers | both resolvers |
+| `init.cjs` | Adds `*_effort` siblings to each `*_model` field in init JSON | `resolveModelInternal`, NEW effort resolver |
+| `install.js` `readGsdRuntimeProfileResolver` + `generateCodexAgentToml` | Codex/OpenCode TOML emit; translate `effort`→`reasoning_effort`, `max`→`xhigh` | catalog, `gsdResolveTierEntry` |
+| Spawn templates (`agents/`, `commands/`, `workflows/`) | Conditionally pass `effort` to `Agent()` | init JSON `*_effort` fields |
 
-  // Simpler regex covering the actual patterns:
-  const INCLUDE_RE = /@(?:~\/\.claude|(?:\$HOME)\/\.claude)\/([\w\-./]+\.md)/g;
-  // !`<bash>` variant — backtick-wrapped shell injection evaluated by Claude Code at message-send time
-  const CAT_RE = /!`cat\s+(?:~\/\.claude|\$HOME\/\.claude)\/([\w\-./]+\.md)`/g;
+### Data Flow
 
-  let result = content;
+1. Catalog slot `"opus:high"` is loaded into `MODEL_PROFILES[agent][profile]`.
+2. `resolveModelInternal` computes the tier slot as today, then calls `parseModelEffort(slot)` and returns `.model` only — preserving its string contract.
+3. `resolveReasoningEffortInternal` walks the **identical** precedence chain, calls `parseModelEffort` on the **same** resolved slot, and returns `.effort`. The Claude gate (`RUNTIMES_WITH_REASONING_EFFORT.has`) is lifted so effort flows for Claude too; Codex per-tier `runtimeTierDefaults.codex.reasoning_effort` becomes fallback only when the slot has no colon.
+4. `cmdResolveModel` / `init.cjs` surface `{model, effort}` to workflows.
+5. Spawn templates emit `effort=` only when non-null.
 
-  for (const [re] of [[INCLUDE_RE], [CAT_RE]]) {
-    result = result.replace(re, (match, relPath) => {
-      const absPath = path.join(sourceRoot, relPath);
-      if (seen.has(absPath)) return match; // cycle guard
-      if (!fs.existsSync(absPath)) return match; // missing file — leave as-is
+## Patterns to Follow
 
-      seen.add(absPath);
-      const included = fs.readFileSync(absPath, 'utf8');
-      // Recurse to handle nested includes
-      const resolved = resolveIncludes(included, sourceRoot, seen);
-      seen.delete(absPath); // allow same file in different branches
-      return resolved;
-    });
-  }
+### Pattern 1: Same-slot derivation (the #3023 guard)
+**What:** Both resolvers compute `tier`/`slot` with **identical** precedence logic, then derive their respective field from the SAME `parseModelEffort(slot)` result.
+**When:** Always — this is the core invariant.
+**How:** Extract the shared tier-resolution into a helper (e.g. `_resolveAgentSlot(cwd, agentType)`) returning the raw slot string (with possible `:effort`). Both `resolveModelInternal` and `resolveReasoningEffortInternal` call it, then `parseModelEffort`. This removes the duplicated phase-type-tier lookup currently copy-pasted across both functions (core.cjs:1285-1307 vs 1468-1500) — the exact place the original divergence risk lives.
 
-  return result;
-}
-```
+### Pattern 2: parser placement
+**What:** `parseModelEffort(slot)` is a small pure helper in `core.cjs`, exported, also reimplemented in `model-catalog.ts`.
+**Where:** `core.cjs` near `resolveTierEntry` (line ~1236). Rules:
+- `"opus:high"` → `{ model: "opus", effort: "high" }`
+- `"opus"` (no colon) → `{ model: "opus", effort: null }` (back-compat: omit)
+- `"inherit"` → `{ model: "inherit", effort: null }`
+- Validate effort token against `low|medium|high|xhigh|max`; reject malformed (return effort:null + warn, matching `_warnedConfigKeys` pattern).
 
-### Where to call resolveIncludes()
+### Pattern 3: precedence chain — model and effort aligned
+The effort precedence MUST mirror the existing model precedence (core.cjs:1270-1353) exactly, because effort rides inline on the same slots:
 
-**Site 1 — `copyWithPathReplacement` (line 6432):**
+| Rank | Model source (existing) | Effort source (new) |
+|------|------------------------|---------------------|
+| 1 | `config.model_overrides[agent]` (full ID → returns as-is) | parse `:effort` off the override string; if none → omit |
+| 2 | phase-type slot `config.models[phaseType]` (if valid tier) | same slot's `:effort` |
+| 3 | profile slot `MODEL_PROFILES[agent][profile]` | same slot's `:effort` |
+| 4 | `model_profile_overrides[runtime][tier]` (runtime resolution) | `resolveTierEntry` effort; profile-slot effort OVERRIDES Codex `runtimeTierDefaults.codex.reasoning_effort` (per-tier value is fallback only when slot has no colon) |
+| 5 | `adaptiveTierMap[routingTier]` (adaptive profile) | adaptiveTierMap slot `:effort` (heavy→`opus:high` etc.) |
+| — | omit (bare model, `inherit`, or no match) | omit |
 
-```javascript
-// BEFORE (current):
-let content = fs.readFileSync(srcPath, 'utf8');
-if (!isCopilot && !isAntigravity) {
-  content = content.replace(globalClaudeRegex, pathPrefix);
-  // ...
-}
+**Key alignment fix:** Today `resolveModelInternal` accepts `model_overrides` as opaque full IDs (returns immediately). For effort, `parseModelEffort` must run on the override string too, so a user writing `model_overrides.gsd-executor: "gpt-5.4:high"` gets both. This is the one place the override path gains effort awareness — guard it so a bare full ID (`"openai/gpt-5.4"`) still omits effort.
 
-// AFTER (with template resolution):
-let content = fs.readFileSync(srcPath, 'utf8');
-content = resolveIncludes(content, src); // src = path.join(__dirname, '..')
-if (!isCopilot && !isAntigravity) {
-  content = content.replace(globalClaudeRegex, pathPrefix);
-  // ...
-}
-```
+## Patterns to Avoid
 
-**Site 2 — agent install loop (line 8646):**
+### Avoid: Divergent tier lookups (the bug being fixed)
+**What goes wrong:** Re-deriving tier independently in the effort resolver (current copy-paste at core.cjs:1484-1500 mirrors 1287-1307). Any future edit to one block without the other reintroduces #3023 model/effort divergence.
+**Instead:** Use a single shared `_resolveAgentSlot` helper feeding both resolvers via `parseModelEffort`.
 
-```javascript
-// BEFORE (current):
-let content = fs.readFileSync(path.join(agentsSrc, entry.name), 'utf8');
-const dirRegex = /~\/\.claude\//g;
-// ...
+### Avoid: Translating effort inside the resolver
+**What goes wrong:** Emitting `xhigh` from `max`, or renaming to `reasoning_effort`, inside `resolveReasoningEffortInternal` couples runtime-agnostic resolution to Codex naming and breaks Claude effort passing.
+**Instead:** Keep the resolver returning canonical effort (`low|medium|high|xhigh|max`); apply translation (`effort`→`reasoning_effort`, `max`→`xhigh`) only at `install.js` Codex TOML emit (install.js:2748-2749) and at the SDK boundary.
 
-// AFTER (with template resolution):
-let content = fs.readFileSync(path.join(agentsSrc, entry.name), 'utf8');
-content = resolveIncludes(content, src); // src is already in scope
-const dirRegex = /~\/\.claude\//g;
-// ...
-```
+### Avoid: install.js resolver drift
+**What goes wrong:** `readGsdRuntimeProfileResolver` (install.js:1498-1511) does NOT replicate the phase-type slot (#3023) chain — it only does profile→tier. Adding effort there naively diverges from `core.cjs`.
+**Instead:** Route effort through `gsdResolveTierEntry` + a shared `parseModelEffort` (export from a surface install.js already requires — it imports `resolveTierEntry`/`RUNTIME_PROFILE_MAP` at install.js:160-161). Reuse, never reimplement.
 
-**Note on skills path (`applyRuntimeContentRewritesInPlace`):** Skills (`SKILL.md` files) are already-converted copies of commands. They should not need separate include resolution if the command path above runs first. However, if the pipeline calls `applyRuntimeContentRewritesInPlace` on content that was staged before include resolution ran, the skill files in the staged directory will still have unresolved `@` references. The safest fix is to also call `resolveIncludes` inside `applyRuntimeContentRewritesInPlace`'s `walkAndRewrite` loop, or to ensure staging occurs after include resolution.
+### Avoid: Breaking the fork test gates in spawn templates
+**What goes wrong:** Adding `effort=` lines with decimal sub-steps, broken `<%~ include %>` tags, or negative-framing comments ("do not pass effort when...") trips `step-numbering-scan`, `cross-file-step-refs`, or the negative-framing scanner.
+**Instead:** Mirror the existing `model=` conditional comment style (execute-phase.md:555-558) with positive framing: "Include `effort=` only when `executor_effort` is a non-empty value." Keep whole-integer step labels; place the `effort=` line adjacent to `model=` inside the same code fence (no new step).
 
----
+## Install-Time Runtime Translation
 
-## Reference File Format
+`bin/install.js` already owns runtime translation for models. Effort needs translation in exactly these places:
 
-Reference files in `get-shit-done/references/` are plain Markdown with prose, code blocks, and XML-like semantic tags (e.g. `<philosophy>`, `<core_principle>`, `<anti_patterns>`). Verified examples:
+| Location | Today | Add for effort |
+|----------|-------|----------------|
+| `generateCodexAgentToml` (install.js:2715-2755) | emits `model` + `model_reasoning_effort` from `entry.reasoning_effort` | when resolved slot carries `:effort`, that value (after `max`→`xhigh`) feeds `model_reasoning_effort`; profile-slot effort overrides the per-tier default |
+| `readGsdRuntimeProfileResolver.resolve()` (install.js:1500-1510) | returns `gsdResolveTierEntry(...)` `{model, reasoning_effort?}` | parse `:effort` off the resolved `tier` slot before/around `gsdResolveTierEntry`; slot effort wins over tier-default `reasoning_effort` |
+| Claude/OpenCode/Gemini agent emit | no effort today | Claude spawn path carries effort via init JSON → markdown templates (NOT TOML); other runtimes omit unless they accept an effort field |
 
-- `questioning.md` — prose sections, XML-style tags, no `@` includes found
-- `verification-patterns.md` — bash code blocks, markdown headings, no `@` includes found
-- `model-profiles.md` — tables, JSON code blocks, no `@` includes found
-- `gates.md` — no `@` includes found
-- `agent-contracts.md` — no `@` includes found
-- `context-budget.md` — no `@` includes found
+**Translation rule:** Canonical `effort` (resolver output) → Codex `reasoning_effort` with `max`→`xhigh`. Claude keeps `effort` verbatim (Claude-first). Runtimes with no effort surface silently omit (mirror the `entry.reasoning_effort` truthy guard at install.js:2748).
 
-**Conclusion:** Reference files are leaf nodes. They do not themselves contain `@~/.claude/` include directives. Recursive resolution is technically required for correctness (the algorithm should handle it), but in practice the current reference corpus is flat — no includes-within-includes exist.
+## SDK + init JSON Contract Changes
 
----
+### `sdk/src/model-catalog.ts`
+- `MODEL_PROFILES` values become `"model:effort"` strings — **widen** `AgentCatalogEntry.golden|balanced|budget` from the literal `'opus'|'sonnet'|'haiku'` union to `string` (slots may now carry `:effort`).
+- `adaptiveTierMap` value type widens from `'opus'|'sonnet'|'haiku'` to `string`.
+- Add a `parseModelEffort` TS helper (mirror of the cjs one) and optionally `getAgentToEffortMapForProfile`.
+- `RuntimeTierEntry.reasoning_effort?` stays as the Codex fallback.
 
-## Recursive Include Handling
+### `commands.cjs` / init JSON contract
+- `cmdResolveModel` already emits `reasoning_effort` (commands.cjs:250). **Add** a canonical `effort` field; keep `reasoning_effort` for Codex back-compat (or alias). Recommended shape: `{ model, profile, effort? }` where `effort` is canonical; Codex emit translates.
+- `init.cjs`: every `*_model` field (init.cjs:197-198, 343-345, 530-532, 583-585, 640-643, 762-763, 1096, 1552-1553) gains a sibling `*_effort` field, e.g. `executor_effort: resolveReasoningEffortInternal(cwd,'gsd-executor')`. Workflows parse it alongside `executor_model`.
+- `agent-skills` output path (init.cjs ~1834) should likewise carry effort if it carries model.
 
-Recursion is required for safety but the current corpus does not exercise it. The `resolveIncludes` function above handles it via:
+## Scalability / Consistency Considerations
 
-1. A `seen` Set passed through recursion for cycle detection (prevents infinite loops if file A includes file B which includes file A).
-2. `seen.delete(absPath)` after return so the same file can appear in multiple non-cyclic include chains (diamond includes).
-3. Returning the unresolved `match` string if the referenced file does not exist — this is a safe fallback that preserves the original `@` reference in the output rather than silently dropping content.
+| Concern | Approach |
+|---------|----------|
+| 33 agents × 3 profile slots + adaptiveTierMap | Effort is hand-assigned by user during execution handover — Claude builds plumbing + tests only; `inherit` stays effort-free |
+| New runtimes added later | Only the install-emit boundary translates; resolver stays canonical, so a new runtime adds one emit branch |
+| Back-compat (bare slots) | `parseModelEffort` of a colon-free slot → `effort:null` → every consumer omits — zero behavior change for existing catalogs |
 
-Depth is bounded in practice by the flat reference file structure. A hard depth limit (e.g. max 10 levels) would be a belt-and-suspenders addition but is not strictly necessary given the current corpus.
+## Suggested Build Order (dependency-respecting)
 
----
+1. **Parser** — `parseModelEffort` in `core.cjs` (+ validation, warn on malformed) and TS mirror. Unit-testable in isolation. No consumers yet.
+2. **Shared slot resolver** — extract `_resolveAgentSlot(cwd, agentType)` from the duplicated tier logic; refactor `resolveModelInternal` to use it + `parseModelEffort().model` (return unchanged). Regression: existing model tests stay green.
+3. **Effort resolution** — rewrite `resolveReasoningEffortInternal` to use the shared slot + `parseModelEffort().effort`; lift Claude gate; profile-slot effort overrides Codex tier default. Regression: parse/precedence/omit/Codex-mapping.
+4. **SDK + tools exposure** — `cmdResolveModel` `effort` field; `init.cjs` `*_effort` siblings; `model-catalog.ts` type widening + helper.
+5. **[HANDOVER BOUNDARY] Catalog assignment** — user hand-assigns `:effort` to `model-catalog.json` slots + `adaptiveTierMap`. Claude does NOT pick effort values. Everything before this point is plumbing that no-ops on bare slots; everything after consumes real values.
+6. **Spawn-template wiring** — add conditional `effort=` lines to spawn templates in `agents/`, `commands/`, `workflows/`, mirroring the `model=` conditional comment style; respect whole-integer steps + eta includes + positive framing.
+7. **Install translation** — `generateCodexAgentToml` + `readGsdRuntimeProfileResolver`: slot effort → `reasoning_effort`, `max`→`xhigh`, slot overrides tier default.
+8. **Tests** — parse, precedence alignment (model vs effort same slot), omit (bare/inherit), Codex mapping, install-emit, spawn-template gates (`step-numbering-scan`, `cross-file-step-refs`, negative-framing).
 
-## Path Resolution Strategy
+**Build-order rationale:** Parser (1) has no deps. Slot extraction (2) must precede effort resolution (3) so both share one tier path (the #3023 guard). Exposure (4) needs the resolvers. Catalog assignment (5) is the user-handover boundary — plumbing is inert until slots gain colons, so steps 1-4 ship safely against a bare catalog. Spawn wiring (6) and install translation (7) consume resolved effort and can proceed in parallel after (4)/(5). Tests (8) gate throughout, but the dedicated gate-conformance suite lands last with the spawn edits.
 
-All `@` include paths in source files use one of two forms:
-- `@~/.claude/get-shit-done/references/foo.md`
-- `@$HOME/.claude/get-shit-done/references/foo.md`
+## Exact Functions/Files to Touch
 
-Both resolve to the same location in the source repo. The resolver maps these to the source repo path by:
+| File | Function | Change |
+|------|----------|--------|
+| `get-shit-done/bin/lib/core.cjs` | NEW `parseModelEffort`, NEW `_resolveAgentSlot`, `resolveModelInternal`, `resolveReasoningEffortInternal` | parser, shared slot, same-slot derivation, lift Claude gate |
+| `get-shit-done/bin/lib/core.cjs` | exports block (~line 1880) | export `parseModelEffort` |
+| `get-shit-done/bin/lib/commands.cjs` | `cmdResolveModel` (236-252) | add canonical `effort` field |
+| `get-shit-done/bin/lib/init.cjs` | all `*_model` builders | add `*_effort` siblings |
+| `get-shit-done/bin/lib/model-catalog.cjs` | `MODEL_PROFILES` (54-61) | tolerate `:effort` slots (keep raw for parser; no split here) |
+| `sdk/src/model-catalog.ts` | interfaces + `MODEL_PROFILES` + NEW `parseModelEffort` | widen tier types to `string`, mirror parser |
+| `bin/install.js` | `readGsdRuntimeProfileResolver.resolve` (1500-1510), `generateCodexAgentToml` (2715-2755) | effort→`reasoning_effort`, `max`→`xhigh`, slot overrides default |
+| `agents/`, `commands/gsd/`, `get-shit-done/workflows/` spawn templates | `Agent()` blocks | conditional `effort=` adjacent to `model=` |
 
-```javascript
-// Strip the runtime-install prefix, replace with repo source root
-const CLAUDE_PREFIX_RE = /^(?:~\/\.claude|\$HOME\/\.claude)\//;
-const relPath = includeTarget.replace(CLAUDE_PREFIX_RE, '');
-const absPath = path.join(sourceRoot, relPath);
-// sourceRoot = path.join(__dirname, '..')
-// e.g. "get-shit-done/references/foo.md" → "/path/to/repo/get-shit-done/references/foo.md"
-```
+## Sources
 
-This works because the source repo layout mirrors the installed layout exactly — `get-shit-done/references/` exists at the same relative path in both the repo root and `~/.claude/` after install.
-
-**Edge case — conditional includes:** One reference in `execute-phase.md` uses a ternary:
-```
-${CONTEXT_WINDOW < 200000 ? '' : '@~/.claude/get-shit-done/references/executor-examples.md'}
-```
-This is a JavaScript template literal evaluated at agent runtime, not a static `@` reference. The include resolver must not attempt to resolve these — the regex pattern `@~/.claude/...` embedded inside `${}` template expressions will not match a line-start-anchored or whitespace-preceded pattern, but the regex needs to be written carefully to avoid matching embedded occurrences inside template literals and code blocks. The safest approach is to apply the resolver only to lines where `@~/.claude/` appears as a standalone include (not inside backtick code blocks or `${...}` expressions).
-
-**Recommendation:** Use a line-by-line pass that skips lines inside fenced code blocks (``` triple-backtick delimited) and skips `@` references inside `${...}` expressions. This avoids mangling documentation examples that show include syntax.
-
----
-
-## Summary of Integration Points
-
-| Code Site | Lines | Files Affected | Action |
-|-----------|-------|---------------|--------|
-| `copyWithPathReplacement` — `.md` branch | 6432 | commands/*.md, workflows/*.md, references/*.md, templates/*.md | Add `resolveIncludes(content, src)` immediately after `fs.readFileSync` |
-| Agent install loop | 8646 | agents/gsd-*.md | Add `resolveIncludes(content, src)` immediately after `fs.readFileSync` |
-| `applyRuntimeContentRewritesInPlace` walk | 5908 | SKILL.md (already-converted commands) | Optional: add resolve step here if skills are staged before include resolution runs elsewhere |
-
-The `resolveIncludes` function itself should be defined near the top of `install.js` (before the first install function), alongside `processAttribution` and `replaceRelativePathReference`, as a pure transform function.
+- `sdk/shared/model-catalog.json` (catalog structure) — HIGH
+- `get-shit-done/bin/lib/core.cjs:1236-1504` (resolvers, #3023/#3030 comments) — HIGH
+- `get-shit-done/bin/lib/commands.cjs:236-252` (cmdResolveModel) — HIGH
+- `get-shit-done/bin/lib/init.cjs:197-1553` (`*_model` builders) — HIGH
+- `sdk/src/model-catalog.ts` (TS mirror) — HIGH
+- `bin/install.js:1449-1512, 2715-2755` (Codex emit) — HIGH
+- `get-shit-done/workflows/execute-phase.md:85-558` (spawn template, model conditional) — HIGH
+- `.planning/PROJECT.md` (v2.1.0-e decisions, gate inventory) — HIGH
