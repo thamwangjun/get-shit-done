@@ -121,22 +121,10 @@ fi
 
 When `USE_WORKTREES` (project-level) is `false`, all executor agents run without `isolation="worktree"` — they execute sequentially on the main working tree instead of in parallel worktrees. The per-plan decision below has no effect when worktrees are project-disabled.
 
-Read context window size for adaptive prompt enrichment:
+Cross-phase context files (prior-wave SUMMARY.md, phase CONTEXT.md/RESEARCH.md, REQUIREMENTS.md) are listed in each subagent's files_to_read and read at execution start — they are always provided. Reference files load on demand by need:
 
-```bash
-CONTEXT_WINDOW=$($GSD_SDK query config-get context_window 2>/dev/null || echo "200000")
-```
-
-When `CONTEXT_WINDOW >= 500000` (1M-class models), subagent prompts include richer context:
-- Executor agents receive prior wave SUMMARY.md files and the phase CONTEXT.md/RESEARCH.md
-- Verifier agents receive all PLAN.md, SUMMARY.md, CONTEXT.md files plus REQUIREMENTS.md
-- This enables cross-phase awareness and history-aware verification
-
-When `CONTEXT_WINDOW < 200000` (sub-200K models), subagent prompts are thinned to reduce static overhead:
-- Executor agents omit extended deviation rule examples and checkpoint examples from inline prompt — load on-demand via @~/.claude/get-shit-done/references/executor-examples.md
-- Planner agents omit extended anti-pattern lists and specificity examples from inline prompt — load on-demand via @~/.claude/get-shit-done/references/planner-antipatterns.md
-- Core rules and decision logic remain inline; only verbose examples and edge-case lists are extracted
-- This reduces executor static overhead by ~40% while preserving behavioral correctness
+- Executors consult `@~/.claude/get-shit-done/references/executor-examples.md` when handling a deviation from the plan or executing a task that carries a checkpoint (the file holds extended deviation-rule and checkpoint examples).
+- Planners consult `@~/.claude/get-shit-done/references/planner-antipatterns.md` when checking a plan for anti-patterns or tightening task specificity (the file holds extended anti-pattern lists and specificity examples).
 
 **If `phase_found` is false:** Error — phase directory not found.
 **If `plan_count` is 0:** Error — no plans found in phase.
