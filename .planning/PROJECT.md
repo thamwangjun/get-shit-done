@@ -8,6 +8,21 @@ An opinionated fork of the GSD (Get Shit Done) framework that applies systematic
 
 Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships — upstream content additions are modified, not accepted verbatim.
 
+## Current Milestone: v2.1.0-e Per-Agent Thinking Effort
+
+**Goal:** Add a unified, Claude-first thinking-effort dimension encoded inline as `model:effort` labels (e.g. `opus:medium`), resolved through the existing model machinery and passed to `Agent()` spawns.
+
+**Target features:**
+- `model:effort` label syntax + parser (`low`/`medium`/`high`/`xhigh`/`max`); bare model omits effort (backward-compatible)
+- Effort encoded inline in `model-catalog.json` profile slots and `adaptiveTierMap`; `inherit` stays effort-free (per-agent values user-assigned via handover)
+- Unified resolution: lift the Claude block in `resolveReasoningEffortInternal`; profile-slot effort is single source of truth and overrides Codex per-tier `reasoning_effort`; `max`→`xhigh` on Codex
+- `model:effort` accepted in config `model_overrides.<agent>`, `models.<phase-type>`, `model_profile_overrides.<runtime>`
+- SDK + tools expose resolved `effort` in init/agent-skills JSON (`core.cjs`, `commands.cjs`, `gsd-tools.cjs`, `sdk/src/model-catalog.ts`)
+- Spawn templates across `agents/`, `commands/`, `get-shit-done/workflows/` pass `effort` to `Agent()` (conditionally; omitted when absent)
+- Validation rejects malformed effort tokens; regression coverage for parse/precedence/omit/Codex-mapping
+
+**Key context:** Unifies and extends the existing Codex-only `reasoning_effort` machinery rather than building parallel logic. Catalog effort values are hand-assigned by the user during an execution handover — Claude builds plumbing and tests only. No `custom_profiles` block in scope.
+
 ## Shipped: v2.1.0-d Whole-Integer Step Numbering (2026-05-31)
 
 Every step label across all prompt content files is a whole integer. Three new enforcement layers: `tests/step-numbering-scan.test.cjs` (decimal + letter-suffix + out-of-order detection, 632/632), `scripts/normalize-step-numbers.cjs` (cross-file-aware idempotent CLI with `--dry-run`), and `tests/cross-file-step-refs.test.cjs` (stale cross-file ref detector, 219/219). Quality gate: `npm test` 11,728 pass / 3 fail, negative-framing 99/99.
@@ -195,4 +210,4 @@ This document evolves at phase transitions and milestone boundaries.
 ---
 ---
 ---
-*Last updated: 2026-05-31 after v2.1.0-d milestone*
+*Last updated: 2026-05-31 after v2.1.0-e milestone start*
