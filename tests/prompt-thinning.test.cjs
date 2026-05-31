@@ -8,9 +8,12 @@
 /**
  * Prompt Thinning Tests (#1978)
  *
- * Validates context-window-aware prompt thinning for sub-200K models.
- * When CONTEXT_WINDOW < 200000, agent prompts strip extended examples
- * and anti-pattern lists, referencing them as @-required_reading files instead.
+ * Validates need-based (functionality-based) reference loading. The earlier
+ * context-window ternary gates (`${CONTEXT_WINDOW ... ? ... : ...}`) were dead
+ * code — neither eta nor Claude Code substitution evaluates JS ternaries, so
+ * they rendered as literal text (quick-260531-mvd). Cross-phase context files
+ * are now always listed in each subagent's files_to_read, and extended example
+ * references load on demand by need rather than by model size.
  */
 
 const { test, describe } = require('node:test');
@@ -26,28 +29,20 @@ const PLANNER_ANTIPATTERNS_REF = path.join(__dirname, '..', 'get-shit-done', 're
 
 describe('prompt thinning — sub-200K context window support (#1978)', () => {
 
-  describe('execute-phase.md — thinning conditional', () => {
-    test('has a CONTEXT_WINDOW < 200000 thinning conditional', () => {
+  describe('execute-phase.md — need-based reference loading', () => {
+    test('contains no dead CONTEXT_WINDOW ternary gate', () => {
       const content = fs.readFileSync(EXECUTE_PHASE, 'utf-8');
       assert.ok(
-        content.includes('CONTEXT_WINDOW < 200000') || content.includes('CONTEXT_WINDOW< 200000'),
-        'execute-phase.md must contain a CONTEXT_WINDOW < 200000 conditional for prompt thinning'
+        !content.includes('CONTEXT_WINDOW'),
+        'execute-phase.md must contain no CONTEXT_WINDOW ternary or variable (dead code removed in quick-260531-mvd)'
       );
     });
 
-    test('preserves the existing CONTEXT_WINDOW >= 500000 enrichment conditional', () => {
-      const content = fs.readFileSync(EXECUTE_PHASE, 'utf-8');
-      assert.ok(
-        content.includes('CONTEXT_WINDOW >= 500000'),
-        'execute-phase.md must preserve the existing 500K enrichment conditional'
-      );
-    });
-
-    test('thinning block references executor-examples.md for on-demand loading', () => {
+    test('references executor-examples.md for on-demand loading', () => {
       const content = fs.readFileSync(EXECUTE_PHASE, 'utf-8');
       assert.ok(
         content.includes('executor-examples.md'),
-        'execute-phase.md thinning block must reference executor-examples.md'
+        'execute-phase.md must reference executor-examples.md for need-based loading'
       );
     });
   });
@@ -130,13 +125,17 @@ describe('prompt thinning — sub-200K context window support (#1978)', () => {
     });
   });
 
-  describe('three-tier consistency', () => {
-    test('thinning tier (< 200K), standard tier (200K-500K), and enrichment tier (>= 500K) all coexist', () => {
+  describe('cross-phase context always provided', () => {
+    test('executor files_to_read always lists CONTEXT/RESEARCH/prior-wave entries (no ternary gate)', () => {
       const content = fs.readFileSync(EXECUTE_PHASE, 'utf-8');
-      const hasThinning = content.includes('CONTEXT_WINDOW < 200000');
-      const hasEnrichment = content.includes('CONTEXT_WINDOW >= 500000');
-      assert.ok(hasThinning, 'must have thinning conditional (< 200K)');
-      assert.ok(hasEnrichment, 'must have enrichment conditional (>= 500K)');
+      assert.ok(
+        content.includes('*-CONTEXT.md') && content.includes('*-RESEARCH.md'),
+        'cross-phase CONTEXT.md and RESEARCH.md entries must be listed'
+      );
+      assert.ok(
+        !content.includes('CONTEXT_WINDOW'),
+        'no context-window ternary may gate the cross-phase entries'
+      );
     });
   });
 });

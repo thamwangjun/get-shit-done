@@ -604,7 +604,7 @@ increases monotonically across waves. `{status}` is `complete` (success),
        @~/.claude/get-shit-done/references/checkpoints.md
        @~/.claude/get-shit-done/references/tdd.md
        <%~ include('get-shit-done/references/worktree-path-safety.md') %>
-       ${CONTEXT_WINDOW < 200000 ? '' : '@~/.claude/get-shit-done/references/executor-examples.md'}
+       @~/.claude/get-shit-done/references/executor-examples.md
        </execution_context>
 
        <reference_usage>
@@ -613,6 +613,8 @@ increases monotonically across waves. `{status}` is `complete` (success),
        Consult `~/.claude/get-shit-done/templates/summary.md` when writing the phase/plan SUMMARY.md: it defines the required structure and dependency-graph frontmatter (requires/provides, subsystem, tags, key-files, decisions, metrics) the summary must match.
 
        Consult `~/.claude/get-shit-done/references/tdd.md` when a plan task is TDD-flagged or behavior-adding: it defines the red-green-refactor cycle to follow and the judgment for when TDD improves quality versus when to skip it.
+
+       Consult `~/.claude/get-shit-done/references/executor-examples.md` when handling a deviation from the plan or executing a checkpoint-bearing task — it provides worked deviation-rule and checkpoint examples.
        </reference_usage>
 
        <files_to_read>
@@ -621,11 +623,9 @@ increases monotonically across waves. `{status}` is `complete` (success),
        - .planning/PROJECT.md (Project context — core value, requirements, evolution rules)
        - .planning/STATE.md (State)
        - .planning/config.json (Config, if exists)
-       ${CONTEXT_WINDOW >= 500000 ? `
        - ${phase_dir}/*-CONTEXT.md (User decisions from discuss-phase — honors locked choices)
        - ${phase_dir}/*-RESEARCH.md (Technical research — pitfalls and patterns to follow)
        - ${prior_wave_summaries} (SUMMARY.md files from earlier waves in this phase — what was already built)
-       ` : ''}
        - ./CLAUDE.md (Project instructions, if exists — follow project-specific guidelines and coding conventions)
        - .claude/skills/ or .agents/skills/ (Project skills, if either exists — list skills, read SKILL.md for each, follow relevant rules during implementation)
        </files_to_read>
@@ -1382,10 +1382,9 @@ Read these files before verification:
 - {phase_dir}/*-PLAN.md (All plans — understand intent, check must_haves)
 - {phase_dir}/*-SUMMARY.md (All summaries — cross-reference claimed vs actual)
 - .planning/REQUIREMENTS.md (Requirement traceability)
-${CONTEXT_WINDOW >= 500000 ? `- {phase_dir}/*-CONTEXT.md (User decisions — verify they were honored)
+- {phase_dir}/*-CONTEXT.md (User decisions — verify they were honored)
 - {phase_dir}/*-RESEARCH.md (Known pitfalls — check for traps)
 - Prior VERIFICATION.md files from earlier phases (regression check)
-` : ''}
 </files_to_read>
 
 ${VERIFIER_SKILLS}",
