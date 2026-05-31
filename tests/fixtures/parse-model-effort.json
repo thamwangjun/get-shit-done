@@ -1,0 +1,10 @@
+[
+  { "input": "opus", "expectedModel": "opus", "expectedEffort": null },
+  { "input": "opus;high", "expectedModel": "opus", "expectedEffort": "high" },
+  { "input": "opus;low", "expectedModel": "opus", "expectedEffort": "low" },
+  { "input": "opus;medium", "expectedModel": "opus", "expectedEffort": "medium" },
+  { "input": "opus;xhigh", "expectedModel": "opus", "expectedEffort": "xhigh" },
+  { "input": "opus;max", "expectedModel": "opus", "expectedEffort": "max" },
+  { "input": "openrouter:anthropic/claude-opus", "expectedModel": "openrouter:anthropic/claude-opus", "expectedEffort": null },
+  { "input": "opus;hihg", "expectedModel": "opus", "expectedEffort": null }
+]

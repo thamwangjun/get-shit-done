@@ -68,3 +68,27 @@ export function runtimesWithReasoningEffort(): Set<string> {
       .map(([runtime]) => runtime)
   );
 }
+
+// ─── parseModelEffort ─────────────────────────────────────────────────────────
+// Mirror of the CJS implementation in get-shit-done/bin/lib/core.cjs.
+// Splits a model;effort slot string on the LAST semicolon (lastIndexOf, not greedy
+// split), validates the suffix against the EFFORT_TOKENS allowlist, degrades
+// invalid suffixes to effort:null with a one-time per-label stderr warning, and
+// never treats colons (provider IDs like openrouter:anthropic/...) as delimiters.
+
+const EFFORT_TOKENS = new Set(['low', 'medium', 'high', 'xhigh', 'max']);
+const _warnedEffortLabels = new Set<string>();
+
+export function parseModelEffort(label: string): { model: string; effort: string | null } {
+  if (typeof label !== 'string') return { model: label as unknown as string, effort: null };
+  const idx = label.lastIndexOf(';');
+  if (idx === -1) return { model: label, effort: null };
+  const base = label.slice(0, idx);
+  const suffix = label.slice(idx + 1);
+  if (EFFORT_TOKENS.has(suffix)) return { model: base, effort: suffix };
+  if (!_warnedEffortLabels.has(label)) {
+    _warnedEffortLabels.add(label);
+    process.stderr.write(`gsd: warning — unknown effort "${suffix}" in "${label}". Effort omitted.\n`);
+  }
+  return { model: base, effort: null };
+}
