@@ -354,7 +354,7 @@ Plans:
 | 48. TDD Red Gate | v2.1.0-d | 0/1 | Not started | - |
 | 49. Survey and Normalization | v2.1.0-d | 14/13 | Complete    | 2026-05-30 |
 | 50. Maintenance Script and Cross-Ref Scanner | v2.1.0-d | 3/3 | Complete   | 2026-05-30 |
-| 51. Quality Gate | v2.1.0-d | 1/1 | Complete   | 2026-05-31 |
+| 51. Quality Gate | v2.1.0-d | 1/1 | Complete    | 2026-05-31 |
 
 *v1.41.3 shipped 2026-05-19 — see `.planning/milestones/v1.41.3-ROADMAP.md`*
 *v1.41.5 shipped 2026-05-24 — see `.planning/milestones/v1.41.5-ROADMAP.md`*

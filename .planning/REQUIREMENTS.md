@@ -27,7 +27,7 @@ Requirements for whole-integer step numbering enforcement. Each maps to roadmap 
 
 ### Quality Gate
 
-- [ ] **GATE-01**: Full `npm test` passes at 0 regressions after all changes; negative-framing scanner remains at 99/99
+- [x] **GATE-01**: Full `npm test` passes at 0 regressions after all changes; negative-framing scanner remains at 99/99
 
 ## Future Requirements
 
@@ -53,7 +53,7 @@ Requirements for whole-integer step numbering enforcement. Each maps to roadmap 
 | NORM-01 | Phase 49 | Complete |
 | NORM-02 | Phase 50 | Pending |
 | XREF-01 | Phase 50 | Pending |
-| GATE-01 | Phase 51 | Pending |
+| GATE-01 | Phase 51 | Complete |
 
 **Coverage:**
 
