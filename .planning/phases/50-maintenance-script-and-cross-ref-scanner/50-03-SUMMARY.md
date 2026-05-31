@@ -36,7 +36,7 @@ Three-layer test design:
 
 1. **Helper unit tests** — 13 synthetic-content tests across `extractStepSet()` (8 tests) and `findCrossFileRefs()` (5 tests), covering heading detection, Pattern D items, code-fence skips, decimal/letter-suffix skips, both word-order ref variants, same-file skip, fence skip on source side.
 
-2. **Corpus subtests** — 208 per-file subtests over `SCAN_FILES` (same scope as `step-numbering-scan.test.cjs`), all GREEN against the post-Phase-49 + post-Plan-2 clean corpus. The 3 known clean refs (`execute-plan.md` lines 143, 369, 475 → `execute-phase.md step 7`) all resolve correctly.
+2. **Corpus subtests** — 205 per-file subtests over `SCAN_FILES` (same scope as `step-numbering-scan.test.cjs`), all GREEN against the post-Phase-49 + post-Plan-2 clean corpus. The 3 known clean refs (`execute-plan.md` lines 143, 369, 475 → `execute-phase.md step 7`) all resolve correctly.
 
 3. **RED test** — 1 test injects a synthetic stale ref via `fs.mkdtempSync(os.tmpdir())` and confirms the scanner detects it. Never mutates the corpus (D-06). Cleans up via `try/finally { fs.rmSync(tmpDir, { recursive: true, force: true }) }`.
 
