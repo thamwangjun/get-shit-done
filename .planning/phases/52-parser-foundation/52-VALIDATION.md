@@ -19,7 +19,7 @@ created: 2026-05-31
 |----------|-------|
 | **Framework** | Node.js built-in `--test` runner (core.cjs) + vitest (sdk) |
 | **Config file** | none (node --test); `sdk/vitest.config.ts` (sdk) |
-| **Quick run command** | `node --test tests/core.test.cjs` |
+| **Quick run command** | `node --test tests/parse-model-effort.test.cjs` |
 | **Full suite command** | `npm test` |
 | **Estimated runtime** | ~30 seconds |
 
@@ -27,7 +27,7 @@ created: 2026-05-31
 
 ## Sampling Rate
 
-- **After every task commit:** Run `node --test tests/core.test.cjs`
+- **After every task commit:** Run `node --test tests/parse-model-effort.test.cjs`
 - **After every plan wave:** Run `npm test`
 - **Before `/gsd-verify-work`:** Full suite must be green
 - **Max feedback latency:** 30 seconds
@@ -38,10 +38,10 @@ created: 2026-05-31
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 52-01-01 | 01 | 1 | PARSE-01 | — | N/A | unit | `node --test tests/core.test.cjs` | ❌ W0 | ⬜ pending |
-| 52-01-02 | 01 | 1 | PARSE-02 | — | N/A | unit | `node --test tests/core.test.cjs` | ❌ W0 | ⬜ pending |
-| 52-02-01 | 02 | 2 | PARSE-03 | — | N/A | unit | `node --test tests/core.test.cjs` | ❌ W0 | ⬜ pending |
-| 52-03-01 | 03 | 2 | PARSE-04 | — | N/A | unit/parity | `npm test` | ❌ W0 | ⬜ pending |
+| 52-01-01 | 01 | 1 | PARSE-01 | — | N/A | unit | `node --test tests/parse-model-effort.test.cjs` | ❌ W0 | ⬜ pending |
+| 52-01-02 | 01 | 1 | PARSE-02 | — | N/A | unit | `node --test tests/parse-model-effort.test.cjs` | ❌ W0 | ⬜ pending |
+| 52-02-01 | 02 | 2 | PARSE-03 | — | N/A | unit | `node --test tests/parse-model-effort.test.cjs` | ❌ W0 | ⬜ pending |
+| 52-03-01 | 03 | 2 | PARSE-04 | — | N/A | unit/parity | `node --test tests/parse-model-effort-parity.test.cjs && cd sdk && npx vitest run src/parse-model-effort.test.ts` | ❌ W0 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -49,9 +49,10 @@ created: 2026-05-31
 
 ## Wave 0 Requirements
 
-- [ ] `tests/core.test.cjs` — parser test cases for `parseModelEffort` (PARSE-01, PARSE-02) loading the shared JSON fixture
-- [ ] `sdk/src/model-catalog.test.ts` (or existing sdk test) — vitest parity cases loading the same fixture (PARSE-04)
-- [ ] Shared JSON fixture file of `{input, expectedModel, expectedEffort}` cases readable by both runners
+- [ ] `tests/parse-model-effort.test.cjs` — parser test cases for `parseModelEffort` (PARSE-01, PARSE-02), created by Plan 02
+- [ ] `sdk/src/parse-model-effort.test.ts` — vitest parity cases loading the shared fixture (PARSE-04), created by Plan 03
+- [ ] `tests/parse-model-effort-parity.test.cjs` — node --test parity cases loading the shared fixture (PARSE-04), created by Plan 03
+- [ ] `tests/fixtures/parse-model-effort.json` — shared `{input, expectedModel, expectedEffort}` fixture readable by both runners, created by Plan 03
 
 *Existing infrastructure (node --test + vitest) covers the run harness; only the fixture + new test cases are added.*
 
