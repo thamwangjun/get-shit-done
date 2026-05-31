@@ -9,16 +9,16 @@ const REPO_ROOT = path.join(__dirname, '..');
 const VERIFIER_AGENT = path.join(REPO_ROOT, 'agents', 'gsd-verifier.md');
 
 function verifierProbeContract(content) {
-  const sectionStart = content.indexOf('## Step 7c: Probe Execution');
-  const sectionEnd = content.indexOf('## Step 8:', sectionStart);
-  assert.notEqual(sectionStart, -1, 'verifier must define Step 7c');
-  assert.notEqual(sectionEnd, -1, 'verifier must close Step 7c before Step 8');
+  const sectionStart = content.indexOf('## Step 14: Probe Execution');
+  const sectionEnd = content.indexOf('## Step 15:', sectionStart);
+  assert.notEqual(sectionStart, -1, 'verifier must define Step 14');
+  assert.notEqual(sectionEnd, -1, 'verifier must close Step 14 before Step 15');
 
   const section = content.slice(sectionStart, sectionEnd);
   const codeBlocks = [...section.matchAll(/```bash\r?\n([\s\S]*?)\r?\n```/g)].map((match) => match[1].split(/\r?\n/).join('\n'));
   const executionSteps = [...section.matchAll(/^\d+\.\s+(.+)$/gm)].map((match) => match[1]);
   return {
-    title: 'Step 7c: Probe Execution',
+    title: 'Step 14: Probe Execution',
     conventionalDiscoveryCommand: codeBlocks[0]?.split('\n').find((line) => line.startsWith('find scripts')) || null,
     declaredDiscoveryCommand: codeBlocks[0]?.split('\n').find((line) => line.startsWith('grep -R')) || null,
     executionCommand: codeBlocks[1] || '',
@@ -34,7 +34,7 @@ describe('bug #3321: gsd-verifier runs probes instead of trusting SUMMARY claims
     const content = fs.readFileSync(VERIFIER_AGENT, 'utf8');
     const contract = verifierProbeContract(content);
 
-    assert.equal(contract.title, 'Step 7c: Probe Execution');
+    assert.equal(contract.title, 'Step 14: Probe Execution');
     assert.equal(contract.conventionalDiscoveryCommand, "find scripts -path '*/tests/probe-*.sh' -type f 2>/dev/null | sort");
     assert.equal(
       contract.declaredDiscoveryCommand,
