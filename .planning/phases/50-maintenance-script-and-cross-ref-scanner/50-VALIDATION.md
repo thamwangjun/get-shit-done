@@ -1,10 +1,11 @@
 ---
 phase: 50
 slug: maintenance-script-and-cross-ref-scanner
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: complete
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-05-30
+audited: 2026-05-31
 ---
 
 # Phase 50 — Validation Strategy
@@ -38,11 +39,11 @@ created: 2026-05-30
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 50-01-01 | 01 | 1 | NORM-02 | — | N/A | unit | `node --test tests/step-numbering-scan.test.cjs` | ✅ | ⬜ pending |
-| 50-02-01 | 02 | 2 | NORM-02 | — | N/A | unit | `node scripts/normalize-step-numbers.cjs --dry-run` | ❌ W2 | ⬜ pending |
-| 50-02-02 | 02 | 2 | NORM-02 | — | N/A | unit | `node scripts/normalize-step-numbers.cjs --dry-run` | ❌ W2 | ⬜ pending |
-| 50-03-01 | 03 | 3 | XREF-01 | — | N/A | unit | `node --test tests/cross-file-step-refs.test.cjs` | ❌ W3 | ⬜ pending |
-| 50-03-02 | 03 | 3 | XREF-01 | — | N/A | unit | `node --test tests/cross-file-step-refs.test.cjs` | ❌ W3 | ⬜ pending |
+| 50-01-01 | 01 | 1 | NORM-02 | — | N/A | unit | `node --test tests/step-numbering-scan.test.cjs` | ✅ | ✅ green |
+| 50-02-01 | 02 | 2 | NORM-02 | — | N/A | unit | `node scripts/normalize-step-numbers.cjs --dry-run` | ✅ | ✅ green |
+| 50-02-02 | 02 | 2 | NORM-02 | — | N/A | unit | `node scripts/normalize-step-numbers.cjs --dry-run` | ✅ | ✅ green |
+| 50-03-01 | 03 | 3 | XREF-01 | — | N/A | unit | `node --test tests/cross-file-step-refs.test.cjs` | ✅ | ✅ green |
+| 50-03-02 | 03 | 3 | XREF-01 | — | N/A | unit | `node --test tests/cross-file-step-refs.test.cjs` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -64,11 +65,25 @@ Existing infrastructure covers all phase requirements. No new test stubs needed 
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 10s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 10s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** 2026-05-31
+
+---
+
+## Validation Audit 2026-05-31
+| Metric | Count |
+|--------|-------|
+| Gaps found | 0 |
+| Resolved | 0 |
+| Escalated | 0 |
+
+All tasks COVERED. Verification commands confirmed green:
+- `tests/step-numbering-scan.test.cjs`: 632/632 pass
+- `tests/cross-file-step-refs.test.cjs`: 219/219 pass
+- `scripts/normalize-step-numbers.cjs --dry-run`: exits 0, "No changes needed."
