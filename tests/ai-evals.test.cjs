@@ -119,15 +119,22 @@ describe('CONFIG: config-set / config-get workflow.ai_integration_phase', () => 
 
 describe('HEALTH: W016 — workflow.ai_integration_phase absent', () => {
   let tmpDir;
+  let fakeHome;
 
-  beforeEach(() => { tmpDir = createTempProject(); });
-  afterEach(() => { cleanup(tmpDir); });
+  beforeEach(() => {
+    tmpDir = createTempProject();
+    fakeHome = fs.mkdtempSync(path.join(require('os').tmpdir(), 'gsd-qqo-home-'));
+  });
+  afterEach(() => {
+    cleanup(tmpDir);
+    fs.rmSync(fakeHome, { recursive: true, force: true });
+  });
 
   test('emits W016 when workflow.ai_integration_phase absent from config', () => {
     writeMinimalHealth(tmpDir);
     writeConfig(tmpDir, { model_profile: 'balanced', workflow: { research: true, nyquist_validation: true } });
 
-    const result = runGsdTools('validate health', tmpDir, { HOME: tmpDir, USERPROFILE: tmpDir });
+    const result = runGsdTools('validate health', tmpDir, { HOME: fakeHome, USERPROFILE: fakeHome });
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -144,7 +151,7 @@ describe('HEALTH: W016 — workflow.ai_integration_phase absent', () => {
       workflow: { research: true, nyquist_validation: true, ai_integration_phase: true },
     });
 
-    const result = runGsdTools('validate health', tmpDir, { HOME: tmpDir, USERPROFILE: tmpDir });
+    const result = runGsdTools('validate health', tmpDir, { HOME: fakeHome, USERPROFILE: fakeHome });
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -161,7 +168,7 @@ describe('HEALTH: W016 — workflow.ai_integration_phase absent', () => {
       workflow: { research: true, nyquist_validation: true, ai_integration_phase: false },
     });
 
-    const result = runGsdTools('validate health', tmpDir, { HOME: tmpDir, USERPROFILE: tmpDir });
+    const result = runGsdTools('validate health', tmpDir, { HOME: fakeHome, USERPROFILE: fakeHome });
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -176,9 +183,16 @@ describe('HEALTH: W016 — workflow.ai_integration_phase absent', () => {
 
 describe('HEALTH --repair: addAiIntegrationPhaseKey', () => {
   let tmpDir;
+  let fakeHome;
 
-  beforeEach(() => { tmpDir = createTempProject(); });
-  afterEach(() => { cleanup(tmpDir); });
+  beforeEach(() => {
+    tmpDir = createTempProject();
+    fakeHome = fs.mkdtempSync(path.join(require('os').tmpdir(), 'gsd-qqo-home-'));
+  });
+  afterEach(() => {
+    cleanup(tmpDir);
+    fs.rmSync(fakeHome, { recursive: true, force: true });
+  });
 
   test('adds workflow.ai_integration_phase via addAiIntegrationPhaseKey repair', () => {
     writeMinimalHealth(tmpDir);
@@ -187,7 +201,7 @@ describe('HEALTH --repair: addAiIntegrationPhaseKey', () => {
       JSON.stringify({ model_profile: 'balanced', workflow: { research: true, nyquist_validation: true } }, null, 2)
     );
 
-    const result = runGsdTools('validate health --repair', tmpDir, { HOME: tmpDir, USERPROFILE: tmpDir });
+    const result = runGsdTools('validate health --repair', tmpDir, { HOME: fakeHome, USERPROFILE: fakeHome });
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
