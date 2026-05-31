@@ -288,8 +288,8 @@ Full details: `.planning/milestones/v2.1.0-c-ROADMAP.md`
   3. `tests/step-numbering-scan.test.cjs` and `tests/cross-file-step-refs.test.cjs` both pass in the full suite run
 
 **Plans**: 1 plan
-
 Plans:
+
 - [ ] 51-01-PLAN.md — Run npm test gate, produce 51-VERIFICATION.md and 51-01-SUMMARY.md closing Phase 51 [GATE-01]
 
 ## Progress
