@@ -11,10 +11,10 @@ Requirements for milestone v2.1.0-e. Each maps to a roadmap phase. The work is *
 
 ### Parser & Slot Resolution
 
-- [ ] **PARSE-01**: `parseModelEffort(slot)` splits a `model;effort` string on `lastIndexOf(';')` and strips the suffix only when it is an exact member of `{low, medium, high, xhigh, max}`. When a `;` is present but the suffix is NOT a valid token (a typo like `opus;hihg`), the parser strips to the base model (`opus`), returns `effort: null`, and emits a one-time typo warning — a non-token suffix after `;` is unambiguously a malformed effort, never a provider ID. A string with no `;` returns the whole string as the model with `effort: null`.
-- [ ] **PARSE-02**: `parseModelEffort` returns `{ model, effort: null }` for bare model strings with no recognized effort suffix (backward-compatible omit)
-- [ ] **PARSE-03**: A shared `_resolveAgentSlot(cwd, agentType)` helper returns the single raw slot string so model and effort always derive from the same resolved tier entry (structurally eliminates the #3023 model/effort divergence class)
-- [ ] **PARSE-04**: `parseModelEffort` is exported from the JS lib and mirrored in `sdk/src/model-catalog.ts` with identical semantics
+- [x] **PARSE-01**: `parseModelEffort(slot)` splits a `model;effort` string on `lastIndexOf(';')` and strips the suffix only when it is an exact member of `{low, medium, high, xhigh, max}`. When a `;` is present but the suffix is NOT a valid token (a typo like `opus;hihg`), the parser strips to the base model (`opus`), returns `effort: null`, and emits a one-time typo warning — a non-token suffix after `;` is unambiguously a malformed effort, never a provider ID. A string with no `;` returns the whole string as the model with `effort: null`.
+- [x] **PARSE-02**: `parseModelEffort` returns `{ model, effort: null }` for bare model strings with no recognized effort suffix (backward-compatible omit)
+- [x] **PARSE-03**: A shared `_resolveAgentSlot(cwd, agentType)` helper returns the single raw slot string so model and effort always derive from the same resolved tier entry (structurally eliminates the #3023 model/effort divergence class)
+- [x] **PARSE-04**: `parseModelEffort` is exported from the JS lib and mirrored in `sdk/src/model-catalog.ts` with identical semantics
 
 ### Effort Resolution
 
@@ -90,10 +90,10 @@ Populated during roadmap creation (2026-05-31). All 30 v1 requirements mapped to
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PARSE-01 | Phase 52 | Pending |
-| PARSE-02 | Phase 52 | Pending |
-| PARSE-03 | Phase 52 | Pending |
-| PARSE-04 | Phase 52 | Pending |
+| PARSE-01 | Phase 52 | Complete |
+| PARSE-02 | Phase 52 | Complete |
+| PARSE-03 | Phase 52 | Complete |
+| PARSE-04 | Phase 52 | Complete |
 | RESOLVE-01 | Phase 53 | Pending |
 | RESOLVE-02 | Phase 53 | Pending |
 | RESOLVE-03 | Phase 53 | Pending |
@@ -122,6 +122,7 @@ Populated during roadmap creation (2026-05-31). All 30 v1 requirements mapped to
 | TEST-05 | Phase 58 | Pending |
 
 **Coverage:**
+
 - v1 requirements: 30 total
 - Mapped to phases: 30 ✓
 - Unmapped: 0 ✓
