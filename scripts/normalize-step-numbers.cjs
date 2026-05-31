@@ -222,9 +222,12 @@ function applyRenameMap(content, renameMap) {
 
     // Apply Pattern A/B renames
     for (const [oldLabel, newLabel] of renameMap) {
-      // Only replace if the line actually contains this label
+      // Only replace if the line actually contains this label.
+      // Use a boundary-aware regex to avoid false matches on substrings
+      // (e.g., "XStep 2.5" or "[Step 2.5]" containing oldLabel as a suffix).
       if (line.includes(oldLabel)) {
-        const newLine = line.split(oldLabel).join(newLabel);
+        const escaped = oldLabel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const newLine = line.replace(new RegExp(escaped, 'g'), newLabel);
         if (newLine !== line) replacementCount++;
         line = newLine;
       }
