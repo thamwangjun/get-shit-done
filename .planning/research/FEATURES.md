@@ -27,9 +27,9 @@ Effort is a **soft behavioral signal, not a hard cap.** On both major runtimes i
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
 | Backward-compat: bare model = no effort = param omitted | Every existing config/catalog slot is a bare model id; effort must be purely additive. A bare `opus` must spawn identically to today. | LOW | Parser returns `effort: null` for bare tokens; spawn templates emit `effort` only when non-null. Mirrors existing `resolveReasoningEffortInternal` returning `null`. |
-| `model:effort` label parse + validation | Core syntax of the milestone. Malformed tokens (`opus:huge`) must be rejected, not silently passed to a runtime. | MEDIUM | Split on `:`; validate effort ∈ {low,medium,high,xhigh,max}; reject otherwise. Validation is an explicit milestone requirement. |
+| `model;effort` label parse + validation | Core syntax of the milestone. Malformed tokens (`opus:huge`) must be rejected, not silently passed to a runtime. | MEDIUM | Split on `:`; validate effort ∈ {low,medium,high,xhigh,max}; reject otherwise. Validation is an explicit milestone requirement. |
 | Per-agent default effort in catalog slots | Heavy agents (planner) want high by default; light agents (plan-checker) want none. The catalog already encodes per-agent tiers — effort rides alongside. | MEDIUM | Encode inline in `model-catalog.json` profile slots + `adaptiveTierMap`. `inherit` stays effort-free (user-assigned via handover). |
-| Config-override precedence | Users already override models via `model_overrides.<agent>` and `models.<phase-type>`. Effort must flow through the **same** precedence chain, not a parallel one. | MEDIUM | Accept `model:effort` in all override sites. Per-agent override wins (matches `resolveModelForTier` step 1 and `resolveReasoningEffortInternal` early-return on override). |
+| Config-override precedence | Users already override models via `model_overrides.<agent>` and `models.<phase-type>`. Effort must flow through the **same** precedence chain, not a parallel one. | MEDIUM | Accept `model;effort` in all override sites. Per-agent override wins (matches `resolveModelForTier` step 1 and `resolveReasoningEffortInternal` early-return on override). |
 | Omit-when-absent at spawn time | Passing an effort param to a runtime that resolved no effort would change behavior for untouched agents. Absence must be transparent. | LOW | Spawn templates conditionally include `effort`. Same discipline as `resolveReasoningEffortInternal` (returns `null` → caller omits). |
 | Codex mapping preserved (`max`→`xhigh`) | Codex already has a working `reasoning_effort` path; the unified effort must map onto it without regressing the existing per-tier defaults. | MEDIUM | Profile-slot effort becomes single source of truth and **overrides** Codex per-tier `reasoning_effort`. `max`→`xhigh`. Lift the Claude block in `resolveReasoningEffortInternal`. |
 
@@ -39,7 +39,7 @@ Effort is a **soft behavioral signal, not a hard cap.** On both major runtimes i
 |---------|-------------------|------------|-------|
 | Claude-first effort exposure | Anthropic now makes adaptive thinking *mandatory* on Opus 4.7+ and recommends medium as Sonnet's default. GSD exposing effort for Claude (today Codex-only) aligns with platform direction and unlocks tuned reasoning depth per agent on the primary runtime. | MEDIUM | The headline differentiator. Removes the "never returns a value for Claude" guard in `resolveReasoningEffortInternal`; profile-slot effort becomes runtime-agnostic. |
 | Per-phase-type effort | `models.<phase-type>` already lets users tune by phase; effort-per-phase lets them say "all planning agents think hard, all verification agents stay fast" in one line. | MEDIUM | `resolveReasoningEffortInternal` already does phase-type tier lookup (#3023). Extend it to read effort from the phase-type override token. Reuse existing `AGENT_TO_PHASE_TYPE` map. |
-| Per-runtime effort override | `model_profile_overrides.<runtime>` lets a user say "on Codex go xhigh, on Claude go medium" — same task, different runtime economics. | MEDIUM | Accept `model:effort` in `model_profile_overrides.<runtime>`. Natural extension of existing per-runtime tier override. |
+| Per-runtime effort override | `model_profile_overrides.<runtime>` lets a user say "on Codex go xhigh, on Claude go medium" — same task, different runtime economics. | MEDIUM | Accept `model;effort` in `model_profile_overrides.<runtime>`. Natural extension of existing per-runtime tier override. |
 | Resolved effort surfaced in init/agent-skills JSON | Orchestrators and the SDK can display/log the resolved effort, making the otherwise-invisible reasoning spend observable. | LOW-MEDIUM | Add `effort` to init + agent-skills JSON (`core.cjs`, `commands.cjs`, `gsd-tools.cjs`, `sdk/src/model-catalog.ts`). Pure plumbing. |
 
 ### Anti-Features (Commonly Requested, Often Problematic)
@@ -55,7 +55,7 @@ Effort is a **soft behavioral signal, not a hard cap.** On both major runtimes i
 ## Feature Dependencies
 
 ```
-model:effort label parser + validation
+model;effort label parser + validation
     └──required by──> per-agent catalog default effort
     └──required by──> config-override precedence (model_overrides / models.<phase> / model_profile_overrides.<runtime>)
                            └──required by──> per-phase-type effort (differentiator)
@@ -73,7 +73,7 @@ dynamic_routing tier escalation ──interacts-with──> effort
 
 ### Dependency Notes
 
-- **Parser is the foundation:** every catalog default, every config override, and all validation depend on a single `model:effort` tokenizer. Build/verify it first.
+- **Parser is the foundation:** every catalog default, every config override, and all validation depend on a single `model;effort` tokenizer. Build/verify it first.
 - **Unified resolver gates the headline feature:** Claude-first exposure is literally "remove the `never returns for Claude` guard and make profile-slot effort runtime-agnostic" in `resolveReasoningEffortInternal`. Do this before phase/runtime override work so all override paths share one resolver.
 - **dynamic_routing interplay (Question 3 — addressed):** GSD's existing `dynamic_routing` escalates *tiers* on failure via `resolveModelForTier` (default tier → `nextTier` up to `max_escalations`). Effort should **ride the resolved tier**, not get its own escalation counter. When the resolver picks a higher tier on retry, that tier's catalog slot already carries the appropriate (higher) effort. A separate effort-escalation axis is an anti-feature: it doubles the state space and isn't in scope. Clean integration point: after `resolveModelForTier` returns the (possibly escalated) tier, look up that tier's slot effort. Config note: `dynamic_routing` is disabled by default for backward-compat — so for the default user, effort is a purely static per-agent/phase value with zero escalation interaction.
 - **Override precedence must mirror models, not invent a new chain:** per-agent override wins (matches `resolveModelForTier` step 1 and `resolveReasoningEffortInternal`'s override early-return); then phase-type; then profile-slot default. Reusing the existing chain keeps one mental model and avoids `model`/`effort` deriving from different sources (the bug `#3023`/`#3030` already fixed for Codex).
@@ -82,7 +82,7 @@ dynamic_routing tier escalation ──interacts-with──> effort
 
 ### Launch With (v1 — this milestone)
 
-- [ ] `model:effort` parser + malformed-token validation — foundation for everything
+- [ ] `model;effort` parser + malformed-token validation — foundation for everything
 - [ ] Backward-compat: bare model → `effort: null` → omitted at spawn — protects every existing config
 - [ ] Per-agent catalog default effort (catalog slots + `adaptiveTierMap`; `inherit` stays effort-free) — user hand-assigns values via handover
 - [ ] Unified `resolveReasoningEffortInternal` (lift Claude guard; profile-slot effort overrides Codex per-tier; `max`→`xhigh`) — the core resolution change
@@ -105,7 +105,7 @@ dynamic_routing tier escalation ──interacts-with──> effort
 
 | Feature | User Value | Implementation Cost | Priority |
 |---------|------------|---------------------|----------|
-| `model:effort` parser + validation | HIGH | LOW | P1 |
+| `model;effort` parser + validation | HIGH | LOW | P1 |
 | Backward-compat / omit-when-absent | HIGH | LOW | P1 |
 | Per-agent catalog default effort | HIGH | MEDIUM | P1 |
 | Unified resolver (Claude-first + Codex `max`→`xhigh`) | HIGH | MEDIUM | P1 |

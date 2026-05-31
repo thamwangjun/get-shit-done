@@ -7,9 +7,11 @@
 
 Requirements for milestone v2.1.0-e. Each maps to a roadmap phase. The work is **purely additive** — extending existing functions in `core.cjs` and the catalog JSON; bare configs must resolve identically to today.
 
+> **Delimiter decision (2026-05-31):** The effort suffix is joined to the model with a semicolon — `model;effort` (e.g. `opus;high`), **not** a colon. The `;` is chosen so provider IDs that legitimately contain colons (e.g. `openrouter:anthropic/claude-opus`, `bedrock:us.anthropic...`) are never ambiguous: no colon is ever treated as an effort delimiter. The combined `model;effort` string lives only in catalog JSON / config and is parsed immediately into separate fields, so it never reaches a raw shell where `;` is special (planner to verify).
+
 ### Parser & Slot Resolution
 
-- [ ] **PARSE-01**: `parseModelEffort(slot)` splits a `model:effort` string on `lastIndexOf(':')` and strips the suffix only when it is an exact member of `{low, medium, high, xhigh, max}`; otherwise the whole string is the model with `effort: null` (protects provider IDs like `openrouter:anthropic/claude-opus`)
+- [ ] **PARSE-01**: `parseModelEffort(slot)` splits a `model;effort` string on `lastIndexOf(';')` and strips the suffix only when it is an exact member of `{low, medium, high, xhigh, max}`. When a `;` is present but the suffix is NOT a valid token (a typo like `opus;hihg`), the parser strips to the base model (`opus`), returns `effort: null`, and emits a one-time typo warning — a non-token suffix after `;` is unambiguously a malformed effort, never a provider ID. A string with no `;` returns the whole string as the model with `effort: null`.
 - [ ] **PARSE-02**: `parseModelEffort` returns `{ model, effort: null }` for bare model strings with no recognized effort suffix (backward-compatible omit)
 - [ ] **PARSE-03**: A shared `_resolveAgentSlot(cwd, agentType)` helper returns the single raw slot string so model and effort always derive from the same resolved tier entry (structurally eliminates the #3023 model/effort divergence class)
 - [ ] **PARSE-04**: `parseModelEffort` is exported from the JS lib and mirrored in `sdk/src/model-catalog.ts` with identical semantics
@@ -25,16 +27,16 @@ Requirements for milestone v2.1.0-e. Each maps to a roadmap phase. The work is *
 
 ### Config Overrides
 
-- [ ] **CONFIG-01**: `model_overrides.<agent>` accepts the `model:effort` form, parsed via `parseModelEffort` (bare fully-qualified IDs still omit effort)
-- [ ] **CONFIG-02**: `models.<phase-type>` accepts the `model:effort` form
-- [ ] **CONFIG-03**: `model_profile_overrides.<runtime>` accepts the `model:effort` form (string shorthand or entry object)
+- [ ] **CONFIG-01**: `model_overrides.<agent>` accepts the `model;effort` form, parsed via `parseModelEffort` (bare fully-qualified IDs still omit effort)
+- [ ] **CONFIG-02**: `models.<phase-type>` accepts the `model;effort` form
+- [ ] **CONFIG-03**: `model_profile_overrides.<runtime>` accepts the `model;effort` form (string shorthand or entry object)
 - [ ] **CONFIG-04**: Config validation rejects/warns on malformed effort tokens (outside `{low, medium, high, xhigh, max}`), consistent with existing tier-typo handling
 
 ### Catalog Encoding
 
-- [ ] **CATALOG-01**: `model-catalog.json` profile slots (`golden`/`balanced`/`budget`) and `adaptiveTierMap` entries support inline `model:effort` labels; the schema/type widens from the fixed alias union to a string
+- [ ] **CATALOG-01**: `model-catalog.json` profile slots (`golden`/`balanced`/`budget`) and `adaptiveTierMap` entries support inline `model;effort` labels; the schema/type widens from the fixed alias union to a string
 - [ ] **CATALOG-02**: Per-agent effort values are assigned across all 33 agents' slots **by the user during an execution handover** (guidance heuristic: heavy → high, light → none/low, default → medium; higher is not monotonically better)
-- [ ] **CATALOG-03**: `sdk/src/model-catalog.ts` mirror widened to accept `model:effort` slot strings
+- [ ] **CATALOG-03**: `sdk/src/model-catalog.ts` mirror widened to accept `model;effort` slot strings
 
 ### SDK & Tools Exposure
 
@@ -68,7 +70,7 @@ Acknowledged but deferred — not in this roadmap.
 ### Future Effort Extensions
 
 - **NEXT-01**: Gemini `thinkingLevel` (LOW/MEDIUM/HIGH) mapping as a third effort-emitting runtime
-- **NEXT-02**: A `custom_profiles` block in `config.json` for fully user-defined named profiles with per-agent `model:effort`
+- **NEXT-02**: A `custom_profiles` block in `config.json` for fully user-defined named profiles with per-agent `model;effort`
 - **NEXT-03**: An effort-escalation axis tied to `dynamic_routing` (currently effort rides the resolved tier; no separate escalation)
 
 ## Out of Scope

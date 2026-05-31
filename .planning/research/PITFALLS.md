@@ -1,6 +1,6 @@
 # Pitfalls Research
 
-**Domain:** Adding a `model:effort` thinking-effort dimension to GSD's existing model-routing machinery (v2.1.0-e)
+**Domain:** Adding a `model;effort` thinking-effort dimension to GSD's existing model-routing machinery (v2.1.0-e)
 **Researched:** 2026-05-31
 **Confidence:** HIGH (grounded in the actual source: `core.cjs`, `model-catalog.cjs`, `model-catalog.json`, `bin/install.js`, plus the documented #3023/#2517/#3030 comment trail)
 
@@ -8,38 +8,41 @@
 
 ## Critical Pitfalls
 
-### Pitfall 1: Naive `split(':')` shreds fully-qualified model IDs that contain colons
+### Pitfall 1: Naive `split(':')` shreds fully-qualified model IDs that contain colons — RESOLVED by using `;` as the delimiter
 
 **What goes wrong:**
 A parser like `const [model, effort] = label.split(':')` corrupts every real-world full ID that legitimately contains a colon. `model_overrides` and `model_profile_overrides` carry IDs such as `anthropic/claude-opus-4-7` and `openai/gpt-5.4` (no colon today, so they survive split by luck), but the same fields also accept provider-prefixed forms providers commonly ship: `openrouter:anthropic/claude-opus`, `bedrock:us.anthropic.claude...`, `vertex:gemini-3-pro`. A leading-colon split treats `openrouter` as the model and `anthropic/claude-opus` as the "effort". `split(':')[0]` truncates any such ID the moment it lands in `model_overrides`.
 
 **Why it happens:**
-The effort syntax `opus:medium` *looks* like a clean two-token split, and the happy-path catalog values (`opus`, `sonnet`) have no colon. The trap: the SAME field (`model_overrides.<agent>`) accepts BOTH bare tier aliases AND fully-qualified provider IDs — `resolveModelInternal` step 1 returns `config.model_overrides?.[agentType]` verbatim precisely so "users who set fully-qualified model IDs get exactly that." A colon-splitting parser breaks that contract.
+The effort syntax `opus;medium` *looks* like a clean two-token split, and the happy-path catalog values (`opus`, `sonnet`) have no colon. The trap: the SAME field (`model_overrides.<agent>`) accepts BOTH bare tier aliases AND fully-qualified provider IDs — `resolveModelInternal` step 1 returns `config.model_overrides?.[agentType]` verbatim precisely so "users who set fully-qualified model IDs get exactly that." A colon-splitting parser breaks that contract.
 
 **How to avoid:**
-Parse effort by matching ONLY a known-effort suffix, never by splitting on the first (or any) colon:
+
+**DECISION (2026-05-31): the effort delimiter is `;`, not `:`.** Using a semicolon makes this entire pitfall structurally moot — colons appear only inside provider IDs and are never delimiters, so there is no ambiguity to resolve. A `;` after the model is *always* intended as an effort separator (no real model ID contains a semicolon), so a non-token suffix after `;` is an unambiguous typo, not a provider ID.
 
 ```js
 const EFFORT_TOKENS = new Set(['low', 'medium', 'high', 'xhigh', 'max']);
 function parseModelEffort(label) {
   if (typeof label !== 'string') return { model: label, effort: null };
-  const idx = label.lastIndexOf(':');
-  if (idx === -1) return { model: label, effort: null };
+  const idx = label.lastIndexOf(';');
+  if (idx === -1) return { model: label, effort: null }; // no delimiter → bare model
+  const base = label.slice(0, idx);
   const suffix = label.slice(idx + 1);
-  if (!EFFORT_TOKENS.has(suffix)) return { model: label, effort: null }; // colon belongs to the model ID
-  return { model: label.slice(0, idx), effort: suffix };
+  if (EFFORT_TOKENS.has(suffix)) return { model: base, effort: suffix };
+  warnOnce(`Unknown effort '${suffix}' in '${label}'`); // typo after ';' is unambiguous
+  return { model: base, effort: null }; // strip to base model, omit effort, warn
 }
 ```
 
-Rules: (1) split on `lastIndexOf(':')`, not the first colon; (2) strip the suffix ONLY when it is an exact member of the effort allowlist — otherwise return the whole string as the model and `effort: null`. Then `openrouter:anthropic/claude-opus` → model `openrouter:anthropic/claude-opus`, effort `null`; `opus:medium` → model `opus`, effort `medium`; `anthropic/claude-opus-4-7:high` → model `anthropic/claude-opus-4-7`, effort `high`.
+Rules: (1) split on `lastIndexOf(';')`; (2) a label with no `;` is a bare model (`effort: null`) — provider IDs like `openrouter:anthropic/claude-opus` pass through untouched; (3) a `;` suffix in the allowlist becomes the effort; (4) a `;` suffix NOT in the allowlist is a typo — strip to the base model, return `effort: null`, and `warnOnce`. Examples: `openrouter:anthropic/claude-opus` → model `openrouter:anthropic/claude-opus`, effort `null`; `opus;medium` → model `opus`, effort `medium`; `anthropic/claude-opus-4-7;high` → model `anthropic/claude-opus-4-7`, effort `high`; `opus;hihg` → model `opus`, effort `null` + warning.
 
 **Warning signs:**
-- Any `.split(':')` on a model string in `core.cjs` / `model-catalog.cjs` / `install.js`.
+- Any `.split(':')` or `lastIndexOf(':')` on a model string in `core.cjs` / `model-catalog.cjs` / `install.js` — the delimiter is `;`.
 - A full ID like `openai/gpt-5.4` appearing truncated in init JSON or a Codex `model = "..."` TOML line.
-- Tests that only assert `opus:medium` parsing and never feed a provider-prefixed colon ID.
+- Tests that only assert `opus;medium` parsing and never feed a provider-prefixed colon ID through unchanged.
 
 **Phase to address:**
-Parser phase (first). Add a regression test feeding `openrouter:anthropic/claude-opus`, `vertex:gemini-3-pro`, and `anthropic/claude-opus-4-7:high`, asserting model/effort split. Must land before any caller uses the parser.
+Parser phase (first). Add a regression test feeding `openrouter:anthropic/claude-opus`, `vertex:gemini-3-pro` (both pass through with `effort: null`), and `anthropic/claude-opus-4-7;high`, asserting model/effort split. Add a `opus;hihg` typo case asserting base-model + `effort: null` + warning. Must land before any caller uses the parser.
 
 ---
 
@@ -69,14 +72,14 @@ Resolution/unification phase. Add regression tests that load a config per non-ef
 ### Pitfall 3: Model/effort divergence — the #3023 class re-opened by a new code path
 
 **What goes wrong:**
-`model` and `effort` resolve from *different tier sources*. The #3023 bug was exactly this: on Codex, `models.<phase_type>` overrode the model's tier but `reasoning_effort` was still derived from the profile tier, so a phase-type `opus` override produced an opus model with sonnet's effort. The fix mirrored the phase-type tier lookup in BOTH `resolveModelInternal` and `resolveReasoningEffortInternal`. A new `model:effort` path that computes effort independently (parsing it off the label in one place but resolving the model through the precedence chain in another) re-introduces divergence.
+`model` and `effort` resolve from *different tier sources*. The #3023 bug was exactly this: on Codex, `models.<phase_type>` overrode the model's tier but `reasoning_effort` was still derived from the profile tier, so a phase-type `opus` override produced an opus model with sonnet's effort. The fix mirrored the phase-type tier lookup in BOTH `resolveModelInternal` and `resolveReasoningEffortInternal`. A new `model;effort` path that computes effort independently (parsing it off the label in one place but resolving the model through the precedence chain in another) re-introduces divergence.
 
 **Why it happens:**
 Five tier inputs must agree: per-agent override → phase-type slot → profile → adaptive → inherit. The two resolvers already duplicate this logic with subtle differences (e.g., `resolveModelInternal` synthesizes `tier='inherit'` on phase-type `inherit`; `resolveReasoningEffortInternal` *returns null* on phase-type `inherit` at line 1492). Adding effort as a THIRD derivation widens the surface for disagreement. Inline effort in catalog slots helps (single source) only if both model and effort read the SAME resolved tier entry.
 
 **How to avoid:**
 - Resolve the tier ONCE, then read both `model` and `effort` from the SAME resolved `entry` (the `resolveTierEntry` return). The milestone's "profile-slot effort is single source of truth" is correct — enforce it by making effort a field on the resolved entry, never a separately-computed value.
-- When a label carries inline effort (`opus:medium`), the parsed effort must travel WITH the parsed model through the identical precedence chain — don't parse the model in step 1 and apply effort in a later step.
+- When a label carries inline effort (`opus;medium`), the parsed effort must travel WITH the parsed model through the identical precedence chain — don't parse the model in step 1 and apply effort in a later step.
 - Replicate #3023/#3030 phase-type handling exactly: phase-type `inherit` opts OUT of effort (return null); a valid phase-type tier wins for BOTH model and effort. Add a test matching the #3023 fixture: `{ model_profile: 'inherit', models: { execution: 'opus' } }` must yield opus model AND opus's effort.
 
 **Warning signs:**
@@ -149,7 +152,7 @@ Spawn-template phase (after resolution is correct). Treat gate-runs as the phase
 ### Pitfall 6: Silent test false-passes — `indexOf`-returns-truthy and substring leniency
 
 **What goes wrong:**
-A test like `assert(output.indexOf('opus:medium'))` passes whenever the substring is found at any index EXCEPT 0, and a found-at-0 match returns `0` (falsy) — wrong in BOTH directions. More broadly, loose substring checks (`output.includes('medium')`) false-pass because `medium` already appears in the catalog (Codex `sonnet`/`haiku` map to `medium`). A test meant to prove "opus got high effort" can pass on the pre-existing `medium` Codex default.
+A test like `assert(output.indexOf('opus;medium'))` passes whenever the substring is found at any index EXCEPT 0, and a found-at-0 match returns `0` (falsy) — wrong in BOTH directions. More broadly, loose substring checks (`output.includes('medium')`) false-pass because `medium` already appears in the catalog (Codex `sonnet`/`haiku` map to `medium`). A test meant to prove "opus got high effort" can pass on the pre-existing `medium` Codex default.
 
 **Why it happens:**
 The project already has a documented `indexOf`-returns-truthy risk (many test files use `indexOf`). Effort tokens (`medium`, `high`) are short, common substrings colliding with existing catalog values. Effort is also frequently *absent* (omit contract), and asserting absence via substring is especially error-prone.
@@ -190,7 +193,7 @@ Every phase's verification step; explicitly the regression-coverage phase. Add a
 | `Agent()` spawn (Claude) | Passing `effort="inherit"` or empty `effort=` | Omit the `effort` argument entirely when resolved effort is null (mirror the `model=` omit-on-inherit rule at `execute-phase.md:87`) |
 | `resolveTierEntry` field-merge | Re-deriving effort outside the merge, dropping it like the #2609 silent-drop bugs | Read effort as a field of the merged entry; user-field-wins / builtin-fills-gaps applies to effort too |
 | init / agent-skills JSON (`core.cjs`, `commands.cjs`, `gsd-tools.cjs`, `sdk/src/model-catalog.ts`) | Exposing `model` but forgetting `effort`, or exposing `effort` for runtimes that omit it | Expose resolved `effort` alongside `model`, `null` when absent; keep SDK + CLI shapes identical |
-| `model_profile_overrides.<runtime>` accepting `model:effort` | Parsing override at write-time and storing split fields | Store verbatim; parse at resolve-time via the suffix-only parser |
+| `model_profile_overrides.<runtime>` accepting `model;effort` | Parsing override at write-time and storing split fields | Store verbatim; parse at resolve-time via the suffix-only parser |
 
 ## Performance Traps
 
@@ -260,5 +263,5 @@ Every phase's verification step; explicitly the regression-coverage phase. Add a
 - `CLAUDE.md` — fork constraints (frontmatter exactness, no `skills:`, positive framing replacement rule, ≥70% bin/lib coverage)
 
 ---
-*Pitfalls research for: per-agent `model:effort` thinking-effort dimension in GSD model machinery*
+*Pitfalls research for: per-agent `model;effort` thinking-effort dimension in GSD model machinery*
 *Researched: 2026-05-31*

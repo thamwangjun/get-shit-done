@@ -90,7 +90,7 @@ Codex also exposes `minimal` (below `low`); the Claude vocabulary has no equival
 | `sdk/src/model-catalog.ts` | TS mirror; `reasoning_effort?` field + `runtimesWithReasoningEffort()` (line 64) | Extend to surface resolved per-agent effort |
 | `get-shit-done/bin/lib/core.cjs:1454` `resolveReasoningEffortInternal` | Resolves effort; gated to non-Claude via `RUNTIMES_WITH_REASONING_EFFORT` (core.cjs:1463) | **Lift Claude gating**; profile-slot effort overrides Codex per-tier; `max`→`xhigh` on Codex emit |
 | `get-shit-done/bin/lib/commands.cjs:243-250` | Already exposes `model` + `reasoning_effort` in init/agent-skills JSON | Surface resolved `effort` (unified) |
-| `core.cjs:1267` `resolveModelInternal` | Model resolution; effort must mirror its tier lookup (per #3023 comment) | Parser splits `model:effort`; keep tier-lookup parity |
+| `core.cjs:1267` `resolveModelInternal` | Model resolution; effort must mirror its tier lookup (per #3023 comment) | Parser splits `model;effort`; keep tier-lookup parity |
 
 ## What NOT to use / NOT to add
 

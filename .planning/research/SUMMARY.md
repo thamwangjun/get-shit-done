@@ -1,13 +1,13 @@
 # Project Research Summary
 
 **Project:** GSD — Prompt-Engineered Fork, Milestone v2.1.0-e Per-Agent Thinking Effort
-**Domain:** Internal model-routing machinery extension — `model:effort` inline label syntax for GSD's agent-spawn layer
+**Domain:** Internal model-routing machinery extension — `model;effort` inline label syntax for GSD's agent-spawn layer
 **Researched:** 2026-05-31
 **Confidence:** HIGH
 
 ## Executive Summary
 
-This milestone adds a unified, Claude-first thinking-effort dimension to GSD's existing model-resolution machinery. The core design is strictly additive: encode effort inline in `model-catalog.json` profile slots as `model:effort` strings (e.g. `opus:high`), extend the existing `resolveReasoningEffortInternal` to cover Claude (not just Codex), surface resolved effort in init/agent-skills JSON, and wire it into spawn templates conditionally. No new infrastructure, no new npm dependencies — only targeted extension of four existing functions and the data they consume.
+This milestone adds a unified, Claude-first thinking-effort dimension to GSD's existing model-resolution machinery. The core design is strictly additive: encode effort inline in `model-catalog.json` profile slots as `model;effort` strings (e.g. `opus;high`), extend the existing `resolveReasoningEffortInternal` to cover Claude (not just Codex), surface resolved effort in init/agent-skills JSON, and wire it into spawn templates conditionally. No new infrastructure, no new npm dependencies — only targeted extension of four existing functions and the data they consume.
 
 The foundational convergence across all four research threads is the same-slot derivation invariant: both `resolveModelInternal` and `resolveReasoningEffortInternal` must derive their respective fields from the **identical resolved tier slot**, via a single shared helper (`_resolveAgentSlot`) and a single parser (`parseModelEffort`). This directly prevents the #3023 class of model/effort divergence bugs, which have already shipped and been fixed twice. The parser has one non-obvious rule: split on `lastIndexOf(':')`, and strip the suffix ONLY when it is an exact member of `{low,medium,high,xhigh,max}` — this preserves fully-qualified provider IDs that legitimately contain colons (e.g. `openrouter:anthropic/claude-opus`).
 
@@ -23,7 +23,7 @@ No new dependencies are required. The "stack" is the set of vendor reasoning-con
 - **Claude subagent frontmatter `effort:`** — per-agent effort delivery; the stable, documented path; `max` and `ultracode` are session-only and rejected in settings files; `max` in frontmatter is unverified (flag for plan-time validation)
 - **Codex `model_reasoning_effort`** — existing per-tier TOML field; `max`→`xhigh` at Codex emit boundary; `gpt-5.4-mini` (haiku tier) rejects `xhigh`, caps at `high`; catalog already sets haiku→`medium`
 - **`get-shit-done/bin/lib/core.cjs`** — `resolveModelInternal` + `resolveReasoningEffortInternal` + NEW `parseModelEffort` + NEW `_resolveAgentSlot`; the entire resolution contract lives here
-- **`sdk/shared/model-catalog.json` + `sdk/src/model-catalog.ts`** — single source of truth; profile slots widen from `'opus'|'sonnet'|'haiku'` literals to `string` to carry `model:effort`
+- **`sdk/shared/model-catalog.json` + `sdk/src/model-catalog.ts`** — single source of truth; profile slots widen from `'opus'|'sonnet'|'haiku'` literals to `string` to carry `model;effort`
 
 **What NOT to use:**
 - `thinking` / ThinkingConfig (`adaptive`) — separate axis (mode, not magnitude); do not touch
@@ -34,17 +34,17 @@ No new dependencies are required. The "stack" is the set of vendor reasoning-con
 ### Expected Features
 
 **Must have (table stakes):**
-- `model:effort` parser with `lastIndexOf` rule + `{low,medium,high,xhigh,max}` allowlist validation — foundation for everything; bare model returns `effort: null`
+- `model;effort` parser with `lastIndexOf` rule + `{low,medium,high,xhigh,max}` allowlist validation — foundation for everything; bare model returns `effort: null`
 - Backward-compat: bare model label → `effort: null` → omit at spawn — all 17+ existing `model_overrides` carry bare aliases; zero behavior change required
 - Unified `resolveReasoningEffortInternal` with Claude gate lifted — the headline feature; profile-slot effort becomes single source of truth; overrides Codex per-tier `reasoning_effort`
-- `model:effort` accepted in all three config override sites: `model_overrides.<agent>`, `models.<phase-type>`, `model_profile_overrides.<runtime>`
+- `model;effort` accepted in all three config override sites: `model_overrides.<agent>`, `models.<phase-type>`, `model_profile_overrides.<runtime>`
 - Resolved `effort` surfaced in init/agent-skills JSON (`core.cjs`, `commands.cjs`, `gsd-tools.cjs`, `sdk/src/model-catalog.ts`)
 - Spawn templates pass `effort` conditionally to `Agent()` (omit when absent; positive-framing only)
 - `max`→`xhigh` mapping at Codex TOML emit boundary
 
 **Should have (competitive differentiators):**
 - Per-phase-type effort: `models.<phase-type>` override carries effort inline — "all planning agents think hard, all verification agents stay fast"
-- Per-runtime effort override: `model_profile_overrides.<runtime>` accepts `model:effort` — different runtime economics in one line
+- Per-runtime effort override: `model_profile_overrides.<runtime>` accepts `model;effort` — different runtime economics in one line
 - Resolved effort visible in statusline / SDK display (observability polish)
 
 **Defer (v2+):**
@@ -64,7 +64,7 @@ No new dependencies are required. The "stack" is the set of vendor reasoning-con
 
 ### Architecture Approach
 
-The architecture is extension, not addition. Both resolvers (`resolveModelInternal` and `resolveReasoningEffortInternal`) currently duplicate the tier-resolution precedence chain (core.cjs:1285–1307 vs 1468–1500) — that duplication is the #3023 divergence risk. The fix is to extract a shared `_resolveAgentSlot(cwd, agentType)` helper that returns the raw slot string (which may carry `:effort`), and have both resolvers call it then call `parseModelEffort(slot)` to derive their respective field. `resolveModelInternal` returns `.model` only (preserving its string contract). `resolveReasoningEffortInternal` returns `.effort` — after lifting the Claude gate and adding the Codex `max`→`xhigh` translation at the emit boundary, not inside the resolver.
+The architecture is extension, not addition. Both resolvers (`resolveModelInternal` and `resolveReasoningEffortInternal`) currently duplicate the tier-resolution precedence chain (core.cjs:1285–1307 vs 1468–1500) — that duplication is the #3023 divergence risk. The fix is to extract a shared `_resolveAgentSlot(cwd, agentType)` helper that returns the raw slot string (which may carry `;effort`), and have both resolvers call it then call `parseModelEffort(slot)` to derive their respective field. `resolveModelInternal` returns `.model` only (preserving its string contract). `resolveReasoningEffortInternal` returns `.effort` — after lifting the Claude gate and adding the Codex `max`→`xhigh` translation at the emit boundary, not inside the resolver.
 
 **Major components and their changes:**
 
@@ -83,11 +83,11 @@ The architecture is extension, not addition. Both resolvers (`resolveModelIntern
 
 | Rank | Source | Effort derivation |
 |------|--------|------------------|
-| 1 | `config.model_overrides[agent]` | parse `:effort` off override string; none → omit |
-| 2 | `config.models[phaseType]` slot | same slot's `:effort` |
-| 3 | `MODEL_PROFILES[agent][profile]` slot | same slot's `:effort` |
+| 1 | `config.model_overrides[agent]` | parse `;effort` off override string; none → omit |
+| 2 | `config.models[phaseType]` slot | same slot's `;effort` |
+| 3 | `MODEL_PROFILES[agent][profile]` slot | same slot's `;effort` |
 | 4 | `model_profile_overrides[runtime][tier]` | `resolveTierEntry` effort; slot overrides Codex per-tier |
-| 5 | `adaptiveTierMap[routingTier]` | adaptiveTierMap slot `:effort` |
+| 5 | `adaptiveTierMap[routingTier]` | adaptiveTierMap slot `;effort` |
 | — | omit (bare model, `inherit`, no match) | omit |
 
 ### Critical Pitfalls
@@ -116,7 +116,7 @@ Based on research, the build order is strongly dependency-sequenced. Each phase 
 
 ### Phase 2: Unified Effort Resolver
 **Rationale:** With the shared slot helper and parser in place, lifting the Claude gate in `resolveReasoningEffortInternal` and wiring profile-slot effort as the single source of truth is the core resolution change. All override paths (per-agent, per-phase-type, per-runtime) share one resolver, preventing model/effort divergence.
-**Delivers:** Rewritten `resolveReasoningEffortInternal` using `_resolveAgentSlot` + `parseModelEffort`; Claude gate lifted; profile-slot effort overrides Codex per-tier; `max`→`xhigh` at Codex emit boundary; all three config override sites accept `model:effort`
+**Delivers:** Rewritten `resolveReasoningEffortInternal` using `_resolveAgentSlot` + `parseModelEffort`; Claude gate lifted; profile-slot effort overrides Codex per-tier; `max`→`xhigh` at Codex emit boundary; all three config override sites accept `model;effort`
 **Addresses:** Claude-first effort exposure (headline differentiator); unified resolution; per-phase-type and per-runtime effort overrides
 **Avoids:** Pitfall 2 (#3023 divergence), Pitfall 3 (effort leak), Pitfall 4 (backward-compat Codex effort regression)
 
@@ -127,8 +127,8 @@ Based on research, the build order is strongly dependency-sequenced. Each phase 
 **Avoids:** Pitfall 4 (Codex per-tier preserved; no behavior change on bare catalog)
 
 ### Phase 4: [USER HANDOVER] Catalog Effort Assignment
-**Rationale:** This is the explicit handover boundary. All plumbing before this point is inert against a bare catalog (every slot returns `effort: null`; every spawn omits effort; every runtime behaves identically to today). The user assigns `:effort` suffixes to `model-catalog.json` profile slots and `adaptiveTierMap` entries according to the heuristic: heavy agents → `high`; light agents → `none`/`low`; default → `medium`. `inherit` stays effort-free.
-**Delivers:** Populated `model-catalog.json` with per-agent effort values; `adaptiveTierMap` entries carry effort (e.g. `"opus:high"` for heavy tier)
+**Rationale:** This is the explicit handover boundary. All plumbing before this point is inert against a bare catalog (every slot returns `effort: null`; every spawn omits effort; every runtime behaves identically to today). The user assigns `;effort` suffixes to `model-catalog.json` profile slots and `adaptiveTierMap` entries according to the heuristic: heavy agents → `high`; light agents → `none`/`low`; default → `medium`. `inherit` stays effort-free.
+**Delivers:** Populated `model-catalog.json` with per-agent effort values; `adaptiveTierMap` entries carry effort (e.g. `"opus;high"` for heavy tier)
 **Addresses:** Per-agent catalog default effort (P1 must-have)
 **Avoids:** Anti-feature of defaulting all agents to `high`; anti-feature of treating effort as a global dial
 

@@ -306,21 +306,21 @@ Plans:
 
 ### 🚧 v2.1.0-e Per-Agent Thinking Effort (In Progress)
 
-**Milestone Goal:** Add a unified, Claude-first thinking-effort dimension encoded inline as `model:effort` labels, resolved through the existing model machinery and passed to `Agent()` spawns. The work is purely additive — bare configs must resolve identically to today.
+**Milestone Goal:** Add a unified, Claude-first thinking-effort dimension encoded inline as `model;effort` labels (semicolon delimiter — chosen so colons in provider IDs are never ambiguous), resolved through the existing model machinery and passed to `Agent()` spawns. The work is purely additive — bare configs must resolve identically to today.
 
 #### Phase 52: Parser Foundation
 **Goal**: A correct, exported `parseModelEffort` parser and a shared `_resolveAgentSlot` helper exist so model and effort always derive from the same resolved tier slot, with the colon-in-provider-ID pitfall structurally avoided
 **Depends on**: Phase 51 (previous milestone complete)
 **Requirements**: PARSE-01, PARSE-02, PARSE-03, PARSE-04
 **Success Criteria** (what must be TRUE):
-  1. `parseModelEffort('opus:high')` returns `{model: 'opus', effort: 'high'}`, and `parseModelEffort('openrouter:anthropic/claude-opus')` returns `{model: 'openrouter:anthropic/claude-opus', effort: null}` — the suffix is stripped only when it is an exact member of `{low, medium, high, xhigh, max}`
+  1. `parseModelEffort('opus;high')` returns `{model: 'opus', effort: 'high'}`, and `parseModelEffort('openrouter:anthropic/claude-opus')` returns `{model: 'openrouter:anthropic/claude-opus', effort: null}` — the effort delimiter is `;` (split on `lastIndexOf(';')`), so colons in provider IDs are never treated as delimiters; the suffix is stripped only when it is an exact member of `{low, medium, high, xhigh, max}`. A typo suffix (`opus;hihg`) strips to the base model, returns `effort: null`, and warns.
   2. A bare model string with no recognized effort suffix returns `effort: null` (backward-compatible omit)
   3. A shared `_resolveAgentSlot(cwd, agentType)` helper returns the single raw slot string, so both the model resolver and the effort resolver read from the identical tier entry (structurally eliminates the #3023 divergence class)
   4. `parseModelEffort` is exported from the JS lib (`core.cjs`) and mirrored in `sdk/src/model-catalog.ts` with identical semantics, verified by a parity test
 **Plans**: TBD
 
 #### Phase 53: Unified Effort Resolver
-**Goal**: `resolveReasoningEffortInternal` resolves effort for the `claude` runtime (Claude gate lifted via an explicit `{claude, codex}` allowlist), follows the same precedence chain as the model resolver, and accepts `model:effort` in all three config override sites — while bare configs continue to omit effort everywhere
+**Goal**: `resolveReasoningEffortInternal` resolves effort for the `claude` runtime (Claude gate lifted via an explicit `{claude, codex}` allowlist), follows the same precedence chain as the model resolver, and accepts `model;effort` in all three config override sites — while bare configs continue to omit effort everywhere
 **Depends on**: Phase 52
 **Requirements**: RESOLVE-01, RESOLVE-02, RESOLVE-03, RESOLVE-04, RESOLVE-05, RESOLVE-06, CONFIG-01, CONFIG-02, CONFIG-03, CONFIG-04
 **Plan-time verification**: Confirm whether `effort: max` is accepted in Claude Code subagent frontmatter before emitting it on the Claude path. If rejected (the settings file rejects it; frontmatter behavior is undocumented), add a `max`→`xhigh` clamp on the Claude spawn path as well.
@@ -329,7 +329,7 @@ Plans:
   2. Effort resolution follows the model precedence chain exactly: per-agent override → phase-type slot → profile slot → adaptiveTierMap → omit; the `inherit` profile and bare adaptive entries omit effort
   3. Profile-slot effort overrides the Codex per-tier `reasoning_effort`; the per-tier value is used only as fallback when the resolved slot carries no effort suffix; `max`→`xhigh` when emitted for Codex and `xhigh` is never emitted for the Codex haiku tier
   4. Every runtime outside `{claude, codex}` omits effort (hard no-op for the 8 null-tier runtimes)
-  5. `model:effort` is accepted in `model_overrides.<agent>`, `models.<phase-type>`, and `model_profile_overrides.<runtime>`; config validation rejects/warns on malformed effort tokens consistent with existing tier-typo handling
+  5. `model;effort` is accepted in `model_overrides.<agent>`, `models.<phase-type>`, and `model_profile_overrides.<runtime>`; config validation rejects/warns on malformed effort tokens consistent with existing tier-typo handling
 **Plans**: TBD
 
 #### Phase 54: SDK & Tools JSON Exposure
@@ -344,13 +344,13 @@ Plans:
 **Plans**: TBD
 
 #### Phase 55: Catalog Schema + User Handover
-**Goal**: The catalog schema/type widens to carry `model:effort` slot strings (Claude-built), then the user hand-assigns per-agent effort values across all 33 agents during an explicit execution handover
+**Goal**: The catalog schema/type widens to carry `model;effort` slot strings (Claude-built), then the user hand-assigns per-agent effort values across all 33 agents during an explicit execution handover
 **Depends on**: Phase 54
 **Requirements**: CATALOG-01, CATALOG-02, CATALOG-03
-**⚠️ USER-HANDOVER BOUNDARY**: This phase contains a manual handover. Claude prepares the schema/type widening (CATALOG-01 in `model-catalog.json`, CATALOG-03 in the `sdk/src/model-catalog.ts` mirror) but does NOT auto-fill effort values. The user hand-assigns the per-agent `model:effort` values in `sdk/shared/model-catalog.json` and its TS mirror themselves (CATALOG-02), then hands back. Before handover, all plumbing is inert (every slot returns `effort: null`); after assignment, the first real integration test exercises live values.
+**⚠️ USER-HANDOVER BOUNDARY**: This phase contains a manual handover. Claude prepares the schema/type widening (CATALOG-01 in `model-catalog.json`, CATALOG-03 in the `sdk/src/model-catalog.ts` mirror) but does NOT auto-fill effort values. The user hand-assigns the per-agent `model;effort` values in `sdk/shared/model-catalog.json` and its TS mirror themselves (CATALOG-02), then hands back. Before handover, all plumbing is inert (every slot returns `effort: null`); after assignment, the first real integration test exercises live values.
 **Success Criteria** (what must be TRUE):
-  1. `model-catalog.json` profile slots (`golden`/`balanced`/`budget`) and `adaptiveTierMap` entries accept inline `model:effort` labels — the schema/type widens from the fixed alias union to a string (Claude-built, CATALOG-01)
-  2. `sdk/src/model-catalog.ts` mirror is widened to accept `model:effort` slot strings (Claude-built, CATALOG-03)
+  1. `model-catalog.json` profile slots (`golden`/`balanced`/`budget`) and `adaptiveTierMap` entries accept inline `model;effort` labels — the schema/type widens from the fixed alias union to a string (Claude-built, CATALOG-01)
+  2. `sdk/src/model-catalog.ts` mirror is widened to accept `model;effort` slot strings (Claude-built, CATALOG-03)
   3. Per-agent effort values are assigned across all 33 agents' slots by the user during handover (guidance heuristic: heavy → high, light → none/low, default → medium; higher is not monotonically better); `inherit` stays effort-free (user-owned, CATALOG-02)
   4. After handover, resolving a heavy agent yields its assigned effort and a light agent yields its assigned (or omitted) effort — confirming the hand-assigned values flow through the resolver built in Phase 53
 **Plans**: TBD
