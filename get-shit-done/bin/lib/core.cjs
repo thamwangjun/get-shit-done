@@ -1211,6 +1211,58 @@ function _resetRuntimeWarningCacheForTests() {
   _warnedConfigKeys.clear();
 }
 
+// ─── model;effort slot parsing (Phase 52, #PARSE-01/02) ─────────────────────
+
+// Allowlist of valid effort suffixes. A `;`-delimited suffix is only stripped
+// from a model token when it is an exact member of this Set (decision D1).
+const EFFORT_TOKENS = new Set(['low', 'medium', 'high', 'xhigh', 'max']);
+
+// One-time warn cache keyed by the full original label so a malformed suffix
+// warns exactly once per distinct label (decision D2).
+const _warnedEffortLabels = new Set();
+
+/**
+ * Parse a `model;effort` slot string into its components.
+ *
+ * Split rule (D1): split on lastIndexOf(';'); the suffix is stripped and
+ * returned as `effort` only when it is an exact member of EFFORT_TOKENS.
+ * Colons are never delimiters — provider IDs like
+ * `openrouter:anthropic/claude-opus` pass through untouched.
+ *
+ * Typo handling (D2): a `;`-suffix that is not an effort token is an
+ * unambiguous typo; it is stripped from `model`, `effort` is null, and a
+ * one-time `gsd: warning —` stderr message fires per distinct label.
+ *
+ * @param {*} label - the raw slot string (non-string input passes through as model)
+ * @returns {{model: *, effort: (string|null)}}
+ */
+function parseModelEffort(label) {
+  if (typeof label !== 'string') return { model: label, effort: null };
+  const idx = label.lastIndexOf(';');
+  if (idx === -1) return { model: label, effort: null };
+  const base = label.slice(0, idx);
+  const suffix = label.slice(idx + 1);
+  if (EFFORT_TOKENS.has(suffix)) return { model: base, effort: suffix };
+  // Unknown suffix — typo. Warn once per label, then degrade to null effort.
+  if (!_warnedEffortLabels.has(label)) {
+    _warnedEffortLabels.add(label);
+    try {
+      process.stderr.write(
+        `gsd: warning — unknown effort suffix "${suffix}" in "${label}". ` +
+        `Allowed efforts: ${[...EFFORT_TOKENS].join(', ')}. ` +
+        `Ignoring suffix and using model "${base}".\n`
+      );
+    } catch { /* stderr might be closed in some test harnesses */ }
+  }
+  return { model: base, effort: null };
+}
+
+// Internal helper exposed for tests so the per-process effort warn cache can be
+// reset between cases that intentionally exercise the warning path repeatedly.
+function _resetEffortWarningCacheForTests() {
+  _warnedEffortLabels.clear();
+}
+
 /**
  * #2517 — Resolve the runtime-aware tier entry for (runtime, tier).
  *
@@ -1885,7 +1937,9 @@ module.exports = {
   KNOWN_RUNTIMES,
   RUNTIME_OVERRIDE_TIERS,
   resolveTierEntry,
+  parseModelEffort,
   _resetRuntimeWarningCacheForTests,
+  _resetEffortWarningCacheForTests,
   pathExistsInternal,
   gitWorktreeInfoInternal,
   generateSlugInternal,
