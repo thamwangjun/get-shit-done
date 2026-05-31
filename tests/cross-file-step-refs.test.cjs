@@ -178,10 +178,11 @@ function findCrossFileRefs(sourceFile, content) {
     }
     if (inCodeBlock) continue;
 
-    // Apply both XREF_PATTERNS to each non-fenced line
-    for (const re of XREF_PATTERNS) {
-      // Reset lastIndex before each exec loop — /g regexes carry mutable state across calls
-      re.lastIndex = 0;
+    // Apply both XREF_PATTERNS to each non-fenced line.
+    // Construct a fresh RegExp per call from the module-level template to avoid
+    // mutating shared lastIndex state on the module-level /gi regex objects.
+    for (const patternTemplate of XREF_PATTERNS) {
+      const re = new RegExp(patternTemplate.source, patternTemplate.flags);
       let m;
       while ((m = re.exec(line)) !== null) {
         // Determine capture-group mapping from the asymmetric pattern variants:
