@@ -1215,6 +1215,9 @@ function _resetRuntimeWarningCacheForTests() {
 
 // Allowlist of valid effort suffixes. A `;`-delimited suffix is only stripped
 // from a model token when it is an exact member of this Set (decision D1).
+// IN-02: this set MUST stay identical to EFFORT_TOKENS in
+// sdk/src/model-catalog.ts. The parity suite asserts the two match, so adding a
+// token here without mirroring it on the TS side fails the build.
 const EFFORT_TOKENS = new Set(['low', 'medium', 'high', 'xhigh', 'max']);
 
 // One-time warn cache keyed by the full original label so a malformed suffix
@@ -1242,6 +1245,10 @@ function parseModelEffort(label) {
   if (idx === -1) return { model: label, effort: null };
   const base = label.slice(0, idx);
   const suffix = label.slice(idx + 1);
+  // Trailing semicolon with no suffix (e.g. 'opus;') is an editing artifact,
+  // not a typo'd effort token — strip it silently rather than warning about an
+  // empty "" suffix (WR-04).
+  if (suffix === '') return { model: base, effort: null };
   if (EFFORT_TOKENS.has(suffix)) return { model: base, effort: suffix };
   // Unknown suffix — typo. Warn once per label, then degrade to null effort.
   if (!_warnedEffortLabels.has(label)) {
@@ -1959,6 +1966,7 @@ module.exports = {
   RUNTIME_OVERRIDE_TIERS,
   resolveTierEntry,
   parseModelEffort,
+  EFFORT_TOKENS,
   _resetRuntimeWarningCacheForTests,
   _resetEffortWarningCacheForTests,
   pathExistsInternal,

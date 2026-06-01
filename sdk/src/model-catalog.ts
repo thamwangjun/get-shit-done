@@ -76,19 +76,41 @@ export function runtimesWithReasoningEffort(): Set<string> {
 // invalid suffixes to effort:null with a one-time per-label stderr warning, and
 // never treats colons (provider IDs like openrouter:anthropic/...) as delimiters.
 
-const EFFORT_TOKENS = new Set(['low', 'medium', 'high', 'xhigh', 'max']);
+// IN-02: this allowlist MUST stay identical to EFFORT_TOKENS in
+// get-shit-done/bin/lib/core.cjs. The parity suites assert the two sets match,
+// so adding a token here without mirroring it in core.cjs fails the build.
+export const EFFORT_TOKENS = new Set(['low', 'medium', 'high', 'xhigh', 'max']);
 const _warnedEffortLabels = new Set<string>();
 
-export function parseModelEffort(label: string): { model: string; effort: string | null } {
-  if (typeof label !== 'string') return { model: label as unknown as string, effort: null };
+// The public type promises `model: string`, but for non-string input the
+// original value passes through unchanged (mirroring the CJS contract). The
+// return type widens `model` to `unknown` so callers do not rely on a false
+// `string` guarantee for non-string input (IN-01).
+export function parseModelEffort(label: string): { model: string | unknown; effort: string | null } {
+  if (typeof label !== 'string') return { model: label, effort: null };
   const idx = label.lastIndexOf(';');
   if (idx === -1) return { model: label, effort: null };
   const base = label.slice(0, idx);
   const suffix = label.slice(idx + 1);
+  // Trailing semicolon with no suffix (e.g. 'opus;') is an editing artifact,
+  // not a typo'd effort token — strip it silently (WR-04).
+  if (suffix === '') return { model: base, effort: null };
   if (EFFORT_TOKENS.has(suffix)) return { model: base, effort: suffix };
   if (!_warnedEffortLabels.has(label)) {
     _warnedEffortLabels.add(label);
-    process.stderr.write(`gsd: warning — unknown effort "${suffix}" in "${label}". Effort omitted.\n`);
+    // WR-01: message string-identical to the CJS implementation in core.cjs.
+    process.stderr.write(
+      `gsd: warning — unknown effort suffix "${suffix}" in "${label}". ` +
+      `Allowed efforts: ${[...EFFORT_TOKENS].join(', ')}. ` +
+      `Ignoring suffix and using model "${base}".\n`
+    );
   }
   return { model: base, effort: null };
+}
+
+// Internal helper exposed for tests so the module-level effort warn cache can be
+// reset between cases that intentionally exercise the warning path repeatedly.
+// Mirrors _resetEffortWarningCacheForTests in core.cjs (IN-03).
+export function _resetEffortWarningCacheForTests(): void {
+  _warnedEffortLabels.clear();
 }
