@@ -344,7 +344,15 @@ Plans:
   4. Every runtime outside `{claude, codex}` omits effort (hard no-op for the 8 null-tier runtimes)
   5. `model;effort` is accepted in `model_overrides.<agent>`, `models.<phase-type>`, and `model_profile_overrides.<runtime>`; config validation rejects/warns on malformed effort tokens consistent with existing tier-typo handling
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+**Wave 1**
+
+- [ ] 53-01-PLAN.md — Rewrite `resolveReasoningEffortInternal` as a unified `{claude,codex}` precedence chain on `_resolveAgentSlot` + static allowlist [RESOLVE-01..06, CONFIG-01, CONFIG-04]
+
+**Wave 2** *(blocked on 53-01)*
+
+- [ ] 53-02-PLAN.md — Config-site acceptance (`models.<phase-type>`, `model_profile_overrides.<runtime>`) + cross-resolver golden snapshot [CONFIG-02, CONFIG-03, CONFIG-04]
 
 #### Phase 54: SDK & Tools JSON Exposure
 
