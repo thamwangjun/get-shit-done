@@ -84,11 +84,12 @@ const RUNTIME_PROFILE_MAP = Object.fromEntries(
 );
 
 const KNOWN_RUNTIMES = new Set(Object.keys(catalog.runtimeTierDefaults));
-const RUNTIMES_WITH_REASONING_EFFORT = new Set(
-  Object.entries(catalog.runtimeTierDefaults)
-    .filter(([, tiers]) => Object.values(tiers).some((entry) => entry && entry.reasoning_effort))
-    .map(([runtime]) => runtime)
-);
+// Static capability allowlist: only these runtimes accept reasoning_effort on
+// their spawn path. A static literal is intentional (D-07 / RESOLVE-01) — the
+// data-derived scan auto-admitted any runtime that gained a reasoning_effort
+// field, which would silently leak effort to unsupported runtimes. Admitting
+// a new runtime here is the only way to enable effort propagation.
+const RUNTIMES_WITH_REASONING_EFFORT = new Set(['claude', 'codex']);
 
 function nextTier(currentTier) {
   const order = ['light', 'standard', 'heavy'];

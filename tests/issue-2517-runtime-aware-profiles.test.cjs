@@ -144,7 +144,10 @@ describe('issue #2517: runtime "claude" is a no-op for resolution (finding #4)',
     assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'claude-opus-4-7');
   });
 
-  test('reasoning_effort is null on Claude (never leaks)', () => {
+  test('bare-config Claude still omits effort (allowlist now admits claude, but the slot carries no ;effort)', () => {
+    // The {claude, codex} allowlist admits claude (Phase 53 / RESOLVE-01), but a bare
+    // config carries no ;effort suffix in any slot, so the resolver returns null.
+    // This is the back-compat invariant: effort: null everywhere on a bare catalog.
     writeConfig(tmpDir, { runtime: 'claude', model_profile: 'quality' });
     assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'gsd-planner'), null);
   });

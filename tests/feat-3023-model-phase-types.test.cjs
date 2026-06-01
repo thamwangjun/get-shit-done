@@ -342,9 +342,13 @@ describe('#3023 + #3030 CR: resolveReasoningEffortInternal honors phase-type tie
     assert.equal(resolveReasoningEffortInternal(projectDir, 'gsd-executor'), null);
   });
 
-  test('claude runtime ignores models.* for reasoning_effort (returns null)', () => {
+  test('bare-config Claude still omits effort (allowlist now admits claude, but slot carries no ;effort)', () => {
+    // The {claude, codex} allowlist admits claude (Phase 53 / RESOLVE-01), but a bare
+    // config carries no ;effort suffix in any slot — back-compat invariant holds.
+    // When the slot has no ;effort suffix, parseModelEffort returns effort: null and
+    // there is no Codex per-tier fallback on the claude path, so effort is null.
     writeConfig(projectDir, {
-      // No `runtime` set → defaults to claude, which has no reasoning_effort.
+      // No `runtime` set → defaults to claude path; bare slot → null effort.
       model_profile: 'balanced',
       models: { execution: 'opus' },
     });
