@@ -1301,9 +1301,21 @@ function resolveTierEntry({ runtime, tier, overrides }) {
   // String shorthand from CONFIGURATION.md examples — `{ codex: { opus: "gpt-5-pro" } }`.
   // Treat as `{ model: "gpt-5-pro" }` so the field-merge below still preserves
   // reasoning_effort from the built-in defaults.
+  // Phase 53 / CONFIG-03: when the string shorthand carries a ';effort' suffix
+  // (e.g. `{ codex: { opus: "gpt-5-pro;high" } }`), parse it via parseModelEffort
+  // so the effort is honoured as reasoning_effort and the clean model name is stored.
+  // A malformed suffix degrades to { model } with no reasoning_effort, preserving
+  // the built-in via field-merge (CONFIG-04 / D-05 — no separate reject pass).
   let userEntry = null;
   if (userRaw) {
-    userEntry = typeof userRaw === 'string' ? { model: userRaw } : userRaw;
+    if (typeof userRaw === 'string') {
+      const parsed = parseModelEffort(userRaw);
+      userEntry = parsed.effort !== null
+        ? { model: parsed.model, reasoning_effort: parsed.effort }
+        : { model: parsed.model };
+    } else {
+      userEntry = userRaw;
+    }
   }
 
   if (!builtin && !userEntry) return null;
