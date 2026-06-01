@@ -28,9 +28,9 @@ Requirements for milestone v2.1.0-e. Each maps to a roadmap phase. The work is *
 ### Config Overrides
 
 - [ ] **CONFIG-01**: `model_overrides.<agent>` accepts the `model;effort` form, parsed via `parseModelEffort` (bare fully-qualified IDs still omit effort)
-- [ ] **CONFIG-02**: `models.<phase-type>` accepts the `model;effort` form
-- [ ] **CONFIG-03**: `model_profile_overrides.<runtime>` accepts the `model;effort` form (string shorthand or entry object)
-- [ ] **CONFIG-04**: Config validation rejects/warns on malformed effort tokens (outside `{low, medium, high, xhigh, max}`), consistent with existing tier-typo handling
+- [x] **CONFIG-02**: `models.<phase-type>` accepts the `model;effort` form
+- [x] **CONFIG-03**: `model_profile_overrides.<runtime>` accepts the `model;effort` form (string shorthand or entry object)
+- [x] **CONFIG-04**: Config validation rejects/warns on malformed effort tokens (outside `{low, medium, high, xhigh, max}`), consistent with existing tier-typo handling
 
 ### Catalog Encoding
 
@@ -101,9 +101,9 @@ Populated during roadmap creation (2026-05-31). All 30 v1 requirements mapped to
 | RESOLVE-05 | Phase 53 | Pending |
 | RESOLVE-06 | Phase 53 | Pending |
 | CONFIG-01 | Phase 53 | Pending |
-| CONFIG-02 | Phase 53 | Pending |
-| CONFIG-03 | Phase 53 | Pending |
-| CONFIG-04 | Phase 53 | Pending |
+| CONFIG-02 | Phase 53 | Complete |
+| CONFIG-03 | Phase 53 | Complete |
+| CONFIG-04 | Phase 53 | Complete |
 | EXPOSE-01 | Phase 54 | Pending |
 | EXPOSE-02 | Phase 54 | Pending |
 | EXPOSE-03 | Phase 54 | Pending |
