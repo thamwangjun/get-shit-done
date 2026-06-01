@@ -53,7 +53,7 @@
  *   - PR #156 (issue #6) — validate.ts generator that #26 extends
  */
 
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile, writeFile, rename, unlink } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { requireFreshDist } from './_gen-helpers.mjs';
 
@@ -278,7 +278,19 @@ async function main() {
   const outPath = fileURLToPath(
     new URL('../../get-shit-done/bin/lib/validate.generated.cjs', import.meta.url),
   );
-  await writeFile(outPath, content, 'utf-8');
+  // Write atomically: write to a unique sibling temp path in the same directory
+  // (so rename stays on the same filesystem and is atomic), then rename over
+  // outPath. This prevents concurrent readers from observing a truncated/partial
+  // file mid-write during the parallel test suite (#260531-rej).
+  const tmpPath = `${outPath}.tmp-${process.pid}-${Date.now()}`;
+  try {
+    await writeFile(tmpPath, content, 'utf-8');
+    await rename(tmpPath, outPath);
+  } catch (err) {
+    // Best-effort cleanup of the temp file, then rethrow so main().catch exits 1.
+    await unlink(tmpPath).catch(() => {});
+    throw err;
+  }
   console.log(`Written: ${outPath}`);
 }
 

@@ -12,7 +12,7 @@
  * Or from repo root: node sdk/scripts/gen-configuration.mjs
  */
 
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, renameSync, unlinkSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { resolve, dirname } from 'node:path';
 import { requireFreshDist } from './_gen-helpers.mjs';
@@ -175,6 +175,20 @@ const _thisFile = fileURLToPath(import.meta.url);
 if (process.argv[1] === _thisFile) {
   const cjsOut = buildConfigurationCjs();
   const outPath = resolve(repoRoot, 'get-shit-done', 'bin', 'lib', 'configuration.generated.cjs');
-  writeFileSync(outPath, cjsOut, 'utf-8');
+  // Write atomically: write to a unique sibling temp path in the same directory
+  // (so rename stays on the same filesystem and is atomic), then rename over
+  // outPath. This prevents concurrent readers from observing a truncated/partial
+  // file mid-write during the parallel test suite (#260531-rej).
+  const tmpPath = `${outPath}.tmp-${process.pid}-${Date.now()}`;
+  try {
+    writeFileSync(tmpPath, cjsOut, 'utf-8');
+    renameSync(tmpPath, outPath);
+  } catch (err) {
+    // Best-effort cleanup of the temp file, then rethrow.
+    try {
+      unlinkSync(tmpPath);
+    } catch {}
+    throw err;
+  }
   console.log(`Generated: ${outPath}`);
 }
