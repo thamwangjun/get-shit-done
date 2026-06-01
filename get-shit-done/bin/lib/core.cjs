@@ -1345,15 +1345,22 @@ function _resolveAgentSlot(cwd, agentType) {
   const phaseTypeTier = (phaseType && config.models && typeof config.models === 'object')
     ? config.models[phaseType]
     : undefined;
-  // Only honor phase-type tier if it's one of the recognized aliases.
-  // 'inherit' is intentionally included here (model resolver's set) — the
-  // effort resolver layers its own opt-out on top in Phase 53.
+  // Only honor phase-type tier if the base alias (before any ';effort' suffix)
+  // is one of the recognized aliases. 'inherit' is intentionally included
+  // (model resolver's set) — the effort resolver layers its own opt-out in Phase 53.
+  // A 'model;effort' slot like "opus;high" is valid: its base alias 'opus' is
+  // recognized, and the full raw string is returned so the effort resolver can
+  // extract the ;effort suffix (D-08 / same-slot invariant).
   const VALID_TIERS = new Set(['opus', 'sonnet', 'haiku', 'inherit']);
+  // For a ';effort'-suffixed slot, validate only the base alias; return the
+  // full raw string intact so Phase 53 effort extraction can consume it.
+  const phaseTypeTierBase = phaseTypeTier ? parseModelEffort(phaseTypeTier).model : undefined;
+  const phaseTypeTierValid = phaseTypeTier && VALID_TIERS.has(phaseTypeTierBase);
   // CR Major (#3030): honor phase-type tier when valid; otherwise synthesize
   // 'inherit' only when profile==='inherit' (no phase-type override present)
   // so a config like { model_profile:'inherit', models:{execution:'opus'} }
   // correctly returns 'opus' not 'inherit'.
-  return (phaseTypeTier && VALID_TIERS.has(phaseTypeTier))
+  return phaseTypeTierValid
     ? phaseTypeTier
     : (profile === 'inherit'
       ? 'inherit'
@@ -1521,64 +1528,65 @@ function resolveModelForTier(cwd, agentType, attempt) {
 }
 
 /**
- * #2517 — Resolve runtime-specific reasoning_effort for an agent.
- * Returns null unless:
- *   - `runtime` is explicitly set in config,
- *   - the runtime supports reasoning_effort (currently: codex),
- *   - profile is not 'inherit',
- *   - the resolved tier entry has a `reasoning_effort` value.
+ * #2517 / Phase 53 — Resolve runtime-specific reasoning_effort for an agent.
  *
- * Never returns a value for Claude — keeps reasoning_effort out of Claude spawn paths.
+ * Unified precedence chain mirroring resolveModelInternal on the shared
+ * _resolveAgentSlot helper (D-08 / #3023 same-slot invariant):
+ *
+ *   0. Outermost gate: runtime must be in the {claude, codex} static allowlist
+ *      (D-02 / RESOLVE-05). Runs before any override emit — absolute.
+ *   1. Per-agent override: model_overrides[agentType] parsed by parseModelEffort;
+ *      returns .effort (null for bare overrides — natural from parseModelEffort).
+ *      Removes old early-null (D-01 / CONFIG-01).
+ *   2. Shared slot: _resolveAgentSlot(cwd, agentType) → raw tier/slot string.
+ *      inherit/null → return null (RESOLVE-06).
+ *   3. Slot effort (same-slot invariant, D-08): parseModelEffort(tier).effort.
+ *      Non-null → return it (slot effort wins; RESOLVE-03).
+ *      max returned verbatim — no resolver clamp (D-03 / RESOLVE-04).
+ *   4. Codex per-tier fallback (RESOLVE-03): _resolveRuntimeTier entry's
+ *      reasoning_effort. Used only when the slot carried no ;effort suffix.
+ *      Pass parsed .model (bare alias) to _resolveRuntimeTier — not the raw
+ *      ';effort' slot string (D-06 step 3).
+ *
+ * Back-compat invariant: bare configs (no ;effort in any slot) → effort null.
  */
 function resolveReasoningEffortInternal(cwd, agentType) {
   const config = loadConfig(cwd);
-  if (!config.runtime) return null;
-  // Strict allowlist: reasoning_effort only propagates for runtimes whose
-  // install path actually accepts it. Adding a new runtime here is the only
-  // way to enable effort propagation — overrides cannot bypass the gate.
-  // Without this, a typo in `runtime` (e.g. `"codx"`) plus a user override
-  // for that typo would leak `xhigh` into a Claude or unknown install
-  // (review finding #3).
-  if (!RUNTIMES_WITH_REASONING_EFFORT.has(config.runtime)) return null;
-  // Per-agent override means user supplied a fully-qualified ID; reasoning_effort
-  // for that case must be set via per-agent mechanism, not tier inference.
-  if (config.model_overrides?.[agentType]) return null;
 
-  const profile = String(config.model_profile || 'balanced').toLowerCase();
-  const agentModels = MODEL_PROFILES[agentType];
-  if (!agentModels) return null;
+  // 0. Outermost allowlist gate (D-02 / RESOLVE-05): absolute, runs before
+  //    override emit. A non-{claude,codex} install with model_overrides ;effort
+  //    still returns null — overrides cannot bypass this gate.
+  if (!config.runtime || !RUNTIMES_WITH_REASONING_EFFORT.has(config.runtime)) return null;
 
-  // #3023 (CR Major): mirror the phase-type tier lookup from
-  // resolveModelInternal. Without this, `model` and `reasoning_effort`
-  // derive from different tier sources on Codex when models.<phase_type>
-  // overrides the profile.
-  //
-  // #3030 CR follow-up: do NOT short-circuit on profile === 'inherit'
-  // before reading the phase-type tier. A config like
-  //   { model_profile: 'inherit', models: { execution: 'opus' } }
-  // must produce the opus runtime effort, not null. Compute tier from
-  // phase-type first; only fall back to profile when there's no valid
-  // phase-type override; only return null when the resolved tier is
-  // 'inherit' or unknown.
-  const phaseType = AGENT_TO_PHASE_TYPE[agentType];
-  const phaseTypeTier = (phaseType && config.models && typeof config.models === 'object')
-    ? config.models[phaseType]
-    : undefined;
-  // Explicit phase-type 'inherit' is the user opting out of tier-based
-  // effort for this phase — return null instead of falling through to
-  // profile (which would silently emit the profile's effort and
-  // contradict the user's choice).
-  if (phaseTypeTier === 'inherit') return null;
-  const VALID_TIERS = new Set(['opus', 'sonnet', 'haiku']);
-  const tier = (phaseTypeTier && VALID_TIERS.has(phaseTypeTier))
-    ? phaseTypeTier
-    : (profile === 'inherit'
-      ? 'inherit'
-      : (agentModels[profile] || agentModels['balanced']));
-  // 'inherit' (from profile fallback) yields no runtime effort.
+  // 1. Per-agent override — highest precedence within the gate.
+  //    Parse through parseModelEffort so a 'model;effort' override emits the
+  //    effort, and a bare override (no ';') naturally yields effort: null (D-01).
+  //    The old early-null ("any override → omit effort") is intentionally removed.
+  const override = config.model_overrides?.[agentType];
+  if (override) {
+    return parseModelEffort(override).effort;
+  }
+
+  // 2. Shared slot derivation — _resolveAgentSlot owns the phase-type lookup
+  //    and profile fallback (D-08: eliminates duplicated tier re-derivation).
+  //    The returned string may carry a ';effort' suffix (e.g. "opus;high").
+  const tier = _resolveAgentSlot(cwd, agentType);
+
+  // RESOLVE-06: inherit/unknown resolved tier → no effort.
   if (!tier || tier === 'inherit') return null;
 
-  const entry = _resolveRuntimeTier(config, tier);
+  // 3. Slot effort (same-slot invariant / D-06 step 2): take the effort from
+  //    the same slot that drove model resolution — eliminates #3023 divergence.
+  //    Malformed suffixes warn once and degrade to null (D-05 / CONFIG-04).
+  //    max is returned verbatim — no max→xhigh clamp here (D-03 / RESOLVE-04).
+  const slotEffort = parseModelEffort(tier).effort;
+  if (slotEffort !== null) return slotEffort;
+
+  // 4. Codex per-tier fallback (RESOLVE-03 / D-06 step 3): used ONLY when the
+  //    slot carried no ;effort suffix. Parse the bare tier alias from the slot
+  //    so _resolveRuntimeTier receives a clean tier string, not a ';'-suffixed one.
+  const bareTier = parseModelEffort(tier).model;
+  const entry = _resolveRuntimeTier(config, bareTier);
   return entry?.reasoning_effort || null;
 }
 
