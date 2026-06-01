@@ -18,16 +18,16 @@ Requirements for milestone v2.1.0-e. Each maps to a roadmap phase. The work is *
 
 ### Effort Resolution
 
-- [ ] **RESOLVE-01**: The effort resolver emits effort for the `claude` runtime — the Claude gate is lifted via an explicit `{claude, codex}` allowlist, never a data-derived "any tier carrying reasoning_effort" set
-- [ ] **RESOLVE-02**: Effort resolution follows the same precedence chain as model: per-agent override → phase-type slot → profile slot → adaptiveTierMap → omit
-- [ ] **RESOLVE-03**: Profile-slot effort overrides Codex `runtimeTierDefaults.codex.reasoning_effort`; the per-tier Codex value is used only as fallback when the resolved slot carries no effort suffix
-- [ ] **RESOLVE-04**: `max` effort maps to `xhigh` when emitted for Codex, and `xhigh` is never emitted for the Codex haiku tier (`gpt-5.4-mini`)
-- [ ] **RESOLVE-05**: Runtimes outside the `{claude, codex}` allowlist always omit effort (hard no-op for the 8 null-tier runtimes)
-- [ ] **RESOLVE-06**: The `inherit` profile and bare adaptive entries omit effort
+- [x] **RESOLVE-01**: The effort resolver emits effort for the `claude` runtime — the Claude gate is lifted via an explicit `{claude, codex}` allowlist, never a data-derived "any tier carrying reasoning_effort" set
+- [x] **RESOLVE-02**: Effort resolution follows the same precedence chain as model: per-agent override → phase-type slot → profile slot → adaptiveTierMap → omit
+- [x] **RESOLVE-03**: Profile-slot effort overrides Codex `runtimeTierDefaults.codex.reasoning_effort`; the per-tier Codex value is used only as fallback when the resolved slot carries no effort suffix
+- [x] **RESOLVE-04**: `max` effort maps to `xhigh` when emitted for Codex, and `xhigh` is never emitted for the Codex haiku tier (`gpt-5.4-mini`)
+- [x] **RESOLVE-05**: Runtimes outside the `{claude, codex}` allowlist always omit effort (hard no-op for the 8 null-tier runtimes)
+- [x] **RESOLVE-06**: The `inherit` profile and bare adaptive entries omit effort
 
 ### Config Overrides
 
-- [ ] **CONFIG-01**: `model_overrides.<agent>` accepts the `model;effort` form, parsed via `parseModelEffort` (bare fully-qualified IDs still omit effort)
+- [x] **CONFIG-01**: `model_overrides.<agent>` accepts the `model;effort` form, parsed via `parseModelEffort` (bare fully-qualified IDs still omit effort)
 - [x] **CONFIG-02**: `models.<phase-type>` accepts the `model;effort` form
 - [x] **CONFIG-03**: `model_profile_overrides.<runtime>` accepts the `model;effort` form (string shorthand or entry object)
 - [x] **CONFIG-04**: Config validation rejects/warns on malformed effort tokens (outside `{low, medium, high, xhigh, max}`), consistent with existing tier-typo handling
@@ -94,13 +94,13 @@ Populated during roadmap creation (2026-05-31). All 30 v1 requirements mapped to
 | PARSE-02 | Phase 52 | Complete |
 | PARSE-03 | Phase 52 | Complete |
 | PARSE-04 | Phase 52 | Complete |
-| RESOLVE-01 | Phase 53 | Pending |
-| RESOLVE-02 | Phase 53 | Pending |
-| RESOLVE-03 | Phase 53 | Pending |
-| RESOLVE-04 | Phase 53 | Pending |
-| RESOLVE-05 | Phase 53 | Pending |
-| RESOLVE-06 | Phase 53 | Pending |
-| CONFIG-01 | Phase 53 | Pending |
+| RESOLVE-01 | Phase 53 | Complete |
+| RESOLVE-02 | Phase 53 | Complete |
+| RESOLVE-03 | Phase 53 | Complete |
+| RESOLVE-04 | Phase 53 | Complete |
+| RESOLVE-05 | Phase 53 | Complete |
+| RESOLVE-06 | Phase 53 | Complete |
+| CONFIG-01 | Phase 53 | Complete |
 | CONFIG-02 | Phase 53 | Complete |
 | CONFIG-03 | Phase 53 | Complete |
 | CONFIG-04 | Phase 53 | Complete |

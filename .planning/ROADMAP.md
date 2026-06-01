@@ -489,7 +489,7 @@ Plans:
 | 50. Maintenance Script and Cross-Ref Scanner | v2.1.0-d | 3/3 | Complete | 2026-05-30 |
 | 51. Quality Gate | v2.1.0-d | 1/1 | Complete | 2026-05-31 |
 | 52. Parser Foundation | v2.1.0-e | 3/3 | Complete    | 2026-05-31 |
-| 53. Unified Effort Resolver | v2.1.0-e | 2/2 | Complete   | 2026-06-01 |
+| 53. Unified Effort Resolver | v2.1.0-e | 2/2 | Complete    | 2026-06-01 |
 | 54. SDK & Tools JSON Exposure | v2.1.0-e | 0/TBD | Not started | - |
 | 55. Catalog Schema + User Handover | v2.1.0-e | 0/TBD | Not started | - |
 | 56. Spawn-Template Wiring | v2.1.0-e | 0/TBD | Not started | - |
