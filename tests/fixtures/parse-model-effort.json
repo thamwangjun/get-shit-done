@@ -6,5 +6,9 @@
   { "input": "opus;xhigh", "expectedModel": "opus", "expectedEffort": "xhigh" },
   { "input": "opus;max", "expectedModel": "opus", "expectedEffort": "max" },
   { "input": "openrouter:anthropic/claude-opus", "expectedModel": "openrouter:anthropic/claude-opus", "expectedEffort": null },
-  { "input": "opus;hihg", "expectedModel": "opus", "expectedEffort": null }
+  { "input": "opus;hihg", "expectedModel": "opus", "expectedEffort": null },
+  { "input": "a;b;high", "expectedModel": "a;b", "expectedEffort": "high" },
+  { "input": "a;b;hihg", "expectedModel": "a;b", "expectedEffort": null },
+  { "input": "opus;", "expectedModel": "opus", "expectedEffort": null },
+  { "input": "", "expectedModel": "", "expectedEffort": null }
 ]
