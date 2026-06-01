@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-05-31 after Phase 51)
 Phase: 53
 Plan: Not started
 Status: Executing Phase 52
-Last activity: 2026-05-31 - Completed quick task 260531-rej: atomic write in gen-project-root.mjs fixes parallel-test race
+Last activity: 2026-06-01 - Completed quick task 260601-bfj: atomic writes in remaining 8 gen-*.mjs fix flaky scaffolds-context-file test
 
 ## Performance Metrics
 
@@ -81,6 +81,7 @@ None. Research is HIGH confidence. Two plan-time verification flags noted above 
 | 260531-ncu | Add precise INTG-02 allowlist for deliberate bare-line @~ refs; verify + mark W016 deferred item resolved | 2026-05-31 | 4b8fcba2 | [260531-ncu-address-intg-02-test-exclusion-list-todo](./quick/260531-ncu-address-intg-02-test-exclusion-list-todo/) |
 | 260531-qqo | Fix npm test failures from recent quick tasks: ai-evals W016 tests (separate HOME dir) + delete obsolete CONTEXT_WINDOW tests | 2026-05-31 | 4593ed5e | [260531-qqo-fix-npm-test-failures-introduced-by-rece](./quick/260531-qqo-fix-npm-test-failures-introduced-by-rece/) |
 | 260531-rej | Fix parallel-test race: gen-project-root.mjs now writes project-root.generated.cjs atomically (temp + rename), eliminating intermittent `findProjectRoot is not a function` | 2026-05-31 | 67a55407 | [260531-rej-fix-race-condition-in-gen-project-root-m](./quick/260531-rej-fix-race-condition-in-gen-project-root-m/) |
+| 260601-bfj | Fix flaky `scaffolds context file` test: make all 8 remaining gen-*.mjs writes atomic (temp + rename), eliminating the truncate race that crashed concurrent require() of configuration.generated.cjs | 2026-06-01 | 60f12a5a | [260601-bfj-root-cause-and-fix-the-flaky-scaffolds-c](./quick/260601-bfj-root-cause-and-fix-the-flaky-scaffolds-c/) |
 
 ## Session Continuity
 
