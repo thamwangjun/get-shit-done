@@ -25,7 +25,16 @@ interface ModelCatalog {
 }
 
 const CATALOG_PATH = new URL('../shared/model-catalog.json', import.meta.url);
-export const catalog: ModelCatalog = JSON.parse(readFileSync(fileURLToPath(CATALOG_PATH), 'utf-8'));
+let _catalog: ModelCatalog;
+try {
+  _catalog = JSON.parse(readFileSync(fileURLToPath(CATALOG_PATH), 'utf-8'));
+} catch (e) {
+  throw new Error(
+    `GSD: Failed to load model-catalog.json from ${String(CATALOG_PATH)}. ` +
+    `Run npm run build to regenerate. Original error: ${e}`
+  );
+}
+export const catalog: ModelCatalog = _catalog;
 
 export const VALID_PROFILES: string[] = [...catalog.profiles];
 export const SUPPORTED_RUNTIMES = Object.keys(catalog.runtimeTierDefaults);
