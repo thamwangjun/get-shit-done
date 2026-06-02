@@ -67,6 +67,31 @@ export const READ_ONLY_JSON_PARITY_ROWS: JsonParityRow[] = [
   // Volatile keys (project_root, agents_installed, missing_agents, project_title)
   // are stripped by omitInitExecutePhaseVolatile before toEqual.
   { canonical: 'init.execute-phase', sdkArgs: ['9'], cjs: 'init', cjsArgs: ['execute-phase', '9'] },
+
+  // IN-02: parity rows for newly ported init handlers.
+  // Phase 9 exists across all branches and provides deterministic model/effort fields.
+  // Handlers that emit volatile fields (project_root, timestamp) require a normalizer
+  // in the integration test — those are documented below with their normalizer needs.
+  { canonical: 'init.plan-phase', sdkArgs: ['9'], cjs: 'init', cjsArgs: ['plan-phase', '9'] },
+  // init.quick emits quick_id + timestamp — volatile; requires omitInitQuickVolatile in test.
+  { canonical: 'init.quick', sdkArgs: ['9', '--task', 'parity-test'], cjs: 'init', cjsArgs: ['quick', '9', '--task', 'parity-test'] },
+  { canonical: 'init.todos', sdkArgs: [], cjs: 'init', cjsArgs: ['todos'] },
+  // init.milestone-op emits phase counts — deterministic on fixed repo state.
+  { canonical: 'init.milestone-op', sdkArgs: [], cjs: 'init', cjsArgs: ['milestone-op'] },
+  // init.verify-work requires a phase on disk; phase 9 exists.
+  { canonical: 'init.verify-work', sdkArgs: ['9'], cjs: 'init', cjsArgs: ['verify-work', '9'] },
+  // init.resume emits state snapshot — deterministic on fixed repo state.
+  { canonical: 'init.resume', sdkArgs: [], cjs: 'init', cjsArgs: ['resume'] },
+  // init.progress emits phase list + milestone info — deterministic.
+  { canonical: 'init.progress', sdkArgs: [], cjs: 'init', cjsArgs: ['progress'] },
+  // init.manager emits recommended actions + phases — deterministic on fixed repo state.
+  { canonical: 'init.manager', sdkArgs: [], cjs: 'init', cjsArgs: ['manager'] },
+  // init.map-codebase emits mapper model/effort — deterministic.
+  { canonical: 'init.map-codebase', sdkArgs: [], cjs: 'init', cjsArgs: ['map-codebase'] },
+  // init.phase-op emits phase status metadata — deterministic on fixed repo state.
+  { canonical: 'init.phase-op', sdkArgs: ['9'], cjs: 'init', cjsArgs: ['phase-op', '9'] },
+  // init.new-milestone emits milestone + model/effort fields — deterministic.
+  { canonical: 'init.new-milestone', sdkArgs: [], cjs: 'init', cjsArgs: ['new-milestone'] },
 ];
 
 /** Canonicals from JSON rows plus special-case subprocess tests in read-only-parity integration. */
@@ -81,5 +106,7 @@ export function readOnlyGoldenCanonicals(): Set<string> {
   s.add('summary.extract');
   // init.execute-phase uses a volatile-strip test block (not the generic toEqual loop).
   s.add('init.execute-phase');
+  // IN-02: init.quick uses omitInitQuickVolatile in a dedicated volatile-strip test block.
+  s.add('init.quick');
   return s;
 }
