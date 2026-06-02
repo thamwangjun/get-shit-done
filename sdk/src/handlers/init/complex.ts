@@ -41,6 +41,7 @@ import {
   extractPhasesFromSection,
 } from '../../query/roadmap.js';
 import { agentSkills } from '../../query/skills.js';
+import { getMilestonePhaseFilter } from '../../query/state.js';
 import { withProjectRoot } from './composer.js';
 import type { QueryHandler } from '../../query/utils.js';
 
@@ -568,11 +569,14 @@ export const initManager: QueryHandler = async (_args, projectDir, workstream) =
 
   const content = await extractCurrentMilestone(rawContent, projectDir, workstream);
 
-  // Pre-compute directory listing once
+  // Pre-compute directory listing once, filtered to the current milestone
+  // (parity with CJS cmdInitManager getMilestonePhaseFilter call at init.cjs:1162)
+  // to prevent phases from prior milestones from contaminating disk-status lookups.
   let phaseDirEntries: string[] = [];
   try {
+    const isDirInMilestone = await getMilestonePhaseFilter(projectDir, workstream);
     phaseDirEntries = readdirSync(paths.phases, { withFileTypes: true })
-      .filter(e => e.isDirectory())
+      .filter(e => e.isDirectory() && isDirInMilestone(e.name))
       .map(e => e.name);
   } catch { /* intentionally empty */ }
 
