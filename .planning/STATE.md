@@ -92,3 +92,4 @@ Resume file: None
 ## Operator Next Steps
 
 - Plan the first phase with `/gsd-plan-phase 52`
+| 11 | commit uncommitted changes (config model_profile→balanced) | 2026-06-02 | 97265342 | — |
