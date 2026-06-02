@@ -247,7 +247,7 @@ function cmdResolveModel(cwd, agentType, raw) {
   const result = agentModels
     ? { model, profile }
     : { model, profile, unknown_agent: true };
-  if (reasoningEffort) result.reasoning_effort = reasoningEffort;
+  result.effort = reasoningEffort ?? null;
   output(result, raw, model);
 }
 
