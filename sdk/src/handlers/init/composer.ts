@@ -92,64 +92,8 @@ function pathExists(base: string, relPath: string): boolean {
   return existsSync(join(base, relPath));
 }
 
-/**
- * Bug #3491: detect whether `base` is inside any git worktree, and if so,
- * return the absolute worktree root. Mirrors the CJS `gitWorktreeInfoInternal`
- * in get-shit-done/bin/lib/core.cjs — keep these two implementations behaviour-
- * identical so the SDK and CJS init handlers emit the same has_git semantics.
- *
- * Returns { inside, worktreeRoot } — both fall back to false/null on any error
- * (git unavailable, not a repo, timeout) so callers see the conservative
- * default that preserves pre-fix behaviour for non-git environments.
- */
-function gitWorktreeInfo(base: string): { inside: boolean; worktreeRoot: string | null } {
-  try {
-    const inside = execSync('git rev-parse --is-inside-work-tree', {
-      cwd: base,
-      stdio: ['ignore', 'pipe', 'ignore'],
-      encoding: 'utf-8',
-      timeout: 5000,
-      env: { ...process.env, GIT_TERMINAL_PROMPT: '0' },
-    }).trim();
-    if (inside !== 'true') return { inside: false, worktreeRoot: null };
-    try {
-      const root = execSync('git rev-parse --show-toplevel', {
-        cwd: base,
-        stdio: ['ignore', 'pipe', 'ignore'],
-        encoding: 'utf-8',
-        timeout: 5000,
-        env: { ...process.env, GIT_TERMINAL_PROMPT: '0' },
-      }).trim();
-      return { inside: true, worktreeRoot: root || null };
-    } catch {
-      return { inside: true, worktreeRoot: null };
-    }
-  } catch {
-    return { inside: false, worktreeRoot: null };
-  }
-}
-
-function detectNestedSubdir(base: string, info: { inside: boolean; worktreeRoot: string | null }): boolean {
-  if (!info.inside) return false;
-  try {
-    const prefix = execSync('git rev-parse --show-prefix', {
-      cwd: base,
-      stdio: ['ignore', 'pipe', 'ignore'],
-      encoding: 'utf-8',
-      timeout: 5000,
-      env: { ...process.env, GIT_TERMINAL_PROMPT: '0' },
-    }).trim().replace(/\\/g, '/');
-    if (prefix.length > 0) return prefix !== '.' && prefix !== './';
-    return false;
-  } catch {}
-
-  if (!info.worktreeRoot) return false;
-  const normalize = (p: string) => p.replace(/\\/g, '/').replace(/\/+$/g, '').toLowerCase();
-  const root = normalize(info.worktreeRoot);
-  const cwd = normalize(base);
-  return root !== cwd;
-}
-
+// WR-06: gitWorktreeInfo and detectNestedSubdir extracted to shared module.
+import { gitWorktreeInfo, detectNestedSubdir } from './git-helpers.js';
 
 /**
  * Compute the canonical phase directory name for a known phase entry from the
