@@ -549,7 +549,9 @@ export const initManager: QueryHandler = async (_args, projectDir, workstream) =
 
     const sectionStart = pMatch.index;
     const restOfContent = content.slice(sectionStart);
-    const nextHeader = restOfContent.match(/\n#{2,4}\s+Phase\s+\d/i);
+    // Issue #3691: also match decimal phase headings (e.g. "Phase 2.1") to
+    // prevent section bleed from "Phase 2" into adjacent "Phase 2.1" content.
+    const nextHeader = restOfContent.match(/\n#{2,4}\s+Phase\s+\d[\d.]*/i);
     const sectionEnd = nextHeader ? sectionStart + (nextHeader.index ?? 0) : content.length;
     const section = content.slice(sectionStart, sectionEnd);
 
