@@ -69,7 +69,12 @@ const AGENT_DEFAULT_TIERS = Object.fromEntries(
 );
 
 const MODEL_ALIAS_MAP = Object.fromEntries(
-  Object.entries(catalog.runtimeTierDefaults.claude).map(([tier, entry]) => [tier, entry?.model])
+  Object.entries(catalog.runtimeTierDefaults.claude)
+    // Drop entries lacking a `model` field so the table never carries
+    // `undefined` values (IN-02, #3023). Mirrors the RUNTIME_PROFILE_MAP
+    // filter below and keeps formatAgentToModelMapAsTable crash-free (WR-02).
+    .filter(([, entry]) => entry?.model)
+    .map(([tier, entry]) => [tier, entry.model])
 );
 
 const RUNTIME_PROFILE_MAP = Object.fromEntries(
