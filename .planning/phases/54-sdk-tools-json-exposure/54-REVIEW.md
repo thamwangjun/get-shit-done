@@ -1,98 +1,115 @@
 ---
 phase: 54-sdk-tools-json-exposure
-reviewed: 2026-06-02T10:30:00Z
+reviewed: 2026-06-02T12:00:00Z
 depth: standard
-files_reviewed: 8
+files_reviewed: 14
 files_reviewed_list:
   - get-shit-done/bin/lib/init.cjs
   - get-shit-done/bin/lib/commands.cjs
+  - tests/init.test.cjs
+  - tests/commands.test.cjs
+  - tests/core.test.cjs
+  - sdk/src/query/resolve-model-effort.test.ts
   - sdk/src/model-catalog.ts
   - sdk/src/query/config-query.ts
+  - sdk/src/query/config-query.test.ts
   - sdk/src/handlers/init/composer.ts
   - sdk/src/handlers/init/complex.ts
   - sdk/src/golden/init-golden-normalize.ts
   - sdk/src/golden/read-only-golden-rows.ts
+  - sdk/src/golden/read-only-parity.integration.test.ts
 findings:
-  critical: 2
-  warning: 5
-  info: 2
-  total: 9
+  critical: 3
+  warning: 7
+  info: 4
+  total: 14
 status: issues_found
 ---
 
 # Phase 54: Code Review Report
 
-**Reviewed:** 2026-06-02T10:30:00Z
+**Reviewed:** 2026-06-02
 **Depth:** standard
-**Files Reviewed:** 8
+**Files Reviewed:** 14
 **Status:** issues_found
 
 ## Summary
 
-This phase adds `*_effort` siblings to all `init` command builders (EXPOSE-01) and makes `cmdResolveModel` always emit a canonical `effort` field (EXPOSE-02). The CJS layer (`init.cjs`, `commands.cjs`) and the SDK port layer (`composer.ts`, `complex.ts`, `config-query.ts`, `model-catalog.ts`) were both modified. The effort-exposure work itself is clean and correct. The review surfaces two pre-existing security/correctness bugs that this phase's code touches, plus several CJS/SDK behavioral divergences in the `initManager` port that were introduced or exposed by this work.
+This phase ports 16 CJS `init.cjs` handlers to the SDK layer (`composer.ts`, `complex.ts`), exposes `*_effort` sibling fields via `resolveModel`, adds a static `runtimesWithReasoningEffort` allowlist, and validates CJS↔SDK JSON parity through new golden tests. The effort-exposure work itself is clean and correctly implemented. Three critical issues were found: a path-traversal gap in CJS `cmdInitRemoveWorkspace` that the SDK port correctly fixed but left unpatched in the CJS layer; a backlog-exclusion bug in `initManager` that makes `all_complete` permanently false when any 999.x phase exists; and a missing `deps_satisfied` guard in `is_next_to_discuss` that causes the SDK to recommend blocked phases. Seven warnings cover parity gaps between the SDK port and the CJS original.
 
 ---
 
 ## Critical Issues
 
-### CR-01: `cmdInitRemoveWorkspace` in `init.cjs` — no path traversal check on workspace name
+### CR-01: `cmdInitRemoveWorkspace` (CJS) — no path traversal guard on workspace name
 
 **File:** `get-shit-done/bin/lib/init.cjs:1707`
-**Issue:** The `name` parameter is passed directly to `path.join(defaultBase, name)` without any validation. A caller can supply a name containing `..`, `/`, or `\` to escape `~/gsd-workspaces/` and read git status or probe arbitrary paths. The SDK port (`composer.ts:1296`) correctly rejects such names with `T-14-01` validation, but the CJS implementation that is still exercised by non-SDK dispatch lacks this guard entirely.
+**Issue:** The `name` parameter is passed directly to `path.join(defaultBase, name)` at line 1707 without validation. A caller supplying `name = "../../etc"` would resolve outside `~/gsd-workspaces/` and probe arbitrary paths via `execGit(['status', '--porcelain'], { cwd: repoPath })` at line 1740. The SDK port at `composer.ts:1296-1301` correctly rejects such names, but the CJS layer — which is still the primary dispatch path for non-SDK callers — lacks this guard entirely.
 
-**Fix:**
+**Fix** (init.cjs, after the `if (!name)` guard at line 1703):
 ```javascript
-function cmdInitRemoveWorkspace(cwd, name, raw) {
-  const homedir = process.env.HOME || require('os').homedir();
-  const defaultBase = path.join(homedir, 'gsd-workspaces');
-
-  if (!name) {
-    error('workspace name required for init remove-workspace');
-  }
-
-  // T-14-01: Reject path traversal attempts (mirrors SDK composer.ts:1296)
-  if (name.includes('/') || name.includes('\\') || name.includes('..')) {
-    error(`Invalid workspace name: ${name} (path separators not allowed)`);
-  }
-
-  const wsPath = path.join(defaultBase, name);
-  // ... rest unchanged
+// T-14-01: Reject path traversal attempts (mirrors SDK composer.ts:1296-1301)
+if (name.includes('/') || name.includes('\\') || name.includes('..')) {
+  error(`Invalid workspace name: ${name} (path separators not allowed)`);
+}
 ```
 
 ---
 
-### CR-02: `initManager` SDK — `all_complete` and `completed_count` include backlog (999.x) phases
+### CR-02: `initManager` (SDK) — `all_complete` and `completed_count` include 999.x backlog phases
 
-**File:** `sdk/src/handlers/init/complex.ts:769-829`
-**Issue:** `completedCount` is computed as `phases.filter(p => p.disk_status === 'complete').length` over the full `phases` array, which includes backlog phases numbered `999.x`. The `all_complete` field then compares this count against the total phases (also including backlog), so a project with an undiscussed `999.x` parking-lot phase will never reach `all_complete: true` even when all real work is shipped. The CJS implementation explicitly excludes backlog phases via `nonBacklogPhases` (#2129).
+**File:** `sdk/src/handlers/init/complex.ts:769`
+**Issue:** `completedCount` is computed over the full `phases` array including backlog phases (`999.x` numbered). The `all_complete` comparison also uses the raw `phases.length`. The CJS `cmdInitManager` explicitly excludes backlog phases via the `nonBacklogPhases` filter (init.cjs:1399-1400), citing issue #2129. A project with any undiscussed `999.x` parking-lot phase will never reach `all_complete: true` even after all real work ships, and `completed_count` will under-report. This is a behavioral regression from the CJS contract.
 
 **Fix:**
 ```typescript
-// In initManager (complex.ts), replace:
-const completedCount = phases.filter(p => p.disk_status === 'complete').length;
-
-// With (mirrors CJS cmdInitManager lines 1398-1400):
+// Replace lines 769-829 result object with:
 const nonBacklogPhases = phases.filter(p => !/^999(?:\.|$)/.test(p.number as string));
 const completedCount = nonBacklogPhases.filter(p => p.disk_status === 'complete').length;
 
-// And in the result object:
+// In the result:
+completed_count: completedCount,
 all_complete: completedCount === nonBacklogPhases.length && nonBacklogPhases.length > 0,
+```
+
+---
+
+### CR-03: `initManager` (SDK) — `is_next_to_discuss` set without `deps_satisfied` guard
+
+**File:** `sdk/src/handlers/init/complex.ts:694-696`
+**Issue:** The SDK sets `is_next_to_discuss` based solely on disk status:
+```typescript
+phase.is_next_to_discuss = (status === 'empty' || status === 'no_directory');
+```
+The CJS sets it with a `deps_satisfied` conjunction (init.cjs:1311-1314):
+```javascript
+phase.is_next_to_discuss =
+  (phase.disk_status === 'empty' || phase.disk_status === 'no_directory') &&
+  phase.deps_satisfied;
+```
+The `discuss` action is later appended for any phase where `is_next_to_discuss` is true. Without the guard, the SDK recommends discussing phases whose dependencies have not completed, causing the `/gsd-manager` dashboard to suggest starting blocked work. The golden parity row for `init.manager` is absent from `READ_ONLY_JSON_PARITY_ROWS`, so this divergence is not caught by CI.
+
+**Fix:**
+```typescript
+for (const phase of phases) {
+  const status = phase.disk_status as string;
+  phase.is_next_to_discuss =
+    (status === 'empty' || status === 'no_directory') &&
+    !!(phase.deps_satisfied);
+}
 ```
 
 ---
 
 ## Warnings
 
-### WR-01: `initManager` SDK — `phaseDirEntries` not filtered by current milestone
+### WR-01: `initManager` (SDK) — `phaseDirEntries` not filtered by current milestone
 
 **File:** `sdk/src/handlers/init/complex.ts:572-576`
-**Issue:** The SDK builds `phaseDirEntries` from all subdirectories under `paths.phases` with no milestone filter. The CJS `cmdInitManager` applies `isDirInMilestone = getMilestonePhaseFilter(cwd)` at line 1213 before looking up phase directories, preventing phases from prior milestones (not yet archived) from contaminating the current milestone's disk status. The SDK would wrongly match a phase number that was reused across milestones, reporting the old milestone's directory as the live phase.
+**Issue:** Phase directories are collected from all subdirs under `paths.phases` with no milestone filter. The CJS `cmdInitManager` applies `getMilestonePhaseFilter(cwd)` (init.cjs:1162) before looking up phase directories, preventing phases from prior milestones (not yet archived) from contaminating the current milestone's disk-status lookup. The SDK would wrongly match a phase number reused across milestones, reporting the old milestone's directory as the live phase.
 
 **Fix:**
 ```typescript
-// After loading phaseDirEntries, apply milestone filter:
-import { getMilestonePhaseFilter } from '../../query/state.js';
-
 const isDirInMilestone = await getMilestonePhaseFilter(projectDir, workstream);
 phaseDirEntries = readdirSync(paths.phases, { withFileTypes: true })
   .filter(e => e.isDirectory() && isDirInMilestone(e.name))
@@ -101,10 +118,10 @@ phaseDirEntries = readdirSync(paths.phases, { withFileTypes: true })
 
 ---
 
-### WR-02: `initManager` SDK — `state_exists: true` hardcoded without checking STATE.md
+### WR-02: `initManager` (SDK) — `state_exists: true` hardcoded unconditionally
 
 **File:** `sdk/src/handlers/init/complex.ts:835`
-**Issue:** The result object emits `state_exists: true` unconditionally. CJS `cmdInitManager` at line 1157 gates the handler with `error()` if STATE.md is missing, and all other init handlers compute `state_exists` dynamically. While the CJS also errors on missing STATE.md (so the field normally would be true), the hardcoded value means downstream consumers who rely on this field — or who call the SDK directly — would receive incorrect data if STATE.md was deleted mid-workflow.
+**Issue:** The result emits `state_exists: true` unconditionally. All other init handlers compute this field dynamically with `existsSync(paths.state)`. While the CJS guards entry with `error()` if STATE.md is missing (so `state_exists` would normally be true when execution reaches the result), callers invoking the SDK handler directly — e.g. in tests or via the query registry — may not reach the same precondition. Any consumer relying on this field would receive incorrect data if STATE.md was absent.
 
 **Fix:**
 ```typescript
@@ -113,59 +130,75 @@ state_exists: existsSync(paths.state),
 
 ---
 
-### WR-03: `initManager` SDK — recommended action commands are hardcoded `/gsd-*` (not runtime-aware)
+### WR-03: `initManager` (SDK) — recommended action commands are not runtime-aware
 
 **File:** `sdk/src/handlers/init/complex.ts:742,753,764`
-**Issue:** The `command` fields in `recommendedActions` are hardcoded as `/gsd-execute-phase`, `/gsd-plan-phase`, and `/gsd-discuss-phase`. The CJS `cmdInitManager` passes these through `formatGsdSlash(cmd, _slashRuntime)` which adapts them for non-Claude runtimes (e.g., Codex uses `$gsd-<cmd>` shell-variable form). Workflows running under Codex that consume the SDK `initManager` output will emit syntactically invalid commands to the user.
+**Issue:** The `command` fields in `recommendedActions` are hardcoded as literal slash commands (`/gsd-execute-phase`, `/gsd-plan-phase`, `/gsd-discuss-phase`). The CJS `cmdInitManager` passes these through `formatGsdSlash(cmd, _slashRuntime)` which adapts them for non-Claude runtimes (e.g., Codex uses `$gsd-execute-phase` shell-variable form). On runtimes other than Claude, the emitted commands would be syntactically invalid.
 
 **Fix:**
 ```typescript
-// Resolve runtime-aware command format; mirrors CJS cmdInitManager lines 1147/1339-1356
-// Pass runtime context through or compute it from config:
+import { formatGsdSlash } from '../../query/runtime-slash.js';
+// ...
 const runtime = detectRuntime(config as { runtime?: unknown });
-// then replace hardcoded paths:
-command: formatGsdSlash('execute-phase', runtime) + ` ${phase.number}`,
+// Replace hardcoded strings:
+command: `${formatGsdSlash('execute-phase', runtime)} ${phase.number}`,
 ```
 
 ---
 
-### WR-04: `initMilestoneOp` SDK — only scans root-level summaries, missing nested `plans/` subdirectory
+### WR-04: `initMilestoneOp` (SDK) — only scans root-level summaries, misses nested `plans/` subdir
 
 **File:** `sdk/src/handlers/init/composer.ts:1086-1088,1100-1102`
-**Issue:** The `hasSummary` check uses `phaseFiles.some(f => f.endsWith('-SUMMARY.md') || f === 'SUMMARY.md')` which only inspects the phase root directory. The CJS `listPhaseSummaryFiles` delegates to `scanPhasePlans` (via `plan-scan.generated.cjs`) which additionally scans the `plans/` nested subdirectory for `SUMMARY-N-*.md` files. A phase whose summaries live entirely in the `plans/` subdir (using the extended slug layout) would be reported as not completed by the SDK, causing `all_phases_complete: false` when it should be true.
+**Issue:** The `hasSummary` check is `phaseFiles.some(f => f.endsWith('-SUMMARY.md') || f === 'SUMMARY.md')`. This only inspects the phase root directory. The CJS `listPhaseSummaryFiles` delegates to `scanPhasePlans` which additionally scans the `plans/` nested subdirectory for `SUMMARY-N-*.md` files. A phase using the extended slug layout would be reported as incomplete even when all summaries exist, causing `all_phases_complete: false` to fire incorrectly.
 
-**Fix:** Replace the inline `.some()` check with the same `listPhasePlanAndSummaryCounts` helper already used by `initProgress` and `initManager`:
+**Fix:** Use the `listPhasePlanAndSummaryCounts` helper already present in `complex.ts`:
 ```typescript
-import { listPhasePlanAndSummaryCounts } from './complex.js'; // or inline the helper
-
-// Replace the phaseFiles.some() block:
-const phaseFls = readdirSync(join(phasesDir, dirName));
-const { summaries: phaseSummaries } = listPhasePlanAndSummaryCounts(join(phasesDir, dirName));
-const hasSummary = phaseSummaries.length > 0;
+// For the ROADMAP-driven path (lines 1086-1088):
+const { summaries } = listPhasePlanAndSummaryCounts(join(phasesDir, dirName));
+const hasSummary = summaries.length > 0;
 ```
 
 ---
 
-### WR-05: `initExecutePhase` and `initPlanPhase` SDK — `--validate` flag not handled
+### WR-05: `initExecutePhase` and `initPlanPhase` (SDK) — `--validate` flag not handled
 
-**File:** `sdk/src/handlers/init/composer.ts:422-508,516-632`
-**Issue:** The comment at line 429 explicitly notes that the CJS router parses `['validate', 'tdd']` flags, but only `--tdd` is extracted in the SDK port (`args.includes('--tdd')`). The `--validate` path in the CJS handlers (#1627) injects `state_validation_ran: true` and `state_warnings: string[]` into the result when the flag is present. Callers passing `--validate` to the SDK dispatch would silently receive a result without these fields, breaking any workflow that relies on them for drift detection.
+**File:** `sdk/src/handlers/init/composer.ts:429,524`
+**Issue:** The code comments note that the CJS router parses `['validate', 'tdd']` flags, but the SDK port only extracts `--tdd`. The `--validate` path in the CJS handlers (init.cjs:256-276, 443-457) injects `state_validation_ran: true` and `state_warnings: string[]` into the result. Callers passing `--validate` to the SDK dispatch silently receive a result without these fields, breaking any workflow relying on drift detection.
 
 **Fix:**
 ```typescript
-// In initExecutePhase and initPlanPhase:
 const validateFlag = args.includes('--validate');
-
-// Then after building the base result, if validateFlag is set:
+// After building the base result:
 if (validateFlag) {
   try {
     const stateContent = readFileSync(join(planningDir, 'STATE.md'), 'utf-8');
-    const warnings: string[] = [];
     result.state_validation_ran = true;
-    // ... port the CJS validation logic from init.cjs:256-276 and 443-457
+    const warnings: string[] = [];
+    // ... port validation logic from init.cjs:256-276
     result.state_warnings = warnings;
   } catch { /* intentionally empty */ }
 }
+```
+
+---
+
+### WR-06: `gitWorktreeInfo` and `detectNestedSubdir` duplicated verbatim in `composer.ts` and `complex.ts`
+
+**File:** `sdk/src/handlers/init/composer.ts:105-151` and `sdk/src/handlers/init/complex.ts:85-131`
+**Issue:** Both functions are copy-pasted identically into both files. Bug fixes must be applied twice. The same duplication applies to `pathExists`. This is a maintainability hazard: if the CJS behavior changes (e.g., cross-platform path normalization), the SDK divergence will not be caught until a parity test runs against the new behavior.
+
+**Fix:** Extract to a shared module `sdk/src/handlers/init/git-helpers.ts` and import from both files.
+
+---
+
+### WR-07: `initManager` (SDK) — section boundary regex less precise than CJS (decimal phase headings)
+
+**File:** `sdk/src/handlers/init/complex.ts:592`
+**Issue:** The section boundary regex is `/\n#{2,4}\s+Phase\s+\d/i`. The CJS uses `/\n#{2,4}\s+Phase\s+\d[\d.]*/i` which also matches decimal phase headings (issue #3691 fix). With the SDK regex, a section for `Phase 2` could bleed into adjacent content from `Phase 2.1` if the heading is not terminated before the next match.
+
+**Fix:**
+```typescript
+const nextHeader = restOfContent.match(/\n#{2,4}\s+Phase\s+\d[\d.]*/i);
 ```
 
 ---
@@ -175,11 +208,13 @@ if (validateFlag) {
 ### IN-01: `getModelAlias` and `getEffort` make separate `resolveModel` calls per agent
 
 **File:** `sdk/src/handlers/init/composer.ts:43-57`, `sdk/src/handlers/init/complex.ts:52-66`
-**Issue:** For each agent type, two independent async calls to `resolveModel` are made — one for the model alias, one for the effort token. This means for `initExecutePhase` (2 agents) there are 4 `resolveModel` calls, each internally calling `loadConfig`. The results are logically from the same slot and should always be read together. A combined helper would halve the overhead and eliminate any theoretical TOCTOU window where config could change between the two calls.
+**Issue:** For each agent type, two independent async calls to `resolveModel` are made — one for the model alias, one for the effort token. In `initExecutePhase` (2 agents) this creates 4 `resolveModel` invocations where 2 would suffice. Each call internally calls `loadConfig` and reads config.json. A combined helper would halve the I/O and remove the theoretical TOCTOU window where config could change between the two reads.
 
-**Fix:** Introduce a combined helper:
+**Fix:**
 ```typescript
-async function getModelAndEffort(agentType: string, projectDir: string): Promise<{ model: string; effort: string | null }> {
+async function getModelAndEffort(
+  agentType: string, projectDir: string
+): Promise<{ model: string; effort: string | null }> {
   const result = await resolveModel([agentType], projectDir);
   const data = result.data as Record<string, unknown>;
   return {
@@ -191,18 +226,55 @@ async function getModelAndEffort(agentType: string, projectDir: string): Promise
 
 ---
 
-### IN-02: `initManager` SDK — section boundary regex less precise than CJS
+### IN-02: Golden parity table missing rows for 12 newly ported `init` handlers
 
-**File:** `sdk/src/handlers/init/complex.ts:592`
-**Issue:** The `nextHeader` regex is `/\n#{2,4}\s+Phase\s+\d/i` which only requires a single digit to establish a section boundary. The CJS uses `/\n#{2,4}\s+Phase\s+\d[\d.]*/i` which also matches decimal phase headings (e.g., `### Phase 02.3:`). While the SDK regex still correctly terminates sections at any phase heading (the single `\d` is sufficient), the comment in CJS at line 1193 marks this as a deliberate fix for decimal phases (#3691), and divergence here is a maintenance hazard.
+**File:** `sdk/src/golden/read-only-golden-rows.ts:20-70`
+**Issue:** Only `init.execute-phase` (with volatile-strip) and `init.list-workspaces` have parity rows. The remaining 12 newly ported handlers (`init.plan-phase`, `init.quick`, `init.resume`, `init.verify-work`, `init.phase-op`, `init.todos`, `init.milestone-op`, `init.map-codebase`, `init.new-milestone`, `init.new-project`, `init.progress`, `init.manager`) have no golden coverage. Behavioral divergences in any of these handlers will not be caught by CI.
 
-**Fix:** Align with CJS:
+**Fix:** Add parity rows for each new handler, applying volatile-strip normalizers as needed (e.g., `init.quick` emits `quick_id` and `timestamp` which vary per run).
+
+---
+
+### IN-03: `model-catalog.ts` — `readFileSync` at module load with no error boundary
+
+**File:** `sdk/src/model-catalog.ts:28`
+**Issue:** The catalog is loaded synchronously at module import time. If `shared/model-catalog.json` is missing (partial build, wrong working directory, package corruption), every SDK consumer throws an opaque `ENOENT` at import time with no indication of the root cause.
+
+**Fix:**
 ```typescript
-const nextHeader = restOfContent.match(/\n#{2,4}\s+Phase\s+\d[\d.]*/i);
+let _catalog: ModelCatalog;
+try {
+  _catalog = JSON.parse(readFileSync(fileURLToPath(CATALOG_PATH), 'utf-8'));
+} catch (e) {
+  throw new Error(
+    `GSD: Failed to load model-catalog.json from ${String(CATALOG_PATH)}. ` +
+    `Run npm run build to regenerate. Original error: ${e}`
+  );
+}
+export const catalog = _catalog;
 ```
 
 ---
 
-_Reviewed: 2026-06-02T10:30:00Z_
+### IN-04: `INIT_EXECUTE_PHASE_VOLATILE_KEYS` — omits `date` without a comment explaining why
+
+**File:** `sdk/src/golden/init-golden-normalize.ts:24-29`
+**Issue:** `omitInitExecutePhaseVolatile` does not strip `date` or `timestamp`. This is correct (the handler does not emit them), but there is no comment explaining the deliberate exclusion. Compared with `INIT_QUICK_VOLATILE_KEYS` which does strip `timestamp`, a reader performing maintenance may incorrectly assume `date` was forgotten.
+
+**Fix:** Add an inline explanatory comment:
+```typescript
+// Note: initExecutePhase does not emit date/timestamp (unlike initQuick),
+// so those keys are intentionally absent from this volatile list.
+export const INIT_EXECUTE_PHASE_VOLATILE_KEYS = [
+  'project_root',
+  'agents_installed',
+  'missing_agents',
+  'project_title',
+] as const;
+```
+
+---
+
+_Reviewed: 2026-06-02_
 _Reviewer: Claude (gsd-code-reviewer)_
 _Depth: standard_
