@@ -1,4 +1,5 @@
 {
+  "_schema_note": "Profile slot values (golden/balanced/budget) and adaptiveTierMap values accept plain tier aliases ('opus', 'sonnet', 'haiku') or 'model;effort' strings (e.g. 'opus;high'). Delimiter is ';' not ':'. Do NOT pre-fill effort values — see sdk/src/model-catalog.ts AgentCatalogEntry for the authoritative type definition.",
   "profiles": ["quality", "balanced", "budget", "adaptive", "inherit"],
   "phaseTypes": ["planning", "discuss", "research", "execution", "verification", "completion"],
   "adaptiveTierMap": {

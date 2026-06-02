@@ -1471,7 +1471,9 @@ function resolveModelInternal(cwd, agentType) {
   // `tier` is guaranteed truthy here: agentModels exists, and MODEL_PROFILES
   // entries always define `balanced`, so `agentModels[profile] || agentModels.balanced`
   // resolves to a string. Keep the local for readability — no defensive fallback.
-  const alias = tier;
+  const alias = parseModelEffort(tier).model;
+  // parseModelEffort('opus;medium').model === 'opus'
+  // parseModelEffort('opus').model === 'opus'  (no-op for bare aliases)
 
   // resolve_model_ids: true — map alias to full Claude model ID.
   // Prevents 404s when the Task tool passes aliases directly to the API.
