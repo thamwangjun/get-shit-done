@@ -99,13 +99,17 @@ function nextTier(currentTier) {
 }
 
 function formatAgentToModelMapAsTable(agentToModelMap) {
+  // Coerce values before measuring/padding: map values derive from catalog
+  // JSON and may be undefined/non-string for malformed entries. Crashing a
+  // display helper on externally-derived data is worse than rendering '' (WR-02).
+  const val = (m) => String(m ?? '');
   const agentWidth = Math.max('Agent'.length, ...Object.keys(agentToModelMap).map((a) => a.length));
-  const modelWidth = Math.max('Model'.length, ...Object.values(agentToModelMap).map((m) => m.length));
+  const modelWidth = Math.max('Model'.length, ...Object.values(agentToModelMap).map((m) => val(m).length));
   const sep = '─'.repeat(agentWidth + 2) + '┼' + '─'.repeat(modelWidth + 2);
   const header = ` ${'Agent'.padEnd(agentWidth)} │ ${'Model'.padEnd(modelWidth)}`;
   let out = `${header}\n${sep}\n`;
   for (const [agent, model] of Object.entries(agentToModelMap)) {
-    out += ` ${agent.padEnd(agentWidth)} │ ${model.padEnd(modelWidth)}\n`;
+    out += ` ${agent.padEnd(agentWidth)} │ ${val(model).padEnd(modelWidth)}\n`;
   }
   return out;
 }
