@@ -208,8 +208,9 @@ describe('resolveModel', () => {
     const planner = (await resolveModel(['gsd-planner'], tmpDir)).data as Record<string, unknown>;
     const executor = (await resolveModel(['gsd-executor'], tmpDir)).data as Record<string, unknown>;
 
-    expect(planner).toMatchObject({ model: 'gpt-5.5', profile: 'balanced', reasoning_effort: 'high' });
-    expect(executor).toMatchObject({ model: 'gpt-5.3-codex', profile: 'balanced', reasoning_effort: 'medium' });
+    // D-05: canonical field is `effort`, not `reasoning_effort`
+    expect(planner).toMatchObject({ model: 'gpt-5.5', profile: 'balanced', effort: 'high' });
+    expect(executor).toMatchObject({ model: 'gpt-5.3-codex', profile: 'balanced', effort: 'medium' });
   });
 
   it('returns runtime reasoning_effort from the same phase-tier source as model', async () => {
@@ -227,10 +228,11 @@ describe('resolveModel', () => {
 
     const executor = (await resolveModel(['gsd-executor'], tmpDir)).data as Record<string, unknown>;
 
+    // D-05: canonical field is `effort`, not `reasoning_effort`
     expect(executor).toMatchObject({
       model: 'gpt-5.4',
       profile: 'budget',
-      reasoning_effort: opusCodexTier?.reasoning_effort,
+      effort: opusCodexTier?.reasoning_effort,
     });
   });
 
@@ -256,7 +258,9 @@ describe('resolveModel', () => {
       model: 'openrouter/openai/gpt-5.5',
       profile: 'balanced',
     });
+    // D-05: reasoning_effort is renamed to effort; unsupported runtime gets effort:null
     expect(planner).not.toHaveProperty('reasoning_effort');
+    expect(planner.effort).toBeNull();
   });
 
   // ─── #3643: runtime:claude + resolve_model_ids:true must return full IDs ──
@@ -275,7 +279,8 @@ describe('resolveModel', () => {
       }),
     );
     const result = await resolveModel(['gsd-executor'], tmpDir);
-    expect(result.data).toEqual({ model: 'claude-sonnet-4-6', profile: 'balanced' });
+    // D-05: always-emit effort field; claude bare catalog resolves null
+    expect(result.data).toEqual({ model: 'claude-sonnet-4-6', profile: 'balanced', effort: null });
   });
 
   it('#3643: runtime:claude + resolve_model_ids:true + quality returns full opus id', async () => {
@@ -289,7 +294,7 @@ describe('resolveModel', () => {
       }),
     );
     const result = await resolveModel(['gsd-planner'], tmpDir);
-    expect(result.data).toEqual({ model: 'claude-opus-4-7', profile: 'quality' });
+    expect(result.data).toEqual({ model: 'claude-opus-4-7', profile: 'quality', effort: null });
   });
 
   it('#3643: runtime:claude + resolve_model_ids:true + budget returns full haiku id', async () => {
@@ -304,7 +309,7 @@ describe('resolveModel', () => {
     );
     // gsd-verifier maps to 'haiku' under budget profile per model-catalog.json.
     const result = await resolveModel(['gsd-verifier'], tmpDir);
-    expect(result.data).toEqual({ model: 'claude-haiku-4-5', profile: 'budget' });
+    expect(result.data).toEqual({ model: 'claude-haiku-4-5', profile: 'budget', effort: null });
   });
 
   it('#3643: phase-type tier override (models.execution=opus) wins under claude+resolve_model_ids', async () => {
@@ -319,7 +324,7 @@ describe('resolveModel', () => {
       }),
     );
     const result = await resolveModel(['gsd-executor'], tmpDir);
-    expect(result.data).toEqual({ model: 'claude-opus-4-7', profile: 'budget' });
+    expect(result.data).toEqual({ model: 'claude-opus-4-7', profile: 'budget', effort: null });
   });
 
   it('#3643 regression-guard: runtime:claude WITHOUT resolve_model_ids still returns alias', async () => {
@@ -332,7 +337,8 @@ describe('resolveModel', () => {
       }),
     );
     const result = await resolveModel(['gsd-executor'], tmpDir);
-    expect(result.data).toEqual({ model: 'sonnet', profile: 'balanced' });
+    // D-05: always-emit effort field (null on bare catalog)
+    expect(result.data).toEqual({ model: 'sonnet', profile: 'balanced', effort: null });
   });
 
   it('#3643 regression-guard: runtime:claude + resolve_model_ids:"omit" still wins over alias mapping', async () => {
@@ -346,7 +352,7 @@ describe('resolveModel', () => {
       }),
     );
     const result = await resolveModel(['gsd-executor'], tmpDir);
-    expect(result.data).toEqual({ model: '', profile: 'balanced' });
+    expect(result.data).toEqual({ model: '', profile: 'balanced', effort: null });
   });
 
   it('#3643 regression-guard: model_overrides[agent] beats claude+resolve_model_ids:true', async () => {

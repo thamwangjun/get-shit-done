@@ -29,6 +29,7 @@ import {
   MODEL_PROFILES,
   VALID_PROFILES,
   getAgentToModelMapForProfile,
+  parseModelEffort,
   resolveRuntimeTierDefault,
   runtimesWithReasoningEffort,
 } from '../model-catalog.js';
@@ -235,14 +236,28 @@ export const resolveModel: QueryHandler = async (args, projectDir, workstream) =
   const config = await loadConfig(projectDir, workstream);
   const profile = String(config.model_profile || 'balanced').toLowerCase();
 
+  // Resolve runtime once — used for both model resolution and effort gate.
+  const runtime = typeof (config as Record<string, unknown>).runtime === 'string'
+    ? ((config as Record<string, unknown>).runtime as string)
+    : '';
+
+  // ─── Effort precedence chain (D-07 — mirrors resolveReasoningEffortInternal) ──
+  // Step 1: allowlist gate — runtimes outside {claude, codex} always resolve null.
+  // Steps 2-4 apply only after the gate passes.
+  const effectiveRuntime = runtime || 'claude'; // empty = implicit claude
+  const effortAllowed = RUNTIMES_WITH_REASONING_EFFORT.has(effectiveRuntime);
+
   // Check per-agent override first
   const overrides = (config as Record<string, unknown>).model_overrides as Record<string, string> | undefined;
   const override = overrides?.[agentType];
   if (override) {
     const agentModels = MODEL_PROFILES[agentType];
+    // Effort step 2: per-agent override string may carry a ;suffix.
+    const overrideEffort = effortAllowed ? (parseModelEffort(override).effort ?? null) : null;
+    const overrideModel = (parseModelEffort(override).model as string) || override;
     const result = agentModels
-      ? { model: override, profile }
-      : { model: override, profile, unknown_agent: true };
+      ? { model: overrideModel, profile, effort: overrideEffort }
+      : { model: overrideModel, profile, unknown_agent: true, effort: overrideEffort };
     return { data: result };
   }
 
@@ -252,8 +267,8 @@ export const resolveModel: QueryHandler = async (args, projectDir, workstream) =
   const resolveModelIds = (config as Record<string, unknown>).resolve_model_ids;
   if (!configExists) {
     const result = agentModels
-      ? { model: '', profile }
-      : { model: '', profile, unknown_agent: true };
+      ? { model: '', profile, effort: null }
+      : { model: '', profile, unknown_agent: true, effort: null };
     return { data: result };
   }
 
@@ -264,11 +279,11 @@ export const resolveModel: QueryHandler = async (args, projectDir, workstream) =
       : profile === 'budget' ? 'haiku'
       : profile === 'inherit' ? 'inherit'
       : 'sonnet';
-    return { data: { model: semanticFallback, profile, unknown_agent: true } };
+    return { data: { model: semanticFallback, profile, unknown_agent: true, effort: null } };
   }
 
   if (profile === 'inherit') {
-    return { data: { model: 'inherit', profile } };
+    return { data: { model: 'inherit', profile, effort: null } };
   }
 
   const alias = agentModels[profile] || agentModels['balanced'] || 'sonnet';
@@ -279,15 +294,28 @@ export const resolveModel: QueryHandler = async (args, projectDir, workstream) =
   const tier = typeof phaseTier === 'string' ? phaseTier : alias;
   const runtimeTier = resolveRuntimeTier(config as Record<string, unknown>, tier);
   if (runtimeTier?.model) {
-    const result: Record<string, unknown> = { model: runtimeTier.model, profile };
-    if (runtimeTier.reasoning_effort) {
-      result.reasoning_effort = runtimeTier.reasoning_effort;
+    // D-05: emit canonical `effort` (not `reasoning_effort`).
+    // Effort resolution for the runtimeTier path (steps 2-4 of the chain):
+    //   Step 2: per-agent override (already handled above — no override here).
+    //   Step 3: shared slot carries a ;suffix — parseModelEffort(tier).effort.
+    //   Step 4: Codex per-tier fallback — runtimeTier.reasoning_effort (the merged
+    //     value from resolveRuntimeTier, which folds user overrides + catalog).
+    //     Only used when the tier string itself carried no ;suffix (step 3 yielded null).
+    let effort: string | null = null;
+    if (effortAllowed) {
+      // Step 3
+      effort = parseModelEffort(tier).effort ?? null;
+      // Step 4 (only if step 3 yielded nothing)
+      if (!effort && runtimeTier.reasoning_effort) {
+        effort = runtimeTier.reasoning_effort;
+      }
     }
+    const result: Record<string, unknown> = { model: runtimeTier.model, profile, effort };
     return { data: result };
   }
 
   if (resolveModelIds === 'omit') {
-    return { data: { model: '', profile } };
+    return { data: { model: '', profile, effort: null } };
   }
 
   // #3643: runtime:claude bails out of resolveRuntimeTier (line 149) because
@@ -296,9 +324,6 @@ export const resolveModel: QueryHandler = async (args, projectDir, workstream) =
   // the tier alias. Mirror the CJS branch at get-shit-done/bin/lib/core.cjs
   // (`if (config.resolve_model_ids) return MODEL_ALIAS_MAP[alias] || alias;`)
   // by consulting the catalog's claude runtime defaults for the resolved tier.
-  const runtime = typeof (config as Record<string, unknown>).runtime === 'string'
-    ? ((config as Record<string, unknown>).runtime as string)
-    : '';
   // Empty/missing runtime is implicit Claude (per the resolveRuntimeTier bail-out
   // at line ~149); without this branch the resolved-IDs path silently fell
   // through to the alias return for projects that never set `runtime` explicitly.
@@ -306,9 +331,9 @@ export const resolveModel: QueryHandler = async (args, projectDir, workstream) =
   if (resolveModelIds === true && isClaudeRuntime && isRuntimeTierName(tier)) {
     const claudeDefault = resolveRuntimeTierDefault('claude', tier);
     if (claudeDefault?.model) {
-      return { data: { model: claudeDefault.model, profile } };
+      return { data: { model: claudeDefault.model, profile, effort: null } };
     }
   }
 
-  return { data: { model: alias, profile } };
+  return { data: { model: alias, profile, effort: null } };
 };

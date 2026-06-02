@@ -61,12 +61,14 @@ export function resolveRuntimeTierDefault(runtime: string, alias: 'opus' | 'sonn
   return catalog.runtimeTierDefaults[runtime]?.[alias] ?? null;
 }
 
+// D-07 / Pitfall 1: use the static {claude, codex} allowlist — NOT a
+// data-derived scan of runtimeTierDefaults. The data-derived approach would
+// silently include any runtime that gains a reasoning_effort entry in the
+// catalog, causing effort to leak to runtimes the CLI never supports. The
+// static set is the parity source of truth, enforced by the golden harness.
+// Mirrors RUNTIMES_WITH_REASONING_EFFORT in get-shit-done/bin/lib/core.cjs.
 export function runtimesWithReasoningEffort(): Set<string> {
-  return new Set(
-    Object.entries(catalog.runtimeTierDefaults)
-      .filter(([, tiers]) => Object.values(tiers).some((entry) => entry && entry.reasoning_effort))
-      .map(([runtime]) => runtime)
-  );
+  return new Set(['claude', 'codex']);
 }
 
 // ─── parseModelEffort ─────────────────────────────────────────────────────────
