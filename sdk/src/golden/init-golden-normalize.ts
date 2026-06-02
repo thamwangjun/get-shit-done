@@ -20,6 +20,11 @@ export function omitInitQuickVolatile(data: Record<string, unknown>): Record<str
  * Volatile keys for `init execute-phase` payloads.
  * `project_root` is an absolute filesystem path that varies by checkout location.
  * `agents_installed`, `missing_agents`, `project_title` vary by install state.
+ *
+ * Note: initExecutePhase does not emit `date` or `timestamp` (unlike initQuick
+ * which emits `quick_id` + `timestamp`), so those keys are intentionally absent
+ * from this volatile list. Adding them here would mask future accidental regressions
+ * that cause the handler to start emitting date fields.
  */
 export const INIT_EXECUTE_PHASE_VOLATILE_KEYS = [
   'project_root',
