@@ -20,6 +20,7 @@ const { createTempProject, createTempGitProject, cleanup } = require('./helpers.
 const {
   loadConfig,
   resolveModelInternal,
+  resolveReasoningEffortInternal,
   escapeRegex,
   generateSlugInternal,
   normalizePhaseName,
@@ -2004,5 +2005,39 @@ describe('timeAgo', () => {
     // A date 5 seconds in the future has negative elapsed time, which floors to a negative
     // number of seconds and hits the "under 5 seconds" branch.
     assert.strictEqual(timeAgo(new Date(Date.now() + 5_000)), 'just now');
+  });
+});
+
+// ─── SC#4: Bare-catalog inertness — resolveReasoningEffortInternal ─────────
+
+describe('resolveReasoningEffortInternal inertness on bare catalog', () => {
+  let tmpDir;
+
+  beforeEach(() => {
+    tmpDir = createTempProject();
+  });
+
+  afterEach(() => {
+    cleanup(tmpDir);
+  });
+
+  const RESOLVABLE_AGENTS = [
+    'gsd-executor',
+    'gsd-verifier',
+    'gsd-planner',
+    'gsd-plan-checker',
+    'gsd-phase-researcher',
+    'gsd-project-researcher',
+    'gsd-research-synthesizer',
+    'gsd-roadmapper',
+    'gsd-codebase-mapper',
+  ];
+
+  test('returns null for all resolvable agent slots on a bare catalog (SC#4)', () => {
+    for (const agent of RESOLVABLE_AGENTS) {
+      const effort = resolveReasoningEffortInternal(tmpDir, agent);
+      assert.strictEqual(effort, null,
+        `resolveReasoningEffortInternal('${agent}') must return null on bare catalog (SC#4 inertness)`);
+    }
   });
 });

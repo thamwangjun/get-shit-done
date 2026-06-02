@@ -1135,7 +1135,7 @@ describe('resolve-model command', () => {
     assert.ok(output.model, 'should resolve a model');
   });
 
-  test('includes reasoning_effort when selected runtime supports it', () => {
+  test('includes effort when selected runtime supports it', () => {
     fs.writeFileSync(path.join(tmpDir, '.planning', 'config.json'), JSON.stringify({
       model_profile: 'balanced',
       runtime: 'codex',
@@ -1147,10 +1147,10 @@ describe('resolve-model command', () => {
     const output = JSON.parse(result.output);
     assert.strictEqual(output.model, 'gpt-5.4');
     assert.strictEqual(output.profile, 'balanced');
-    assert.strictEqual(output.reasoning_effort, 'xhigh');
+    assert.strictEqual(output.effort, 'xhigh');
   });
 
-  test('does not include reasoning_effort for unsupported runtime overrides', () => {
+  test('effort is null for unsupported runtime overrides (always-emit, D-01)', () => {
     fs.writeFileSync(path.join(tmpDir, '.planning', 'config.json'), JSON.stringify({
       model_profile: 'balanced',
       runtime: 'opencode',
@@ -1167,10 +1167,11 @@ describe('resolve-model command', () => {
     const output = JSON.parse(result.output);
     assert.strictEqual(output.model, 'openrouter/openai/gpt-5.5');
     assert.strictEqual(output.profile, 'balanced');
-    assert.ok(!Object.prototype.hasOwnProperty.call(output, 'reasoning_effort'));
+    assert.ok('effort' in output, 'effort always present (D-01)');
+    assert.strictEqual(output.effort, null, 'unsupported runtime -> null');
   });
 
-  test('does not include reasoning_effort for per-agent model_overrides', () => {
+  test('effort is null for per-agent model_overrides without effort suffix (always-emit, D-01)', () => {
     fs.writeFileSync(path.join(tmpDir, '.planning', 'config.json'), JSON.stringify({
       model_profile: 'balanced',
       runtime: 'codex',
@@ -1183,7 +1184,8 @@ describe('resolve-model command', () => {
     const output = JSON.parse(result.output);
     assert.strictEqual(output.model, 'gpt-5.5');
     assert.strictEqual(output.profile, 'balanced');
-    assert.ok(!Object.prototype.hasOwnProperty.call(output, 'reasoning_effort'));
+    assert.ok('effort' in output, 'effort always present (D-01)');
+    assert.strictEqual(output.effort, null, 'bare override without ;effort -> null');
   });
 
   test('fails when no agent-type provided', () => {
