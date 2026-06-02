@@ -1453,6 +1453,12 @@ function resolveModelInternal(cwd, agentType) {
   }
 
   // 5. Profile lookup (Claude-native default).
+  // IN-01: for an unmapped agent (not in MODEL_PROFILES) there is no per-agent
+  // adaptiveTierMap entry to consult, so 'adaptive' has no routing tier to
+  // resolve against and falls through to the 'sonnet' default below — mirroring
+  // the mapped-agent default tier. This is intentional: the asymmetry with the
+  // mapped path (which resolves via agentModels.adaptive) exists only because an
+  // unknown agent name carries no routing metadata.
   if (!agentModels) {
     return profile === 'quality' ? 'opus'
       : profile === 'budget' ? 'haiku'
