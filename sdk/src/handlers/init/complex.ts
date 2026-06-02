@@ -844,7 +844,7 @@ export const initManager: QueryHandler = async (_args, projectDir, workstream) =
     queued_milestone_name: queuedMilestoneName,
     project_exists: pathExists(projectDir, '.planning/PROJECT.md'),
     roadmap_exists: true,
-    state_exists: true,
+    state_exists: existsSync(paths.state),
     manager_flags: managerFlags,
   };
 
