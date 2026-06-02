@@ -47,6 +47,17 @@ async function getModelAlias(agentType: string, projectDir: string): Promise<str
 }
 
 /**
+ * Extract effort token (or null) from a resolveModel result.
+ * Mirrors getModelAlias but reads data.effort — the same-slot invariant
+ * that prevents #3023-style model/effort divergence.
+ */
+async function getEffort(agentType: string, projectDir: string): Promise<string | null> {
+  const result = await resolveModel([agentType], projectDir);
+  const data = result.data as Record<string, unknown>;
+  return typeof data.effort === 'string' ? data.effort : null;
+}
+
+/**
  * Generate a slug from text (inline, matches CJS generateSlugInternal).
  */
 function generateSlugInternal(text: string): string {
@@ -429,12 +440,14 @@ export const initExecutePhase: QueryHandler = async (args, projectDir, workstrea
   const phase_req_ids = extractReqIds(roadmapPhase);
 
   const configExists = existsSync(join(planningDir, 'config.json'));
-  const [executorModel, verifierModel] = configExists
+  const [executorModel, verifierModel, executorEffort, verifierEffort] = configExists
     ? await Promise.all([
         getModelAlias('gsd-executor', projectDir),
         getModelAlias('gsd-verifier', projectDir),
+        getEffort('gsd-executor', projectDir),
+        getEffort('gsd-verifier', projectDir),
       ])
-    : ['', ''];
+    : ['', '', null, null];
 
   const milestone = await getMilestoneInfo(projectDir, workstream);
 
@@ -447,7 +460,9 @@ export const initExecutePhase: QueryHandler = async (args, projectDir, workstrea
 
   const result: Record<string, unknown> = {
     executor_model: executorModel,
+    executor_effort: executorEffort,
     verifier_model: verifierModel,
+    verifier_effort: verifierEffort,
     tdd_mode: tddFlag || (config.workflow.tdd_mode ?? false),
     commit_docs: config.commit_docs,
     sub_repos: (config as Record<string, unknown>).sub_repos ?? [],
@@ -516,13 +531,16 @@ export const initPlanPhase: QueryHandler = async (args, projectDir, workstream) 
   const phase_req_ids = extractReqIds(roadmapPhase);
 
   const configExists = existsSync(join(planningDir, 'config.json'));
-  const [researcherModel, plannerModel, checkerModel] = configExists
+  const [researcherModel, plannerModel, checkerModel, researcherEffort, plannerEffort, checkerEffort] = configExists
     ? await Promise.all([
         getModelAlias('gsd-phase-researcher', projectDir),
         getModelAlias('gsd-planner', projectDir),
         getModelAlias('gsd-plan-checker', projectDir),
+        getEffort('gsd-phase-researcher', projectDir),
+        getEffort('gsd-planner', projectDir),
+        getEffort('gsd-plan-checker', projectDir),
       ])
-    : ['', '', ''];
+    : ['', '', '', null, null, null];
 
   const phaseNumber = (phaseInfo?.phase_number as string) || null;
   const phaseName = (phaseInfo?.phase_name as string) ?? null;
@@ -554,8 +572,11 @@ export const initPlanPhase: QueryHandler = async (args, projectDir, workstream) 
   const cfg = config as GSDConfig;
   const result: Record<string, unknown> = {
     researcher_model: researcherModel,
+    researcher_effort: researcherEffort,
     planner_model: plannerModel,
+    planner_effort: plannerEffort,
     checker_model: checkerModel,
+    checker_effort: checkerEffort,
     tdd_mode: tddFlag || (config.workflow.tdd_mode ?? false),
     research_enabled: config.workflow.research,
     plan_checker_enabled: config.workflow.plan_check,
@@ -638,16 +659,22 @@ export const initNewMilestone: QueryHandler = async (_args, projectDir) => {
     }
   } catch { /* intentionally empty */ }
 
-  const [researcherModel, synthesizerModel, roadmapperModel] = await Promise.all([
+  const [researcherModel, synthesizerModel, roadmapperModel, researcherEffort, synthesizerEffort, roadmapperEffort] = await Promise.all([
     getModelAlias('gsd-project-researcher', projectDir),
     getModelAlias('gsd-research-synthesizer', projectDir),
     getModelAlias('gsd-roadmapper', projectDir),
+    getEffort('gsd-project-researcher', projectDir),
+    getEffort('gsd-research-synthesizer', projectDir),
+    getEffort('gsd-roadmapper', projectDir),
   ]);
 
   const result: Record<string, unknown> = {
     researcher_model: researcherModel,
+    researcher_effort: researcherEffort,
     synthesizer_model: synthesizerModel,
+    synthesizer_effort: synthesizerEffort,
     roadmapper_model: roadmapperModel,
+    roadmapper_effort: roadmapperEffort,
     commit_docs: config.commit_docs,
     research_enabled: config.workflow.research,
     current_milestone: milestone.version,
@@ -700,20 +727,28 @@ export const initQuick: QueryHandler = async (args, projectDir) => {
     : null;
 
   const configExists = existsSync(join(planningDir, 'config.json'));
-  const [plannerModel, executorModel, checkerModel, verifierModel] = configExists
+  const [plannerModel, executorModel, checkerModel, verifierModel, plannerEffort, executorEffort, checkerEffort, verifierEffort] = configExists
     ? await Promise.all([
         getModelAlias('gsd-planner', projectDir),
         getModelAlias('gsd-executor', projectDir),
         getModelAlias('gsd-plan-checker', projectDir),
         getModelAlias('gsd-verifier', projectDir),
+        getEffort('gsd-planner', projectDir),
+        getEffort('gsd-executor', projectDir),
+        getEffort('gsd-plan-checker', projectDir),
+        getEffort('gsd-verifier', projectDir),
       ])
-    : ['', '', '', ''];
+    : ['', '', '', '', null, null, null, null];
 
   const result: Record<string, unknown> = {
     planner_model: plannerModel,
+    planner_effort: plannerEffort,
     executor_model: executorModel,
+    executor_effort: executorEffort,
     checker_model: checkerModel,
+    checker_effort: checkerEffort,
     verifier_model: verifierModel,
+    verifier_effort: verifierEffort,
     commit_docs: config.commit_docs,
     branch_name: quickBranchName,
     quick_id: quickId,
@@ -777,16 +812,20 @@ export const initVerifyWork: QueryHandler = async (args, projectDir, workstream)
   const { phaseInfo } = await getPhaseInfoForVerifyWork(phase, projectDir, workstream);
 
   const configExists = existsSync(join(projectDir, '.planning', 'config.json'));
-  const [plannerModel, checkerModel] = configExists
+  const [plannerModel, checkerModel, plannerEffort, checkerEffort] = configExists
     ? await Promise.all([
         getModelAlias('gsd-planner', projectDir),
         getModelAlias('gsd-plan-checker', projectDir),
+        getEffort('gsd-planner', projectDir),
+        getEffort('gsd-plan-checker', projectDir),
       ])
-    : ['', ''];
+    : ['', '', null, null];
 
   const result: Record<string, unknown> = {
     planner_model: plannerModel,
+    planner_effort: plannerEffort,
     checker_model: checkerModel,
+    checker_effort: checkerEffort,
     commit_docs: config.commit_docs,
     phase_found: !!phaseInfo,
     phase_dir: (phaseInfo?.directory as string) ?? null,
@@ -1109,10 +1148,14 @@ export const initMapCodebase: QueryHandler = async (_args, projectDir) => {
     existingMaps = readdirSync(codebaseDir).filter(f => f.endsWith('.md'));
   } catch { /* intentionally empty */ }
 
-  const mapperModel = await getModelAlias('gsd-codebase-mapper', projectDir);
+  const [mapperModel, mapperEffort] = await Promise.all([
+    getModelAlias('gsd-codebase-mapper', projectDir),
+    getEffort('gsd-codebase-mapper', projectDir),
+  ]);
 
   const result: Record<string, unknown> = {
     mapper_model: mapperModel,
+    mapper_effort: mapperEffort,
     commit_docs: config.commit_docs,
     search_gitignored: config.search_gitignored,
     parallelization: config.parallelization,

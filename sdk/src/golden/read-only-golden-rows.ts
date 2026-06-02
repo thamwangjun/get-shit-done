@@ -61,6 +61,12 @@ export const READ_ONLY_JSON_PARITY_ROWS: JsonParityRow[] = [
     cjs: 'uat',
     cjsArgs: ['render-checkpoint', '--file', 'sdk/src/golden/fixtures/uat-render-checkpoint-sample.md'],
   },
+  // EXPOSE-03 / D-08: init execute-phase builder parity row.
+  // Enforces that SDK and CLI emit identical *_model/*_effort siblings for a
+  // deterministic phase (phase 9 exists in this repo across all branches).
+  // Volatile keys (project_root, agents_installed, missing_agents, project_title)
+  // are stripped by omitInitExecutePhaseVolatile before toEqual.
+  { canonical: 'init.execute-phase', sdkArgs: ['9'], cjs: 'init', cjsArgs: ['execute-phase', '9'] },
 ];
 
 /** Canonicals from JSON rows plus special-case subprocess tests in read-only-parity integration. */
@@ -73,5 +79,7 @@ export function readOnlyGoldenCanonicals(): Set<string> {
   s.add('audit-open');
   s.add('state.get');
   s.add('summary.extract');
+  // init.execute-phase uses a volatile-strip test block (not the generic toEqual loop).
+  s.add('init.execute-phase');
   return s;
 }

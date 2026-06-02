@@ -56,6 +56,16 @@ async function getModelAlias(agentType: string, projectDir: string): Promise<str
 }
 
 /**
+ * Extract effort token (or null) from a resolveModel result.
+ * Same-slot invariant: always use the same agentType as the adjacent *_model.
+ */
+async function getEffort(agentType: string, projectDir: string): Promise<string | null> {
+  const result = await resolveModel([agentType], projectDir);
+  const data = result.data as Record<string, unknown>;
+  return typeof data.effort === 'string' ? data.effort : null;
+}
+
+/**
  * Check if a file exists at a relative path within projectDir.
  */
 function pathExists(base: string, relPath: string): boolean {
@@ -297,10 +307,13 @@ export const initNewProject: QueryHandler = async (_args, projectDir, workstream
     pathExists(projectDir, 'mix.exs') ||
     pathExists(projectDir, 'project.clj');
 
-  const [researcherModel, synthesizerModel, roadmapperModel] = await Promise.all([
+  const [researcherModel, synthesizerModel, roadmapperModel, researcherEffort, synthesizerEffort, roadmapperEffort] = await Promise.all([
     getModelAlias('gsd-project-researcher', projectDir),
     getModelAlias('gsd-research-synthesizer', projectDir),
     getModelAlias('gsd-roadmapper', projectDir),
+    getEffort('gsd-project-researcher', projectDir),
+    getEffort('gsd-research-synthesizer', projectDir),
+    getEffort('gsd-roadmapper', projectDir),
   ]);
   const runtime = detectRuntime(config as { runtime?: unknown });
   const agentsDir = resolveAgentsDir(runtime, projectDir);
@@ -315,8 +328,11 @@ export const initNewProject: QueryHandler = async (_args, projectDir, workstream
 
   const result: Record<string, unknown> = {
     researcher_model: researcherModel,
+    researcher_effort: researcherEffort,
     synthesizer_model: synthesizerModel,
+    synthesizer_effort: synthesizerEffort,
     roadmapper_model: roadmapperModel,
+    roadmapper_effort: roadmapperEffort,
 
     commit_docs: config.commit_docs,
 
@@ -488,9 +504,18 @@ export const initProgress: QueryHandler = async (_args, projectDir, workstream) 
     if (pauseMatch) pausedAt = pauseMatch[1].trim();
   } catch { /* intentionally empty */ }
 
+  const [executorModel, plannerModel, executorEffort, plannerEffort] = await Promise.all([
+    getModelAlias('gsd-executor', projectDir),
+    getModelAlias('gsd-planner', projectDir),
+    getEffort('gsd-executor', projectDir),
+    getEffort('gsd-planner', projectDir),
+  ]);
+
   const result: Record<string, unknown> = {
-    executor_model: await getModelAlias('gsd-executor', projectDir),
-    planner_model: await getModelAlias('gsd-planner', projectDir),
+    executor_model: executorModel,
+    executor_effort: executorEffort,
+    planner_model: plannerModel,
+    planner_effort: plannerEffort,
 
     commit_docs: config.commit_docs,
 

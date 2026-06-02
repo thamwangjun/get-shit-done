@@ -9,9 +9,12 @@ import { resolve, dirname, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execSync } from 'node:child_process';
 import { READ_ONLY_JSON_PARITY_ROWS } from './read-only-golden-rows.js';
+import { omitInitExecutePhaseVolatile } from './init-golden-normalize.js';
 
+// EXPOSE-03: init.execute-phase uses a separate volatile-strip block below.
 const STABLE_JSON_PARITY_ROWS = READ_ONLY_JSON_PARITY_ROWS.filter(
-  (row) => row.canonical !== 'scan-sessions' && row.canonical !== 'audit-uat',
+  (row) => row.canonical !== 'scan-sessions' && row.canonical !== 'audit-uat'
+    && row.canonical !== 'init.execute-phase',
 );
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -111,6 +114,18 @@ describe('state.get golden parity', () => {
     if ((sdkResult.data as Record<string, unknown>)?.error === 'STATE.md not found') skip();
     const gsdOutput = await captureGsdToolsOutput('state', ['get', 'milestone'], REPO_ROOT);
     expect(sdkResult.data).toEqual(gsdOutput);
+  });
+});
+
+// EXPOSE-03 / D-08: init execute-phase builder parity with volatile-key strip.
+// Enforces SDK↔CLI *_model/*_effort sibling parity (phase 9 is stable in this repo).
+describe('init.execute-phase golden parity (excluding volatile keys)', () => {
+  it('SDK JSON matches gsd-tools.cjs except volatile project_root/install fields', async () => {
+    const gsdOutput = await captureGsdToolsOutput('init', ['execute-phase', '9'], REPO_ROOT);
+    const registry = createRegistry();
+    const sdkResult = await registry.dispatch('init.execute-phase', ['9'], REPO_ROOT);
+    expect(omitInitExecutePhaseVolatile(sdkResult.data as Record<string, unknown>))
+      .toEqual(omitInitExecutePhaseVolatile(gsdOutput as Record<string, unknown>));
   });
 });
 

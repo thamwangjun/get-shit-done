@@ -13,3 +13,29 @@ export function omitInitQuickVolatile(data: Record<string, unknown>): Record<str
   }
   return o;
 }
+
+// ─── init execute-phase normalization ────────────────────────────────────────
+
+/**
+ * Volatile keys for `init execute-phase` payloads.
+ * `project_root` is an absolute filesystem path that varies by checkout location.
+ * `agents_installed`, `missing_agents`, `project_title` vary by install state.
+ */
+export const INIT_EXECUTE_PHASE_VOLATILE_KEYS = [
+  'project_root',
+  'agents_installed',
+  'missing_agents',
+  'project_title',
+] as const;
+
+/**
+ * Strip volatile keys from an `init execute-phase` payload before toEqual comparison.
+ * Mirrors omitInitQuickVolatile for the execute-phase builder.
+ */
+export function omitInitExecutePhaseVolatile(data: Record<string, unknown>): Record<string, unknown> {
+  const o = { ...data };
+  for (const k of INIT_EXECUTE_PHASE_VOLATILE_KEYS) {
+    delete o[k];
+  }
+  return o;
+}
