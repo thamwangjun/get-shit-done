@@ -1412,6 +1412,102 @@ describe('cmdInitNewMilestone', () => {
   });
 });
 
+// ─── EXPOSE-01: *_effort siblings (SC#4 inertness on bare catalog) ──────────
+
+describe('EXPOSE-01 *_effort sibling coverage', () => {
+  let tmpDir;
+
+  beforeEach(() => {
+    tmpDir = createTempProject();
+  });
+
+  afterEach(() => {
+    cleanup(tmpDir);
+  });
+
+  test('init execute-phase emits executor_effort and verifier_effort siblings', () => {
+    const phaseDir = path.join(tmpDir, '.planning', 'phases', '01-foundation');
+    fs.mkdirSync(phaseDir, { recursive: true });
+    fs.writeFileSync(path.join(phaseDir, '01-01-PLAN.md'), '# Plan');
+
+    const result = runGsdTools('init execute-phase 1 --raw', tmpDir, { HOME: tmpDir });
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const output = JSON.parse(result.output);
+    assert.ok('executor_model' in output);
+    assert.ok('executor_effort' in output, 'executor_effort sibling must exist (EXPOSE-01)');
+    assert.strictEqual(output.executor_effort, null, 'bare catalog -> null (SC#4)');
+    assert.ok('verifier_model' in output);
+    assert.ok('verifier_effort' in output, 'verifier_effort sibling must exist (EXPOSE-01)');
+    assert.strictEqual(output.verifier_effort, null, 'bare catalog -> null (SC#4)');
+  });
+
+  test('init plan-phase emits researcher_effort, planner_effort, and checker_effort siblings', () => {
+    const result = runGsdTools('init plan-phase 1 --raw', tmpDir, { HOME: tmpDir });
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const output = JSON.parse(result.output);
+    assert.ok('researcher_model' in output);
+    assert.ok('researcher_effort' in output, 'researcher_effort sibling must exist (EXPOSE-01)');
+    assert.strictEqual(output.researcher_effort, null, 'bare catalog -> null (SC#4)');
+    assert.ok('planner_model' in output);
+    assert.ok('planner_effort' in output, 'planner_effort sibling must exist (EXPOSE-01)');
+    assert.strictEqual(output.planner_effort, null, 'bare catalog -> null (SC#4)');
+    assert.ok('checker_model' in output);
+    assert.ok('checker_effort' in output, 'checker_effort sibling must exist (EXPOSE-01)');
+    assert.strictEqual(output.checker_effort, null, 'bare catalog -> null (SC#4)');
+  });
+
+  test('init new-milestone emits researcher_effort, synthesizer_effort, and roadmapper_effort siblings', () => {
+    const result = runGsdTools('init new-milestone --raw', tmpDir, { HOME: tmpDir });
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const output = JSON.parse(result.output);
+    assert.ok('researcher_model' in output);
+    assert.ok('researcher_effort' in output, 'researcher_effort sibling must exist (EXPOSE-01)');
+    assert.strictEqual(output.researcher_effort, null, 'bare catalog -> null (SC#4)');
+    assert.ok('synthesizer_model' in output);
+    assert.ok('synthesizer_effort' in output, 'synthesizer_effort sibling must exist (EXPOSE-01)');
+    assert.strictEqual(output.synthesizer_effort, null, 'bare catalog -> null (SC#4)');
+    assert.ok('roadmapper_model' in output);
+    assert.ok('roadmapper_effort' in output, 'roadmapper_effort sibling must exist (EXPOSE-01)');
+    assert.strictEqual(output.roadmapper_effort, null, 'bare catalog -> null (SC#4)');
+  });
+
+  test('init quick emits executor_effort and planner_effort siblings', () => {
+    const result = runGsdTools(['init', 'quick', 'test task', '--raw'], tmpDir, { HOME: tmpDir });
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const output = JSON.parse(result.output);
+    assert.ok('executor_model' in output);
+    assert.ok('executor_effort' in output, 'executor_effort sibling must exist (EXPOSE-01)');
+    assert.strictEqual(output.executor_effort, null, 'bare catalog -> null (SC#4)');
+    assert.ok('planner_model' in output);
+    assert.ok('planner_effort' in output, 'planner_effort sibling must exist (EXPOSE-01)');
+    assert.strictEqual(output.planner_effort, null, 'bare catalog -> null (SC#4)');
+  });
+
+  test('1:1 *_model / *_effort pairing — every _model key has a matching _effort sibling', () => {
+    fs.mkdirSync(path.join(tmpDir, '.planning', 'phases', '01-foundation'), { recursive: true });
+    fs.writeFileSync(path.join(tmpDir, '.planning', 'phases', '01-foundation', '01-01-PLAN.md'), '# Plan');
+
+    const result = runGsdTools('init execute-phase 1 --raw', tmpDir, { HOME: tmpDir });
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const output = JSON.parse(result.output);
+    const modelKeys = Object.keys(output).filter(k => k.endsWith('_model'));
+    assert.ok(modelKeys.length > 0, 'must have at least one *_model key');
+
+    for (const modelKey of modelKeys) {
+      const effortKey = modelKey.replace(/_model$/, '_effort');
+      assert.ok(effortKey in output,
+        `${modelKey} must have a matching ${effortKey} sibling (D-06 blanket coverage)`);
+      assert.strictEqual(output[effortKey], null,
+        `${effortKey} must be null on a bare catalog (D-01 / SC#4)`);
+    }
+  });
+});
+
 // ─────────────────────────────────────────────────────────────────────────────
 // findProjectRoot integration — gsd-tools resolves project root from sub-repo
 // ─────────────────────────────────────────────────────────────────────────────
