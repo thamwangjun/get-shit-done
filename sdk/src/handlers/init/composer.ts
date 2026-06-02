@@ -1077,16 +1077,27 @@ export const initMilestoneOp: QueryHandler = async (_args, projectDir, workstrea
     }
   } catch { /* intentionally empty */ }
 
+  // WR-04 parity: scan both root phase dir and nested plans/ subdir for summaries,
+  // matching CJS listPhaseSummaryFiles → scanPhasePlans behavior.
+  function hasPhaseSummary(phaseDir: string): boolean {
+    try {
+      const rootFiles = readdirSync(phaseDir);
+      if (rootFiles.some(f => f.endsWith('-SUMMARY.md') || f === 'SUMMARY.md')) return true;
+      const plansDir = join(phaseDir, 'plans');
+      if (existsSync(plansDir)) {
+        const nestedFiles = readdirSync(plansDir);
+        if (nestedFiles.some(f => /^SUMMARY-\d+.*\.md$/i.test(f))) return true;
+      }
+    } catch { /* intentionally empty */ }
+    return false;
+  }
+
   if (roadmapPhaseNumbers.length > 0) {
     phaseCount = roadmapPhaseNumbers.length;
     for (const num of roadmapPhaseNumbers) {
       const dirName = diskPhaseDirs.get(canonicalizePhase(num));
       if (!dirName) continue;
-      try {
-        const phaseFiles = readdirSync(join(phasesDir, dirName));
-        const hasSummary = phaseFiles.some(f => f.endsWith('-SUMMARY.md') || f === 'SUMMARY.md');
-        if (hasSummary) completedPhases++;
-      } catch { /* intentionally empty */ }
+      if (hasPhaseSummary(join(phasesDir, dirName))) completedPhases++;
     }
   } else {
     // Fallback: no parseable ROADMAP (e.g. brand-new project). Preserve the
@@ -1096,11 +1107,7 @@ export const initMilestoneOp: QueryHandler = async (_args, projectDir, workstrea
       const dirs = entries.filter(e => e.isDirectory()).map(e => e.name);
       phaseCount = dirs.length;
       for (const dir of dirs) {
-        try {
-          const phaseFiles = readdirSync(join(phasesDir, dir));
-          const hasSummary = phaseFiles.some(f => f.endsWith('-SUMMARY.md') || f === 'SUMMARY.md');
-          if (hasSummary) completedPhases++;
-        } catch { /* intentionally empty */ }
+        if (hasPhaseSummary(join(phasesDir, dir))) completedPhases++;
       }
     } catch { /* intentionally empty */ }
   }
