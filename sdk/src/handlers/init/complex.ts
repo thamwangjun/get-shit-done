@@ -690,9 +690,13 @@ export const initManager: QueryHandler = async (_args, projectDir, workstream) =
   // the first one.  Multiple independent phases can be discussed in parallel
   // — the sliding-window pattern made the manager only recommend one
   // discuss action even when callers had free capacity to discuss several.
+  // CJS parity: also require deps_satisfied so blocked phases are not
+  // recommended for discussion (init.cjs:1311-1314).
   for (const phase of phases) {
     const status = phase.disk_status as string;
-    phase.is_next_to_discuss = (status === 'empty' || status === 'no_directory');
+    phase.is_next_to_discuss =
+      (status === 'empty' || status === 'no_directory') &&
+      !!(phase.deps_satisfied);
   }
 
   // Check WAITING.json signal
