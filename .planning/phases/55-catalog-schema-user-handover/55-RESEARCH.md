@@ -360,7 +360,7 @@ console.log(`PASS: all ${agents.length} agents have assigned effort values.`);
 | A1 | `resolveModelInternal` does not call `parseModelEffort` on catalog slot values, causing model = `"opus;medium"` after CATALOG-02 assignment | Pitfall 1 | If wrong: model resolution is fine and the fix is unnecessary; easy to verify by inspection |
 | A2 | No `*.test.cjs` file asserts on the `'opus' | 'sonnet' | 'haiku'` union type for `AgentCatalogEntry` fields | Standard Stack | If wrong: npm test will fail after type widening — check all test files for type assertions |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Include Pitfall 1 fix in Phase 55 or defer to Phase 56?**
    - What we know: `resolveModelInternal` and `config-query.ts` resolveModel handler both return raw `"opus;medium"` strings when catalog slots carry effort suffixes. Fix is one line each.
