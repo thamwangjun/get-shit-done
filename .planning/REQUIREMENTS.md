@@ -40,9 +40,9 @@ Requirements for milestone v2.1.0-e. Each maps to a roadmap phase. The work is *
 
 ### SDK & Tools Exposure
 
-- [ ] **EXPOSE-01**: The init JSON exposes a `*_effort` sibling for every resolved `*_model` field consumed by workflows
-- [ ] **EXPOSE-02**: `cmdResolveModel` / agent-skills output includes a canonical resolved `effort` field
-- [ ] **EXPOSE-03**: SDK (`sdk/src/`) and CLI (`bin/lib/`) resolution produce identical model+effort shapes
+- [x] **EXPOSE-01**: The init JSON exposes a `*_effort` sibling for every resolved `*_model` field consumed by workflows
+- [x] **EXPOSE-02**: `cmdResolveModel` / agent-skills output includes a canonical resolved `effort` field
+- [x] **EXPOSE-03**: SDK (`sdk/src/`) and CLI (`bin/lib/`) resolution produce identical model+effort shapes
 
 ### Spawn Wiring
 
@@ -104,9 +104,9 @@ Populated during roadmap creation (2026-05-31). All 30 v1 requirements mapped to
 | CONFIG-02 | Phase 53 | Complete |
 | CONFIG-03 | Phase 53 | Complete |
 | CONFIG-04 | Phase 53 | Complete |
-| EXPOSE-01 | Phase 54 | Pending |
-| EXPOSE-02 | Phase 54 | Pending |
-| EXPOSE-03 | Phase 54 | Pending |
+| EXPOSE-01 | Phase 54 | Complete |
+| EXPOSE-02 | Phase 54 | Complete |
+| EXPOSE-03 | Phase 54 | Complete |
 | CATALOG-01 | Phase 55 | Pending |
 | CATALOG-02 | Phase 55 (USER-HANDOVER) | Pending |
 | CATALOG-03 | Phase 55 | Pending |
