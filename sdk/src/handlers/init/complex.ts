@@ -42,6 +42,7 @@ import {
 } from '../../query/roadmap.js';
 import { agentSkills } from '../../query/skills.js';
 import { getMilestonePhaseFilter } from '../../query/state.js';
+import { canonicalizeRuntimeName } from '../../runtime/name-policy.js';
 import { withProjectRoot } from './composer.js';
 import type { QueryHandler } from '../../query/utils.js';
 
@@ -71,6 +72,18 @@ async function getEffort(agentType: string, projectDir: string): Promise<string 
  */
 function pathExists(base: string, relPath: string): boolean {
   return existsSync(join(base, relPath));
+}
+
+/**
+ * Format a GSD slash command for the active runtime.
+ * Mirrors CJS runtime-slash.cjs formatGsdSlash (#3584).
+ * - codex:                  $gsd-<cmd>  (shell-var syntax)
+ * - all other runtimes:     /gsd-<cmd>
+ */
+function formatGsdSlash(commandName: string, runtime: string): string {
+  const rt = canonicalizeRuntimeName(runtime) ?? runtime.toLowerCase();
+  if (rt === 'codex') return `$gsd-${commandName}`;
+  return `/gsd-${commandName}`;
 }
 
 /**
@@ -735,6 +748,9 @@ export const initManager: QueryHandler = async (_args, projectDir, workstream) =
     return p.is_active && (status === 'discussed' || status === 'researched');
   });
 
+  // WR-03: use runtime-aware slash command formatting (#3584)
+  const runtime = detectRuntime(config as { runtime?: unknown });
+
   const recommendedActions: Record<string, unknown>[] = [];
   for (const phase of phases) {
     const status = phase.disk_status as string;
@@ -747,7 +763,7 @@ export const initManager: QueryHandler = async (_args, projectDir, workstream) =
         phase_name: phase.name,
         action: 'execute',
         reason: `${phase.plan_count} plans ready, dependencies met`,
-        command: `/gsd-execute-phase ${phase.number}`,
+        command: `${formatGsdSlash('execute-phase', runtime)} ${phase.number}`,
       };
       const isAllowed = activeExecuting.length === 0 ||
         activeExecuting.every(a => !reaches(phase.number as string, a.number as string) && !reaches(a.number as string, phase.number as string));
@@ -758,7 +774,7 @@ export const initManager: QueryHandler = async (_args, projectDir, workstream) =
         phase_name: phase.name,
         action: 'plan',
         reason: 'Context gathered, ready for planning',
-        command: `/gsd-plan-phase ${phase.number}`,
+        command: `${formatGsdSlash('plan-phase', runtime)} ${phase.number}`,
       };
       const isAllowed = activePlanning.length === 0 ||
         activePlanning.every(a => !reaches(phase.number as string, a.number as string) && !reaches(a.number as string, phase.number as string));
@@ -769,7 +785,7 @@ export const initManager: QueryHandler = async (_args, projectDir, workstream) =
         phase_name: phase.name,
         action: 'discuss',
         reason: 'Unblocked, ready to gather context',
-        command: `/gsd-discuss-phase ${phase.number}`,
+        command: `${formatGsdSlash('discuss-phase', runtime)} ${phase.number}`,
       });
     }
   }
