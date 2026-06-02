@@ -431,6 +431,8 @@ export const initExecutePhase: QueryHandler = async (args, projectDir, workstrea
   // through to cmdInitExecutePhase. Without parsing here, `gsd-tools init
   // execute-phase 1 --tdd` would never override a false config value.
   const tddFlag = args.includes('--tdd');
+  // WR-05: --validate injects state drift warnings (parity with init.cjs:256-276).
+  const validateFlag = args.includes('--validate');
 
   const config = await loadConfig(projectDir);
   const paths = planningPaths(projectDir, workstream);
@@ -504,6 +506,25 @@ export const initExecutePhase: QueryHandler = async (args, projectDir, workstrea
     config_path: toPosixPath(relative(projectDir, join(planningDir, 'config.json'))),
   };
 
+  // WR-05: optional --validate: run state validation and include warnings (#1627)
+  if (validateFlag) {
+    try {
+      const stateContent = readFileSync(join(planningDir, 'STATE.md'), 'utf-8');
+      result.state_validation_ran = true;
+      const warnings: string[] = [];
+      const phaseDir = phaseInfo?.directory as string | undefined;
+      if (phaseDir && existsSync(join(projectDir, phaseDir))) {
+        const diskPlanCount = plans.length;
+        const totalPlansMatch = stateContent.match(/^Total Plans in Phase:\s*(\d+)/m);
+        const totalPlansInState = totalPlansMatch ? parseInt(totalPlansMatch[1], 10) : null;
+        if (totalPlansInState !== null && diskPlanCount !== totalPlansInState) {
+          warnings.push(`Plan count mismatch: STATE.md says ${totalPlansInState}, disk has ${diskPlanCount}`);
+        }
+      }
+      result.state_warnings = warnings;
+    } catch { /* intentionally empty */ }
+  }
+
   return { data: withProjectRoot(projectDir, result, config as Record<string, unknown>) };
 };
 
@@ -522,6 +543,8 @@ export const initPlanPhase: QueryHandler = async (args, projectDir, workstream) 
   // --tdd boolean override (parity with CJS router's parseNamedArgs + the
   // legacy cmdInitPlanPhase `options.tdd || config.tdd_mode || false`).
   const tddFlag = args.includes('--tdd');
+  // WR-05: --validate injects state drift warnings (parity with init.cjs:443-457).
+  const validateFlag = args.includes('--validate');
 
   const config = await loadConfig(projectDir);
   const paths = planningPaths(projectDir, workstream);
@@ -625,6 +648,21 @@ export const initPlanPhase: QueryHandler = async (args, projectDir, workstream) 
       if (reviewsFile) result.reviews_path = toPosixPath(join(phaseDir, reviewsFile));
       const patternsFile = files.find(f => f.endsWith('-PATTERNS.md') || f === 'PATTERNS.md');
       if (patternsFile) result.patterns_path = toPosixPath(join(phaseDir, patternsFile));
+    } catch { /* intentionally empty */ }
+  }
+
+  // WR-05: optional --validate: run state validation and include warnings (#1627)
+  if (validateFlag) {
+    try {
+      const stateContent = readFileSync(join(planningDir, 'STATE.md'), 'utf-8');
+      result.state_validation_ran = true;
+      const warnings: string[] = [];
+      const totalPlansMatch = stateContent.match(/^Total Plans in Phase:\s*(\d+)/m);
+      const totalPlansInState = totalPlansMatch ? parseInt(totalPlansMatch[1], 10) : null;
+      if (totalPlansInState !== null && totalPlansInState !== plans.length) {
+        warnings.push(`Plan count mismatch: STATE.md says ${totalPlansInState}, disk has ${plans.length}`);
+      }
+      result.state_warnings = warnings;
     } catch { /* intentionally empty */ }
   }
 
