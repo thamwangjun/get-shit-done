@@ -5,7 +5,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execGit, platformWriteSync, platformReadSync } = require('./shell-command-projection.cjs');
-const { loadConfig, resolveModelInternal, findPhaseInternal, getRoadmapPhaseInternal, pathExistsInternal, gitWorktreeInfoInternal, generateSlugInternal, getMilestoneInfo, getMilestonePhaseFilter, stripShippedMilestones, extractCurrentMilestone, normalizePhaseName, toPosixPath, output, error, checkAgentsInstalled, phaseTokenMatches } = require('./core.cjs');
+const { loadConfig, resolveModelInternal, resolveReasoningEffortInternal, findPhaseInternal, getRoadmapPhaseInternal, pathExistsInternal, gitWorktreeInfoInternal, generateSlugInternal, getMilestoneInfo, getMilestonePhaseFilter, stripShippedMilestones, extractCurrentMilestone, normalizePhaseName, toPosixPath, output, error, checkAgentsInstalled, phaseTokenMatches } = require('./core.cjs');
 const { planningPaths, planningDir, planningRoot, findContextMdIn } = require('./planning-workspace.cjs');
 const { maskIfSecret } = require('./secrets.cjs');
 const scanPhasePlans = require('./plan-scan.cjs');
@@ -195,7 +195,9 @@ function cmdInitExecutePhase(cwd, phase, raw, options = {}) {
   const result = {
     // Models
     executor_model: resolveModelInternal(cwd, 'gsd-executor'),
+    executor_effort: resolveReasoningEffortInternal(cwd, 'gsd-executor') ?? null,
     verifier_model: resolveModelInternal(cwd, 'gsd-verifier'),
+    verifier_effort: resolveReasoningEffortInternal(cwd, 'gsd-verifier') ?? null,
 
     // Config flags
     tdd_mode: options.tdd || config.tdd_mode || false,
@@ -341,8 +343,11 @@ function cmdInitPlanPhase(cwd, phase, raw, options = {}) {
   const result = {
     // Models
     researcher_model: resolveModelInternal(cwd, 'gsd-phase-researcher'),
+    researcher_effort: resolveReasoningEffortInternal(cwd, 'gsd-phase-researcher') ?? null,
     planner_model: resolveModelInternal(cwd, 'gsd-planner'),
+    planner_effort: resolveReasoningEffortInternal(cwd, 'gsd-planner') ?? null,
     checker_model: resolveModelInternal(cwd, 'gsd-plan-checker'),
+    checker_effort: resolveReasoningEffortInternal(cwd, 'gsd-plan-checker') ?? null,
 
     // Workflow flags
     tdd_mode: options.tdd || config.tdd_mode || false,
@@ -528,8 +533,11 @@ function cmdInitNewProject(cwd, raw) {
   const result = {
     // Models
     researcher_model: resolveModelInternal(cwd, 'gsd-project-researcher'),
+    researcher_effort: resolveReasoningEffortInternal(cwd, 'gsd-project-researcher') ?? null,
     synthesizer_model: resolveModelInternal(cwd, 'gsd-research-synthesizer'),
+    synthesizer_effort: resolveReasoningEffortInternal(cwd, 'gsd-research-synthesizer') ?? null,
     roadmapper_model: resolveModelInternal(cwd, 'gsd-roadmapper'),
+    roadmapper_effort: resolveReasoningEffortInternal(cwd, 'gsd-roadmapper') ?? null,
 
     // Config
     commit_docs: config.commit_docs,
@@ -581,8 +589,11 @@ function cmdInitNewMilestone(cwd, raw) {
   const result = {
     // Models
     researcher_model: resolveModelInternal(cwd, 'gsd-project-researcher'),
+    researcher_effort: resolveReasoningEffortInternal(cwd, 'gsd-project-researcher') ?? null,
     synthesizer_model: resolveModelInternal(cwd, 'gsd-research-synthesizer'),
+    synthesizer_effort: resolveReasoningEffortInternal(cwd, 'gsd-research-synthesizer') ?? null,
     roadmapper_model: resolveModelInternal(cwd, 'gsd-roadmapper'),
+    roadmapper_effort: resolveReasoningEffortInternal(cwd, 'gsd-roadmapper') ?? null,
 
     // Config
     commit_docs: config.commit_docs,
@@ -638,9 +649,13 @@ function cmdInitQuick(cwd, description, raw) {
   const result = {
     // Models
     planner_model: resolveModelInternal(cwd, 'gsd-planner'),
+    planner_effort: resolveReasoningEffortInternal(cwd, 'gsd-planner') ?? null,
     executor_model: resolveModelInternal(cwd, 'gsd-executor'),
+    executor_effort: resolveReasoningEffortInternal(cwd, 'gsd-executor') ?? null,
     checker_model: resolveModelInternal(cwd, 'gsd-plan-checker'),
+    checker_effort: resolveReasoningEffortInternal(cwd, 'gsd-plan-checker') ?? null,
     verifier_model: resolveModelInternal(cwd, 'gsd-verifier'),
+    verifier_effort: resolveReasoningEffortInternal(cwd, 'gsd-verifier') ?? null,
 
     // Config
     commit_docs: config.commit_docs,
@@ -760,7 +775,9 @@ function cmdInitVerifyWork(cwd, phase, raw) {
   const result = {
     // Models
     planner_model: resolveModelInternal(cwd, 'gsd-planner'),
+    planner_effort: resolveReasoningEffortInternal(cwd, 'gsd-planner') ?? null,
     checker_model: resolveModelInternal(cwd, 'gsd-plan-checker'),
+    checker_effort: resolveReasoningEffortInternal(cwd, 'gsd-plan-checker') ?? null,
 
     // Config
     commit_docs: config.commit_docs,
@@ -1094,6 +1111,7 @@ function cmdInitMapCodebase(cwd, raw) {
   const result = {
     // Models
     mapper_model: resolveModelInternal(cwd, 'gsd-codebase-mapper'),
+    mapper_effort: resolveReasoningEffortInternal(cwd, 'gsd-codebase-mapper') ?? null,
 
     // Config
     commit_docs: config.commit_docs,
@@ -1550,7 +1568,9 @@ function cmdInitProgress(cwd, raw) {
   const result = {
     // Models
     executor_model: resolveModelInternal(cwd, 'gsd-executor'),
+    executor_effort: resolveReasoningEffortInternal(cwd, 'gsd-executor') ?? null,
     planner_model: resolveModelInternal(cwd, 'gsd-planner'),
+    planner_effort: resolveReasoningEffortInternal(cwd, 'gsd-planner') ?? null,
 
     // Config
     commit_docs: config.commit_docs,
