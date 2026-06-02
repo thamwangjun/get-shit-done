@@ -286,7 +286,8 @@ export const resolveModel: QueryHandler = async (args, projectDir, workstream) =
     return { data: { model: 'inherit', profile, effort: null } };
   }
 
-  const alias = agentModels[profile] || agentModels['balanced'] || 'sonnet';
+  const rawAlias = agentModels[profile] || agentModels['balanced'] || 'sonnet';
+  const alias = (parseModelEffort(rawAlias).model as string) || rawAlias;
   const phaseType = AGENT_TO_PHASE_TYPE[agentType];
   const phaseTier = phaseType && typeof (config as Record<string, unknown>).models === 'object'
     ? ((config as Record<string, unknown>).models as Record<string, unknown>)[phaseType]
