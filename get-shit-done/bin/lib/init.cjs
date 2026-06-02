@@ -1704,6 +1704,11 @@ function cmdInitRemoveWorkspace(cwd, name, raw) {
     error('workspace name required for init remove-workspace');
   }
 
+  // T-14-01: Reject path traversal attempts (mirrors SDK composer.ts:1296-1301)
+  if (name.includes('/') || name.includes('\\') || name.includes('..')) {
+    error(`Invalid workspace name: ${name} (path separators not allowed)`);
+  }
+
   const wsPath = path.join(defaultBase, name);
   const manifestPath = path.join(wsPath, 'WORKSPACE.md');
 
