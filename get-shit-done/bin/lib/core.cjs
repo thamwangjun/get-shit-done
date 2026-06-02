@@ -1375,6 +1375,22 @@ function _resolveAgentSlotFromConfig(config, agentType) {
   // full raw string intact so Phase 53 effort extraction can consume it.
   const phaseTypeTierBase = phaseTypeTier ? parseModelEffort(phaseTypeTier).model : undefined;
   const phaseTypeTierValid = phaseTypeTier && VALID_TIERS.has(phaseTypeTierBase);
+  // WR-01 (#3023): a non-empty models.<phase_type> base alias that is not a
+  // recognized tier is a silent misconfiguration — same class the runtime/effort
+  // warning gates were added to prevent. Emit a one-shot stderr warning (keyed by
+  // phaseType + value so a typo warns exactly once) before falling back to profile.
+  if (phaseTypeTier && !phaseTypeTierValid) {
+    const key = `models::${phaseType}::${phaseTypeTier}`;
+    if (!_warnedConfigKeys.has(key)) {
+      _warnedConfigKeys.add(key);
+      try {
+        process.stderr.write(
+          `gsd: warning — models.${phaseType} has unrecognized tier "${phaseTypeTier}". ` +
+          `Allowed: opus, sonnet, haiku, inherit. Falling back to profile. (#3023)\n`
+        );
+      } catch { /* stderr might be closed in some test harnesses */ }
+    }
+  }
   // CR Major (#3030): honor phase-type tier when valid; otherwise synthesize
   // 'inherit' only when profile==='inherit' (no phase-type override present)
   // so a config like { model_profile:'inherit', models:{execution:'opus'} }
