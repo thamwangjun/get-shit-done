@@ -366,7 +366,15 @@ Plans:
   3. SDK (`sdk/src/`) and CLI (`bin/lib/`) resolution produce byte-identical model+effort shapes for the same inputs, verified by a parity test
   4. On a bare (un-assigned) catalog, every exposed `*_effort` value is `null`/omitted — confirming the exposure layer is inert until catalog values are assigned
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+**Wave 1**
+
+- [ ] 54-01-PLAN.md — CLI exposure: *_effort siblings at all 20 init.cjs *_model sites + cmdResolveModel always-emit canonical `effort` (rename from reasoning_effort) + inertness tests [EXPOSE-01, EXPOSE-02]
+
+**Wave 2** *(blocked on 54-01 — SDK mirrors the final CLI shape)*
+
+- [ ] 54-02-PLAN.md — SDK port: mirror effort precedence into config-query.ts resolveModel + static {claude,codex} allowlist + init *_effort siblings + extend golden parity harness with init-builder row [EXPOSE-03]
 
 #### Phase 55: Catalog Schema + User Handover
 
