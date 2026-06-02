@@ -389,7 +389,19 @@ Plans:
   3. Per-agent effort values are assigned across all 33 agents' slots by the user during handover (guidance heuristic: heavy → high, light → none/low, default → medium; higher is not monotonically better); `inherit` stays effort-free (user-owned, CATALOG-02)
   4. After handover, resolving a heavy agent yields its assigned effort and a light agent yields its assigned (or omitted) effort — confirming the hand-assigned values flow through the resolver built in Phase 53
 
-**Plans**: TBD
+**Plans**: 3 plans
+
+**Wave 1**
+
+- [ ] 55-01-PLAN.md — Widen AgentCatalogEntry/ModelCatalog types to string + JSON schema note + strip ;effort suffix in resolveModelInternal & config-query.ts [CATALOG-01, CATALOG-03]
+
+**Wave 2** *(blocked on 55-01)*
+
+- [ ] 55-02-PLAN.md — Write check-completeness.js (reuses Phase 53 resolveReasoningEffortInternal; temp claude-runtime config) [CATALOG-01]
+
+**Wave 3** *(blocked on 55-02)*
+
+- [ ] 55-03-PLAN.md — USER HANDOVER: HANDOVER.md 33-agent table + blocking checkpoint + post-handover completeness verification [CATALOG-02]
 
 #### Phase 56: Spawn-Template Wiring
 
@@ -499,7 +511,7 @@ Plans:
 | 52. Parser Foundation | v2.1.0-e | 3/3 | Complete    | 2026-05-31 |
 | 53. Unified Effort Resolver | v2.1.0-e | 2/2 | Complete    | 2026-06-01 |
 | 54. SDK & Tools JSON Exposure | v2.1.0-e | 2/2 | Complete    | 2026-06-02 |
-| 55. Catalog Schema + User Handover | v2.1.0-e | 0/TBD | Not started | - |
+| 55. Catalog Schema + User Handover | v2.1.0-e | 0/3 | Not started | - |
 | 56. Spawn-Template Wiring | v2.1.0-e | 0/TBD | Not started | - |
 | 57. Install-Time Translation | v2.1.0-e | 0/TBD | Not started | - |
 | 58. Regression Coverage | v2.1.0-e | 0/TBD | Not started | - |
