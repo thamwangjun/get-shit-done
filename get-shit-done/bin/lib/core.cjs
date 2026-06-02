@@ -1350,7 +1350,14 @@ function _resolveRuntimeTier(config, tier) {
  * @returns {string|null}
  */
 function _resolveAgentSlot(cwd, agentType) {
-  const config = loadConfig(cwd);
+  // Thin wrapper for existing callers/tests that pass a cwd. WR-04: the hot-path
+  // resolvers (resolveModelInternal / resolveReasoningEffortInternal) call
+  // _resolveAgentSlotFromConfig directly with their already-loaded config to
+  // avoid a redundant loadConfig (and its migration writeback / warn side effects).
+  return _resolveAgentSlotFromConfig(loadConfig(cwd), agentType);
+}
+
+function _resolveAgentSlotFromConfig(config, agentType) {
   const profile = String(config.model_profile || 'balanced').toLowerCase();
   const agentModels = MODEL_PROFILES[agentType];
   const phaseType = AGENT_TO_PHASE_TYPE[agentType];
@@ -1402,7 +1409,9 @@ function resolveModelInternal(cwd, agentType) {
   // (step 5) all stay correct without further branching.
   const profile = String(config.model_profile || 'balanced').toLowerCase();
   const agentModels = MODEL_PROFILES[agentType];
-  const tier = _resolveAgentSlot(cwd, agentType);
+  // WR-04: reuse the config already loaded at line 1383 — avoid a second
+  // loadConfig (and its migration writeback / one-shot warn side effects).
+  const tier = _resolveAgentSlotFromConfig(config, agentType);
 
   // 3. Runtime-aware resolution (#2517) — only when `runtime` is explicitly set
   // to a non-Claude runtime. `runtime: "claude"` is the implicit default and is
@@ -1582,7 +1591,8 @@ function resolveReasoningEffortInternal(cwd, agentType) {
   // 2. Shared slot derivation — _resolveAgentSlot owns the phase-type lookup
   //    and profile fallback (D-08: eliminates duplicated tier re-derivation).
   //    The returned string may carry a ';effort' suffix (e.g. "opus;high").
-  const tier = _resolveAgentSlot(cwd, agentType);
+  //    WR-04: reuse the config loaded at line 1566 — avoid a second loadConfig.
+  const tier = _resolveAgentSlotFromConfig(config, agentType);
 
   // RESOLVE-06: inherit/unknown resolved tier → no effort.
   if (!tier || tier === 'inherit') return null;
