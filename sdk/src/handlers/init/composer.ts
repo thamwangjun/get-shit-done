@@ -38,23 +38,37 @@ import type { QueryHandler } from '../../query/utils.js';
 // ─── Internal helpers ──────────────────────────────────────────────────────
 
 /**
- * Extract model alias string from a resolveModel result.
+ * IN-01: Combined model + effort fetch — halves resolveModel calls vs calling
+ * getModelAlias + getEffort separately (each called loadConfig + config.json read).
  */
-async function getModelAlias(agentType: string, projectDir: string): Promise<string> {
+async function getModelAndEffort(
+  agentType: string,
+  projectDir: string,
+): Promise<{ model: string; effort: string | null }> {
   const result = await resolveModel([agentType], projectDir);
   const data = result.data as Record<string, unknown>;
-  return (data.model as string) || 'sonnet';
+  return {
+    model: (data.model as string) || 'sonnet',
+    effort: typeof data.effort === 'string' ? data.effort : null,
+  };
+}
+
+/**
+ * Extract model alias string from a resolveModel result.
+ * @deprecated Prefer getModelAndEffort to avoid a double resolveModel call.
+ */
+async function getModelAlias(agentType: string, projectDir: string): Promise<string> {
+  return (await getModelAndEffort(agentType, projectDir)).model;
 }
 
 /**
  * Extract effort token (or null) from a resolveModel result.
+ * @deprecated Prefer getModelAndEffort to avoid a double resolveModel call.
  * Mirrors getModelAlias but reads data.effort — the same-slot invariant
  * that prevents #3023-style model/effort divergence.
  */
 async function getEffort(agentType: string, projectDir: string): Promise<string | null> {
-  const result = await resolveModel([agentType], projectDir);
-  const data = result.data as Record<string, unknown>;
-  return typeof data.effort === 'string' ? data.effort : null;
+  return (await getModelAndEffort(agentType, projectDir)).effort;
 }
 
 /**
@@ -386,14 +400,17 @@ export const initExecutePhase: QueryHandler = async (args, projectDir, workstrea
   const phase_req_ids = extractReqIds(roadmapPhase);
 
   const configExists = existsSync(join(planningDir, 'config.json'));
-  const [executorModel, verifierModel, executorEffort, verifierEffort] = configExists
+  // IN-01: combined fetch — 2 resolveModel calls instead of 4.
+  const [executorME, verifierME] = configExists
     ? await Promise.all([
-        getModelAlias('gsd-executor', projectDir),
-        getModelAlias('gsd-verifier', projectDir),
-        getEffort('gsd-executor', projectDir),
-        getEffort('gsd-verifier', projectDir),
+        getModelAndEffort('gsd-executor', projectDir),
+        getModelAndEffort('gsd-verifier', projectDir),
       ])
-    : ['', '', null, null];
+    : [{ model: '', effort: null }, { model: '', effort: null }];
+  const executorModel = executorME.model;
+  const executorEffort = executorME.effort;
+  const verifierModel = verifierME.model;
+  const verifierEffort = verifierME.effort;
 
   const milestone = await getMilestoneInfo(projectDir, workstream);
 
@@ -498,16 +515,20 @@ export const initPlanPhase: QueryHandler = async (args, projectDir, workstream) 
   const phase_req_ids = extractReqIds(roadmapPhase);
 
   const configExists = existsSync(join(planningDir, 'config.json'));
-  const [researcherModel, plannerModel, checkerModel, researcherEffort, plannerEffort, checkerEffort] = configExists
+  // IN-01: combined fetch — 3 resolveModel calls instead of 6.
+  const [researcherME, plannerME, checkerME] = configExists
     ? await Promise.all([
-        getModelAlias('gsd-phase-researcher', projectDir),
-        getModelAlias('gsd-planner', projectDir),
-        getModelAlias('gsd-plan-checker', projectDir),
-        getEffort('gsd-phase-researcher', projectDir),
-        getEffort('gsd-planner', projectDir),
-        getEffort('gsd-plan-checker', projectDir),
+        getModelAndEffort('gsd-phase-researcher', projectDir),
+        getModelAndEffort('gsd-planner', projectDir),
+        getModelAndEffort('gsd-plan-checker', projectDir),
       ])
-    : ['', '', '', null, null, null];
+    : [{ model: '', effort: null }, { model: '', effort: null }, { model: '', effort: null }];
+  const researcherModel = researcherME.model;
+  const researcherEffort = researcherME.effort;
+  const plannerModel = plannerME.model;
+  const plannerEffort = plannerME.effort;
+  const checkerModel = checkerME.model;
+  const checkerEffort = checkerME.effort;
 
   const phaseNumber = (phaseInfo?.phase_number as string) || null;
   const phaseName = (phaseInfo?.phase_name as string) ?? null;
@@ -641,14 +662,18 @@ export const initNewMilestone: QueryHandler = async (_args, projectDir) => {
     }
   } catch { /* intentionally empty */ }
 
-  const [researcherModel, synthesizerModel, roadmapperModel, researcherEffort, synthesizerEffort, roadmapperEffort] = await Promise.all([
-    getModelAlias('gsd-project-researcher', projectDir),
-    getModelAlias('gsd-research-synthesizer', projectDir),
-    getModelAlias('gsd-roadmapper', projectDir),
-    getEffort('gsd-project-researcher', projectDir),
-    getEffort('gsd-research-synthesizer', projectDir),
-    getEffort('gsd-roadmapper', projectDir),
+  // IN-01: combined fetch — 3 resolveModel calls instead of 6.
+  const [researcherME, synthesizerME, roadmapperME] = await Promise.all([
+    getModelAndEffort('gsd-project-researcher', projectDir),
+    getModelAndEffort('gsd-research-synthesizer', projectDir),
+    getModelAndEffort('gsd-roadmapper', projectDir),
   ]);
+  const researcherModel = researcherME.model;
+  const researcherEffort = researcherME.effort;
+  const synthesizerModel = synthesizerME.model;
+  const synthesizerEffort = synthesizerME.effort;
+  const roadmapperModel = roadmapperME.model;
+  const roadmapperEffort = roadmapperME.effort;
 
   const result: Record<string, unknown> = {
     researcher_model: researcherModel,
@@ -709,18 +734,23 @@ export const initQuick: QueryHandler = async (args, projectDir) => {
     : null;
 
   const configExists = existsSync(join(planningDir, 'config.json'));
-  const [plannerModel, executorModel, checkerModel, verifierModel, plannerEffort, executorEffort, checkerEffort, verifierEffort] = configExists
+  // IN-01: combined fetch — 4 resolveModel calls instead of 8.
+  const [plannerME, executorME, checkerME, verifierME] = configExists
     ? await Promise.all([
-        getModelAlias('gsd-planner', projectDir),
-        getModelAlias('gsd-executor', projectDir),
-        getModelAlias('gsd-plan-checker', projectDir),
-        getModelAlias('gsd-verifier', projectDir),
-        getEffort('gsd-planner', projectDir),
-        getEffort('gsd-executor', projectDir),
-        getEffort('gsd-plan-checker', projectDir),
-        getEffort('gsd-verifier', projectDir),
+        getModelAndEffort('gsd-planner', projectDir),
+        getModelAndEffort('gsd-executor', projectDir),
+        getModelAndEffort('gsd-plan-checker', projectDir),
+        getModelAndEffort('gsd-verifier', projectDir),
       ])
-    : ['', '', '', '', null, null, null, null];
+    : Array.from({ length: 4 }, () => ({ model: '', effort: null as string | null }));
+  const plannerModel = plannerME.model;
+  const plannerEffort = plannerME.effort;
+  const executorModel = executorME.model;
+  const executorEffort = executorME.effort;
+  const checkerModel = checkerME.model;
+  const checkerEffort = checkerME.effort;
+  const verifierModel = verifierME.model;
+  const verifierEffort = verifierME.effort;
 
   const result: Record<string, unknown> = {
     planner_model: plannerModel,
@@ -794,14 +824,17 @@ export const initVerifyWork: QueryHandler = async (args, projectDir, workstream)
   const { phaseInfo } = await getPhaseInfoForVerifyWork(phase, projectDir, workstream);
 
   const configExists = existsSync(join(projectDir, '.planning', 'config.json'));
-  const [plannerModel, checkerModel, plannerEffort, checkerEffort] = configExists
+  // IN-01: combined fetch — 2 resolveModel calls instead of 4.
+  const [plannerME, checkerME] = configExists
     ? await Promise.all([
-        getModelAlias('gsd-planner', projectDir),
-        getModelAlias('gsd-plan-checker', projectDir),
-        getEffort('gsd-planner', projectDir),
-        getEffort('gsd-plan-checker', projectDir),
+        getModelAndEffort('gsd-planner', projectDir),
+        getModelAndEffort('gsd-plan-checker', projectDir),
       ])
-    : ['', '', null, null];
+    : [{ model: '', effort: null }, { model: '', effort: null }];
+  const plannerModel = plannerME.model;
+  const plannerEffort = plannerME.effort;
+  const checkerModel = checkerME.model;
+  const checkerEffort = checkerME.effort;
 
   const result: Record<string, unknown> = {
     planner_model: plannerModel,
@@ -1137,10 +1170,10 @@ export const initMapCodebase: QueryHandler = async (_args, projectDir) => {
     existingMaps = readdirSync(codebaseDir).filter(f => f.endsWith('.md'));
   } catch { /* intentionally empty */ }
 
-  const [mapperModel, mapperEffort] = await Promise.all([
-    getModelAlias('gsd-codebase-mapper', projectDir),
-    getEffort('gsd-codebase-mapper', projectDir),
-  ]);
+  // IN-01: combined fetch — 1 resolveModel call instead of 2.
+  const mapperME = await getModelAndEffort('gsd-codebase-mapper', projectDir);
+  const mapperModel = mapperME.model;
+  const mapperEffort = mapperME.effort;
 
   const result: Record<string, unknown> = {
     mapper_model: mapperModel,

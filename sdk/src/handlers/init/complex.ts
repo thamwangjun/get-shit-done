@@ -48,22 +48,36 @@ import type { QueryHandler } from '../../query/utils.js';
 // ─── Internal helpers ──────────────────────────────────────────────────────
 
 /**
- * Get model alias string from resolveModel result.
+ * IN-01: Combined model + effort fetch — halves resolveModel calls vs calling
+ * getModelAlias + getEffort separately (each called loadConfig + config.json read).
  */
-async function getModelAlias(agentType: string, projectDir: string): Promise<string> {
+async function getModelAndEffort(
+  agentType: string,
+  projectDir: string,
+): Promise<{ model: string; effort: string | null }> {
   const result = await resolveModel([agentType], projectDir);
   const data = result.data as Record<string, unknown>;
-  return typeof data.model === 'string' ? data.model : 'sonnet';
+  return {
+    model: typeof data.model === 'string' ? data.model : 'sonnet',
+    effort: typeof data.effort === 'string' ? data.effort : null,
+  };
+}
+
+/**
+ * Get model alias string from resolveModel result.
+ * @deprecated Prefer getModelAndEffort to avoid a double resolveModel call.
+ */
+async function getModelAlias(agentType: string, projectDir: string): Promise<string> {
+  return (await getModelAndEffort(agentType, projectDir)).model;
 }
 
 /**
  * Extract effort token (or null) from a resolveModel result.
+ * @deprecated Prefer getModelAndEffort to avoid a double resolveModel call.
  * Same-slot invariant: always use the same agentType as the adjacent *_model.
  */
 async function getEffort(agentType: string, projectDir: string): Promise<string | null> {
-  const result = await resolveModel([agentType], projectDir);
-  const data = result.data as Record<string, unknown>;
-  return typeof data.effort === 'string' ? data.effort : null;
+  return (await getModelAndEffort(agentType, projectDir)).effort;
 }
 
 /**
@@ -264,14 +278,18 @@ export const initNewProject: QueryHandler = async (_args, projectDir, workstream
     pathExists(projectDir, 'mix.exs') ||
     pathExists(projectDir, 'project.clj');
 
-  const [researcherModel, synthesizerModel, roadmapperModel, researcherEffort, synthesizerEffort, roadmapperEffort] = await Promise.all([
-    getModelAlias('gsd-project-researcher', projectDir),
-    getModelAlias('gsd-research-synthesizer', projectDir),
-    getModelAlias('gsd-roadmapper', projectDir),
-    getEffort('gsd-project-researcher', projectDir),
-    getEffort('gsd-research-synthesizer', projectDir),
-    getEffort('gsd-roadmapper', projectDir),
+  // IN-01: combined fetch — 3 resolveModel calls instead of 6.
+  const [researcherME, synthesizerME, roadmapperME] = await Promise.all([
+    getModelAndEffort('gsd-project-researcher', projectDir),
+    getModelAndEffort('gsd-research-synthesizer', projectDir),
+    getModelAndEffort('gsd-roadmapper', projectDir),
   ]);
+  const researcherModel = researcherME.model;
+  const researcherEffort = researcherME.effort;
+  const synthesizerModel = synthesizerME.model;
+  const synthesizerEffort = synthesizerME.effort;
+  const roadmapperModel = roadmapperME.model;
+  const roadmapperEffort = roadmapperME.effort;
   const runtime = detectRuntime(config as { runtime?: unknown });
   const agentsDir = resolveAgentsDir(runtime, projectDir);
   const gitInfo = gitWorktreeInfo(projectDir);
@@ -461,12 +479,15 @@ export const initProgress: QueryHandler = async (_args, projectDir, workstream) 
     if (pauseMatch) pausedAt = pauseMatch[1].trim();
   } catch { /* intentionally empty */ }
 
-  const [executorModel, plannerModel, executorEffort, plannerEffort] = await Promise.all([
-    getModelAlias('gsd-executor', projectDir),
-    getModelAlias('gsd-planner', projectDir),
-    getEffort('gsd-executor', projectDir),
-    getEffort('gsd-planner', projectDir),
+  // IN-01: combined fetch — 2 resolveModel calls instead of 4.
+  const [executorME, plannerME] = await Promise.all([
+    getModelAndEffort('gsd-executor', projectDir),
+    getModelAndEffort('gsd-planner', projectDir),
   ]);
+  const executorModel = executorME.model;
+  const executorEffort = executorME.effort;
+  const plannerModel = plannerME.model;
+  const plannerEffort = plannerME.effort;
 
   const result: Record<string, unknown> = {
     executor_model: executorModel,
