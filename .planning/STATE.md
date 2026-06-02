@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.1.0-e
 milestone_name: Per-Agent Thinking Effort
 status: executing
-last_updated: "2026-06-02T08:21:26.764Z"
-last_activity: 2026-06-02 -- Phase 54 planning complete
+last_updated: "2026-06-02T11:53:06.431Z"
+last_activity: 2026-06-02
 progress:
   total_phases: 7
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 7
-  completed_plans: 5
-  percent: 29
+  completed_plans: 7
+  percent: 43
 ---
 
 # Project State
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-31 after Phase 51)
 
 **Core value:** Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships
-**Current focus:** Phase 53 — unified-effort-resolver
+**Current focus:** Phase 54 — sdk-tools-json-exposure
 
 ## Current Position
 
-Phase: 54
-Plan: Not started
+Phase: 54 (sdk-tools-json-exposure) — EXECUTING
+Plan: 2 of 2
 Status: Ready to execute
-Last activity: 2026-06-02 -- Phase 54 planning complete
+Last activity: 2026-06-02
 
 ## Performance Metrics
 
@@ -93,3 +93,4 @@ Resume file: .planning/phases/54-sdk-tools-json-exposure/54-CONTEXT.md
 - Plan the first phase with `/gsd-plan-phase 52`
 
 | 11 | commit uncommitted changes (config model_profile→balanced) | 2026-06-02 | 97265342 | — |
+| 12 | commit all uncommitted changes | 2026-06-02 | 1d6e0380 | — |

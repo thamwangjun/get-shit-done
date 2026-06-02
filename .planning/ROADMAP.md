@@ -370,11 +370,11 @@ Plans:
 
 **Wave 1**
 
-- [ ] 54-01-PLAN.md — CLI exposure: *_effort siblings at all 20 init.cjs *_model sites + cmdResolveModel always-emit canonical `effort` (rename from reasoning_effort) + inertness tests [EXPOSE-01, EXPOSE-02]
+- [x] 54-01-PLAN.md — CLI exposure: *_effort siblings at all 20 init.cjs *_model sites + cmdResolveModel always-emit canonical `effort` (rename from reasoning_effort) + inertness tests [EXPOSE-01, EXPOSE-02]
 
 **Wave 2** *(blocked on 54-01 — SDK mirrors the final CLI shape)*
 
-- [ ] 54-02-PLAN.md — SDK port: mirror effort precedence into config-query.ts resolveModel + static {claude,codex} allowlist + init *_effort siblings + extend golden parity harness with init-builder row [EXPOSE-03]
+- [x] 54-02-PLAN.md — SDK port: mirror effort precedence into config-query.ts resolveModel + static {claude,codex} allowlist + init *_effort siblings + extend golden parity harness with init-builder row [EXPOSE-03]
 
 #### Phase 55: Catalog Schema + User Handover
 
@@ -498,7 +498,7 @@ Plans:
 | 51. Quality Gate | v2.1.0-d | 1/1 | Complete | 2026-05-31 |
 | 52. Parser Foundation | v2.1.0-e | 3/3 | Complete    | 2026-05-31 |
 | 53. Unified Effort Resolver | v2.1.0-e | 2/2 | Complete    | 2026-06-01 |
-| 54. SDK & Tools JSON Exposure | v2.1.0-e | 0/TBD | Not started | - |
+| 54. SDK & Tools JSON Exposure | v2.1.0-e | 2/2 | Complete   | 2026-06-02 |
 | 55. Catalog Schema + User Handover | v2.1.0-e | 0/TBD | Not started | - |
 | 56. Spawn-Template Wiring | v2.1.0-e | 0/TBD | Not started | - |
 | 57. Install-Time Translation | v2.1.0-e | 0/TBD | Not started | - |
