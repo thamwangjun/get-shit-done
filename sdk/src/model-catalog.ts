@@ -8,10 +8,18 @@ interface RuntimeTierEntry {
 
 type RuntimeTierTable = Record<string, Record<string, RuntimeTierEntry | null>>;
 
+// Profile slot values accept plain tier aliases ('opus', 'sonnet', 'haiku') or
+// 'model;effort' strings (e.g. 'opus;high'). The ';' delimiter is intentional —
+// provider IDs like 'openrouter:anthropic/...' use ':' which never conflicts.
+// parseModelEffort() validates effort tokens against EFFORT_TOKENS at runtime.
+//
+// adaptiveTierMap values follow the same syntax and resolve at precedence step 3
+// (same level as per-agent profile slots, not as a step-4 fallback).
+// RESOLVE-02: per-agent override → phase-type slot → profile slot/adaptiveTierMap → omit.
 interface AgentCatalogEntry {
-  golden: 'opus' | 'sonnet' | 'haiku';
-  balanced: 'opus' | 'sonnet' | 'haiku';
-  budget: 'opus' | 'sonnet' | 'haiku';
+  golden: string;    // was: 'opus' | 'sonnet' | 'haiku'
+  balanced: string;  // was: 'opus' | 'sonnet' | 'haiku'
+  budget: string;    // was: 'opus' | 'sonnet' | 'haiku'
   phaseType: string;
   routingTier: 'light' | 'standard' | 'heavy';
 }
@@ -19,7 +27,7 @@ interface AgentCatalogEntry {
 interface ModelCatalog {
   profiles: string[];
   phaseTypes: string[];
-  adaptiveTierMap: Record<'light' | 'standard' | 'heavy', 'opus' | 'sonnet' | 'haiku'>;
+  adaptiveTierMap: Record<'light' | 'standard' | 'heavy', string>;  // was: ...'haiku'
   runtimeTierDefaults: RuntimeTierTable;
   agents: Record<string, AgentCatalogEntry>;
 }
