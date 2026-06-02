@@ -766,7 +766,11 @@ export const initManager: QueryHandler = async (_args, projectDir, workstream) =
     }
   }
 
-  const completedCount = phases.filter(p => p.disk_status === 'complete').length;
+  // Issue #2129: exclude 999.x backlog phases from completion accounting so
+  // projects with parking-lot phases can still reach all_complete: true.
+  // Mirrors CJS cmdInitManager nonBacklogPhases filter (init.cjs:1399-1400).
+  const nonBacklogPhases = phases.filter(p => !/^999(?:\.|$)/.test(p.number as string));
+  const completedCount = nonBacklogPhases.filter(p => p.disk_status === 'complete').length;
 
   // ── Next-milestone surface (issue #2497) ───────────────────────────────
   // Populate queued_phases + metadata with the milestone immediately after
@@ -826,7 +830,7 @@ export const initManager: QueryHandler = async (_args, projectDir, workstream) =
     in_progress_count: phases.filter(p => ['partial', 'planned', 'discussed', 'researched'].includes(p.disk_status as string)).length,
     recommended_actions: recommendedActions,
     waiting_signal: waitingSignal,
-    all_complete: completedCount === phases.length && phases.length > 0,
+    all_complete: completedCount === nonBacklogPhases.length && nonBacklogPhases.length > 0,
     queued_phases: queuedPhases,
     queued_milestone_version: queuedMilestoneVersion,
     queued_milestone_name: queuedMilestoneName,
