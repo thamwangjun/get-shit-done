@@ -1,10 +1,11 @@
 ---
 phase: 54
 slug: sdk-tools-json-exposure
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: complete
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-06-02
+audited: 2026-06-02
 ---
 
 # Phase 54 — Validation Strategy
@@ -40,9 +41,9 @@ created: 2026-06-02
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 54-01-01 | 01 | 1 | EXPOSE-01 | — / — | N/A | unit | `node --test tests/init.test.cjs` | ❌ W0 | ⬜ pending |
-| 54-01-02 | 01 | 1 | EXPOSE-02 | — / — | N/A | unit | `node --test tests/commands.test.cjs` | ❌ W0 | ⬜ pending |
-| 54-02-01 | 02 | 2 | EXPOSE-03 | — / — | N/A | integration | `npm --prefix sdk test -- read-only-parity` | ✅ | ⬜ pending |
+| 54-01-01 | 01 | 1 | EXPOSE-01 | — / — | N/A | unit | `node --test tests/init.test.cjs` | ✅ | ✅ green |
+| 54-01-02 | 01 | 1 | EXPOSE-02 | — / — | N/A | unit | `node --test tests/commands.test.cjs` | ✅ | ✅ green |
+| 54-02-01 | 02 | 2 | EXPOSE-03 | — / — | N/A | integration | `npm --prefix sdk test -- read-only-parity` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -50,9 +51,9 @@ created: 2026-06-02
 
 ## Wave 0 Requirements
 
-- [ ] `tests/init.test.cjs` — assertions that every `*_model` field in init builders has a sibling `*_effort` key, value `null` on bare catalog (EXPOSE-01 / SC#1, SC#4)
-- [ ] `tests/commands.test.cjs` — assertion that `cmdResolveModel` always emits canonical `effort` field (value `null` when unresolved), and that `reasoning_effort` is no longer emitted (EXPOSE-02 / SC#2)
-- [ ] SDK golden parity coverage of effort fields reuses existing `sdk/src/golden/read-only-parity.integration.test.ts` (EXPOSE-03 / SC#3) — extend golden rows, no new framework
+- [x] `tests/init.test.cjs` — assertions that every `*_model` field in init builders has a sibling `*_effort` key, value `null` on bare catalog (EXPOSE-01 / SC#1, SC#4)
+- [x] `tests/commands.test.cjs` — assertion that `cmdResolveModel` always emits canonical `effort` field (value `null` when unresolved), and that `reasoning_effort` is no longer emitted (EXPOSE-02 / SC#2)
+- [x] SDK golden parity coverage of effort fields reuses existing `sdk/src/golden/read-only-parity.integration.test.ts` (EXPOSE-03 / SC#3) — extend golden rows, no new framework
 
 *Existing infrastructure (Node `--test` + vitest golden harness) covers all phase requirements; only new assertions/fixtures are added.*
 
@@ -70,11 +71,23 @@ created: 2026-06-02
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 90s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 90s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** 2026-06-02
+
+---
+
+## Validation Audit 2026-06-02
+
+| Metric | Count |
+|--------|-------|
+| Gaps found | 0 |
+| Resolved | 0 |
+| Escalated | 0 |
+
+All 3 requirements (EXPOSE-01, EXPOSE-02, EXPOSE-03) had test files written during TDD execution. CLI suite: 8594 pass / 0 fail. SDK golden parity confirmed green per plan 54-02 SUMMARY. No gaps required remediation.
