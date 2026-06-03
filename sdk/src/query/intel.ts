@@ -17,24 +17,49 @@
  * ```
  */
 
-import { existsSync, readdirSync, readFileSync, writeFileSync, mkdirSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
 
 import { planningPaths, resolvePathUnderProject } from './helpers.js';
 import type { QueryHandler } from './utils.js';
+import { GSDError } from '../errors.js';
 
 // ─── Constants ───────────────────────────────────────────────────────────
 
 const INTEL_FILES: Record<string, string> = {
-  files: 'files.json',
-  apis: 'apis.json',
-  deps: 'deps.json',
-  arch: 'arch.md',
+  files: 'file-roles.json',
+  apis: 'api-map.json',
+  deps: 'dependency-graph.json',
+  arch: 'arch-decisions.json',
   stack: 'stack.json',
 };
 
 const STALE_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+/**
+ * Port of CJS `core.timeAgo` — converts a Date to a human-readable relative string.
+ */
+function timeAgo(date: Date): string {
+  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (seconds < 5) return 'just now';
+  if (seconds < 60) return `${seconds} seconds ago`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes === 1) return '1 minute ago';
+  if (minutes < 60) return `${minutes} minutes ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours === 1) return '1 hour ago';
+  if (hours < 24) return `${hours} hours ago`;
+  const days = Math.floor(hours / 24);
+  if (days === 1) return '1 day ago';
+  if (days < 30) return `${days} days ago`;
+  const months = Math.floor(days / 30);
+  if (months === 1) return '1 month ago';
+  if (months < 12) return `${months} months ago`;
+  const years = Math.floor(days / 365);
+  if (years === 1) return '1 year ago';
+  return `${years} years ago`;
+}
 
 // ─── Internal helpers ────────────────────────────────────────────────────
 
@@ -77,31 +102,38 @@ function hashFile(filePath: string): string | null {
 /** Max recursion depth when walking JSON for intel queries (avoids stack overflow). */
 export const MAX_JSON_SEARCH_DEPTH = 48;
 
-export function searchJsonEntries(data: unknown, term: string, depth = 0): unknown[] {
+/**
+ * Port of CJS `matchesInValue` — recursively checks if a term appears in any string value.
+ */
+function matchesInValue(value: unknown, lowerTerm: string): boolean {
+  if (typeof value === 'string') return value.toLowerCase().includes(lowerTerm);
+  if (Array.isArray(value)) return value.some(v => matchesInValue(v, lowerTerm));
+  if (value && typeof value === 'object') return Object.values(value as object).some(v => matchesInValue(v, lowerTerm));
+  return false;
+}
+
+/**
+ * Port of CJS `searchJsonEntries` — searches { entries } or flat object for matching keys/values.
+ * Returns `{ key, value }` pairs where key contains term or value contains term (case-insensitive).
+ */
+export function searchJsonEntries(data: unknown, term: string, depth = 0): { key: string; value: unknown }[] {
+  if (!data || typeof data !== 'object') return [];
+  if (depth > MAX_JSON_SEARCH_DEPTH) return [];
+
+  const entries = (data as Record<string, unknown>)['entries'] ?? data;
+  if (!entries || typeof entries !== 'object') return [];
+
   const lowerTerm = term.toLowerCase();
-  const results: unknown[] = [];
-  if (depth > MAX_JSON_SEARCH_DEPTH) return results;
-  if (!data || typeof data !== 'object') return results;
+  const results: { key: string; value: unknown }[] = [];
 
-  function matchesInValue(value: unknown, d: number): boolean {
-    if (d > MAX_JSON_SEARCH_DEPTH) return false;
-    if (typeof value === 'string') return value.toLowerCase().includes(lowerTerm);
-    if (Array.isArray(value)) return value.some(v => matchesInValue(v, d + 1));
-    if (value && typeof value === 'object') return Object.values(value as object).some(v => matchesInValue(v, d + 1));
-    return false;
-  }
-
-  if (Array.isArray(data)) {
-    for (const entry of data) {
-      if (matchesInValue(entry, depth + 1)) results.push(entry);
+  for (const [key, value] of Object.entries(entries as Record<string, unknown>)) {
+    if (key === '_meta') continue;
+    if (key.toLowerCase().includes(lowerTerm)) {
+      results.push({ key, value });
+      continue;
     }
-  } else {
-    for (const [, value] of Object.entries(data as object)) {
-      if (Array.isArray(value)) {
-        for (const entry of value) {
-          if (matchesInValue(entry, depth + 1)) results.push(entry);
-        }
-      }
+    if (matchesInValue(value, lowerTerm)) {
+      results.push({ key, value });
     }
   }
   return results;
@@ -134,17 +166,16 @@ export const intelStatus: QueryHandler = async (_args, projectDir, _workstream) 
       continue;
     }
     let updatedAt: string | null = null;
-    if (filename.endsWith('.md')) {
-      try { updatedAt = statSync(filePath).mtime.toISOString(); } catch { /* skip */ }
-    } else {
-      const data = safeReadJson(filePath) as Record<string, unknown> | null;
-      if (data?._meta) {
-        updatedAt = (data._meta as Record<string, unknown>).updated_at as string | null;
-      }
+    // All intel files are JSON — read _meta.updated_at (matches CJS oracle)
+    const data = safeReadJson(filePath) as Record<string, unknown> | null;
+    if (data?._meta) {
+      updatedAt = (data._meta as Record<string, unknown>).updated_at as string | null;
     }
     const stale = !updatedAt || (now - new Date(updatedAt).getTime()) > STALE_MS;
     if (stale) overallStale = true;
-    files[filename] = { exists: true, updated_at: updatedAt, stale };
+    // Apply timeAgo formatting to updated_at (matches CJS gsd-tools.cjs intel status output)
+    const updatedAtDisplay = updatedAt ? timeAgo(new Date(updatedAt)) : null;
+    files[filename] = { exists: true, updated_at: updatedAtDisplay, stale };
   }
   return { data: { files, overall_stale: overallStale } };
 };
@@ -199,20 +230,55 @@ export const intelValidate: QueryHandler = async (_args, projectDir, _workstream
   const errors: string[] = [];
   const warnings: string[] = [];
 
-  for (const [, filename] of Object.entries(INTEL_FILES)) {
+  const now = Date.now();
+
+  for (const [key, filename] of Object.entries(INTEL_FILES)) {
     const filePath = intelFilePath(projectDir, filename);
+
+    // Check existence (error message matches CJS oracle)
     if (!existsSync(filePath)) {
-      errors.push(`Missing intel file: ${filename}`);
+      errors.push(`${filename}: file does not exist`);
       continue;
     }
-    if (!filename.endsWith('.md')) {
-      const data = safeReadJson(filePath) as Record<string, unknown> | null;
-      if (!data) { errors.push(`Invalid JSON in: ${filename}`); continue; }
-      const meta = data._meta as Record<string, unknown> | undefined;
-      if (!meta?.updated_at) warnings.push(`${filename}: missing _meta.updated_at`);
-      else {
-        const age = Date.now() - new Date(meta.updated_at as string).getTime();
-        if (age > STALE_MS) warnings.push(`${filename}: stale (${Math.round(age / 3600000)}h old)`);
+
+    // All intel files are JSON — validate _meta and entries structure
+    let raw: string;
+    try { raw = readFileSync(filePath, 'utf-8'); } catch { errors.push(`${filename}: file missing`); continue; }
+    let data: Record<string, unknown>;
+    try { data = JSON.parse(raw) as Record<string, unknown>; } catch (e) {
+      errors.push(`${filename}: invalid JSON — ${e instanceof Error ? e.message : String(e)}`);
+      continue;
+    }
+
+    // Check _meta.updated_at recency (warning format matches CJS oracle)
+    if (data._meta && (data._meta as Record<string, unknown>).updated_at) {
+      const age = now - new Date((data._meta as Record<string, unknown>).updated_at as string).getTime();
+      if (age > STALE_MS) {
+        warnings.push(`${filename}: _meta.updated_at is ${Math.round(age / 3600000)} hours old (>24 hr)`);
+      }
+    } else {
+      warnings.push(`${filename}: missing _meta.updated_at`);
+    }
+
+    // Validate entries structure (matches CJS oracle spot-check logic)
+    if (data.entries && typeof data.entries === 'object') {
+      if (key === 'files') {
+        for (const [entryPath, entry] of Object.entries(data.entries as Record<string, unknown>)) {
+          const e = entry as Record<string, unknown> | null;
+          if (e?.exports && Array.isArray(e.exports)) {
+            for (const exp of e.exports as unknown[]) {
+              if (typeof exp === 'string' && exp.includes(' ')) {
+                warnings.push(`${filename}: "${entryPath}" export "${exp}" looks like a description (contains space)`);
+              }
+            }
+          }
+        }
+        const entryPaths = Object.keys(data.entries as Record<string, unknown>).slice(0, 5);
+        for (const ep of entryPaths) {
+          if (!existsSync(ep)) {
+            warnings.push(`${filename}: entry path "${ep}" does not exist on disk`);
+          }
+        }
       }
     }
   }
@@ -227,18 +293,13 @@ export const intelQuery: QueryHandler = async (args, projectDir, _workstream) =>
   const matches: unknown[] = [];
   let total = 0;
 
+  // Search all JSON intel files (matches CJS oracle: JSON only, not .md)
   for (const [, filename] of Object.entries(INTEL_FILES)) {
-    if (filename.endsWith('.md')) {
-      const filePath = intelFilePath(projectDir, filename);
-      const archMatches = searchArchMd(filePath, term);
-      if (archMatches.length > 0) { matches.push({ source: filename, entries: archMatches }); total += archMatches.length; }
-    } else {
-      const filePath = intelFilePath(projectDir, filename);
-      const data = safeReadJson(filePath);
-      if (!data) continue;
-      const found = searchJsonEntries(data, term);
-      if (found.length > 0) { matches.push({ source: filename, entries: found }); total += found.length; }
-    }
+    const filePath = intelFilePath(projectDir, filename);
+    const data = safeReadJson(filePath);
+    if (!data) continue;
+    const found = searchJsonEntries(data, term);
+    if (found.length > 0) { matches.push({ source: filename, entries: found }); total += found.length; }
   }
   return { data: { matches, term, total } };
 };
@@ -255,8 +316,12 @@ export const intelExtractExports: QueryHandler = async (args, projectDir, _works
   let filePath: string;
   try {
     filePath = await resolvePathUnderProject(projectDir, raw);
-  } catch {
-    return { data: { file: raw, exports: [], method: 'none' } };
+  } catch (err) {
+    // Only soft-catch GSDError (path traversal). Native errors (ENOENT on projectDir) propagate.
+    if (err instanceof GSDError) {
+      return { data: { file: raw, exports: [], method: 'none' } };
+    }
+    throw err;
   }
   if (!existsSync(filePath)) {
     return { data: { file: filePath, exports: [], method: 'none' } };
