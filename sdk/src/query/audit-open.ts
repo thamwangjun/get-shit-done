@@ -81,14 +81,31 @@ function scanQuickTasks(planDir: string): Array<Record<string, unknown>> {
 
     const dirName = entry.name;
     const taskDir = join(quickDir, dirName);
-    const summaryPath = join(taskDir, 'SUMMARY.md');
 
     let status = 'missing';
     const description = '';
 
-    if (existsSync(summaryPath)) {
+    // Mirror CJS audit.cjs:109-121 — search for any SUMMARY.md or *-SUMMARY.md
+    // in the task directory (not just bare SUMMARY.md), since /gsd-quick produces
+    // `${quick_id}-SUMMARY.md` files, not `SUMMARY.md`.
+    let resolvedSummaryPath: string | null = null;
+    try {
+      const dirEntries = readdirSync(taskDir, { withFileTypes: true });
+      const summaryFiles = dirEntries.filter(
+        e => e.isFile() && (e.name === 'SUMMARY.md' || e.name.endsWith('-SUMMARY.md')),
+      );
+      if (summaryFiles.length > 0) {
+        // Prefer `${dirName}-SUMMARY.md` when present; fall back to any match.
+        const preferred = summaryFiles.find(e => e.name === `${dirName}-SUMMARY.md`)
+          ?? summaryFiles.find(e => e.name.endsWith('-SUMMARY.md'))
+          ?? summaryFiles[0];
+        resolvedSummaryPath = join(taskDir, preferred.name);
+      }
+    } catch { /* dir read error — keep status as missing */ }
+
+    if (resolvedSummaryPath !== null) {
       try {
-        const content = readFileSync(summaryPath, 'utf-8');
+        const content = readFileSync(resolvedSummaryPath, 'utf-8');
         const fm = extractFrontmatter(content);
         status = (fm.status || 'unknown').toString().toLowerCase();
       } catch {

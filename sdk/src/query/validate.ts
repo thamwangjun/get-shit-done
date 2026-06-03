@@ -43,6 +43,87 @@ const MILESTONE_ARCHIVE_DIR_RE = /^v\d+.*-phases$/i;
 export const PHASE_DIR_NAME_RE = /^\d{2,}(?:\.\d+)*-[\w-]+$/;
 
 /**
+ * Strip shipped-milestone `<details>` blocks from ROADMAP content.
+ * Mirrors `stripShippedMilestones` in core.cjs.
+ */
+function stripShippedMilestones(content: string): string {
+  return content.replace(/<details>[\s\S]*?<\/details>/gi, '');
+}
+
+/**
+ * Scope ROADMAP.md content to the current milestone section identified in
+ * STATE.md. Mirrors `extractCurrentMilestone` in core.cjs exactly, including
+ * the phase-heading negative-lookahead that prevents "### Phase NN: ..." from
+ * being treated as a milestone-section boundary.
+ *
+ * The shared `extractCurrentMilestone` in context-truncation.ts lacks the
+ * phase-heading lookahead and splits too early when phase headings appear
+ * between milestone sections. This local copy is used exclusively by
+ * `validateHealth` Check 8 to match the CJS oracle output precisely.
+ */
+function extractCurrentMilestoneSection(roadmapContent: string, stateContent: string | undefined): string {
+  if (!stateContent) return stripShippedMilestones(roadmapContent);
+
+  // Find current milestone version from STATE.md
+  const milestoneMatch = stateContent.match(/^milestone\s*:\s*(.+)/im);
+  let version = milestoneMatch ? milestoneMatch[1].trim() : null;
+
+  // Fallback: in-progress marker in ROADMAP
+  if (!version) {
+    const inProgressMatch = roadmapContent.match(/🚧\s*\*\*v(\d+\.\d+)\s/);
+    if (inProgressMatch) version = 'v' + inProgressMatch[1];
+  }
+
+  if (!version) return stripShippedMilestones(roadmapContent);
+
+  // Find the section matching this version
+  const escapedVersion = version.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const sectionPattern = new RegExp(`(^#{1,3}\\s+.*${escapedVersion}[^\\n]*)`, 'mi');
+  const sectionMatch = roadmapContent.match(sectionPattern);
+
+  if (!sectionMatch || sectionMatch.index === undefined) return stripShippedMilestones(roadmapContent);
+
+  const sectionStart = sectionMatch.index;
+  const headingLevel = (sectionMatch[1].match(/^(#{1,3})\s/) as RegExpMatchArray)[1].length;
+  const restContent = roadmapContent.slice(sectionStart + sectionMatch[0].length);
+
+  // Exclude "Phase N:" headings from milestone boundary detection (mirrors CJS #2619).
+  const nextMilestonePattern = new RegExp(
+    `^#{1,${headingLevel}}\\s+(?!Phase\\s+\\S)(?:.*v\\d+\\.\\d+|✅|📋|🚧)`,
+    'i',
+  );
+
+  let sectionEnd = roadmapContent.length;
+  let fenceChar: string | null = null;
+  let fenceLen = 0;
+  let charOffset = 0;
+  for (const line of restContent.split('\n')) {
+    const fenceMatch = line.match(/^\s{0,3}((?:`{3,}|~{3,}))(.*)/);
+    if (fenceMatch) {
+      const char = fenceMatch[1][0];
+      const len = fenceMatch[1].length;
+      const trailing = fenceMatch[2] || '';
+      if (!fenceChar) {
+        fenceChar = char;
+        fenceLen = len;
+      } else if (char === fenceChar && len >= fenceLen && /^\s*$/.test(trailing)) {
+        fenceChar = null;
+        fenceLen = 0;
+      }
+    } else if (!fenceChar && nextMilestonePattern.test(line)) {
+      sectionEnd = sectionStart + sectionMatch[0].length + charOffset;
+      break;
+    }
+    charOffset += line.length + 1;
+  }
+
+  const beforeMilestones = roadmapContent.slice(0, sectionStart);
+  const currentSection = roadmapContent.slice(sectionStart, sectionEnd);
+  const preamble = beforeMilestones.replace(/<details>[\s\S]*?<\/details>/gi, '');
+  return preamble + currentSection;
+}
+
+/**
  * List milestone-archive directories under `.planning/milestones/`, sorted by
  * version (numeric — `v1.10` after `v1.2`).  Mirrors `listMilestoneArchiveDirs`
  * in verify.cjs.
@@ -714,7 +795,11 @@ export const validateHealth: QueryHandler = async (args, projectDir, workstream)
   // ─── Check 8: ROADMAP/disk phase sync ─────────────────────────────────────
   if (existsSync(roadmapPath)) {
     try {
-      const roadmapContent = await readFile(roadmapPath, 'utf-8');
+      const roadmapRaw = await readFile(roadmapPath, 'utf-8');
+      // Mirror CJS verify.cjs:870 — scope to current milestone only so shipped
+      // milestone phases (in <details> / prior sections) don't generate false W006.
+      const stateRaw = existsSync(statePath) ? await readFile(statePath, 'utf-8') : undefined;
+      const roadmapContent = extractCurrentMilestoneSection(roadmapRaw, stateRaw);
       const roadmapPhases = new Set<string>();
       const phasePattern = /#{2,4}\s*Phase\s+(\d+[A-Z]?(?:\.\d+)*)\s*:/gi;
       const phaseVariants = (phase: string): Set<string> => {
@@ -760,6 +845,23 @@ export const validateHealth: QueryHandler = async (args, projectDir, workstream)
       // Include archived milestone phase directories as valid on-disk
       // locations for historical ROADMAP phases.
       await forEachArchivedPhaseToken(planBase, (token) => diskPhases.add(token));
+
+      // Mirror CJS verify.cjs:887 — activeDiskPhases also includes the active
+      // milestone archive dir (the one named in STATE.md or the highest archive
+      // by version). This produces W007 for archived phases absent from the
+      // current-milestone ROADMAP section, matching CJS oracle behavior.
+      const activeArchiveDir = await getActiveMilestoneArchiveDir(planBase);
+      if (activeArchiveDir) {
+        try {
+          const archiveEntries = await readdir(activeArchiveDir, { withFileTypes: true });
+          for (const e of archiveEntries) {
+            if (e.isDirectory()) {
+              const dm = e.name.match(PHASE_TOKEN_FROM_DIR_RE);
+              if (dm) activeDiskPhases.add(dm[1]);
+            }
+          }
+        } catch { /* archive dir absent or unreadable */ }
+      }
 
       for (const p of roadmapPhases) {
         const variants = phaseVariants(p);
@@ -841,6 +943,114 @@ export const validateHealth: QueryHandler = async (args, projectDir, workstream)
       }
     } catch { /* parse error already caught in Check 5 */ }
   }
+
+  // ─── Check 11: Stale / orphan git worktrees (#2167) ──────────────────────
+  try {
+    const { execGit } = await import('./commit.js');
+    const listResult = execGit(projectDir, ['worktree', 'list', '--porcelain']);
+    if (listResult.exitCode !== 0) {
+      const stderr = String(listResult.stderr || '');
+      if (!/not a git repository|not a git repo/i.test(stderr)) {
+        addIssue('warning', 'W020',
+          'Worktree health check degraded: git worktree list failed — orphan/stale worktrees could not be inspected',
+          'Run: git worktree list --porcelain to diagnose; check git repository state and permissions');
+      }
+      // not_a_git_repo: silent — not meaningful for users without git
+    } else {
+      // Parse worktree list --porcelain: blocks separated by blank lines
+      const STALE_AFTER_MS = 60 * 60 * 1000;
+      const nowMs = Date.now();
+      const blocks = listResult.stdout.trim().split(/\n\n+/);
+      const linkedPaths = blocks
+        .slice(1) // first block is the main worktree — skip it
+        .map(block => {
+          const m = block.match(/^worktree (.+)$/m);
+          return m ? m[1].trim() : null;
+        })
+        .filter((p): p is string => p !== null);
+
+      for (const wtPath of linkedPaths) {
+        const { existsSync: fsExists, statSync: fsStat } = await import('node:fs');
+        if (!fsExists(wtPath)) {
+          addIssue('warning', 'W017',
+            `Orphan git worktree: ${wtPath} (path no longer exists on disk)`,
+            'Run: git worktree prune');
+          continue;
+        }
+        try {
+          const stat = fsStat(wtPath);
+          const ageMs = nowMs - stat.mtimeMs;
+          const ageMinutes = Math.round(ageMs / 60000);
+          if (ageMs > STALE_AFTER_MS) {
+            addIssue('warning', 'W017',
+              `Stale git worktree: ${wtPath} (last modified ${ageMinutes} minutes ago)`,
+              `Run: git worktree remove ${wtPath} --force`);
+          }
+        } catch { /* stat failure — skip silently */ }
+      }
+    }
+  } catch { /* git worktree not available or not a git repo — skip silently */ }
+
+  // ─── Check 12: MILESTONES.md / archive snapshot drift (#2446) ─────────────
+  const milestonesPath = join(planBase, 'MILESTONES.md');
+  const milestonesArchiveDir = join(planBase, 'milestones');
+  try {
+    if (existsSync(milestonesArchiveDir)) {
+      const archiveFiles = await readdir(milestonesArchiveDir);
+      const archivedVersions = archiveFiles
+        .map(f => f.match(/^(v\d+\.\d+(?:\.\d+[a-zA-Z]*)?)-ROADMAP\.md$/))
+        .filter((m): m is RegExpMatchArray => m !== null)
+        .map(m => m[1]);
+
+      if (archivedVersions.length > 0) {
+        const registryContent = existsSync(milestonesPath)
+          ? await readFile(milestonesPath, 'utf-8')
+          : '';
+        const missingFromRegistry: string[] = [];
+        for (const ver of archivedVersions) {
+          if (!registryContent.includes(`## ${ver}`)) {
+            missingFromRegistry.push(ver);
+          }
+        }
+        if (missingFromRegistry.length > 0) {
+          addIssue('warning', 'W018',
+            `MILESTONES.md missing ${missingFromRegistry.length} archived milestone(s): ${missingFromRegistry.join(', ')}`,
+            'Run /gsd-health --backfill to synthesize missing entries from archive snapshots',
+            true);
+          if (!repairs.includes('backfillMilestones')) repairs.push('backfillMilestones');
+        }
+      }
+    }
+  } catch { /* milestone sync check is advisory */ }
+
+  // ─── Check 13: Unrecognized .planning/ root files (W019) ──────────────────
+  try {
+    // Canonical exact-match names at .planning/ root
+    const CANONICAL_EXACT = new Set([
+      'PROJECT.md', 'ROADMAP.md', 'STATE.md', 'REQUIREMENTS.md',
+      'MILESTONES.md', 'BACKLOG.md', 'LEARNINGS.md', 'THREADS.md',
+      'config.json', 'CLAUDE.md', 'RETROSPECTIVE.md',
+    ]);
+    // Canonical patterns (version-stamped docs from gsd-complete-milestone etc.)
+    const CANONICAL_PATTERNS = [
+      /^v\d+\.\d+(?:\.\d+)?-MILESTONE-AUDIT\.md$/i,
+      /^v\d+\.\d+(?:\.\d+)?-.*\.md$/i,
+    ];
+    const isCanonicalPlanningFile = (filename: string): boolean => {
+      if (CANONICAL_EXACT.has(filename)) return true;
+      return CANONICAL_PATTERNS.some(p => p.test(filename));
+    };
+    const planEntries = await readdir(planBase, { withFileTypes: true });
+    for (const entry of planEntries) {
+      if (!entry.isFile()) continue;
+      if (!entry.name.endsWith('.md')) continue;
+      if (!isCanonicalPlanningFile(entry.name)) {
+        addIssue('warning', 'W019',
+          `Unrecognized .planning/ file: ${entry.name} — not a canonical GSD artifact`,
+          'Move to .planning/milestones/ archive subdir or delete if stale. See templates/README.md for the canonical artifact list.');
+      }
+    }
+  } catch { /* artifact check is advisory — skip on error */ }
 
   // ─── Perform repairs if requested ─────────────────────────────────────────
   const repairActions: Array<{ action: string; success: boolean; path?: string; error?: string }> = [];
@@ -938,16 +1148,20 @@ export const validateHealth: QueryHandler = async (args, projectDir, workstream)
   const repairableCount = errors.filter(e => e.repairable).length +
                          warnings.filter(w => w.repairable).length;
 
-  return {
-    data: {
-      status,
-      errors,
-      warnings,
-      info,
-      repairable_count: repairableCount,
-      repairs_performed: repairActions.length > 0 ? repairActions : undefined,
-    },
+  // Mirror CJS verify.cjs:1221 — only include repairs_performed key when repairs were
+  // actually performed (non-empty array). Omitting the key (rather than setting to undefined)
+  // is required for toEqual parity: Vitest's toEqual distinguishes {k: undefined} from {}.
+  const result: Record<string, unknown> = {
+    status,
+    errors,
+    warnings,
+    info,
+    repairable_count: repairableCount,
   };
+  if (repairActions.length > 0) {
+    result['repairs_performed'] = repairActions;
+  }
+  return { data: result };
 };
 
 // ─── validateAgents ────────────────────────────────────────────────────────

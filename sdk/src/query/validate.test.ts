@@ -736,7 +736,12 @@ describe('validateHealth', () => {
     expect(w006s.some(w => String(w.message).includes('Phase 7'))).toBe(false);
   });
 
-  it('does not emit W007 for archived milestone-only phase dirs (#3560)', async () => {
+  // CJS oracle parity (#3560, D-203): W007 fires for phases in the active milestone
+  // archive dir that are absent from the current-milestone ROADMAP section.
+  // The CJS `collectDiskPhases` includes the active archive (the highest version-ish
+  // milestones/ dir when no STATE.md milestone field is set), so archived phases from
+  // the active archive that are not in the current ROADMAP do produce W007.
+  it('emits W007 for phases in active archive dir not in current ROADMAP (#3560)', async () => {
     await createHealthyPlanning();
     await writeFile(join(tmpDir, '.planning', 'ROADMAP.md'), [
       '# Roadmap',
@@ -753,7 +758,9 @@ describe('validateHealth', () => {
     const data = result.data as Record<string, unknown>;
     const warnings = data.warnings as Array<Record<string, unknown>>;
     const w007s = warnings.filter(w => w.code === 'W007');
-    expect(w007s.some(w => String(w.message).includes('Phase 02'))).toBe(false);
+    // Phase 02 is in the active archive (v1.0-phases, the only/highest archive).
+    // The current ROADMAP (v1.1 section) does not mention phase 02 → W007 fires.
+    expect(w007s.some(w => String(w.message).includes('Phase 02'))).toBe(true);
   });
 
   it('does not emit W006 for unchecked future phases with no directory (#3559)', async () => {
