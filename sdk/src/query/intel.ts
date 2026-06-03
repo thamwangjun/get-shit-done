@@ -171,6 +171,11 @@ export const intelStatus: QueryHandler = async (_args, projectDir, _workstream) 
     if (data?._meta) {
       updatedAt = (data._meta as Record<string, unknown>).updated_at as string | null;
     }
+    // PARITY NOTE (WR-01): mirrors intel.cjs lines 257-261 exactly. An
+    // unparseable `updated_at` yields `getTime() === NaN`, so `now - NaN > STALE_MS`
+    // is `false` and the file is reported `stale: false`. This NaN-swallowing is a
+    // shared limitation of the CJS oracle — kept here for byte-parity. The underlying
+    // oracle behavior (garbage timestamp reads as fresh) is tracked separately.
     const stale = !updatedAt || (now - new Date(updatedAt).getTime()) > STALE_MS;
     if (stale) overallStale = true;
     // Apply timeAgo formatting to updated_at (matches CJS gsd-tools.cjs intel status output)
@@ -250,7 +255,10 @@ export const intelValidate: QueryHandler = async (_args, projectDir, _workstream
       continue;
     }
 
-    // Check _meta.updated_at recency (warning format matches CJS oracle)
+    // Check _meta.updated_at recency (warning format matches CJS oracle).
+    // PARITY NOTE (WR-01): mirrors intel.cjs lines 411-412. A garbage `updated_at`
+    // yields `age === NaN`, so `age > STALE_MS` is `false` and the recency warning
+    // is skipped — a shared limitation of the CJS oracle, kept for byte-parity.
     if (data._meta && (data._meta as Record<string, unknown>).updated_at) {
       const age = now - new Date((data._meta as Record<string, unknown>).updated_at as string).getTime();
       if (age > STALE_MS) {
@@ -307,6 +315,13 @@ export const intelQuery: QueryHandler = async (args, projectDir, _workstream) =>
 /**
  * Extract exports from a JS/CJS/ESM file — port of `intelExtractExports` in `intel.cjs` (lines 502–614).
  * Returns `{ file, exports, method }` with `file` as a resolved absolute path (matches `gsd-tools.cjs`).
+ *
+ * HEURISTIC LIMITATION (WR-03): the `module.exports = { ... }` block boundary is
+ * found by naive `{`/`}` depth counting that does NOT skip braces inside string
+ * literals, regex literals, or comments. A block containing a value like `foo: '}'`
+ * or a comment `// }` terminates early, under-reporting exports for non-trivial
+ * barrel files. This matches the CJS oracle (intel.cjs lines 522-528) exactly and
+ * is preserved for byte-parity rather than corrected here.
  */
 export const intelExtractExports: QueryHandler = async (args, projectDir, _workstream) => {
   const raw = args[0];
@@ -432,8 +447,8 @@ export const intelPatchMeta: QueryHandler = async (args, projectDir, _workstream
     return { data: { patched: false, error: `File not found: ${filePath}` } };
   }
   try {
-    const raw = readFileSync(filePath, 'utf-8');
-    const data = JSON.parse(raw) as Record<string, unknown>;
+    const fileRaw = readFileSync(filePath, 'utf-8');
+    const data = JSON.parse(fileRaw) as Record<string, unknown>;
     if (!data._meta) data._meta = {};
     const meta = data._meta as Record<string, unknown>;
     const timestamp = new Date().toISOString();
