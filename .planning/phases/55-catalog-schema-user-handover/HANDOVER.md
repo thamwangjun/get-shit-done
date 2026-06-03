@@ -131,3 +131,42 @@ The `model` field should be the bare alias (e.g. `opus`, no `;`) and `effort` sh
 ## Resume Signal
 
 Once `check-completeness.js` prints `PASS: all 31 capable agents have assigned effort values.`, type **"approved"** in the conversation to resume the workflow. Task 3 will run the check automatically and record the result.
+
+---
+
+## Completeness Check Result
+
+Recorded after CATALOG-02 assignment (Task 3, 2026-06-03).
+
+```
+$ node .planning/phases/55-catalog-schema-user-handover/check-completeness.js
+Note: 2 agent(s) use haiku (no extended thinking) — exempt from effort requirement:
+  - gsd-codebase-mapper
+  - gsd-doc-classifier
+PASS: all 31 capable agents have assigned effort values.
+```
+
+The check isolates the catalog (it loads a temp config with `model_overrides: {}`),
+so this PASS proves every capable agent slot resolves a non-null effort through the
+Phase 53 resolver. The resolver suite is green with the populated catalog:
+`node --test tests/feat-53-unified-effort-resolver.test.cjs` → 13/13 pass.
+
+### resolve-model with the live project config
+
+```
+$ node get-shit-done/bin/gsd-tools.cjs query resolve-model gsd-planner
+{ "model": "opus", "profile": "balanced", "effort": null }
+```
+
+`model` is the bare alias (no `;`), confirming the Plan 01 suffix-strip fix. The
+`effort` is `null` here — **not** because the catalog is wrong, but because this
+project's `.planning/config.json` carries **bare** `model_overrides`
+(`"gsd-planner": "opus"`, no `;effort`). Project `model_overrides` take precedence
+over the catalog and short-circuit the resolver at step 1, so the catalog effort is
+never consulted for an overridden agent.
+
+**To surface catalog effort in this project**, add `;effort` suffixes to the
+`model_overrides` entries in `.planning/config.json` (e.g. `"gsd-planner": "opus;high"`)
+or remove the bare overrides so the catalog slot is used. This is a user-owned
+project-config decision (the same tradeoff as CATALOG-02) and is intentionally left
+to you — it is outside the catalog-schema scope of this phase.
