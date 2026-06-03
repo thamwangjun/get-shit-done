@@ -108,17 +108,18 @@ describe('CONFIG-03: model_profile_overrides string shorthand parses ;effort suf
     assert.strictEqual(resolveReasoningEffortInternal(projectDir, 'gsd-planner'), 'high');
   });
 
-  test('codex + model_profile_overrides.codex.opus = "gpt-5-pro" (bare) → falls back to per-tier effort (CONFIG-03)', () => {
-    // Bare string shorthand — no ;effort — field-merge preserves built-in reasoning_effort.
-    // codex opus tier has reasoning_effort 'xhigh' in runtimeTierDefaults.
+  test('codex + model_profile_overrides.codex.opus = "gpt-5-pro" (bare) → catalog slot effort wins (D-08 same-slot invariant)', () => {
+    // Bare string shorthand — no ;effort — supplies no explicit effort.
+    // The catalog slot for gsd-planner on quality profile is opus;low, so the
+    // slot effort 'low' wins over the codex built-in per-tier 'xhigh' (D-08).
     writeConfig(projectDir, {
       runtime: 'codex',
       model_profile: 'quality',
       model_profile_overrides: { codex: { opus: 'gpt-5-pro' } },
     });
-    // Should still get the built-in reasoning_effort for the opus tier (back-compat).
+    // Catalog slot opus;low takes precedence over the runtime built-in xhigh.
     const effort = resolveReasoningEffortInternal(projectDir, 'gsd-planner');
-    assert.strictEqual(effort, 'xhigh');
+    assert.strictEqual(effort, 'low');
   });
 
   test('codex + model_profile_overrides.codex.opus object with reasoning_effort → effort from object (CONFIG-03 object form)', () => {
@@ -166,12 +167,11 @@ describe('CONFIG-04: malformed effort token degrades to null + one-time warning'
     assert.ok(warning.includes('hihg'), `warning must name the unknown suffix "hihg", got: ${JSON.stringify(warning)}`);
   });
 
-  test('model_profile_overrides slot with malformed ;effort → one-time warning, built-in effort still active (CONFIG-04)', () => {
+  test('model_profile_overrides slot with malformed ;effort → one-time warning, catalog slot effort wins (D-08)', () => {
     // Typo in model_profile_overrides string shorthand. The malformed suffix is stripped,
-    // parseModelEffort warns once, and the entry degrades to { model: "gpt-5-pro" }
-    // (no explicit reasoning_effort). The built-in codex opus reasoning_effort ("xhigh")
-    // is preserved via the field-merge — so the resolved effort is "xhigh", not null.
-    // CONFIG-04 says the slot effort degrades to null; the per-tier built-in still applies.
+    // parseModelEffort warns once, yielding no explicit reasoning_effort from the override.
+    // The catalog slot for gsd-planner/quality is opus;low, so slot effort 'low' wins
+    // over the codex built-in per-tier 'xhigh' (D-08 same-slot invariant).
     writeConfig(projectDir, {
       runtime: 'codex',
       model_profile: 'quality',
@@ -189,9 +189,9 @@ describe('CONFIG-04: malformed effort token degrades to null + one-time warning'
     } finally {
       process.stderr.write = originalWrite;
     }
-    // The malformed suffix is stripped; built-in reasoning_effort ("xhigh") still applies.
-    assert.strictEqual(effort, 'xhigh',
-      'malformed ;effort in model_profile_overrides: built-in effort still active after strip');
+    // The malformed suffix is stripped; catalog slot opus;low takes precedence.
+    assert.strictEqual(effort, 'low',
+      'malformed ;effort in model_profile_overrides: catalog slot effort wins over runtime built-in');
     const warning = stderrChunks.join('');
     assert.ok(warning.includes('gsd: warning'), `expected warning in stderr, got: ${JSON.stringify(warning)}`);
     assert.ok(warning.includes('hihg'), `warning must name the unknown suffix "hihg", got: ${JSON.stringify(warning)}`);

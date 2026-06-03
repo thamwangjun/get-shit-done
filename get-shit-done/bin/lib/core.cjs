@@ -1295,8 +1295,14 @@ function _resetEffortWarningCacheForTests() {
 function resolveTierEntry({ runtime, tier, overrides }) {
   if (!runtime || !tier) return null;
 
-  const builtin = RUNTIME_PROFILE_MAP[runtime]?.[tier] || null;
-  const userRaw = overrides?.[runtime]?.[tier];
+  // Strip ;effort suffix before lookups — users configure overrides with bare
+  // alias keys ('sonnet', not 'sonnet;medium'). Phase 55 slots now carry the
+  // effort suffix so callers can chain into the effort resolver, but the tier
+  // map and user overrides are keyed on bare aliases.
+  const bareTier = parseModelEffort(tier).model;
+
+  const builtin = RUNTIME_PROFILE_MAP[runtime]?.[bareTier] || null;
+  const userRaw = overrides?.[runtime]?.[bareTier];
 
   // String shorthand from CONFIGURATION.md examples — `{ codex: { opus: "gpt-5-pro" } }`.
   // Treat as `{ model: "gpt-5-pro" }` so the field-merge below still preserves
@@ -1588,17 +1594,17 @@ function resolveModelForTier(cwd, agentType, attempt) {
  *      Removes old early-null (D-01 / CONFIG-01).
  *   2. Shared slot: _resolveAgentSlot(cwd, agentType) → raw tier/slot string.
  *      inherit/null → return null (RESOLVE-06).
- *   3. Runtime-tier entry (RESOLVE-03 / CONFIG-03): _resolveRuntimeTier for the
- *      bare tier alias. Returns merged (user model_profile_overrides + built-in
- *      defaults) entry. reasoning_effort present → return it. This step runs
- *      BEFORE catalog slot effort so user-supplied model_profile_overrides ;effort
- *      wins over the catalog hand-assigned slot (same precedence as resolveModelInternal
- *      where the runtime tier entry wins at step 3). For claude runtime there is no
- *      RUNTIME_PROFILE_MAP entry, so this step always passes through to step 4.
+ *   3. Explicit user effort in model_profile_overrides (only when explicit): if
+ *      rawOverride is an object with reasoning_effort, or a string containing ';',
+ *      return that effort. A bare string (no ';') falls through — this preserves
+ *      the catalog-slot-wins invariant for bare model overrides.
  *   4. Catalog slot effort (same-slot invariant, D-08): parseModelEffort(tier).effort.
- *      Non-null → return it. Used for claude runtime where step 3 returns null
- *      but the catalog slot carries a hand-assigned ;effort suffix.
+ *      Non-null → return it. Runs BEFORE the runtime built-in tier entry so a
+ *      catalog-assigned opus;low beats the codex built-in xhigh for bare overrides.
  *      max returned verbatim — no resolver clamp (D-03 / RESOLVE-04).
+ *   5. Runtime-tier entry fallback (RESOLVE-03 / CONFIG-03): _resolveRuntimeTier for
+ *      the bare tier alias. Only reached when catalog slot has no effort suffix.
+ *      For claude runtime there is no RUNTIME_PROFILE_MAP entry → null.
  *
  * Back-compat invariant: bare claude configs without catalog slot effort → null.
  */
@@ -1628,10 +1634,13 @@ function resolveReasoningEffortInternal(cwd, agentType) {
   // RESOLVE-06: inherit/unknown resolved tier → no effort.
   if (!tier || tier === 'inherit') return null;
 
-  // Determine whether the tier came from a user-supplied models.<phase-type> value
-  // or from the catalog. When the user sets models.<phase-type>, their explicit
-  // choice (including any ;effort suffix) has higher precedence than the runtime
-  // tier entry — matching the intent of CONFIG-02 and #3023 slot tests.
+  // Strip any ;effort suffix before lookup (keys are bare tier aliases).
+  const bareTier = parseModelEffort(tier).model;
+
+  // Determine whether the tier came from a user-supplied models.<phase-type> value.
+  // When the user sets models.<phase-type>, their explicit choice (including any
+  // ;effort suffix) has higher precedence over runtime-tier entries — matching
+  // the intent of CONFIG-02 and #3023 slot tests.
   const phaseType = AGENT_TO_PHASE_TYPE[agentType];
   const phaseTypeTierRaw = (phaseType && config.models && typeof config.models === 'object')
     ? config.models[phaseType]
@@ -1642,29 +1651,44 @@ function resolveReasoningEffortInternal(cwd, agentType) {
 
   // 3. Phase-type slot effort (CONFIG-02 / same-slot invariant): when the user
   //    explicitly set models.<phase-type> with a ;effort suffix, honour it at
-  //    highest precedence (after per-agent override). A bare phase-type value
-  //    (no ;effort) yields null here, passing through to the runtime-tier check.
+  //    highest precedence after per-agent override. A bare phase-type value
+  //    (no ;effort) yields null here, passing through to the next check.
   if (fromPhaseType) {
     const phaseSlotEffort = parseModelEffort(phaseTypeTierRaw).effort;
     if (phaseSlotEffort !== null) return phaseSlotEffort;
   }
 
-  // 4. Runtime-tier entry (CONFIG-03 / RESOLVE-03): _resolveRuntimeTier merges
-  //    user model_profile_overrides with built-in runtime defaults (field-merge).
-  //    reasoning_effort present → return it. This step handles both user-supplied
-  //    ;effort in model_profile_overrides and the codex per-tier built-in effort.
+  // 3a. User-supplied reasoning_effort in model_profile_overrides wins over
+  //     catalog slot effort (D-02 / user config takes precedence). Check the raw
+  //     override before the field-merged entry to distinguish user intent from
+  //     built-in values. Only fires when the user explicitly set reasoning_effort
+  //     in their override — bare string or absent reasoning_effort yields null here.
+  const rawOverride = config.model_profile_overrides?.[config.runtime]?.[bareTier];
+  let userSuppliedEffort = null;
+  if (rawOverride && typeof rawOverride !== 'string' && rawOverride.reasoning_effort) {
+    userSuppliedEffort = rawOverride.reasoning_effort;
+  } else if (typeof rawOverride === 'string') {
+    userSuppliedEffort = parseModelEffort(rawOverride).effort; // null for bare strings
+  }
+  if (userSuppliedEffort !== null) return userSuppliedEffort;
+
+  // 4. Catalog slot effort (same-slot invariant / D-08): take the effort from
+  //    the same slot that drove model resolution — eliminates #3023 divergence.
+  //    A bare model_profile_overrides string (no ';effort') falls through to here
+  //    and returns the catalog-assigned effort, so the catalog slot wins over the
+  //    runtime built-in tier entry. max returned verbatim (D-03 / RESOLVE-04).
+  const slotEffort = parseModelEffort(tier).effort;
+  if (slotEffort !== null) return slotEffort;
+
+  // 5. Runtime-tier entry fallback (CONFIG-03 / RESOLVE-03): _resolveRuntimeTier
+  //    merges user model_profile_overrides with built-in runtime defaults
+  //    (field-merge). Only reached when the catalog slot carries NO effort suffix —
+  //    e.g. a bare 'opus' slot on codex. reasoning_effort present → return it.
   //    For claude runtime, RUNTIME_PROFILE_MAP has no entry → returns null.
-  //    Strip any ;effort suffix before lookup (keys are bare tier aliases).
-  const bareTier = parseModelEffort(tier).model;
   const entry = _resolveRuntimeTier(config, bareTier);
   if (entry?.reasoning_effort) return entry.reasoning_effort;
 
-  // 5. Catalog slot effort (same-slot invariant / D-08): take the effort from
-  //    the hand-assigned catalog slot. Reached when no phase-type override and
-  //    no runtime-tier entry (i.e., claude runtime). Malformed suffixes warn once
-  //    and degrade to null (D-05 / CONFIG-04). max returned verbatim (D-03 / RESOLVE-04).
-  const slotEffort = parseModelEffort(tier).effort;
-  return slotEffort !== null ? slotEffort : null;
+  return null;
 }
 
 // ─── Summary body helpers ─────────────────────────────────────────────────

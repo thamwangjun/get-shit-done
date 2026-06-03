@@ -90,7 +90,7 @@ describe('issue #2517: backwards compat — no runtime key set', () => {
 
   test('resolve_model_ids:true still maps alias -> full Claude ID with no runtime', () => {
     writeConfig(tmpDir, { model_profile: 'balanced', resolve_model_ids: true });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'claude-opus-4-7');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'claude-opus-4-8');
   });
 
   test('resolve_model_ids:"omit" still returns "" with no runtime', () => {
@@ -141,15 +141,15 @@ describe('issue #2517: runtime "claude" is a no-op for resolution (finding #4)',
       model_profile: 'quality',
       resolve_model_ids: true,
     });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'claude-opus-4-7');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'claude-opus-4-8');
   });
 
-  test('bare-config Claude still omits effort (allowlist now admits claude, but the slot carries no ;effort)', () => {
-    // The {claude, codex} allowlist admits claude (Phase 53 / RESOLVE-01), but a bare
-    // config carries no ;effort suffix in any slot, so the resolver returns null.
-    // This is the back-compat invariant: effort: null everywhere on a bare catalog.
+  test('claude with quality profile emits slot effort (phase 55 assigned opus;low to quality)', () => {
+    // Phase 55 hand-assigned opus;low to quality profile slots. The claude runtime is
+    // in the RUNTIMES_WITH_REASONING_EFFORT allowlist and the slot carries ;low, so
+    // resolveReasoningEffortInternal now returns 'low' for quality profile on claude.
     writeConfig(tmpDir, { runtime: 'claude', model_profile: 'quality' });
-    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'gsd-planner'), null);
+    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'gsd-planner'), 'low');
   });
 });
 
@@ -159,11 +159,11 @@ describe('issue #2517: runtime "codex" — Codex tier resolution', () => {
   beforeEach(() => { isolateHome(); tmpDir = createTempProject(); _resetRuntimeWarningCacheForTests(); });
   afterEach(() => { cleanup(tmpDir); restoreHome(); });
 
-  test('opus tier -> gpt-5.4 with reasoning_effort xhigh', () => {
+  test('opus tier -> gpt-5.4 with reasoning_effort low (phase 55 catalog slot)', () => {
     writeConfig(tmpDir, { runtime: 'codex', model_profile: 'quality' });
-    // gsd-planner quality -> opus -> gpt-5.4
+    // gsd-planner quality -> opus;low -> gpt-5.4, slot effort low overrides runtime default xhigh
     assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'gpt-5.4');
-    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'gsd-planner'), 'xhigh');
+    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'gsd-planner'), 'low');
   });
 
   test('sonnet tier -> gpt-5.3-codex with reasoning_effort medium', () => {
@@ -264,17 +264,17 @@ describe('issue #2517: field-merge of overrides with built-in defaults (finding 
   beforeEach(() => { isolateHome(); tmpDir = createTempProject(); _resetRuntimeWarningCacheForTests(); });
   afterEach(() => { cleanup(tmpDir); restoreHome(); });
 
-  test('string-shorthand override keeps reasoning_effort from built-in (CONFIGURATION.md example)', () => {
-    // `{ codex: { opus: "gpt-5-pro" } }` is the documented shorthand. Pre-fix,
-    // it silently dropped reasoning_effort. Post-fix, the model is overridden
-    // and reasoning_effort comes from the built-in entry.
+  test('string-shorthand override keeps model, effort from slot (phase 55 catalog slot wins)', () => {
+    // `{ codex: { opus: "gpt-5-pro" } }` overrides the model but not the effort.
+    // Phase 55 hand-assigned opus;low, so the catalog slot effort low takes precedence
+    // over the runtime built-in xhigh when no explicit effort is in the override.
     writeConfig(tmpDir, {
       runtime: 'codex',
       model_profile: 'quality',
       model_profile_overrides: { codex: { opus: 'gpt-5-pro' } },
     });
     assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'gpt-5-pro');
-    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'gsd-planner'), 'xhigh');
+    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'gsd-planner'), 'low');
   });
 
   test('partial-object override (no model) keeps model from built-in', () => {
@@ -590,7 +590,7 @@ describe('issue #2517: RUNTIME_PROFILE_MAP single source of truth (finding #16)'
     const codexOpus = RUNTIME_PROFILE_MAP.codex?.opus;
     assert.deepStrictEqual(codexOpus, { model: 'gpt-5.4', reasoning_effort: 'xhigh' });
     const claudeOpus = RUNTIME_PROFILE_MAP.claude?.opus;
-    assert.deepStrictEqual(claudeOpus, { model: 'claude-opus-4-7' });
+    assert.deepStrictEqual(claudeOpus, { model: 'claude-opus-4-8' });
   });
 });
 
@@ -654,9 +654,9 @@ describe('issue #2612: runtime "opencode" — OpenCode tier resolution', () => {
   beforeEach(() => { isolateHome(); tmpDir = createTempProject(); _resetRuntimeWarningCacheForTests(); });
   afterEach(() => { cleanup(tmpDir); restoreHome(); });
 
-  test('opus tier -> anthropic/claude-opus-4-7', () => {
+  test('opus tier -> anthropic/claude-opus-4-8', () => {
     writeConfig(tmpDir, { runtime: 'opencode', model_profile: 'quality' });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'anthropic/claude-opus-4-7');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'anthropic/claude-opus-4-8');
   });
 
   test('sonnet tier -> anthropic/claude-sonnet-4-6', () => {
@@ -683,7 +683,7 @@ describe('issue #2612: runtime "copilot" — Copilot tier resolution', () => {
 
   test('opus tier -> claude-opus-4-7', () => {
     writeConfig(tmpDir, { runtime: 'copilot', model_profile: 'quality' });
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'claude-opus-4-7');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'claude-opus-4-8');
   });
 
   test('sonnet tier -> claude-sonnet-4-6', () => {
@@ -796,7 +796,7 @@ describe('issue #2612: partial override merge for new Group A runtimes', () => {
       },
     });
     // gsd-planner balanced -> opus -> built-in default
-    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'anthropic/claude-opus-4-7');
+    assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-planner'), 'anthropic/claude-opus-4-8');
     // gsd-roadmapper balanced -> sonnet -> overridden
     assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-roadmapper'), 'anthropic/claude-sonnet-4-7');
     // gsd-codebase-mapper balanced -> haiku -> built-in default (haiku not overridden)
