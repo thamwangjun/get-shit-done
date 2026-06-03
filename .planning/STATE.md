@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-05-31 after Phase 51)
 Phase: 56
 Plan: Not started
 Status: Ready to execute
-Last activity: 2026-06-03 -- Phase 55.2 planning complete
+Last activity: 2026-06-03 -- Completed quick task 260603-a52: execute-plan.md → @-ref in execute-phase.md
 
 ## Performance Metrics
 
@@ -86,6 +86,7 @@ None. Research is HIGH confidence. Two plan-time verification flags noted above 
 | 260531-qqo | Fix npm test failures from recent quick tasks: ai-evals W016 tests (separate HOME dir) + delete obsolete CONTEXT_WINDOW tests | 2026-05-31 | 4593ed5e | [260531-qqo-fix-npm-test-failures-introduced-by-rece](./quick/260531-qqo-fix-npm-test-failures-introduced-by-rece/) |
 | 260531-rej | Fix parallel-test race: gen-project-root.mjs now writes project-root.generated.cjs atomically (temp + rename), eliminating intermittent `findProjectRoot is not a function` | 2026-05-31 | 67a55407 | [260531-rej-fix-race-condition-in-gen-project-root-m](./quick/260531-rej-fix-race-condition-in-gen-project-root-m/) |
 | 260601-bfj | Fix flaky `scaffolds context file` test: make all 8 remaining gen-*.mjs writes atomic (temp + rename), eliminating the truncate race that crashed concurrent require() of configuration.generated.cjs | 2026-06-01 | 60f12a5a | [260601-bfj-root-cause-and-fix-the-flaky-scaffolds-c](./quick/260601-bfj-root-cause-and-fix-the-flaky-scaffolds-c/) |
+| 260603-a52 | Convert execute-plan.md eta include to @-ref in execute-phase.md + reference_usage guidance on when to consult it | 2026-06-03 | d9c627c1 | [260603-a52-convert-execute-plan-md-to-ref-in-execut](./quick/260603-a52-convert-execute-plan-md-to-ref-in-execut/) |
 
 ## Session Continuity
 
