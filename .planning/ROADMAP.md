@@ -408,11 +408,11 @@ Plans:
 **Goal:** The ~201 pre-existing tests that fail due to Phase 55 catalog changes are back to green WITHOUT regressing real behavior — each failure cluster root-caused (stale expectation → update test; regression → fix source); `npm test` (root + SDK) passes with 0 failures.
 **Requirements**: none mapped (test-reconciliation phase)
 **Depends on:** Phase 55
-**Plans:** 4 plans
+**Plans:** 1/4 plans executed
 
 **Wave 1**
 
-- [ ] 55.1-01-PLAN.md — Root-cause + fix codex model-leak SOURCE regression (cluster #1) + update stale _resolveAgentSlot literal
+- [x] 55.1-01-PLAN.md — Root-cause + fix codex model-leak SOURCE regression (cluster #1) + update stale _resolveAgentSlot literal
 
 **Wave 2** *(both blocked on 55.1-01; no file overlap)*
 
