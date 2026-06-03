@@ -660,6 +660,62 @@ const NON_FAMILY_COMMAND_ALIASES = [
     "mutation": true
   },
   {
+    "canonical": "intel.diff",
+    "aliases": [
+      "intel diff"
+    ],
+    "mutation": false
+  },
+  {
+    "canonical": "intel.extract-exports",
+    "aliases": [
+      "intel extract-exports"
+    ],
+    "mutation": false
+  },
+  {
+    "canonical": "intel.patch-meta",
+    "aliases": [
+      "intel patch-meta"
+    ],
+    "mutation": true
+  },
+  {
+    "canonical": "intel.query",
+    "aliases": [
+      "intel query"
+    ],
+    "mutation": false
+  },
+  {
+    "canonical": "intel.snapshot",
+    "aliases": [
+      "intel snapshot"
+    ],
+    "mutation": true
+  },
+  {
+    "canonical": "intel.status",
+    "aliases": [
+      "intel status"
+    ],
+    "mutation": false
+  },
+  {
+    "canonical": "intel.update",
+    "aliases": [
+      "intel update"
+    ],
+    "mutation": false
+  },
+  {
+    "canonical": "intel.validate",
+    "aliases": [
+      "intel validate"
+    ],
+    "mutation": false
+  },
+  {
     "canonical": "learnings.copy",
     "aliases": [
       "learnings copy"
