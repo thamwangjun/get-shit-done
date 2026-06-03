@@ -3,15 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.1.0-e
 milestone_name: Per-Agent Thinking Effort
 status: executing
-stopped_at: context exhaustion at 75% (2026-06-03)
-last_updated: "2026-06-03T05:41:46.797Z"
+last_updated: "2026-06-03T06:19:00.245Z"
 last_activity: 2026-06-03
 progress:
-  total_phases: 8
+  total_phases: 9
   completed_phases: 5
   total_plans: 14
   completed_plans: 14
-  percent: 63
+  percent: 56
 ---
 
 # Project State
@@ -42,6 +41,7 @@ Last activity: 2026-06-03
 ### Roadmap Evolution
 
 - Phase 55.1 inserted after Phase 55: Update old tests found failing due to phase 55 work (URGENT)
+- Phase 55.2 inserted after Phase 55: Fix SDK golden-parity suite failures (regression triage from phase 55) (URGENT)
 
 ### Decisions
 
@@ -89,9 +89,9 @@ None. Research is HIGH confidence. Two plan-time verification flags noted above 
 
 ## Session Continuity
 
-Last session: 2026-06-03T04:32:54.178Z
-Stopped at: context exhaustion at 75% (2026-06-03)
-Resume file: None
+Last session: 2026-06-03T06:19:00.235Z
+Stopped at: Phase 55.2 context gathered
+Resume file: .planning/phases/55.2-fix-sdk-golden-parity-suite-failures-regression-triage-from-/55.2-CONTEXT.md
 
 ## Operator Next Steps
 
