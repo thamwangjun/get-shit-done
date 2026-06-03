@@ -52,10 +52,15 @@ if (haikuExempt.size > 0) {
 
 // Create a temp dir with minimal config so the allowlist gate passes.
 // Pitfall 2: without runtime:'claude' the gate returns null for every agent.
+// Write config under .planning/config.json so loadConfig resolves it correctly.
+// model_overrides is explicitly cleared — project-level overrides are bare aliases
+// (no effort suffix), so they would short-circuit the resolver at step 1 and return
+// null effort for every agent, defeating the catalog slot check.
 const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-catalog-check-'));
+fs.mkdirSync(path.join(tmpDir, '.planning'));
 fs.writeFileSync(
-  path.join(tmpDir, 'config.json'),
-  JSON.stringify({ runtime: 'claude', model_profile: 'balanced' })
+  path.join(tmpDir, '.planning', 'config.json'),
+  JSON.stringify({ runtime: 'claude', model_profile: 'balanced', model_overrides: {} })
 );
 
 // Opus supports max, xhigh, high, medium, low.
