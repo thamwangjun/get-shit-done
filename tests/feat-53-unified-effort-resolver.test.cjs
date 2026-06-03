@@ -61,10 +61,11 @@ describe('Phase 53: claude runtime emits slot effort', () => {
 
   test('claude + bare config (no ;effort) → effort null (back-compat invariant)', () => {
     // No ;effort suffix anywhere — the resolver must return null.
-    // The allowlist now admits claude (RESOLVE-01), but bare slots carry no effort.
+    // model_overrides forces a bare 'opus' so catalog slot effort (CATALOG-02) doesn't fire.
     writeConfig(projectDir, {
       runtime: 'claude',
       model_profile: 'quality',
+      model_overrides: { 'gsd-planner': 'opus' },
     });
     assert.strictEqual(resolveReasoningEffortInternal(projectDir, 'gsd-planner'), null);
   });
@@ -101,9 +102,12 @@ describe('Phase 53: codex runtime — slot effort over per-tier fallback (RESOLV
   test('codex + quality profile, no ;effort → per-tier fallback "xhigh" (gsd-planner opus row)', () => {
     // When slot carries no ;effort, the Codex per-tier reasoning_effort is the fallback.
     // gsd-planner quality profile → opus tier → runtimeTierDefaults.codex.opus.reasoning_effort = 'xhigh'
+    // models.planning overrides the catalog slot with a bare 'opus' (no ;effort) so the
+    // Codex per-tier fallback fires. Using model_overrides would short-circuit at step 1.
     writeConfig(projectDir, {
       runtime: 'codex',
       model_profile: 'quality',
+      models: { planning: 'opus' },
     });
     assert.strictEqual(resolveReasoningEffortInternal(projectDir, 'gsd-planner'), 'xhigh');
   });
