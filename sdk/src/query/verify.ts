@@ -644,13 +644,298 @@ export const verifySchemaDrift: QueryHandler = async (args, projectDir, workstre
   };
 };
 
-// verify.codebase-drift handler intentionally NOT exported from the SDK.
-// drift (bin/lib/drift.cjs) is out-of-seam, CJS-only per ADR/PRD
-// docs/adr/3524-cjs-sdk-hard-seam.md §3 and docs/prd/3524-cjs-sdk-hard-seam.md
-// L160: "CJS-only Module handlers (...drift...) keep their in-process CJS
-// implementations because no SDK counterpart exists." Previous Phase 6 stub
-// (which execFileSync'd back to gsd-tools) created an infinite SDK→CLI→SDK
-// recursion when the CJS verify-command-router dispatched through the SDK
-// bridge — observed forking hundreds of node processes on a 64 GiB host.
-// The router now dispatches `verify codebase-drift` direct to
-// `verify.cmdVerifyCodebaseDrift`, which is the canonical implementation.
+// ─── verifyCodebaseDrift ─────────────────────────────────────────────────────
+
+// Drift detection constants (mirrors drift.cjs)
+const BARREL_RE_DRIFT = /^(packages|apps)\/[^/]+\/src\/index\.(ts|tsx|js|mjs|cjs)$/;
+const MIGRATION_RES_DRIFT = [
+  /^supabase\/migrations\/.+\.sql$/,
+  /^prisma\/migrations\/.+/,
+  /^drizzle\/meta\/.+/,
+  /^drizzle\/migrations\/.+/,
+  /^src\/migrations\/.+\.(ts|js|sql)$/,
+  /^db\/migrations\/.+\.(sql|ts|js)$/,
+  /^migrations\/.+\.(sql|ts|js)$/,
+];
+const ROUTE_RES_DRIFT = [
+  /^(apps|packages)\/[^/]+\/src\/routes\/.+\.(ts|tsx|js|jsx|mjs|cjs)$/,
+  /^src\/routes\/.+\.(ts|tsx|js|jsx|mjs|cjs)$/,
+  /^src\/api\/.+\.(ts|tsx|js|jsx|mjs|cjs)$/,
+  /^(apps|packages)\/[^/]+\/src\/api\/.+\.(ts|tsx|js|jsx|mjs|cjs)$/,
+];
+const CATEGORY_PRIORITY_DRIFT: Record<string, number> = {
+  new_dir: 0, barrel: 1, route: 2, migration: 3,
+};
+
+function driftClassifyFile(file: string): string | null {
+  const norm = file.replace(/\\/g, '/');
+  if (MIGRATION_RES_DRIFT.some(r => r.test(norm))) return 'migration';
+  if (ROUTE_RES_DRIFT.some(r => r.test(norm))) return 'route';
+  if (BARREL_RE_DRIFT.test(norm)) return 'barrel';
+  return null;
+}
+
+function driftIsPathMapped(file: string, structureMd: string): boolean {
+  const norm = file.replace(/\\/g, '/');
+  const parts = norm.split('/');
+  for (let i = parts.length - 1; i >= 1; i--) {
+    const prefix = parts.slice(0, i).join('/');
+    if (structureMd.includes(prefix)) return true;
+  }
+  if (parts.length > 0 && structureMd.includes(parts[0] + '/')) return true;
+  if (parts.length > 0 && structureMd.includes('`' + parts[0] + '`')) return true;
+  return false;
+}
+
+function driftChooseAffectedPaths(paths: string[]): string[] {
+  const out = new Set<string>();
+  for (const raw of paths) {
+    if (typeof raw !== 'string' || !raw) continue;
+    const file = raw.replace(/\\/g, '/');
+    const parts = file.split('/');
+    if (parts.length === 0) continue;
+    const top = parts[0];
+    if ((top === 'apps' || top === 'packages') && parts.length >= 2) {
+      out.add(`${top}/${parts[1]}`);
+    } else {
+      out.add(top);
+    }
+  }
+  return [...out].sort();
+}
+
+function driftReadMappedCommit(filePath: string): string | null {
+  let content: string;
+  try {
+    content = readFileSync(filePath, 'utf-8');
+  } catch {
+    return null;
+  }
+  const m = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/);
+  if (!m) return null;
+  for (const line of m[1].split(/\r?\n/)) {
+    const kv = line.match(/^([A-Za-z0-9_][A-Za-z0-9_-]*):\s*(.*)$/);
+    if (kv && kv[1] === 'last_mapped_commit') {
+      const sha = kv[2].trim();
+      return sha.length > 0 ? sha : null;
+    }
+  }
+  return null;
+}
+
+function driftFormatSlash(commandName: string, runtime: string): string {
+  const rt = runtime.toLowerCase();
+  if (rt === 'codex') return `$gsd-${commandName}`;
+  return `/gsd-${commandName}`;
+}
+
+function driftBuildMessage(
+  elements: Array<{ category: string; path: string }>,
+  affectedPaths: string[],
+  action: string,
+  runtime: string,
+): string {
+  const byCat: Record<string, string[]> = {};
+  for (const e of elements) {
+    (byCat[e.category] ??= []).push(e.path);
+  }
+  const lines: string[] = [
+    `Codebase drift detected: ${elements.length} structural element(s) since last mapping.`,
+    '',
+  ];
+  const labels: Record<string, string> = {
+    new_dir: 'New directories',
+    barrel: 'New barrel exports',
+    migration: 'New migrations',
+    route: 'New route modules',
+  };
+  for (const cat of ['new_dir', 'barrel', 'migration', 'route']) {
+    if (byCat[cat]) {
+      lines.push(`${labels[cat]}:`);
+      for (const p of byCat[cat]) lines.push(`  - ${p}`);
+    }
+  }
+  lines.push('');
+  if (action === 'auto-remap') {
+    lines.push(`Auto-remap scheduled for paths: ${affectedPaths.join(', ')}`);
+  } else {
+    const mapCmd = driftFormatSlash('map-codebase', runtime);
+    lines.push(`Run ${mapCmd} --paths ${affectedPaths.join(',')} to refresh planning context.`);
+  }
+  return lines.join('\n');
+}
+
+/**
+ * Detect codebase drift since the last `gsd-codebase-mapper` run.
+ *
+ * Port of `cmdVerifyCodebaseDrift` from `verify.cjs` lines 1331–1459 and
+ * `detectDrift`/`readMappedCommit`/`chooseAffectedPaths` from `drift.cjs`.
+ * Native implementation avoids the infinite SDK→CLI→SDK recursion that a
+ * gsd-tools subprocess stub would create (the CJS verify-command-router now
+ * dispatches `verify codebase-drift` direct to `cmdVerifyCodebaseDrift`).
+ *
+ * @param _args - unused (no positional args for this command)
+ * @param projectDir - Project root directory
+ */
+export const verifyCodebaseDrift: QueryHandler = async (_args, projectDir) => {
+  const EMPTY_TREE = '4b825dc642cb6eb9a060e54bf8d69288fbee4904';
+
+  try {
+    const codebaseDir = join(projectDir, '.planning', 'codebase');
+    const structurePath = join(codebaseDir, 'STRUCTURE.md');
+
+    if (!existsSync(structurePath)) {
+      return {
+        data: {
+          skipped: true,
+          reason: 'no-structure-md',
+          action_required: false,
+          directive: 'none',
+          elements: [],
+        },
+      };
+    }
+
+    let structureMd: string;
+    try {
+      structureMd = readFileSync(structurePath, 'utf-8');
+    } catch (err) {
+      return {
+        data: {
+          skipped: true,
+          reason: 'cannot-read-structure-md: ' + (err instanceof Error ? err.message : String(err)),
+          action_required: false,
+          directive: 'none',
+          elements: [],
+        },
+      };
+    }
+
+    const lastMapped = driftReadMappedCommit(structurePath);
+
+    const { execGit } = await import('./commit.js');
+
+    const revProbe = execGit(projectDir, ['rev-parse', 'HEAD']);
+    if (revProbe.exitCode !== 0) {
+      return {
+        data: {
+          skipped: true,
+          reason: 'not-a-git-repo',
+          action_required: false,
+          directive: 'none',
+          elements: [],
+        },
+      };
+    }
+
+    let base = lastMapped ?? EMPTY_TREE;
+    if (lastMapped) {
+      const verify = execGit(projectDir, ['cat-file', '-t', lastMapped]);
+      if (verify.exitCode !== 0) base = EMPTY_TREE;
+    }
+
+    const diff = execGit(projectDir, ['diff', '--name-status', base, 'HEAD']);
+    if (diff.exitCode !== 0) {
+      return {
+        data: {
+          skipped: true,
+          reason: 'git-diff-failed',
+          action_required: false,
+          directive: 'none',
+          elements: [],
+        },
+      };
+    }
+
+    const added: string[] = [];
+    const modified: string[] = [];
+    const deleted: string[] = [];
+    for (const line of diff.stdout.split(/\r?\n/)) {
+      if (!line.trim()) continue;
+      const m = line.match(/^([A-Z])\d*\t(.+?)(?:\t(.+))?$/);
+      if (!m) continue;
+      const status = m[1];
+      const file = m[3] || m[2];
+      if (status === 'A' || status === 'R' || status === 'C') added.push(file);
+      else if (status === 'M') modified.push(file);
+      else if (status === 'D') deleted.push(file);
+    }
+
+    // Read config for threshold and action
+    const { loadConfig } = await import('../config.js');
+    const config = await loadConfig(projectDir);
+    const rawConfig = config as unknown as Record<string, unknown>;
+    const wf = (rawConfig.workflow ?? {}) as Record<string, unknown>;
+    const threshold = Number.isInteger(wf.drift_threshold) && (wf.drift_threshold as number) >= 1
+      ? (wf.drift_threshold as number)
+      : 3;
+    const action = wf.drift_action === 'auto-remap' ? 'auto-remap' : 'warn';
+
+    // Resolve runtime (mirrors resolveRuntime in runtime-slash.cjs)
+    const runtime = (process.env.GSD_RUNTIME ?? 'claude').toLowerCase();
+
+    // Run drift detection (inline port of detectDrift from drift.cjs)
+    const elements: Array<{ category: string; path: string }> = [];
+    const seen = new Map<string, string>();
+    for (const rawFile of added) {
+      const file = rawFile.replace(/\\/g, '/');
+      const specific = driftClassifyFile(file);
+      let category = specific;
+      if (!category) {
+        if (!driftIsPathMapped(file, structureMd)) {
+          category = 'new_dir';
+        } else {
+          continue;
+        }
+      }
+      const prior = seen.get(file);
+      if (prior && CATEGORY_PRIORITY_DRIFT[prior] >= CATEGORY_PRIORITY_DRIFT[category!]) continue;
+      seen.set(file, category!);
+    }
+    for (const [file, category] of seen.entries()) {
+      elements.push({ category, path: file });
+    }
+    elements.sort((a, b) =>
+      a.category === b.category ? a.path.localeCompare(b.path) : a.category.localeCompare(b.category),
+    );
+
+    const actionRequired = elements.length >= threshold;
+    let directive = 'none';
+    let spawnMapper = false;
+    let affectedPaths: string[] = [];
+    let message = '';
+
+    if (actionRequired) {
+      directive = action;
+      affectedPaths = driftChooseAffectedPaths(elements.map(e => e.path));
+      if (action === 'auto-remap') spawnMapper = true;
+      message = driftBuildMessage(elements, affectedPaths, action, runtime);
+    }
+
+    return {
+      data: {
+        skipped: false,
+        reason: null,
+        action_required: actionRequired,
+        directive,
+        spawn_mapper: spawnMapper,
+        affected_paths: affectedPaths,
+        elements,
+        threshold,
+        action,
+        last_mapped_commit: lastMapped,
+        message,
+      },
+    };
+  } catch (err) {
+    return {
+      data: {
+        skipped: true,
+        reason: 'exception: ' + (err instanceof Error ? err.message : String(err)),
+        action_required: false,
+        directive: 'none',
+        elements: [],
+      },
+    };
+  }
+};
