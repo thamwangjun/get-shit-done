@@ -1439,7 +1439,10 @@ function resolveModelInternal(cwd, agentType) {
   // valid phase-type tier flips runtime resolution on even when the
   // profile is inherit.
   if (config.runtime && config.runtime !== 'claude' && tier && tier !== 'inherit') {
-    const entry = _resolveRuntimeTier(config, tier);
+    // Strip any ;effort suffix before the runtime-tier lookup — runtimeTierDefaults
+    // keys are bare aliases ('sonnet', not 'sonnet;medium'). Mirrors the same-slot
+    // handling in resolveReasoningEffortInternal (~line 1634). (#3023 codex model leak)
+    const entry = _resolveRuntimeTier(config, parseModelEffort(tier).model);
     if (entry?.model) return entry.model;
     // Unknown runtime with no user-supplied overrides — fall through to Claude-safe
     // default rather than emit an ID the runtime can't accept.
