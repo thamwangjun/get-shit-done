@@ -411,18 +411,28 @@ Plans:
 **Plans:** 5 plans
 
 **Success criteria:**
+
 - SDK suite → 0 failures (confirmed from the `Tests N passed / N failed` summary line in the piped file, NOT the tee exit code).
 - ROOT suite stays green (`npm test` → fail 0) — no regression.
 - VERIFICATION records, per test, whether the cause was missing-handler / stale-fixture / real-divergence, plus the introducing commit found during investigation.
 
 **Test discipline (CLAUDE.md):** run each suite once, pipe to a temp file, read the file — never re-run to re-read. Use `command grep`. ROOT: `npm test 2>&1 | tee /tmp/gsd-55-2-root.txt`. SDK: `cd sdk && npm test 2>&1 | tee /tmp/gsd-55-2-sdk.txt`.
-
 Plans:
+**Wave 1**
 
 - [ ] 55.2-01-PLAN.md — Investigation gate: confirm regression, name introducing commit, build 17-test classification skeleton (D-202/D-205)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 55.2-02-PLAN.md — Register intel.* + verify.codebase-drift native handlers (D-204); clears hard missing-handler failures, unblocks intel parity
 - [ ] 55.2-03-PLAN.md — Non-intel JSON-parity: audit-open, validate.health, history.digest, phase-plan-index, init.* (D-203)
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 55.2-04-PLAN.md — Intel JSON-parity (coupled to 02) + meta/policy: native_failure classification, golden coverage policy (D-203)
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
 - [ ] 55.2-05-PLAN.md — Terminal gate: SDK fail 0 + ROOT stays green from summary lines; finalize VERIFICATION (D-201/D-205)
 
 ### Phase 55.1: Update old tests found failing due to phase 55 work (INSERTED)
