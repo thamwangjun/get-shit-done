@@ -64,23 +64,6 @@ async function getModelAndEffort(
 }
 
 /**
- * Get model alias string from resolveModel result.
- * @deprecated Prefer getModelAndEffort to avoid a double resolveModel call.
- */
-async function getModelAlias(agentType: string, projectDir: string): Promise<string> {
-  return (await getModelAndEffort(agentType, projectDir)).model;
-}
-
-/**
- * Extract effort token (or null) from a resolveModel result.
- * @deprecated Prefer getModelAndEffort to avoid a double resolveModel call.
- * Same-slot invariant: always use the same agentType as the adjacent *_model.
- */
-async function getEffort(agentType: string, projectDir: string): Promise<string | null> {
-  return (await getModelAndEffort(agentType, projectDir)).effort;
-}
-
-/**
  * Check if a file exists at a relative path within projectDir.
  */
 function pathExists(base: string, relPath: string): boolean {

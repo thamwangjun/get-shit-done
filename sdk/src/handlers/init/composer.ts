@@ -54,24 +54,6 @@ async function getModelAndEffort(
 }
 
 /**
- * Extract model alias string from a resolveModel result.
- * @deprecated Prefer getModelAndEffort to avoid a double resolveModel call.
- */
-async function getModelAlias(agentType: string, projectDir: string): Promise<string> {
-  return (await getModelAndEffort(agentType, projectDir)).model;
-}
-
-/**
- * Extract effort token (or null) from a resolveModel result.
- * @deprecated Prefer getModelAndEffort to avoid a double resolveModel call.
- * Mirrors getModelAlias but reads data.effort — the same-slot invariant
- * that prevents #3023-style model/effort divergence.
- */
-async function getEffort(agentType: string, projectDir: string): Promise<string | null> {
-  return (await getModelAndEffort(agentType, projectDir)).effort;
-}
-
-/**
  * Generate a slug from text (inline, matches CJS generateSlugInternal).
  */
 function generateSlugInternal(text: string): string {
