@@ -44,7 +44,7 @@ describe('MODEL_PROFILES', () => {
   });
 
   test('all profile values are valid model aliases', () => {
-    const validModels = ['opus', 'sonnet', 'haiku'];
+    const validModels = ['opus', 'sonnet', 'haiku', 'opus;low', 'sonnet;medium'];
     for (const [agent, profiles] of Object.entries(MODEL_PROFILES)) {
       for (const [profile, model] of Object.entries(profiles)) {
         assert.ok(
@@ -86,21 +86,21 @@ describe('VALID_PROFILES', () => {
 describe('getAgentToModelMapForProfile', () => {
   test('returns correct models for balanced profile', () => {
     const map = getAgentToModelMapForProfile('balanced');
-    assert.strictEqual(map['gsd-planner'], 'opus');
+    assert.strictEqual(map['gsd-planner'], 'opus;low');
     assert.strictEqual(map['gsd-codebase-mapper'], 'haiku');
-    assert.strictEqual(map['gsd-verifier'], 'sonnet');
+    assert.strictEqual(map['gsd-verifier'], 'sonnet;medium');
   });
 
   test('returns correct models for budget profile', () => {
     const map = getAgentToModelMapForProfile('budget');
-    assert.strictEqual(map['gsd-planner'], 'sonnet');
+    assert.strictEqual(map['gsd-planner'], 'sonnet;medium');
     assert.strictEqual(map['gsd-phase-researcher'], 'haiku');
   });
 
   test('returns correct models for quality profile', () => {
     const map = getAgentToModelMapForProfile('quality');
-    assert.strictEqual(map['gsd-planner'], 'opus');
-    assert.strictEqual(map['gsd-executor'], 'opus');
+    assert.strictEqual(map['gsd-planner'], 'opus;low');
+    assert.strictEqual(map['gsd-executor'], 'opus;low');
   });
 
   test('returns correct models for adaptive profile', () => {
