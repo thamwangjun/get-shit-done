@@ -1295,8 +1295,14 @@ function _resetEffortWarningCacheForTests() {
 function resolveTierEntry({ runtime, tier, overrides }) {
   if (!runtime || !tier) return null;
 
-  const builtin = RUNTIME_PROFILE_MAP[runtime]?.[tier] || null;
-  const userRaw = overrides?.[runtime]?.[tier];
+  // Strip ;effort suffix before lookups — users configure overrides with bare
+  // alias keys ('sonnet', not 'sonnet;medium'). Phase 55 slots now carry the
+  // effort suffix so callers can chain into the effort resolver, but the tier
+  // map and user overrides are keyed on bare aliases.
+  const bareTier = parseModelEffort(tier).model;
+
+  const builtin = RUNTIME_PROFILE_MAP[runtime]?.[bareTier] || null;
+  const userRaw = overrides?.[runtime]?.[bareTier];
 
   // String shorthand from CONFIGURATION.md examples — `{ codex: { opus: "gpt-5-pro" } }`.
   // Treat as `{ model: "gpt-5-pro" }` so the field-merge below still preserves
@@ -1629,12 +1635,26 @@ function resolveReasoningEffortInternal(cwd, agentType) {
   //    Malformed suffixes warn once and degrade to null (D-05 / CONFIG-04).
   //    max is returned verbatim — no max→xhigh clamp here (D-03 / RESOLVE-04).
   const slotEffort = parseModelEffort(tier).effort;
+
+  // 3a. User-supplied reasoning_effort in model_profile_overrides wins over
+  //     catalog slot effort (D-02 / user config takes precedence). Check the raw
+  //     override before the field-merged entry to distinguish user intent from
+  //     built-in values. Only fires when the user explicitly set reasoning_effort
+  //     in their override — bare string or absent reasoning_effort yields null here.
+  const bareTier = parseModelEffort(tier).model;
+  const rawOverride = config.model_profile_overrides?.[config.runtime]?.[bareTier];
+  let userSuppliedEffort = null;
+  if (rawOverride && typeof rawOverride !== 'string' && rawOverride.reasoning_effort) {
+    userSuppliedEffort = rawOverride.reasoning_effort;
+  } else if (typeof rawOverride === 'string') {
+    userSuppliedEffort = parseModelEffort(rawOverride).effort; // null for bare strings
+  }
+  if (userSuppliedEffort !== null) return userSuppliedEffort;
+
   if (slotEffort !== null) return slotEffort;
 
-  // 4. Codex per-tier fallback (RESOLVE-03 / D-06 step 3): used ONLY when the
-  //    slot carried no ;effort suffix. Parse the bare tier alias from the slot
-  //    so _resolveRuntimeTier receives a clean tier string, not a ';'-suffixed one.
-  const bareTier = parseModelEffort(tier).model;
+  // 4. Codex per-tier fallback (RESOLVE-03 / D-06 step 3): used ONLY when neither
+  //    user override nor slot effort supplied a value. Pass bare tier alias.
   const entry = _resolveRuntimeTier(config, bareTier);
   return entry?.reasoning_effort || null;
 }

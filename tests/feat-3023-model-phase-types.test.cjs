@@ -300,8 +300,12 @@ describe('#3023 + #3030 CR: resolveReasoningEffortInternal honors phase-type tie
     const opusEffort = (() => {
       const opusDir = makeTmp('effort-opus');
       try {
+        // Use models.execution='opus' directly to get the bare-alias opus effort
+        // (phase 55 assigned opus;low to quality profile, but the bare alias 'opus'
+        // in models.* is a user-supplied override without an effort hint — it routes
+        // to the runtime-default effort for the opus tier).
         writeConfig(opusDir, {
-          runtime: 'codex', model_profile: 'quality',  // quality → executor=opus
+          runtime: 'codex', model_profile: 'balanced', models: { execution: 'opus' },
         });
         return resolveReasoningEffortInternal(opusDir, 'gsd-executor');
       } finally {
@@ -369,7 +373,10 @@ describe('#3023 + #3030 CR: resolveReasoningEffortInternal honors phase-type tie
     const expected = (() => {
       const dir = makeTmp('effort-opus2');
       try {
-        writeConfig(dir, { runtime: 'codex', model_profile: 'quality' });
+        // Use models.execution='opus' as the reference — same bare-alias opus path
+        // as the test subject. Phase 55 assigned opus;low to quality profile but
+        // the bare 'opus' in models.* routes to the runtime-default effort.
+        writeConfig(dir, { runtime: 'codex', model_profile: 'balanced', models: { execution: 'opus' } });
         return resolveReasoningEffortInternal(dir, 'gsd-executor');
       } finally {
         rmr(dir);
