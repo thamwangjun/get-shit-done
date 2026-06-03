@@ -294,7 +294,7 @@ describe('resolveModel', () => {
       }),
     );
     const result = await resolveModel(['gsd-planner'], tmpDir);
-    expect(result.data).toEqual({ model: 'claude-opus-4-7', profile: 'quality', effort: null });
+    expect(result.data).toEqual({ model: 'claude-opus-4-8', profile: 'quality', effort: null });
   });
 
   it('#3643: runtime:claude + resolve_model_ids:true + budget returns full haiku id', async () => {
@@ -324,7 +324,7 @@ describe('resolveModel', () => {
       }),
     );
     const result = await resolveModel(['gsd-executor'], tmpDir);
-    expect(result.data).toEqual({ model: 'claude-opus-4-7', profile: 'budget', effort: null });
+    expect(result.data).toEqual({ model: 'claude-opus-4-8', profile: 'budget', effort: null });
   });
 
   it('#3643 regression-guard: runtime:claude WITHOUT resolve_model_ids still returns alias', async () => {
