@@ -121,7 +121,7 @@ describe('_resolveAgentSlot — shared tier resolver (52-02)', () => {
   test('_resolveAgentSlot returns a single slot string for gsd-executor on balanced', () => {
     const d = makeTmpWithConfig({ model_profile: 'balanced' });
     const slot = core._resolveAgentSlot(d, 'gsd-executor');
-    assert.strictEqual(slot, 'sonnet');
+    assert.strictEqual(slot, 'sonnet;medium'); // hand-assigned slot includes ;effort suffix (D-102)
   });
 
   test('_resolveAgentSlot returns inherit when profile is inherit and no phase-type override', () => {
