@@ -219,14 +219,19 @@ describe('CONFIG-04: malformed effort token degrades to null + one-time warning'
     assert.strictEqual(warnCount, 1, 'warning must fire exactly once per distinct label');
   });
 
-  test('bare config (no ;effort at any site) on claude → effort null (CONFIG-04 back-compat)', () => {
-    // On claude runtime: no per-tier reasoning_effort in slot, no slot ;effort → null.
+  test('bare claude config → effort matches hand-assigned catalog slot (CONFIG-04 back-compat)', () => {
+    // D-101 verdict: post-handover the catalog carries hand-assigned ;effort slots
+    // (D-102), so bare claude configs legitimately yield non-null effort for agents
+    // whose catalog slot carries a ;effort suffix. The expected effort is derived
+    // from the live catalog slot via _resolveAgentSlot (same-slot invariant).
     writeConfig(projectDir, {
       runtime: 'claude',
       model_profile: 'quality',
     });
-    assert.strictEqual(resolveReasoningEffortInternal(projectDir, 'gsd-executor'), null);
-    assert.strictEqual(resolveReasoningEffortInternal(projectDir, 'gsd-planner'), null);
+    const expectedExecutor = parseModelEffort(_resolveAgentSlot(projectDir, 'gsd-executor')).effort;
+    const expectedPlanner = parseModelEffort(_resolveAgentSlot(projectDir, 'gsd-planner')).effort;
+    assert.strictEqual(resolveReasoningEffortInternal(projectDir, 'gsd-executor'), expectedExecutor);
+    assert.strictEqual(resolveReasoningEffortInternal(projectDir, 'gsd-planner'), expectedPlanner);
   });
 });
 
@@ -236,7 +241,8 @@ describe('D-08: cross-resolver golden snapshot — bare config back-compat + sam
   const agents = Object.keys(MODEL_PROFILES);
   const profiles = ['quality', 'balanced', 'budget', 'inherit'];
 
-  // Verify all agents across all profiles: bare config → effort null,
+  // Verify all agents across all profiles: bare config → effort matches the
+  // hand-assigned slot effort from model-catalog.json (or null for inherit),
   // and model+effort derive from the same slot (same-slot invariant).
   for (const profile of profiles) {
     describe(`profile: ${profile}`, () => {
@@ -244,7 +250,7 @@ describe('D-08: cross-resolver golden snapshot — bare config back-compat + sam
       beforeEach(() => {
         projectDir = makeTmp(`golden-${profile}`);
         _resetEffortWarningCacheForTests();
-        // Bare config on claude runtime (no ;effort anywhere)
+        // Bare config on claude runtime (no user-supplied ;effort override)
         writeConfig(projectDir, {
           runtime: 'claude',
           model_profile: profile,
@@ -253,22 +259,27 @@ describe('D-08: cross-resolver golden snapshot — bare config back-compat + sam
       afterEach(() => { rmr(projectDir); });
 
       for (const agent of agents) {
-        test(`bare claude config: agent=${agent}, profile=${profile} → resolveReasoningEffortInternal === null (D-08 back-compat)`, () => {
+        test(`bare claude config: agent=${agent}, profile=${profile} → resolveReasoningEffortInternal matches slot effort (D-08 back-compat)`, () => {
+          // D-101 verdict: post-handover the catalog carries hand-assigned ;effort slots
+          // (D-102), so bare configs legitimately resolve non-null effort for non-inherit
+          // profiles. The expected effort is whatever the slot carries.
+          // For inherit profile, no slot effort exists → effort remains null.
+          const slot = _resolveAgentSlot(projectDir, agent);
+          const expectedEffort = parseModelEffort(slot).effort;
           const effort = resolveReasoningEffortInternal(projectDir, agent);
-          assert.strictEqual(effort, null,
-            `bare claude config must yield effort null for agent=${agent} profile=${profile}`);
+          assert.strictEqual(effort, expectedEffort,
+            `bare claude config must yield slot effort (${JSON.stringify(expectedEffort)}) for agent=${agent} profile=${profile}`);
         });
 
         test(`same-slot invariant: agent=${agent}, profile=${profile} — model+effort from same _resolveAgentSlot (D-08)`, () => {
           const slot = _resolveAgentSlot(projectDir, agent);
           const parsed = parseModelEffort(slot);
-          // For bare config: parsed.effort must be null (no ;effort in slot)
-          assert.strictEqual(parsed.effort, null,
-            `bare config slot must carry no ;effort for agent=${agent} profile=${profile}`);
-          // resolveReasoningEffortInternal must agree
+          // The slot-parsed effort is the expected effort (null for inherit, or hand-assigned value)
+          const expectedEffort = parsed.effort;
+          // resolveReasoningEffortInternal must agree with slot-parsed effort
           const resolvedEffort = resolveReasoningEffortInternal(projectDir, agent);
-          assert.strictEqual(resolvedEffort, null,
-            `resolveReasoningEffortInternal must match slot-parsed effort (null) for agent=${agent} profile=${profile}`);
+          assert.strictEqual(resolvedEffort, expectedEffort,
+            `resolveReasoningEffortInternal must match slot-parsed effort (${JSON.stringify(expectedEffort)}) for agent=${agent} profile=${profile}`);
           // resolveModelInternal must produce the base model (no ;effort contamination)
           const model = resolveModelInternal(projectDir, agent);
           // The model must not contain a semicolon (no ;effort leak into model string)
