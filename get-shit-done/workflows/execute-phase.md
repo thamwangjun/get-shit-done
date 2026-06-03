@@ -599,7 +599,7 @@ increases monotonically across waves. `{status}` is `complete` (success),
        </parallel_execution>
 
        <execution_context>
-       <%~ include('get-shit-done/workflows/execute-plan.md') %>
+       @~/.claude/get-shit-done/workflows/execute-plan.md
        @~/.claude/get-shit-done/templates/summary.md
        @~/.claude/get-shit-done/references/checkpoints.md
        @~/.claude/get-shit-done/references/tdd.md
@@ -608,6 +608,8 @@ increases monotonically across waves. `{status}` is `complete` (success),
        </execution_context>
 
        <reference_usage>
+       Read `~/.claude/get-shit-done/workflows/execute-plan.md` FIRST, before executing any task — it is your primary execution contract, not a conditional reference. It defines the full per-task execution loop, the atomic per-task commit protocol and `git_commit_metadata` step, the deviation-handling rules, and the worktree-mode auto-detection that skips STATE.md/ROADMAP.md writes. Both execution paths depend on it: the spawned worktree executor loads it here, and the orchestrator's sequential inline-execution fallback reads the same file directly (see `<runtime_compatibility>` and the "If Execute" inline path in step 3). Without it loaded there is no task loop or commit protocol to follow.
+
        Consult `~/.claude/get-shit-done/references/checkpoints.md` when a plan task carries a checkpoint (`none`, `human-verify`, `decision`, or `human-action`): it defines how to segment execution around each checkpoint type and which work returns to MAIN vs. continues in the SUBAGENT. Read it before acting on any checkpoint; otherwise execution proceeds task-by-task without consulting it.
 
        Consult `~/.claude/get-shit-done/templates/summary.md` when writing the phase/plan SUMMARY.md: it defines the required structure and dependency-graph frontmatter (requires/provides, subsystem, tags, key-files, decisions, metrics) the summary must match.
