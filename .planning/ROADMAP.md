@@ -408,7 +408,7 @@ Plans:
 **Goal:** The ~201 pre-existing tests that fail due to Phase 55 catalog changes are back to green WITHOUT regressing real behavior — each failure cluster root-caused (stale expectation → update test; regression → fix source); `npm test` (root + SDK) passes with 0 failures.
 **Requirements**: none mapped (test-reconciliation phase)
 **Depends on:** Phase 55
-**Plans:** 1/4 plans executed
+**Plans:** 3/4 plans executed
 
 **Wave 1**
 
@@ -416,8 +416,8 @@ Plans:
 
 **Wave 2** *(both blocked on 55.1-01; no file overlap)*
 
-- [ ] 55.1-02-PLAN.md — Root-cause cluster #2 (D-08 bare-config back-compat) + realign expectations to hand-assigned slot effort + regenerate golden
-- [ ] 55.1-03-PLAN.md — Bulk-update 7 stale-literal test files (opus 4-8, codex effort, runtime tiers)
+- [x] 55.1-02-PLAN.md — Root-cause cluster #2 (D-08 bare-config back-compat) + realign expectations to hand-assigned slot effort + regenerate golden
+- [x] 55.1-03-PLAN.md — Bulk-update 7 stale-literal test files (opus 4-8, codex effort, runtime tiers)
 
 **Wave 3** *(blocked on 55.1-02 + 55.1-03)*
 
