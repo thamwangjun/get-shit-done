@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v2.1.0-e
 milestone_name: Per-Agent Thinking Effort
 status: executing
-last_updated: "2026-06-03T06:47:22.144Z"
-last_activity: 2026-06-03 -- Phase 55.2 planning complete
+last_updated: "2026-06-03T07:32:43.642Z"
+last_activity: 2026-06-03
 progress:
   total_phases: 9
   completed_phases: 5
   total_plans: 19
-  completed_plans: 14
+  completed_plans: 15
   percent: 56
 ---
 
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-31 after Phase 51)
 
 **Core value:** Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships
-**Current focus:** Phase 55.1 — update-old-tests-found-failing-due-to-phase-55-work
+**Current focus:** Phase 55.2 — fix-sdk-golden-parity-suite-failures-regression-triage-from-
 
 ## Current Position
 
-Phase: 56
-Plan: Not started
+Phase: 55.2 (fix-sdk-golden-parity-suite-failures-regression-triage-from-) — EXECUTING
+Plan: 2 of 5
 Status: Ready to execute
-Last activity: 2026-06-03 -- Completed quick task 260603-a52: execute-plan.md → @-ref in execute-phase.md
+Last activity: 2026-06-03
 
 ## Performance Metrics
 
@@ -50,6 +50,8 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - [v2.1.0-e roadmap]: 7-phase convergent build order from research — parser → resolver → SDK/JSON exposure → [USER-HANDOVER catalog] → spawn wiring → install translation → regression. Phases are strongly dependency-sequenced; no phase can safely be reordered.
 - [v2.1.0-e roadmap]: Phase 55 is a USER-HANDOVER boundary — Claude widens the catalog schema/type (CATALOG-01, CATALOG-03) but the user hand-assigns per-agent `model:effort` values (CATALOG-02). All plumbing before this is inert against a bare catalog.
 - [v2.1.0-e roadmap]: Phase 57 (install translation) is independent of Phases 55–56 and may proceed in parallel after Phase 54; it depends only on the Phase 53 resolver.
+- [Phase ?]: D-202 confirmed: 17 SDK golden parity failures attributed to upstream ae63cbe55 (Phase 6) + phase-54 f0107ba64 IN-02 rows before SDK alignment
+- [Phase ?]: D-204 Path A adopted: register intel.update family + verify.codebase-drift native handlers by default
 
 ### Plan-Time Verification Flags
 
@@ -87,12 +89,13 @@ None. Research is HIGH confidence. Two plan-time verification flags noted above 
 | 260531-rej | Fix parallel-test race: gen-project-root.mjs now writes project-root.generated.cjs atomically (temp + rename), eliminating intermittent `findProjectRoot is not a function` | 2026-05-31 | 67a55407 | [260531-rej-fix-race-condition-in-gen-project-root-m](./quick/260531-rej-fix-race-condition-in-gen-project-root-m/) |
 | 260601-bfj | Fix flaky `scaffolds context file` test: make all 8 remaining gen-*.mjs writes atomic (temp + rename), eliminating the truncate race that crashed concurrent require() of configuration.generated.cjs | 2026-06-01 | 60f12a5a | [260601-bfj-root-cause-and-fix-the-flaky-scaffolds-c](./quick/260601-bfj-root-cause-and-fix-the-flaky-scaffolds-c/) |
 | 260603-a52 | Convert execute-plan.md eta include to @-ref in execute-phase.md + reference_usage guidance on when to consult it | 2026-06-03 | d9c627c1 | [260603-a52-convert-execute-plan-md-to-ref-in-execut](./quick/260603-a52-convert-execute-plan-md-to-ref-in-execut/) |
+| Phase 55.2-fix-sdk-golden-parity-suite-failures-regression-triage-from- P01 | 20min | 2 tasks | 1 files |
 
 ## Session Continuity
 
-Last session: 2026-06-03T06:19:00.235Z
+Last session: 2026-06-03T07:32:33.502Z
 Stopped at: Phase 55.2 context gathered
-Resume file: .planning/phases/55.2-fix-sdk-golden-parity-suite-failures-regression-triage-from-/55.2-CONTEXT.md
+Resume file: None
 
 ## Operator Next Steps
 

@@ -408,7 +408,7 @@ Plans:
 **Goal:** The 17 failing SDK golden native-handler parity tests (from /tmp/gsd-55-1-sdk.txt) are back to green WITHOUT relaxing assertions to hide divergence. Sibling to 55.1: 55.1 reconciled the ROOT suite (now green, fail 0), this reconciles the SDK suite. Each failure is root-caused as one of: (a) missing native handler in the SDK registry — `intel.update`, `verify.codebase-drift`; (b) stale golden fixture needing regeneration after a legitimate gsd-tools.cjs JSON change; or (c) real SDK/CLI divergence where the native handler output drifted from gsd-tools.cjs. Failure clusters: hard "no native handler registered" (intel.update, verify.codebase-drift); JSON-parity mismatches (intel.status/diff/validate/query/extract-exports, history.digest, phase-plan-index, init.quick/todos/manager/map-codebase, audit-open, validate.health); meta/policy (executeForCjs native_failure classification, golden coverage policy). Suspected introducing commits: e4a841cd, abfcbf2b (phase 55-01), possibly interacting with phase-54 SDK work (44c150b42, f0107ba64, 26679eb8c).
 **Requirements**: none mapped (test-reconciliation phase)
 **Depends on:** Phase 55
-**Plans:** 5 plans
+**Plans:** 1/5 plans executed
 
 **Success criteria:**
 
@@ -420,7 +420,7 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 55.2-01-PLAN.md — Investigation gate: confirm regression, name introducing commit, build 17-test classification skeleton (D-202/D-205)
+- [x] 55.2-01-PLAN.md — Investigation gate: confirm regression, name introducing commit, build 17-test classification skeleton (D-202/D-205)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
