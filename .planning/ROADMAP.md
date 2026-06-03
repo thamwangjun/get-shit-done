@@ -403,6 +403,26 @@ Plans:
 
 - [x] 55-03-PLAN.md — USER HANDOVER: HANDOVER.md 33-agent table + blocking checkpoint + post-handover completeness verification [CATALOG-02]
 
+### Phase 55.1: Update old tests found failing due to phase 55 work (INSERTED)
+
+**Goal:** The ~201 pre-existing tests that fail due to Phase 55 catalog changes are back to green WITHOUT regressing real behavior — each failure cluster root-caused (stale expectation → update test; regression → fix source); `npm test` (root + SDK) passes with 0 failures.
+**Requirements**: none mapped (test-reconciliation phase)
+**Depends on:** Phase 55
+**Plans:** 4 plans
+
+**Wave 1**
+
+- [ ] 55.1-01-PLAN.md — Root-cause + fix codex model-leak SOURCE regression (cluster #1) + update stale _resolveAgentSlot literal
+
+**Wave 2** *(both blocked on 55.1-01; no file overlap)*
+
+- [ ] 55.1-02-PLAN.md — Root-cause cluster #2 (D-08 bare-config back-compat) + realign expectations to hand-assigned slot effort + regenerate golden
+- [ ] 55.1-03-PLAN.md — Bulk-update 7 stale-literal test files (opus 4-8, codex effort, runtime tiers)
+
+**Wave 3** *(blocked on 55.1-02 + 55.1-03)*
+
+- [ ] 55.1-04-PLAN.md — Whole-suite gate: npm test (root + SDK) green, no skips, 55.1-VERIFICATION.md
+
 #### Phase 56: Spawn-Template Wiring
 
 **Goal**: Spawn templates across `agents/`, `commands/`, and `get-shit-done/workflows/` conditionally pass resolved effort to spawned agents, omitting it entirely when absent, while preserving all fork quality gates
