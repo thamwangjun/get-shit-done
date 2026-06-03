@@ -87,13 +87,16 @@ describe('executeForCjs - sync primitive', () => {
     // path arg that started with /tmp — after the worker fix threads projectDir correctly,
     // frontmatter.get returns a soft ok:true error instead of throwing (path escape check
     // passes, then realpath on the nonexistent path returns ok:true with error field).
-    // Updated fixture: use a completely nonexistent projectDir so resolvePathUnderProject
-    // calls realpath('/nonexistent...') and throws ENOENT, which is classified as native_failure.
+    //
+    // Phase 5.2 fix note: frontmatter.get uses resolveFrontmatterPath (no realpath call),
+    // so it never throws for a nonexistent projectDir. Updated fixture to intel.extract-exports
+    // which uses resolvePathUnderProject → realpath(projectDir) → throws ENOENT → native_failure.
+    // (intel.extract-exports propagates non-GSDError from resolvePathUnderProject per D-203 parity.)
     const result = executeForCjs({
-      registryCommand: 'frontmatter.get',
-      registryArgs: ['file.md'],
-      legacyCommand: 'frontmatter get',
-      legacyArgs: ['file.md'],
+      registryCommand: 'intel.extract-exports',
+      registryArgs: ['some-file.ts'],
+      legacyCommand: 'intel extract-exports',
+      legacyArgs: ['some-file.ts'],
       mode: 'json',
       projectDir: '/nonexistent-absolutely-does-not-exist-project-dir',
     });
