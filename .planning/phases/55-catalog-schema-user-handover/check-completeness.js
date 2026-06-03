@@ -58,9 +58,36 @@ fs.writeFileSync(
   JSON.stringify({ runtime: 'claude', model_profile: 'balanced' })
 );
 
+// Opus supports max, xhigh, high, medium, low.
+// Sonnet supports high, medium, low only — xhigh and max are opus-only.
+const SONNET_MAX_EFFORTS = new Set(['low', 'medium', 'high']);
+const OPUS_EFFORTS = new Set(['low', 'medium', 'high', 'xhigh', 'max']);
+
 const agents = Object.keys(catalog.agents).filter(a => !haikuExempt.has(a));
 const missing = agents.filter(a => resolveReasoningEffortInternal(tmpDir, a) === null);
+
+// Warn on out-of-range effort assignments (non-blocking — advisory only).
+const warnings = [];
+for (const [agentName, entry] of Object.entries(catalog.agents)) {
+  if (haikuExempt.has(agentName)) continue;
+  for (const [profile, slotValue] of Object.entries(entry)) {
+    if (!slotValue || typeof slotValue !== 'string') continue;
+    const { model, effort } = parseModelEffort(slotValue);
+    if (!effort) continue;
+    if (model === 'sonnet' && !SONNET_MAX_EFFORTS.has(effort)) {
+      warnings.push(`  ${agentName}.${profile}: "${slotValue}" — sonnet only supports low/medium/high, not "${effort}"`);
+    } else if (model === 'opus' && !OPUS_EFFORTS.has(effort)) {
+      warnings.push(`  ${agentName}.${profile}: "${slotValue}" — unrecognized effort "${effort}" for opus`);
+    }
+  }
+}
+
 fs.rmSync(tmpDir, { recursive: true });
+
+if (warnings.length > 0) {
+  console.warn(`Warning: ${warnings.length} out-of-range effort assignment(s):`);
+  warnings.forEach(w => console.warn(w));
+}
 
 if (missing.length > 0) {
   console.error(`FAIL: ${missing.length} agents missing effort assignment:`);

@@ -88,7 +88,15 @@ Edit `sdk/shared/model-catalog.json`. For each agent, find its entry under `"age
 }
 ```
 
-**Valid effort tokens:** `high`, `medium`, `low` (and any value accepted by `parseModelEffort` — see `sdk/src/model-catalog.ts`). Do not assign effort to `haiku` slots — haiku does not support extended thinking and `none` is not a recognized effort token.
+**Valid effort tokens by model:**
+
+| Model | Supported efforts |
+|-------|------------------|
+| opus | `low`, `medium`, `high`, `xhigh`, `max` |
+| sonnet | `low`, `medium`, `high` |
+| haiku | *(no effort — exempt from assignment)* |
+
+Do not assign `xhigh` or `max` to a `sonnet` slot — those levels are opus-only.
 
 **Tip:** The completeness check uses the `balanced` profile to determine whether an agent has effort assigned. Assign effort to the `balanced` slot at minimum. For the `golden` and `budget` slots: effort is optional for the check, but for consistency you may want to assign values there too.
 
