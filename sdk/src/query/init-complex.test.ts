@@ -490,7 +490,10 @@ describe('initManager', () => {
       expect(active).not.toContain('32');
     });
 
-    it('returns empty queued_phases and null metadata when active is last milestone', async () => {
+    // CJS oracle parity (D-203): queued_* fields are omitted when no next milestone
+    // exists — CJS does not include these keys at all. SDK mirrors this by only
+    // emitting queued_* when queuedMilestoneVersion is non-null or queuedPhases non-empty.
+    it('omits queued_phases and queued_milestone_* when active is last milestone (CJS parity)', async () => {
       await writeFile(join(tmpDir, '.planning', 'ROADMAP.md'), [
         '## Milestone v2.0.5: Only Milestone',
         '',
@@ -499,9 +502,10 @@ describe('initManager', () => {
       ].join('\n'));
       const result = await initManager([], tmpDir);
       const data = result.data as Record<string, unknown>;
-      expect(data.queued_phases).toEqual([]);
-      expect(data.queued_milestone_version).toBeNull();
-      expect(data.queued_milestone_name).toBeNull();
+      // Omitted (not undefined, just absent from object) when no next milestone.
+      expect(Object.prototype.hasOwnProperty.call(data, 'queued_phases')).toBe(false);
+      expect(Object.prototype.hasOwnProperty.call(data, 'queued_milestone_version')).toBe(false);
+      expect(Object.prototype.hasOwnProperty.call(data, 'queued_milestone_name')).toBe(false);
     });
   });
 });

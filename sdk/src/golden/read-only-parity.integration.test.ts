@@ -9,12 +9,23 @@ import { resolve, dirname, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execSync } from 'node:child_process';
 import { READ_ONLY_JSON_PARITY_ROWS } from './read-only-golden-rows.js';
-import { omitInitExecutePhaseVolatile } from './init-golden-normalize.js';
+import { omitInitExecutePhaseVolatile, omitInitQuickVolatile } from './init-golden-normalize.js';
 
-// EXPOSE-03: init.execute-phase uses a separate volatile-strip block below.
+// Volatile-key exclusions for init handlers with time-derived fields:
+// - init.quick: quick_id, timestamp, branch_name, task_dir (omitInitQuickVolatile)
+// - init.todos, init.map-codebase: timestamp only
+// - init.manager: timestamp + deps_satisfied (all-milestones fix; separate block below)
+// - init.execute-phase: project_root, agents_installed, missing_agents, project_title
+// - history.digest: provides arrays may contain objects (SDK correct, CJS legacy string parse)
+const VOLATILE_CANONICALS = new Set([
+  'scan-sessions', 'audit-uat', 'init.execute-phase',
+  'init.quick', 'init.todos', 'init.manager', 'init.map-codebase',
+  'history.digest',
+]);
+
+// EXPOSE-03: init.execute-phase and volatile-timestamp init.* use separate blocks below.
 const STABLE_JSON_PARITY_ROWS = READ_ONLY_JSON_PARITY_ROWS.filter(
-  (row) => row.canonical !== 'scan-sessions' && row.canonical !== 'audit-uat'
-    && row.canonical !== 'init.execute-phase',
+  (row) => !VOLATILE_CANONICALS.has(row.canonical),
 );
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -144,5 +155,121 @@ describe('verify.commits golden parity', () => {
     const registry = createRegistry();
     const sdkResult = await registry.dispatch('verify.commits', [a, b], REPO_ROOT);
     expect(sdkResult.data).toEqual(gsdOutput);
+  });
+});
+
+// ─── Volatile-timestamp init.* handlers ─────────────────────────────────────
+
+// Strip timestamp (and quick_id / branch_name / task_dir for init.quick) before
+// toEqual — these fields are time-derived and differ between CJS subprocess and
+// in-process SDK call. Unrelaxed for all other fields (D-201).
+
+describe('init.quick golden parity (excluding volatile time-derived keys)', () => {
+  it('SDK JSON matches gsd-tools.cjs except quick_id/timestamp/branch_name/task_dir', async () => {
+    const row = READ_ONLY_JSON_PARITY_ROWS.find(r => r.canonical === 'init.quick')!;
+    const gsdOutput = await captureGsdToolsOutput(row.cjs, row.cjsArgs, REPO_ROOT);
+    const registry = createRegistry();
+    const sdkResult = await registry.dispatch('init.quick', row.sdkArgs, REPO_ROOT);
+    expect(omitInitQuickVolatile(sdkResult.data as Record<string, unknown>))
+      .toEqual(omitInitQuickVolatile(gsdOutput as Record<string, unknown>));
+  });
+});
+
+describe('init.todos golden parity (excluding volatile timestamp)', () => {
+  it('SDK JSON matches gsd-tools.cjs except timestamp', async () => {
+    const row = READ_ONLY_JSON_PARITY_ROWS.find(r => r.canonical === 'init.todos')!;
+    const gsdOutput = await captureGsdToolsOutput(row.cjs, row.cjsArgs, REPO_ROOT);
+    const registry = createRegistry();
+    const sdkResult = await registry.dispatch('init.todos', row.sdkArgs, REPO_ROOT);
+    const strip = (d: unknown): Record<string, unknown> => {
+      const o = { ...(d as Record<string, unknown>) };
+      delete o.timestamp;
+      return o;
+    };
+    expect(strip(sdkResult.data)).toEqual(strip(gsdOutput));
+  });
+});
+
+describe('init.map-codebase golden parity (excluding volatile timestamp)', () => {
+  it('SDK JSON matches gsd-tools.cjs except timestamp', async () => {
+    const row = READ_ONLY_JSON_PARITY_ROWS.find(r => r.canonical === 'init.map-codebase')!;
+    const gsdOutput = await captureGsdToolsOutput(row.cjs, row.cjsArgs, REPO_ROOT);
+    const registry = createRegistry();
+    const sdkResult = await registry.dispatch('init.map-codebase', row.sdkArgs, REPO_ROOT);
+    const strip = (d: unknown): Record<string, unknown> => {
+      const o = { ...(d as Record<string, unknown>) };
+      delete o.timestamp;
+      return o;
+    };
+    expect(strip(sdkResult.data)).toEqual(strip(gsdOutput));
+  });
+});
+
+describe('init.manager golden parity (excluding volatile timestamp)', () => {
+  it('SDK JSON matches gsd-tools.cjs except timestamp', async () => {
+    const row = READ_ONLY_JSON_PARITY_ROWS.find(r => r.canonical === 'init.manager')!;
+    const gsdOutput = await captureGsdToolsOutput(row.cjs, row.cjsArgs, REPO_ROOT);
+    const registry = createRegistry();
+    const sdkResult = await registry.dispatch('init.manager', row.sdkArgs, REPO_ROOT);
+    const strip = (d: unknown): Record<string, unknown> => {
+      const o = { ...(d as Record<string, unknown>) };
+      delete o.timestamp;
+      return o;
+    };
+    expect(strip(sdkResult.data)).toEqual(strip(gsdOutput));
+  });
+});
+
+// ─── history.digest — array-of-objects frontmatter fix ──────────────────────
+
+// CJS parses `- key: value` YAML list items as literal strings; the SDK
+// correctly parses them as objects. The divergence is a known CJS bug (same as
+// validate.consistency and summary.extract). Accept the SDK's parsed output as
+// ground truth by normalising the CJS provides arrays before toEqual (D-201:
+// no assertion weakened — both are compared after normalisation, just in the
+// direction where SDK is the known-correct side).
+describe('history.digest golden parity (normalised array-of-objects)', () => {
+  it('SDK JSON matches gsd-tools.cjs after normalising provides arrays', async () => {
+    const row = READ_ONLY_JSON_PARITY_ROWS.find(r => r.canonical === 'history.digest')!;
+    const gsdOutput = await captureGsdToolsOutput(row.cjs, row.cjsArgs, REPO_ROOT);
+    const registry = createRegistry();
+    const sdkResult = await registry.dispatch('history.digest', row.sdkArgs, REPO_ROOT);
+
+    // Deeply normalise `provides` arrays: convert string items that look like
+    // "KEY: value" into {KEY: value} objects, matching the SDK's parsed form.
+    const normaliseProvides = (arr: unknown[]): unknown[] =>
+      arr.map(item => {
+        if (typeof item !== 'string') return item;
+        const kv = item.match(/^([^:]+):\s*(.*)$/);
+        if (!kv) return item;
+        return { [kv[1].trim()]: kv[2].trim() };
+      });
+
+    // history.digest structure: { phases: { "phase-key": { provides: [...], ... } }, ... }
+    const normalisePhasesMap = (phasesMap: unknown): unknown => {
+      if (!phasesMap || typeof phasesMap !== 'object') return phasesMap;
+      const normalised: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(phasesMap as Record<string, unknown>)) {
+        if (v && typeof v === 'object') {
+          const entry = { ...(v as Record<string, unknown>) };
+          if (Array.isArray(entry.provides)) {
+            entry.provides = normaliseProvides(entry.provides);
+          }
+          normalised[k] = entry;
+        } else {
+          normalised[k] = v;
+        }
+      }
+      return normalised;
+    };
+
+    const normaliseDigest = (d: unknown): unknown => {
+      if (!d || typeof d !== 'object') return d;
+      const o = { ...(d as Record<string, unknown>) };
+      if (o.phases) o.phases = normalisePhasesMap(o.phases);
+      return o;
+    };
+
+    expect(normaliseDigest(sdkResult.data)).toEqual(normaliseDigest(gsdOutput));
   });
 });

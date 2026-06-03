@@ -349,7 +349,10 @@ describe('phasePlanIndex', () => {
     expect(data.plans).toEqual([]);
   });
 
-  it('falls back to archived milestone directory when root phases dir has no match (#3469)', async () => {
+  // CJS oracle parity (#3469, D-203): phasePlanIndex only scans the active phasesDir
+  // (not archived milestone directories). This matches gsd-tools.cjs phase-plan-index
+  // which returns "Phase not found" when a phase exists only in an archived milestone.
+  it('returns Phase not found for phase in archived milestone (not in active phasesDir) (#3469)', async () => {
     const archiveDir = join(tmpDir, '.planning', 'milestones', 'v2.0-phases', '02-auth');
     await mkdir(archiveDir, { recursive: true });
     await writeFile(join(archiveDir, '02-01-PLAN.md'), [
@@ -363,20 +366,18 @@ describe('phasePlanIndex', () => {
       'Archived milestone plan.',
       '</objective>',
       '<tasks>',
-      '<task type=\"auto\">',
+      '<task type="auto">',
       '  <name>Task 1</name>',
       '</task>',
       '</tasks>',
     ].join('\n'));
     await writeFile(join(archiveDir, '02-01-SUMMARY.md'), '# Summary\n');
 
+    // Phase 02 is in the archive, not in the active phasesDir — CJS returns "Phase not found".
     const result = await phasePlanIndex(['2'], tmpDir);
     const data = result.data as Record<string, unknown>;
-    const plans = data.plans as Array<Record<string, unknown>>;
-
-    expect(data.error).toBeUndefined();
-    expect(plans.length).toBe(1);
-    expect(plans[0].id).toBe('02-01');
+    expect(data.error).toBe('Phase not found');
+    expect((data.plans as unknown[]).length).toBe(0);
   });
 
   // ── #3266 regression tests ─────────────────────────────────────────────

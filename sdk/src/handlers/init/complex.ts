@@ -655,6 +655,14 @@ export const initManager: QueryHandler = async (_args, projectDir, workstream) =
   const completedNums = new Set(
     phases.filter(p => p.disk_status === 'complete').map(p => p.number as string),
   );
+  // Mirror CJS init.cjs:1282-1290 — also add phases from shipped milestones
+  // (all [x] checkboxes in rawContent, including <details>-wrapped sections).
+  // This ensures phases completed in prior milestones satisfy deps for current phases.
+  const allCompletedPattern = /-\s*\[x\]\s*.*Phase\s+(\d+[A-Z]?(?:\.\d+)*)[:\s]/gi;
+  let allMatch: RegExpExecArray | null;
+  while ((allMatch = allCompletedPattern.exec(rawContent)) !== null) {
+    completedNums.add(allMatch[1]);
+  }
   for (const phase of phases) {
     const dependsOnStr = phase.depends_on as string | null;
     if (!dependsOnStr || /^none$/i.test(dependsOnStr.trim())) {
@@ -821,14 +829,18 @@ export const initManager: QueryHandler = async (_args, projectDir, workstream) =
     recommended_actions: recommendedActions,
     waiting_signal: waitingSignal,
     all_complete: completedCount === nonBacklogPhases.length && nonBacklogPhases.length > 0,
-    queued_phases: queuedPhases,
-    queued_milestone_version: queuedMilestoneVersion,
-    queued_milestone_name: queuedMilestoneName,
     project_exists: pathExists(projectDir, '.planning/PROJECT.md'),
     roadmap_exists: true,
     state_exists: existsSync(paths.state),
     manager_flags: managerFlags,
   };
+  // Mirror CJS oracle (init.cjs): only emit queued_* fields when a next milestone
+  // actually exists. CJS does not include these keys when they are null/empty.
+  if (queuedMilestoneVersion !== null || queuedPhases.length > 0) {
+    result.queued_phases = queuedPhases;
+    result.queued_milestone_version = queuedMilestoneVersion;
+    result.queued_milestone_name = queuedMilestoneName;
+  }
 
   return { data: withProjectRoot(projectDir, result, config as Record<string, unknown>) };
 };

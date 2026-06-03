@@ -443,15 +443,9 @@ export const phasePlanIndex: QueryHandler = async (args, projectDir, workstream)
     }
   } catch { /* phases dir doesn't exist */ }
 
-  if (!phaseDir) {
-    const found = await findPhase([phase], projectDir, workstream);
-    const foundData = found.data as Record<string, unknown> | null;
-    const relDir = foundData?.directory;
-    if (foundData?.found && typeof relDir === 'string' && relDir.trim() !== '') {
-      phaseDir = join(projectDir, relDir);
-    }
-  }
-
+  // Mirror CJS phase.cjs:379-382 — return "Phase not found" immediately when the
+  // phase directory is not in the active phasesDir. Do NOT fall back to findPhase
+  // (archived-milestone lookup), as the CJS oracle only scans the active phases dir.
   if (!phaseDir) {
     return {
       data: {
