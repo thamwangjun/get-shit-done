@@ -403,6 +403,28 @@ Plans:
 
 - [x] 55-03-PLAN.md — USER HANDOVER: HANDOVER.md 33-agent table + blocking checkpoint + post-handover completeness verification [CATALOG-02]
 
+### Phase 55.2: Fix SDK golden-parity suite failures (regression triage from phase 55) (INSERTED)
+
+**Goal:** The 17 failing SDK golden native-handler parity tests (from /tmp/gsd-55-1-sdk.txt) are back to green WITHOUT relaxing assertions to hide divergence. Sibling to 55.1: 55.1 reconciled the ROOT suite (now green, fail 0), this reconciles the SDK suite. Each failure is root-caused as one of: (a) missing native handler in the SDK registry — `intel.update`, `verify.codebase-drift`; (b) stale golden fixture needing regeneration after a legitimate gsd-tools.cjs JSON change; or (c) real SDK/CLI divergence where the native handler output drifted from gsd-tools.cjs. Failure clusters: hard "no native handler registered" (intel.update, verify.codebase-drift); JSON-parity mismatches (intel.status/diff/validate/query/extract-exports, history.digest, phase-plan-index, init.quick/todos/manager/map-codebase, audit-open, validate.health); meta/policy (executeForCjs native_failure classification, golden coverage policy). Suspected introducing commits: e4a841cd, abfcbf2b (phase 55-01), possibly interacting with phase-54 SDK work (44c150b42, f0107ba64, 26679eb8c).
+**Requirements**: none mapped (test-reconciliation phase)
+**Depends on:** Phase 55
+**Plans:** 5 plans
+
+**Success criteria:**
+- SDK suite → 0 failures (confirmed from the `Tests N passed / N failed` summary line in the piped file, NOT the tee exit code).
+- ROOT suite stays green (`npm test` → fail 0) — no regression.
+- VERIFICATION records, per test, whether the cause was missing-handler / stale-fixture / real-divergence, plus the introducing commit found during investigation.
+
+**Test discipline (CLAUDE.md):** run each suite once, pipe to a temp file, read the file — never re-run to re-read. Use `command grep`. ROOT: `npm test 2>&1 | tee /tmp/gsd-55-2-root.txt`. SDK: `cd sdk && npm test 2>&1 | tee /tmp/gsd-55-2-sdk.txt`.
+
+Plans:
+
+- [ ] 55.2-01-PLAN.md — Investigation gate: confirm regression, name introducing commit, build 17-test classification skeleton (D-202/D-205)
+- [ ] 55.2-02-PLAN.md — Register intel.* + verify.codebase-drift native handlers (D-204); clears hard missing-handler failures, unblocks intel parity
+- [ ] 55.2-03-PLAN.md — Non-intel JSON-parity: audit-open, validate.health, history.digest, phase-plan-index, init.* (D-203)
+- [ ] 55.2-04-PLAN.md — Intel JSON-parity (coupled to 02) + meta/policy: native_failure classification, golden coverage policy (D-203)
+- [ ] 55.2-05-PLAN.md — Terminal gate: SDK fail 0 + ROOT stays green from summary lines; finalize VERIFICATION (D-201/D-205)
+
 ### Phase 55.1: Update old tests found failing due to phase 55 work (INSERTED)
 
 **Goal:** The ~201 pre-existing tests that fail due to Phase 55 catalog changes are back to green WITHOUT regressing real behavior — each failure cluster root-caused (stale expectation → update test; regression → fix source); `npm test` (root + SDK) passes with 0 failures.
