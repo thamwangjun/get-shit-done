@@ -408,7 +408,7 @@ Plans:
 **Goal:** The ~201 pre-existing tests that fail due to Phase 55 catalog changes are back to green WITHOUT regressing real behavior — each failure cluster root-caused (stale expectation → update test; regression → fix source); `npm test` (root + SDK) passes with 0 failures.
 **Requirements**: none mapped (test-reconciliation phase)
 **Depends on:** Phase 55
-**Plans:** 3/4 plans executed
+**Plans:** 4/4 plans complete
 
 **Wave 1**
 
@@ -421,7 +421,7 @@ Plans:
 
 **Wave 3** *(blocked on 55.1-02 + 55.1-03)*
 
-- [ ] 55.1-04-PLAN.md — Whole-suite gate: npm test (root + SDK) green, no skips, 55.1-VERIFICATION.md
+- [x] 55.1-04-PLAN.md — Whole-suite gate: npm test (root + SDK) green, no skips, 55.1-VERIFICATION.md
 
 #### Phase 56: Spawn-Template Wiring
 
