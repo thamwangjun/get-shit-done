@@ -477,6 +477,12 @@ export const verifySummary: QueryHandler = async (args, projectDir) => {
   }
 
   const { execGit } = await import('./commit.js');
+  // HEURISTIC LIMITATION (WR-04): this pattern matches any 7–40 char lowercase-hex
+  // run, including non-commit tokens (SHA-256 fragments, long hex color codes, IDs).
+  // Only the first 3 matches are `cat-file -t`-checked; if none are commits, line 505
+  // still pushes a "Referenced commit hashes not found" error — a possible false
+  // positive. This mirrors the CJS oracle (verify.cjs line 75) and is kept for
+  // byte-parity rather than tightened here.
   const commitHashPattern = /\b[0-9a-f]{7,40}\b/g;
   const hashes = content.match(commitHashPattern) || [];
   let commitsExist = false;
