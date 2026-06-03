@@ -523,6 +523,12 @@ export const validateConsistency: QueryHandler = async (_args, projectDir, works
     }
   }
 
+  // PARITY NOTE (IN-02): past the early ROADMAP-not-found return above, `errors` is
+  // never populated in this handler — every diagnostic is pushed to `warnings`
+  // (matching the warnings-only CJS oracle). Therefore `passed` here is structurally
+  // always `true`. Do NOT assume `passed` reflects warning severity: a future
+  // "this should fail validation" check must push to `errors` (not `warnings`) to
+  // flip `passed`.
   const passed = errors.length === 0;
   return {
     data: {
