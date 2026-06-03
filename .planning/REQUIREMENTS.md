@@ -34,9 +34,9 @@ Requirements for milestone v2.1.0-e. Each maps to a roadmap phase. The work is *
 
 ### Catalog Encoding
 
-- [ ] **CATALOG-01**: `model-catalog.json` profile slots (`golden`/`balanced`/`budget`) and `adaptiveTierMap` entries support inline `model;effort` labels; the schema/type widens from the fixed alias union to a string
-- [ ] **CATALOG-02**: Per-agent effort values are assigned across all 33 agents' slots **by the user during an execution handover** (guidance heuristic: heavy → high, light → none/low, default → medium; higher is not monotonically better)
-- [ ] **CATALOG-03**: `sdk/src/model-catalog.ts` mirror widened to accept `model;effort` slot strings
+- [x] **CATALOG-01**: `model-catalog.json` profile slots (`golden`/`balanced`/`budget`) and `adaptiveTierMap` entries support inline `model;effort` labels; the schema/type widens from the fixed alias union to a string
+- [x] **CATALOG-02**: Per-agent effort values are assigned across all 33 agents' slots **by the user during an execution handover** (guidance heuristic: heavy → high, light → none/low, default → medium; higher is not monotonically better)
+- [x] **CATALOG-03**: `sdk/src/model-catalog.ts` mirror widened to accept `model;effort` slot strings
 
 ### SDK & Tools Exposure
 
@@ -107,9 +107,9 @@ Populated during roadmap creation (2026-05-31). All 30 v1 requirements mapped to
 | EXPOSE-01 | Phase 54 | Complete |
 | EXPOSE-02 | Phase 54 | Complete |
 | EXPOSE-03 | Phase 54 | Complete |
-| CATALOG-01 | Phase 55 | Pending |
-| CATALOG-02 | Phase 55 (USER-HANDOVER) | Pending |
-| CATALOG-03 | Phase 55 | Pending |
+| CATALOG-01 | Phase 55 | Complete |
+| CATALOG-02 | Phase 55 (USER-HANDOVER) | Complete |
+| CATALOG-03 | Phase 55 | Complete |
 | SPAWN-01 | Phase 56 | Pending |
 | SPAWN-02 | Phase 56 | Pending |
 | SPAWN-03 | Phase 56 | Pending |

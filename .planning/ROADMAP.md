@@ -401,7 +401,7 @@ Plans:
 
 **Wave 3** *(blocked on 55-02)*
 
-- [ ] 55-03-PLAN.md — USER HANDOVER: HANDOVER.md 33-agent table + blocking checkpoint + post-handover completeness verification [CATALOG-02]
+- [x] 55-03-PLAN.md — USER HANDOVER: HANDOVER.md 33-agent table + blocking checkpoint + post-handover completeness verification [CATALOG-02]
 
 #### Phase 56: Spawn-Template Wiring
 
@@ -511,7 +511,7 @@ Plans:
 | 52. Parser Foundation | v2.1.0-e | 3/3 | Complete    | 2026-05-31 |
 | 53. Unified Effort Resolver | v2.1.0-e | 2/2 | Complete    | 2026-06-01 |
 | 54. SDK & Tools JSON Exposure | v2.1.0-e | 2/2 | Complete    | 2026-06-02 |
-| 55. Catalog Schema + User Handover | v2.1.0-e | 2/3 | In Progress|  |
+| 55. Catalog Schema + User Handover | v2.1.0-e | 3/3 | Complete    | 2026-06-03 |
 | 56. Spawn-Template Wiring | v2.1.0-e | 0/TBD | Not started | - |
 | 57. Install-Time Translation | v2.1.0-e | 0/TBD | Not started | - |
 | 58. Regression Coverage | v2.1.0-e | 0/TBD | Not started | - |
