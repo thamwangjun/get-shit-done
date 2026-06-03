@@ -5,7 +5,7 @@
 CATALOG-02 is a **user-owned hand-assignment**. Claude has:
 
 - **Plan 01** — Widened the catalog type so profile slots and `adaptiveTierMap` entries can hold `model;effort` strings, and fixed both model resolvers to strip the `;effort` suffix before alias lookup (so `"sonnet;medium"` resolves to the model `"sonnet"`, not a broken string).
-- **Plan 02** — Built a completeness-check script that reads your filled catalog and asserts all 33 agents resolve a non-null effort through the Phase 53 resolver.
+- **Plan 02** — Built a completeness-check script that reads your filled catalog and asserts all capable agents resolve a non-null effort through the Phase 53 resolver. Haiku agents are exempt — haiku does not support extended thinking.
 
 Claude has **not pre-filled any effort values**. The assignment is yours to make because effort tuning involves tradeoffs only you can weigh for this project. This document gives you everything to do it.
 
@@ -18,7 +18,7 @@ The table below shows a heuristic recommendation derived from each agent's `rout
 - **The heuristic is advisory, not enforced.** The system does not validate that you followed it.
 - **Higher effort is not monotonically better.** Extended thinking has documented regression cases — some tasks (e.g. simple code generation, mechanical transforms) produce worse output under high effort as the model over-deliberates. Start with the heuristic and adjust based on observation.
 - **The `inherit` profile stays effort-free by design.** Do not assign effort values to the `inherit` profile row — `inherit` signals that an agent should use whatever the calling context provides.
-- **You can leave an agent at the default (no effort)** by keeping the bare alias value (e.g. `"sonnet"` stays `"sonnet"`). The completeness check only passes when every agent has an assigned effort — so if you intentionally want no effort for an agent, set it to `"sonnet;none"` or equivalent.
+- **Haiku agents are exempt.** `gsd-codebase-mapper` and `gsd-doc-classifier` have `haiku` as their `balanced` slot. Haiku does not support extended thinking, so `null` effort is correct for them — the completeness check skips these agents automatically. Leave their slot values as bare `"haiku"` (or assign whatever model you prefer without an effort suffix).
 
 ---
 
@@ -49,7 +49,7 @@ The table below shows a heuristic recommendation derived from each agent's `rout
 | gsd-domain-researcher | standard | opus | sonnet | haiku | medium |
 | gsd-eval-auditor | standard | opus | sonnet | haiku | medium |
 | gsd-research-synthesizer | light | sonnet | sonnet | haiku | none/low |
-| gsd-codebase-mapper | light | sonnet | haiku | haiku | none/low |
+| gsd-codebase-mapper | light | sonnet | haiku | haiku | **exempt** (haiku) |
 | gsd-plan-checker | light | sonnet | sonnet | haiku | none/low |
 | gsd-integration-checker | light | sonnet | sonnet | haiku | none/low |
 | gsd-nyquist-auditor | light | sonnet | sonnet | haiku | none/low |
@@ -57,10 +57,10 @@ The table below shows a heuristic recommendation derived from each agent's `rout
 | gsd-ui-checker | light | sonnet | sonnet | haiku | none/low |
 | gsd-ui-auditor | light | sonnet | sonnet | haiku | none/low |
 | gsd-doc-verifier | light | sonnet | sonnet | haiku | none/low |
-| gsd-doc-classifier | light | sonnet | haiku | haiku | none/low |
+| gsd-doc-classifier | light | sonnet | haiku | haiku | **exempt** (haiku) |
 | gsd-intel-updater | light | opus | sonnet | haiku | none/low |
 
-**Counts:** 9 heavy (→ high) + 13 standard (→ medium) + 11 light (→ none/low) = 33 agents
+**Counts:** 9 heavy (→ high) + 13 standard (→ medium) + 9 light (→ none/low) + 2 light/exempt (haiku, no effort) = 33 agents
 
 ---
 
@@ -88,9 +88,9 @@ Edit `sdk/shared/model-catalog.json`. For each agent, find its entry under `"age
 }
 ```
 
-**Valid effort tokens:** `high`, `medium`, `low`, `none` (and any value accepted by `parseModelEffort` — see `sdk/src/model-catalog.ts`).
+**Valid effort tokens:** `high`, `medium`, `low` (and any value accepted by `parseModelEffort` — see `sdk/src/model-catalog.ts`). Do not assign effort to `haiku` slots — haiku does not support extended thinking and `none` is not a recognized effort token.
 
-**Tip:** You only need to assign effort to the profile slots you actually use. If your project runs `balanced` exclusively, you can leave `golden` and `budget` bare — but the completeness check will flag those agents as incomplete if any slot across all profiles is missing. Assign to all slots for a clean pass.
+**Tip:** The completeness check uses the `balanced` profile to determine whether an agent has effort assigned. Assign effort to the `balanced` slot at minimum. For the `golden` and `budget` slots: effort is optional for the check, but for consistency you may want to assign values there too.
 
 ---
 
@@ -104,7 +104,10 @@ node .planning/phases/55-catalog-schema-user-handover/check-completeness.js
 
 A successful run prints:
 ```
-PASS: all 33 agents have assigned effort values.
+Note: 2 agent(s) use haiku (no extended thinking) — exempt from effort requirement:
+  - gsd-codebase-mapper
+  - gsd-doc-classifier
+PASS: all 31 capable agents have assigned effort values.
 ```
 
 If any agents are still missing, the script lists them by name. Fix those entries and re-run.
@@ -119,4 +122,4 @@ The `model` field should be the bare alias (e.g. `opus`, no `;`) and `effort` sh
 
 ## Resume Signal
 
-Once `check-completeness.js` prints `PASS: all 33 agents have assigned effort values.`, type **"approved"** in the conversation to resume the workflow. Task 3 will run the check automatically and record the result.
+Once `check-completeness.js` prints `PASS: all 31 capable agents have assigned effort values.`, type **"approved"** in the conversation to resume the workflow. Task 3 will run the check automatically and record the result.
