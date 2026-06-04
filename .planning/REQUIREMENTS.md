@@ -46,9 +46,9 @@ Requirements for milestone v2.1.0-e. Each maps to a roadmap phase. The parsing a
 
 ### Spawn Wiring
 
-- [ ] **SPAWN-01**: The verified Claude effort carrier — subagent frontmatter `effort:` vs an `Agent()` argument, resolved at plan time against the current Agent/Task API — is wired so resolved effort reaches spawned agents
-- [ ] **SPAWN-02**: Spawn templates across `agents/`, `commands/`, and `get-shit-done/workflows/` pass resolved effort to spawned agents. An un-assigned slot on `{claude, codex}` defaults to `medium` — no omission (Phase 56 D-08). Effort is absent only for explicit `inherit` slots and the 8 non-effort runtimes, and that absence is carried mechanically by the pre-built carrier token (empty string → nothing rendered, Phase 56 D-04) rather than by a conditional render instruction.
-- [ ] **SPAWN-03**: Spawn-template edits preserve the fork quality gates (agent-frontmatter, negative-framing, step-numbering, eta-include) — achieved by extending existing `model=` lines rather than renumbering steps
+- [x] **SPAWN-01**: The verified Claude effort carrier — subagent frontmatter `effort:` vs an `Agent()` argument, resolved at plan time against the current Agent/Task API — is wired so resolved effort reaches spawned agents
+- [x] **SPAWN-02**: Spawn templates across `agents/`, `commands/`, and `get-shit-done/workflows/` pass resolved effort to spawned agents. An un-assigned slot on `{claude, codex}` defaults to `medium` — no omission (Phase 56 D-08). Effort is absent only for explicit `inherit` slots and the 8 non-effort runtimes, and that absence is carried mechanically by the pre-built carrier token (empty string → nothing rendered, Phase 56 D-04) rather than by a conditional render instruction.
+- [x] **SPAWN-03**: Spawn-template edits preserve the fork quality gates (agent-frontmatter, negative-framing, step-numbering, eta-include) — achieved by extending existing `model=` lines rather than renumbering steps
 
 ### Install Translation
 
@@ -110,9 +110,9 @@ Populated during roadmap creation (2026-05-31). All 30 v1 requirements mapped to
 | CATALOG-01 | Phase 55 | Complete |
 | CATALOG-02 | Phase 55 (USER-HANDOVER) | Complete |
 | CATALOG-03 | Phase 55 | Complete |
-| SPAWN-01 | Phase 56 | Pending |
-| SPAWN-02 | Phase 56 | Pending |
-| SPAWN-03 | Phase 56 | Pending |
+| SPAWN-01 | Phase 56 | Complete |
+| SPAWN-02 | Phase 56 | Complete |
+| SPAWN-03 | Phase 56 | Complete |
 | INSTALL-01 | Phase 57 | Pending |
 | INSTALL-02 | Phase 57 | Pending |
 | TEST-01 | Phase 58 | Pending |
