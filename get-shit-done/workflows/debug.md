@@ -34,6 +34,7 @@ if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 Extract `commit_docs` from init JSON. Resolve debugger model:
 ```bash
 debugger_model=$($GSD_SDK query resolve-model gsd-debugger 2>/dev/null | jq -r '.model' 2>/dev/null || true)
+debugger_model_effort_arg=$($GSD_SDK query resolve-model-effort gsd-debugger --raw 2>/dev/null || echo "")
 ```
 
 Read TDD mode from config:
@@ -141,6 +142,7 @@ specialist_dispatch_enabled: true
 """,
   subagent_type="gsd-debug-session-manager",
   model="{debugger_model}",
+  {debugger_model_effort_arg}
   description="Continue debug session {SLUG}"
 )
 ```
@@ -219,6 +221,7 @@ specialist_dispatch_enabled: true
 """,
   subagent_type="gsd-debug-session-manager",
   model="{debugger_model}",
+  {debugger_model_effort_arg}
   description="Debug session {slug}"
 )
 ```
