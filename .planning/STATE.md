@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-05-31 after Phase 51)
 Phase: 57
 Plan: Not started
 Status: Executing Phase 56
-Last activity: 2026-06-04 - Completed quick task 260604-r78: Fix brittle anchor in --research-phase proximity test
+Last activity: 2026-06-04 - Completed quick task 260604-so1: Fix mktemp BSD/GNU incompatibility in quick workflow worktree manifest template
 
 ## Performance Metrics
 
@@ -94,6 +94,7 @@ None. Research is HIGH confidence. Two plan-time verification flags noted above 
 | 260604-8ol | Amend locked planning artifacts (REQUIREMENTS.md, ROADMAP.md): abolish effort omission for {claude,codex} — bare slots floor to medium (Phase 56 D-08 + D-04) | 2026-06-04 | 8b1ef7be | [260604-8ol-amend-locked-planning-artifacts-abolish-](./quick/260604-8ol-amend-locked-planning-artifacts-abolish-/) |
 | 260604-qzi | Harden /gsd-quick workflow with an orchestrator-role boundary so orchestration is never bypassed for inline edits | 2026-06-04 | 5b86c687 | [260604-qzi-harden-gsd-quick-skill-against-orchestra](./quick/260604-qzi-harden-gsd-quick-skill-against-orchestra/) |
 | 260604-r78 | Fix brittle anchor in --research-phase proximity test in skill-frontmatter-contract.test.cjs | 2026-06-04 | 2231acc8 | [260604-r78-fix-brittle-anchor-in-research-phase-pro](./quick/260604-r78-fix-brittle-anchor-in-research-phase-pro/) |
+| 260604-so1 | Fix mktemp BSD/GNU incompatibility in quick workflow worktree manifest template | 2026-06-04 | 7a5c6ddd | [260604-so1-fix-mktemp-bsd-gnu-incompatibility-in-qu](./quick/260604-so1-fix-mktemp-bsd-gnu-incompatibility-in-qu/) |
 
 ## Session Continuity
 
