@@ -27,6 +27,16 @@ Valid GSD subagent types (use exact names — do not fall back to 'general-purpo
 </available_agent_types>
 
 <process>
+**Orchestrator role**
+
+The orchestrator's job in /gsd-quick is to spawn agents (gsd-planner, gsd-executor) and manage state, commits, and tracking — every source-file change flows through the spawned gsd-executor at Step 11. The self-detection signal is simple: if the orchestrator finds itself about to use Edit, Write, or NotebookEdit on a source file, that is the signal it has left the workflow; the correct response is to stop and re-enter by spawning the executor. Editing `.planning/` artifacts (STATE.md, PLAN.md, SUMMARY.md, CONTEXT.md) is the orchestrator's own bookkeeping and remains in-scope — the boundary applies to source-file edits only.
+
+A precisely specified task is a reason to spawn the executor with confidence. Detailed specifications make execution faster and lower-risk, not optional. The planner and executor still run; specification quality changes how smoothly orchestration proceeds, not whether it happens.
+
+The tracking, atomic commits, and STATE.md "Quick Tasks Completed" record ARE the deliverable, independent of how small the diff is — orchestration cost is not weighed against task size. When a task genuinely feels too small to warrant /gsd-quick, the correct action is to point the user to /gsd-fast rather than performing /gsd-quick's work inline.
+
+---
+
 **Step 1: Parse arguments and get task description**
 
 Parse `$ARGUMENTS` for:
