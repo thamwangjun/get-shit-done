@@ -467,7 +467,11 @@ Plans:
   2. Spawn templates across `agents/`, `commands/`, and `get-shit-done/workflows/` pass resolved effort via the pre-built carrier token; bare `{claude, codex}` slots floor to `medium` (D-08), and the residual absent cases (explicit `inherit`, the 8 non-effort runtimes) emit nothing via the empty carrier token (D-04)
   3. Spawn-template edits preserve every fork quality gate (agent-frontmatter 155/155, negative-framing 99/99, step-numbering 632/632, cross-file-refs 219/219, eta-include) — achieved by extending existing `model=` lines rather than renumbering steps
 
-**Plans**: TBD
+**Plans**: 3 plans (2 waves)
+
+- [ ] 56-01-PLAN.md — Wave 1: D-08 medium floor in core resolver + resolve-model-effort SDK query + unit tests + D-02 carrier-verification gate
+- [ ] 56-02-PLAN.md — Wave 2: wire effort into 8 Group A init-fed workflows (parse instruction + pre-built token per Agent() block)
+- [ ] 56-03-PLAN.md — Wave 2: wire effort into 9 Group B standalone-resolve workflows + gsd-debug-session-manager agent (adjacent resolve-model-effort line + Agent() token)
 
 #### Phase 57: Install-Time Translation
 
