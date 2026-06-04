@@ -779,7 +779,7 @@ SUMMARY.md and stop — the user must rerun with worktrees disabled.
 - Commit each task atomically (code changes only)
 - Run the <submodule_commit_guard> bash block before every \`git commit\` if SUBMODULE_PATHS is non-empty
 - Create summary at: ${QUICK_DIR}/${quick_id}-SUMMARY.md
-- Do NOT commit docs artifacts (SUMMARY.md, STATE.md, PLAN.md) — the orchestrator handles the docs commit in Step 15
+- Commit your SUMMARY.md as a `docs(quick-${quick_id}): complete ${quick_id}` commit so it travels back on the per-agent branch and survives worktree teardown — commit ONLY SUMMARY.md (not STATE.md, not ROADMAP.md); PLAN.md is already committed pre-dispatch; STATE.md and ROADMAP.md remain orchestrator-owned; Step 15 is an idempotent safety net that handles already-committed files gracefully
 - Do NOT update ROADMAP.md (quick tasks are separate from planned phases)
 </constraints>
 ",
