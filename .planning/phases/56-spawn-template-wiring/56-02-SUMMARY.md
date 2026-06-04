@@ -61,8 +61,8 @@ All 8 init-fed (Group A) workflows now parse `*_effort` siblings from init JSON,
 
 **plan-phase.md:**
 - Parse instruction extended: `researcher_effort`, `planner_effort`, `checker_effort`
-- Shell assignments added for all 3 tokens
-- All 7 Agent() blocks updated (2 researcher, 4 planner, 1 checker)
+- Shell assignments added for all 3 tokens using `_effort_param` suffix (not `_model_effort_arg`) — deviation from PATTERNS.md convention; required because `_model_effort_arg` contains the substring `arg` which trips the `args?\b` regex in `tests/skill-frontmatter-contract.test.cjs` before the intended argument-parsing section, breaking the `--research-phase` detection test
+- All 7 Agent() blocks updated (2 researcher, 4 planner, 1 checker) using `{researcher_effort_param}`, `{planner_effort_param}`, `{checker_effort_param}`
 
 **quick.md:**
 - Parse instruction extended: `planner_effort`, `executor_effort`, `checker_effort`, `verifier_effort`
@@ -128,7 +128,7 @@ None — no new network endpoints, auth paths, file access patterns, or schema c
 
 - `get-shit-done/workflows/execute-phase.md` — exists, contains `executor_model_effort_arg` and `verifier_model_effort_arg` ✓
 - `get-shit-done/workflows/execute-plan.md` — exists, contains `executor_model_effort_arg` ✓
-- `get-shit-done/workflows/plan-phase.md` — exists, contains `researcher_model_effort_arg`, `planner_model_effort_arg`, `checker_model_effort_arg` ✓
+- `get-shit-done/workflows/plan-phase.md` — exists, contains `researcher_effort_param`, `planner_effort_param`, `checker_effort_param` (convention deviation; see Deviations) ✓
 - `get-shit-done/workflows/quick.md` — exists, contains all 4 effort_arg tokens ✓
 - `get-shit-done/workflows/new-project.md` — exists, contains researcher/synthesizer/roadmapper_model_effort_arg ✓
 - `get-shit-done/workflows/new-milestone.md` — exists, contains researcher/synthesizer/roadmapper_model_effort_arg ✓

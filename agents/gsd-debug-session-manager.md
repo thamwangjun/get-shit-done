@@ -95,7 +95,7 @@ Agent(
 Resolve the debugger model before spawning:
 ```bash
 debugger_model=$(gsd-sdk query resolve-model gsd-debugger 2>/dev/null | jq -r '.model' 2>/dev/null || true)
-debugger_effort_param=$(gsd-sdk query resolve-model gsd-debugger --raw 2>/dev/null | jq -r 'if .reasoning_effort then "effort=\"\(.reasoning_effort)\"" else "" end' 2>/dev/null || echo "")
+debugger_model_effort_arg=$(gsd-sdk query resolve-model gsd-debugger 2>/dev/null | jq -r 'if .effort then "effort=\"\(.effort)\"" else "" end' 2>/dev/null || echo "")
 ```
 
 ## Step 3: Handle Agent Return
