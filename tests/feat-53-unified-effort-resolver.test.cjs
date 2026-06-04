@@ -227,7 +227,9 @@ describe('Phase 53: malformed effort token degrades gracefully (CONFIG-04/D-05)'
     } finally {
       process.stderr.write = origWrite;
     }
-    assert.strictEqual(effort, null);
+    // D-08: malformed suffix degrades to null from parseModelEffort, then the floor
+    // kicks in (supported runtime, non-inherit slot) → 'medium'. Warning still fires.
+    assert.strictEqual(effort, 'medium');
     const warned = stderrChunks.some((c) => c.includes('hihg'));
     assert.ok(warned, `expected a one-time stderr warning mentioning "hihg"; got: ${JSON.stringify(stderrChunks)}`);
   });

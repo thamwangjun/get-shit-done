@@ -78,14 +78,15 @@ describe('CONFIG-02: models.<phase-type> model;effort reaches parseModelEffort i
     assert.strictEqual(resolveReasoningEffortInternal(projectDir, 'gsd-verifier'), 'high');
   });
 
-  test('models.<phase-type> = "opus" (bare, no ;) on claude → effort null (back-compat, no slot effort, no per-tier fallback on claude)', () => {
-    // On claude, there is no per-tier reasoning_effort fallback, so bare slot → null.
+  test('models.<phase-type> = "opus" (bare, no ;) on claude → effort "medium" (D-08 floor: no slot effort, no per-tier fallback, floor applies)', () => {
+    // On claude, there is no per-tier reasoning_effort fallback. Bare slot has no ;effort.
+    // D-08 floor: supported runtime, non-inherit slot → 'medium'.
     writeConfig(projectDir, {
       runtime: 'claude',
       model_profile: 'quality',
       models: { execution: 'opus' },
     });
-    assert.strictEqual(resolveReasoningEffortInternal(projectDir, 'gsd-executor'), null);
+    assert.strictEqual(resolveReasoningEffortInternal(projectDir, 'gsd-executor'), 'medium');
   });
 });
 
@@ -161,7 +162,9 @@ describe('CONFIG-04: malformed effort token degrades to null + one-time warning'
     } finally {
       process.stderr.write = originalWrite;
     }
-    assert.strictEqual(effort, null, 'malformed suffix must degrade to null');
+    // D-08: malformed suffix degrades to null from parseModelEffort; then D-08 floor
+    // applies (supported runtime, non-inherit slot) → 'medium'. Warning still fires.
+    assert.strictEqual(effort, 'medium', 'malformed suffix: parseModelEffort degrades to null, D-08 floor yields medium');
     const warning = stderrChunks.join('');
     assert.ok(warning.includes('gsd: warning'), `expected warning in stderr, got: ${JSON.stringify(warning)}`);
     assert.ok(warning.includes('hihg'), `warning must name the unknown suffix "hihg", got: ${JSON.stringify(warning)}`);
@@ -264,8 +267,11 @@ describe('D-08: cross-resolver golden snapshot — bare config back-compat + sam
           // (D-102), so bare configs legitimately resolve non-null effort for non-inherit
           // profiles. The expected effort is whatever the slot carries.
           // For inherit profile, no slot effort exists → effort remains null.
+          // D-08 floor: for non-inherit profiles, bare slots (no ;effort) floor to 'medium'.
           const slot = _resolveAgentSlot(projectDir, agent);
-          const expectedEffort = parseModelEffort(slot).effort;
+          const slotEffort = parseModelEffort(slot).effort;
+          // Apply D-08 floor: inherit profile stays null; all other bare slots → 'medium'
+          const expectedEffort = (profile === 'inherit') ? slotEffort : (slotEffort ?? 'medium');
           const effort = resolveReasoningEffortInternal(projectDir, agent);
           assert.strictEqual(effort, expectedEffort,
             `bare claude config must yield slot effort (${JSON.stringify(expectedEffort)}) for agent=${agent} profile=${profile}`);
@@ -274,9 +280,12 @@ describe('D-08: cross-resolver golden snapshot — bare config back-compat + sam
         test(`same-slot invariant: agent=${agent}, profile=${profile} — model+effort from same _resolveAgentSlot (D-08)`, () => {
           const slot = _resolveAgentSlot(projectDir, agent);
           const parsed = parseModelEffort(slot);
-          // The slot-parsed effort is the expected effort (null for inherit, or hand-assigned value)
-          const expectedEffort = parsed.effort;
-          // resolveReasoningEffortInternal must agree with slot-parsed effort
+          // D-08 floor: for non-inherit profiles, bare slots (no ;effort) floor to 'medium'.
+          // The same-slot invariant holds: model comes from the slot, effort comes from the
+          // slot or the D-08 floor if the slot carries no explicit effort.
+          const slotEffort = parsed.effort;
+          const expectedEffort = (profile === 'inherit') ? slotEffort : (slotEffort ?? 'medium');
+          // resolveReasoningEffortInternal must agree with slot-parsed effort (+ D-08 floor)
           const resolvedEffort = resolveReasoningEffortInternal(projectDir, agent);
           assert.strictEqual(resolvedEffort, expectedEffort,
             `resolveReasoningEffortInternal must match slot-parsed effort (${JSON.stringify(expectedEffort)}) for agent=${agent} profile=${profile}`);
