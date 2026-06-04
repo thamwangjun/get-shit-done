@@ -1,7 +1,7 @@
 import type { QueryHandler } from './utils.js';
 import { generateSlug, currentTimestamp } from './utils.js';
 import { frontmatterGet } from './frontmatter.js';
-import { configGet, configPath, resolveModel } from './config-query.js';
+import { configGet, configPath, resolveModel, resolveModelEffort } from './config-query.js';
 import { stateSnapshot } from './state.js';
 import { findPhase, phasePlanIndex } from './phase.js';
 import { planTaskStructure } from './plan-task-structure.js';
@@ -33,6 +33,7 @@ export const FOUNDATION_STATIC_CATALOG: ReadonlyArray<readonly [string, QueryHan
   ['config-get', configGet],
   ['config-path', configPath],
   ['resolve-model', resolveModel],
+  ['resolve-model-effort', resolveModelEffort],
 ] as const;
 
 export const STATE_SUPPORT_STATIC_CATALOG: ReadonlyArray<readonly [string, QueryHandler]> = [

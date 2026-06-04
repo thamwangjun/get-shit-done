@@ -338,3 +338,23 @@ export const resolveModel: QueryHandler = async (args, projectDir, workstream) =
 
   return { data: { model: alias, profile, effort: null } };
 };
+
+// ─── resolveModelEffort ───────────────────────────────────────────────────────
+/**
+ * Resolves only the reasoning-effort token for an agent, mirroring the CLI
+ * `cmdResolveModelEffort` handler in `get-shit-done/bin/lib/commands.cjs`.
+ *
+ * Delegates the full precedence chain to {@link resolveModel} and projects its
+ * `effort` field into a spawn-ready `effort="<value>"` token (empty string when
+ * effort is null). JSON callers receive `{ effort, token }`; the raw token is
+ * the `token` field.
+ *
+ * @param args - `args[0]` is the agent type
+ * @returns Query result with `{ effort: string | null, token: string }`
+ */
+export const resolveModelEffort: QueryHandler = async (args, projectDir, workstream) => {
+  const resolved = await resolveModel(args, projectDir, workstream);
+  const effort = (resolved.data as { effort?: string | null }).effort ?? null;
+  const token = effort !== null ? `effort="${effort}"` : '';
+  return { data: { effort, token } };
+};

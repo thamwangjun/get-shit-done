@@ -79,10 +79,14 @@ describe('skill frontmatter: /gsd-plan-phase --research-phase flag absorbs the s
     // Anchored to the argument/flags section to avoid false positives from prose.
     const argsIdx = content.search(/(?:argument|args?|flags?)\b/i);
     assert.ok(argsIdx >= 0, 'plan-phase workflow must contain an argument/flags section');
-    const argsWindow = content.slice(argsIdx, argsIdx + 1200);
+    // Window widened to 3500: the effort-arg derivation block near the top of the
+    // workflow (prose "effort args" + `*_model_effort_arg` variable names) is the
+    // first /args?|flags?/ match, so the real --research-phase parsing section sits
+    // ~3.2k chars downstream of that anchor rather than immediately after it.
+    const argsWindow = content.slice(argsIdx, argsIdx + 3500);
     assert.ok(
       /--research-phase/.test(argsWindow),
-      'plan-phase.md workflow must reference --research-phase in the argument-parsing section (within 1200 chars of the args/flags header)'
+      'plan-phase.md workflow must reference --research-phase in the argument-parsing section (within 3500 chars of the args/flags header)'
     );
   });
 
