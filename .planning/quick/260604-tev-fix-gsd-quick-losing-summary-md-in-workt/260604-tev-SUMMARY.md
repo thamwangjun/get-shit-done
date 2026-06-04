@@ -22,6 +22,22 @@ Executor now commits SUMMARY.md to its per-agent branch so it survives worktree 
 
 **Fix:** The executor now commits its SUMMARY.md as a `docs(quick-${quick_id})` commit on the per-agent branch. Committed work merges back via `worktree.cleanup-wave` (Step 11) and survives teardown — the same pattern PLAN.md already used.
 
+## Second Fix: cleanup-wave Merge Abort on Committed SUMMARY (#260604-tev follow-up)
+
+**Root cause discovered by running the real cleanup path:** Once the executor commits SUMMARY.md, `worktree.cleanup-wave` began FAILING to merge the per-agent branch. `rescueSummaryArtifacts` in `worktree-safety.cjs` walked the worktree filesystem (`defaultFindSummaryFiles`) and copied EVERY `*SUMMARY.md` into the main tree as an untracked file — including the now-committed SUMMARY. `git merge <branch>` then aborted:
+
+```
+error: The following untracked working tree files would be overwritten by merge:
+  .planning/quick/260604-tev-.../260604-tev-SUMMARY.md
+Please move or remove them before you merge. Aborting
+```
+
+The defense-in-depth comment from the first fix was insufficient — the rescue actively broke the merge by creating a conflicting untracked copy of an already-committed file.
+
+**Fix:** `rescueSummaryArtifacts` now rescues only SUMMARY files that are genuinely uncommitted (untracked OR modified) in the worktree. It consults the worktree's git status once via a new injectable `deps.getWorktreeDirtyPaths(worktreePath) -> Set<relPath>` (real-git default `defaultGetWorktreeDirtyPaths`, fail-safe to empty on git error). Committed-and-clean summaries are skipped entirely — not copied and not added to `rescuedRelPaths`. The merge brings committed files over naturally; clean files never appear in porcelain so they need no filtering. The legacy uncommitted path (genuine safety net for non-worktree-committing callers) is unchanged.
+
+Also removed the dead, unused `parseWorktreeListPaths` helper (lint cleanup, in-scope).
+
 ## Completed Tasks
 
 | Task | Name | Commit | Files |
@@ -29,14 +45,22 @@ Executor now commits SUMMARY.md to its per-agent branch so it survives worktree 
 | 1 | Move SUMMARY.md commit responsibility to executor | a8ab00d1 | get-shit-done/workflows/quick.md |
 | 2 | Update commit-boundary regression test | d6c8c670 | tests/quick-commit-boundary.test.cjs |
 | 3 | Full suite pass + defense-in-depth comment | 1209e310 | get-shit-done/bin/lib/worktree-safety.cjs |
+| 4 | Rescue only uncommitted summaries (cleanup-wave merge fix) + regression test | (this commit) | get-shit-done/bin/lib/worktree-safety.cjs, tests/worktree-safety.test.cjs |
 
 ## Deviations from Plan
 
-None — plan executed exactly as written.
+The second fix (rescue committed-clean SUMMARY abort) was a follow-up discovered by running the actual `worktree.cleanup-wave` path after the first fix landed — see "Second Fix" section above. Plan tasks 1-3 executed as written.
 
 ## Test Results
 
-`npm test` — 4735 pass, 0 fail, 4 skipped (18.4s)
+`npm test` — 4736 pass, 0 fail, 4 skipped (~21s) on this branch after second fix. (Re-run against the integration baseline after merge: 7860 pass, 0 fail, 12 skipped.)
+
+`node --test tests/worktree-safety.test.cjs` — 36/36 pass, including:
+- `#3804: rescues uncommitted SUMMARY.md from worktree .planning/ before dirty check`
+- `#3804: still blocks when worktree has non-SUMMARY dirty files alongside SUMMARY`
+- `#3804 follow-up: committed-and-clean SUMMARY.md is NOT rescued (avoids merge abort)`
+
+(First fix recorded below: `npm test` — 4735 pass, 0 fail, 4 skipped at that time.)
 
 `node --test tests/quick-commit-boundary.test.cjs` — 5/5 tests pass:
 - `quick.md exists`
