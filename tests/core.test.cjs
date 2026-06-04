@@ -2034,6 +2034,15 @@ describe('resolveReasoningEffortInternal inertness on bare catalog', () => {
   ];
 
   test('returns null for all resolvable agent slots on a bare catalog (SC#4)', () => {
+    // Precondition: createTempProject() leaves `runtime` UNSET, so the
+    // allowlist gate in resolveReasoningEffortInternal short-circuits to null.
+    // This is what distinguishes SC#4 (gate → null) from D-08 (runtime:'claude'
+    // → 'medium' floor). If a future change adds a default `runtime` to the
+    // fixture, this test would silently flip from testing the gate to testing
+    // the floor — assert the precondition explicitly so the dependency is visible.
+    // loadConfig is imported from core.cjs at the top of this file.
+    assert.strictEqual(loadConfig(tmpDir).runtime, undefined,
+      'SC#4 precondition: bare-catalog fixture must leave `runtime` unset so the allowlist gate returns null');
     for (const agent of RESOLVABLE_AGENTS) {
       const effort = resolveReasoningEffortInternal(tmpDir, agent);
       assert.strictEqual(effort, null,
