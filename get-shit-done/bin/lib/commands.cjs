@@ -251,6 +251,15 @@ function cmdResolveModel(cwd, agentType, raw) {
   output(result, raw, model);
 }
 
+function cmdResolveModelEffort(cwd, agentType, raw) {
+  if (!agentType) {
+    error('agent-type required');
+  }
+  const effort = resolveReasoningEffortInternal(cwd, agentType);
+  const token = effort !== null ? `effort="${effort}"` : '';
+  output({ effort, token }, raw, token);
+}
+
 function cmdCommit(cwd, message, files, raw, amend, noVerify) {
   if (!message && !amend) {
     error('commit message required');
@@ -1022,6 +1031,7 @@ module.exports = {
   cmdVerifyPathExists,
   cmdHistoryDigest,
   cmdResolveModel,
+  cmdResolveModelEffort,
   cmdCommit,
   cmdCommitToSubrepo,
   cmdSummaryExtract,

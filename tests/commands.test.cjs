@@ -1196,6 +1196,63 @@ describe('resolve-model command', () => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// cmdResolveModelEffort tests (CMD-03b)
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('resolve-model-effort command', () => {
+  const { createTempProject, cleanup } = require('./helpers.cjs');
+  const fs = require('fs');
+  const path = require('path');
+  let tmpDir;
+
+  function writeConfig(obj) {
+    fs.writeFileSync(
+      path.join(tmpDir, '.planning', 'config.json'),
+      JSON.stringify(obj)
+    );
+  }
+
+  beforeEach(() => {
+    tmpDir = createTempProject();
+  });
+
+  afterEach(() => {
+    cleanup(tmpDir);
+  });
+
+  test('fails when no agent-type provided', () => {
+    const result = runGsdTools('resolve-model-effort', tmpDir);
+    assert.ok(!result.success, 'should fail without agent-type');
+    assert.ok(result.error.includes('agent-type required'), 'error should mention agent-type required');
+  });
+
+  test('raw output is effort token when effort present (claude, adaptive)', () => {
+    writeConfig({ runtime: 'claude', model_profile: 'adaptive' });
+    const result = runGsdTools('resolve-model-effort gsd-executor --raw', tmpDir);
+    assert.ok(result.success, 'should succeed');
+    assert.strictEqual(result.output.trim(), 'effort="medium"',
+      'raw output must be the carrier token effort="medium"');
+  });
+
+  test('raw output is empty string when effort absent (no runtime)', () => {
+    // No runtime set — allowlist gate returns null, effort is absent
+    const result = runGsdTools('resolve-model-effort gsd-executor --raw', tmpDir);
+    assert.ok(result.success, 'should succeed');
+    assert.strictEqual(result.output.trim(), '',
+      'raw output must be empty string when effort is absent (never literal "null")');
+  });
+
+  test('JSON output has effort and token fields', () => {
+    writeConfig({ runtime: 'claude', model_profile: 'adaptive' });
+    const result = runGsdTools('resolve-model-effort gsd-executor', tmpDir);
+    assert.ok(result.success, 'should succeed');
+    const output = JSON.parse(result.output);
+    assert.strictEqual(output.effort, 'medium', 'JSON effort field must be medium');
+    assert.strictEqual(output.token, 'effort="medium"', 'JSON token field must be the carrier token');
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 // cmdCommit tests (CMD-04)
 // ─────────────────────────────────────────────────────────────────────────────
 
