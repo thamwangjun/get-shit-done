@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-05-31 after Phase 51)
 Phase: 56
 Plan: Not started
 Status: Phase complete — ready for verification
-Last activity: 2026-06-03
+Last activity: 2026-06-04 - Completed quick task 260604-8ol: abolish effort omission for {claude,codex} in locked planning artifacts
 
 ## Performance Metrics
 
@@ -90,6 +90,7 @@ None. Research is HIGH confidence. Two plan-time verification flags noted above 
 | 260601-bfj | Fix flaky `scaffolds context file` test: make all 8 remaining gen-*.mjs writes atomic (temp + rename), eliminating the truncate race that crashed concurrent require() of configuration.generated.cjs | 2026-06-01 | 60f12a5a | [260601-bfj-root-cause-and-fix-the-flaky-scaffolds-c](./quick/260601-bfj-root-cause-and-fix-the-flaky-scaffolds-c/) |
 | 260603-a52 | Convert execute-plan.md eta include to @-ref in execute-phase.md + reference_usage guidance on when to consult it | 2026-06-03 | d9c627c1 | [260603-a52-convert-execute-plan-md-to-ref-in-execut](./quick/260603-a52-convert-execute-plan-md-to-ref-in-execut/) |
 | Phase 55.2-fix-sdk-golden-parity-suite-failures-regression-triage-from- P01 | 20min | 2 tasks | 1 files |
+| 260604-8ol | Amend locked planning artifacts (REQUIREMENTS.md, ROADMAP.md): abolish effort omission for {claude,codex} — bare slots floor to medium (Phase 56 D-08 + D-04) | 2026-06-04 | 8b1ef7be | [260604-8ol-amend-locked-planning-artifacts-abolish-](./quick/260604-8ol-amend-locked-planning-artifacts-abolish-/) |
 
 ## Session Continuity
 
