@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v2.1.0-e
 milestone_name: Per-Agent Thinking Effort
 status: executing
-last_updated: "2026-06-04T08:59:26.299Z"
-last_activity: 2026-06-04 -- Phase 56 planning complete
+last_updated: "2026-06-04T09:06:43.870Z"
+last_activity: 2026-06-04 -- Phase 56 execution started
 progress:
   total_phases: 9
   completed_phases: 6
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-31 after Phase 51)
 
 **Core value:** Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships
-**Current focus:** Phase 55.2 — fix-sdk-golden-parity-suite-failures-regression-triage-from-
+**Current focus:** Phase 56 — spawn-template-wiring
 
 ## Current Position
 
-Phase: 56
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-06-04 -- Phase 56 planning complete
+Phase: 56 (spawn-template-wiring) — EXECUTING
+Plan: 1 of 3
+Status: Executing Phase 56
+Last activity: 2026-06-04 -- Phase 56 execution started
 
 ## Performance Metrics
 

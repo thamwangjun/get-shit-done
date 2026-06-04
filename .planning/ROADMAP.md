@@ -470,7 +470,7 @@ Plans:
 **Plans**: 3 plans (2 waves)
 **Wave 1**
 
-- [ ] 56-01-PLAN.md — Wave 1: D-08 medium floor in core resolver + resolve-model-effort SDK query + unit tests + D-02 carrier-verification gate
+- [x] 56-01-PLAN.md — Wave 1: D-08 medium floor in core resolver + resolve-model-effort SDK query + unit tests + D-02 carrier-verification gate
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -572,7 +572,7 @@ Plans:
 | 53. Unified Effort Resolver | v2.1.0-e | 2/2 | Complete    | 2026-06-01 |
 | 54. SDK & Tools JSON Exposure | v2.1.0-e | 2/2 | Complete    | 2026-06-02 |
 | 55. Catalog Schema + User Handover | v2.1.0-e | 3/3 | Complete   | 2026-06-03 |
-| 56. Spawn-Template Wiring | v2.1.0-e | 0/TBD | Not started | - |
+| 56. Spawn-Template Wiring | v2.1.0-e | 1/3 | In Progress|  |
 | 57. Install-Time Translation | v2.1.0-e | 0/TBD | Not started | - |
 | 58. Regression Coverage | v2.1.0-e | 0/TBD | Not started | - |
 
