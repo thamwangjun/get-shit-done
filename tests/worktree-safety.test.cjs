@@ -704,6 +704,8 @@ describe('executeWorktreeWaveCleanupPlan', () => {
         }
         return [];
       },
+      // The SUMMARY is uncommitted (untracked) in the worktree — eligible for rescue.
+      getWorktreeDirtyPaths: () => new Set(['.planning/q1-SUMMARY.md']),
       readFileSync: (p) => {
         if (p === '/repo/.claude/worktrees/agent-a1/.planning/q1-SUMMARY.md') return 'summary content';
         return '';
@@ -763,6 +765,8 @@ describe('executeWorktreeWaveCleanupPlan', () => {
         }
         return [];
       },
+      // SUMMARY untracked; src/foo.js modified — both dirty.
+      getWorktreeDirtyPaths: () => new Set(['.planning/q1-SUMMARY.md', 'src/foo.js']),
       readFileSync: () => 'summary content',
       existsSync: () => false,
       mkdirSync: () => {},
@@ -770,6 +774,75 @@ describe('executeWorktreeWaveCleanupPlan', () => {
     });
     assert.equal(result.ok, false);
     assert.equal(result.entries[0].reason, 'worktree_dirty');
+  });
+
+  test('#3804 follow-up: committed-and-clean SUMMARY.md is NOT rescued (avoids merge abort)', () => {
+    // The executor now commits SUMMARY.md to its per-agent branch.  The merge
+    // brings it over naturally — copying it as an untracked file in the main
+    // tree would make `git merge` abort with "untracked working tree files
+    // would be overwritten by merge".  A committed-and-clean summary must be
+    // skipped: not copied and not in rescuedRelPaths.
+    const rescued = [];
+    const plan = {
+      ok: true,
+      repoRoot: '/repo/main',
+      action: 'cleanup_wave',
+      discovery: 'manifest',
+      entries: [{
+        agent_id: 'a1',
+        worktree_path: '/repo/.claude/worktrees/agent-a1',
+        branch: 'worktree-agent-a1',
+        expected_base: 'abc123',
+      }],
+    };
+    const result = executeWorktreeWaveCleanupPlan(plan, {
+      execGit: (args) => {
+        const key = args.join(' ');
+        if (key === '-C /repo/.claude/worktrees/agent-a1 rev-parse --abbrev-ref HEAD') {
+          return { exitCode: 0, stdout: 'worktree-agent-a1', stderr: '' };
+        }
+        if (key === 'merge-base HEAD worktree-agent-a1') {
+          return { exitCode: 0, stdout: 'abc123', stderr: '' };
+        }
+        if (key === 'diff --diff-filter=D --name-only HEAD...worktree-agent-a1') {
+          return { exitCode: 0, stdout: '', stderr: '' };
+        }
+        if (key === '-C /repo/.claude/worktrees/agent-a1 status --porcelain --untracked-files=all') {
+          // Worktree is clean — SUMMARY is committed, nothing dirty.
+          return { exitCode: 0, stdout: '', stderr: '' };
+        }
+        if (key.startsWith('merge worktree-agent-a1')) {
+          return { exitCode: 0, stdout: '', stderr: '' };
+        }
+        if (key === 'worktree remove /repo/.claude/worktrees/agent-a1 --force') {
+          return { exitCode: 0, stdout: '', stderr: '' };
+        }
+        if (key === 'branch -D worktree-agent-a1') {
+          return { exitCode: 0, stdout: '', stderr: '' };
+        }
+        return { exitCode: 0, stdout: '', stderr: '' };
+      },
+      // The summary file exists on disk (it's committed) but the worktree is clean.
+      findSummaryFiles: (worktreePath) => {
+        if (worktreePath === '/repo/.claude/worktrees/agent-a1') {
+          return ['/repo/.claude/worktrees/agent-a1/.planning/q1-SUMMARY.md'];
+        }
+        return [];
+      },
+      // Clean worktree — no dirty paths.
+      getWorktreeDirtyPaths: () => new Set(),
+      readFileSync: () => 'summary content',
+      existsSync: () => false,
+      mkdirSync: () => {},
+      copyFileSync: (src, dest) => { rescued.push({ src, dest }); },
+    });
+
+    // Committed-and-clean SUMMARY must NOT be copied to the main tree.
+    assert.equal(rescued.length, 0, 'committed-and-clean SUMMARY.md must not be rescued');
+    // Cleanup still succeeds and merges the committed work.
+    assert.equal(result.ok, true, 'cleanup must succeed for a clean worktree');
+    assert.equal(result.entries[0].status, 'merged_removed');
+    assert.equal(result.entries[0].reason, 'ok');
   });
 
   test('blocks dirty worktrees before merge/remove/delete', () => {

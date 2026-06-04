@@ -1,10 +1,14 @@
 /**
- * GSD Quick Workflow — Commit Boundary Tests (#1503)
+ * GSD Quick Workflow — Commit Boundary Tests (#1503, #260604-tev)
  *
  * Validates that the quick workflow correctly separates executor
- * responsibilities (code commits) from orchestrator responsibilities
- * (docs artifact commit), preventing PLAN.md from being left untracked
- * when the executor runs without worktree isolation.
+ * responsibilities from orchestrator responsibilities:
+ *   - Executor commits SUMMARY.md to its per-agent branch so it survives
+ *     worktree teardown (#260604-tev — committed work travels back on the
+ *     branch; uncommitted work does not).
+ *   - PLAN.md is committed pre-dispatch by the orchestrator.
+ *   - STATE.md and ROADMAP.md remain orchestrator-owned (Step 15).
+ *   - Step 15 is an idempotent safety net that handles already-committed files.
  */
 
 const { test, describe } = require('node:test');
@@ -23,10 +27,17 @@ describe('quick workflow commit boundary (#1503)', () => {
     content = fs.readFileSync(quickPath, 'utf-8');
   });
 
-  test('executor constraints prohibit committing docs artifacts', () => {
+  test('executor constraints instruct committing SUMMARY.md for worktree survival (#260604-tev)', () => {
+    // The executor must commit SUMMARY.md so it travels back on the per-agent
+    // branch and survives worktree teardown — the old negative prohibition has
+    // been replaced with this affirmative contract (#260604-tev).
     assert.ok(
-      content.includes('Do NOT commit docs artifacts'),
-      'executor constraints should prohibit committing SUMMARY.md, STATE.md, PLAN.md'
+      content.includes('Commit your SUMMARY.md'),
+      'executor constraints should affirmatively instruct committing SUMMARY.md'
+    );
+    assert.ok(
+      !content.includes('Do NOT commit docs artifacts'),
+      'old negative prohibition must be absent — replaced by affirmative SUMMARY.md commit instruction'
     );
   });
 

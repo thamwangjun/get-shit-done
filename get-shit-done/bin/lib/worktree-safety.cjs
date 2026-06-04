@@ -51,10 +51,6 @@ function parseWorktreeEntries(porcelain) {
   return entries;
 }
 
-function parseWorktreeListPaths(porcelain) {
-  return parseWorktreeEntries(porcelain).map((entry) => entry.path);
-}
-
 function readWorktreeList(repoRoot, deps = {}) {
   const execGit = deps.execGit || execGitDefault;
   const listResult = execGit(['worktree', 'list', '--porcelain'], { cwd: repoRoot });
@@ -413,22 +409,62 @@ function defaultFindSummaryFiles(worktreePath) {
 }
 
 /**
- * Rescue uncommitted SUMMARY.md artifacts from a worktree into the main repo
- * tree before the dirty-state check.  Mirrors the shell-fallback rescue block
- * in quick.md (lines 878–891, #2296/#2070/#2838).
+ * Compute the set of dirty (modified or untracked) worktree-relative paths via
+ * `git status --porcelain --untracked-files=all`.  Returns a Set of
+ * forward-slash-normalized relative paths.  On any git failure the Set is empty,
+ * which makes the caller fail-safe (rescue nothing it cannot prove is dirty).
  *
- * For each *SUMMARY.md found under <worktreePath>/.planning/:
+ * @param {string} worktreePath - Absolute path to the linked worktree.
+ * @returns {Set<string>}
+ */
+function defaultGetWorktreeDirtyPaths(worktreePath) {
+  const result = execGitDefault(['-C', worktreePath, 'status', '--porcelain', '--untracked-files=all'], { cwd: worktreePath });
+  const dirty = new Set();
+  if (!gitResultOk(result)) return dirty;
+  for (const line of String(result.stdout || '').split('\n')) {
+    if (!line.trim()) continue;
+    // porcelain v1 format: "XY path" (2-char status + space + path)
+    const filePath = line.slice(3).trim().replace(/\\/g, '/');
+    if (filePath) dirty.add(filePath);
+  }
+  return dirty;
+}
+
+/**
+ * Defense-in-depth fallback: rescue *uncommitted* SUMMARY.md artifacts from a
+ * worktree into the main repo tree before the dirty-state check.
+ *
+ * PRIMARY MECHANISM (#260604-tev): The executor is now instructed to commit
+ * SUMMARY.md to its per-agent branch (see quick.md executor constraints).
+ * Committed work merges back via worktree.cleanup-wave and survives teardown
+ * without any file-copy rescue.  This function remains as a fallback for the
+ * edge case where the cleanup-wave manifest stays empty and the rescue path
+ * would otherwise be unreachable — it is NOT the primary SUMMARY.md survival
+ * guarantee.  Mirrors the shell-fallback rescue block in quick.md
+ * (lines 878–891, #2296/#2070/#2838).
+ *
+ * Only SUMMARY files that are genuinely dirty in the worktree (untracked OR
+ * modified per `git status --porcelain`) are rescued.  Committed-and-clean
+ * summaries are SKIPPED entirely — they are NOT copied and NOT added to the
+ * returned set.  This is critical: now that the executor commits SUMMARY.md,
+ * `git merge <branch>` brings the committed file over naturally.  Copying a
+ * committed summary as an untracked file in the main tree would make the merge
+ * abort with "untracked working tree files would be overwritten by merge"
+ * (#260604-tev follow-up).  Clean files never appear in porcelain, so they need
+ * no filtering either.
+ *
+ * For each dirty *SUMMARY.md found under <worktreePath>/.planning/:
  *   - compute relative path from worktree root  → .planning/<id>-SUMMARY.md
  *   - destination = <repoRoot>/<relPath>
  *   - copy when dest is absent or content differs
  *
  * Returns a Set of worktree-relative paths (e.g. ".planning/q1-SUMMARY.md")
- * that were eligible for rescue (regardless of whether a copy was needed).
- * These paths are filtered out of the git-status porcelain output so a
- * SUMMARY-only dirty worktree does not block cleanup.
+ * that were rescued.  These paths are filtered out of the git-status porcelain
+ * output so a SUMMARY-only dirty worktree does not block cleanup.
  *
- * Injected deps (all optional — falls back to real FS):
+ * Injected deps (all optional — falls back to real FS / git):
  *   findSummaryFiles(worktreePath) → string[]
+ *   getWorktreeDirtyPaths(worktreePath) → Set<relPath>
  *   existsSync(path) → boolean
  *   readFileSync(path) → string
  *   mkdirSync(dir, opts)
@@ -436,6 +472,7 @@ function defaultFindSummaryFiles(worktreePath) {
  */
 function rescueSummaryArtifacts(worktreePath, repoRoot, deps) {
   const findSummaryFiles = deps.findSummaryFiles || defaultFindSummaryFiles;
+  const getWorktreeDirtyPaths = deps.getWorktreeDirtyPaths || defaultGetWorktreeDirtyPaths;
   const existsSync = deps.existsSync || fs.existsSync;
   const readFileSync = deps.readFileSync || ((p) => fs.readFileSync(p, 'utf8'));
   const mkdirSync = deps.mkdirSync || ((d, o) => fs.mkdirSync(d, o));
@@ -443,12 +480,21 @@ function rescueSummaryArtifacts(worktreePath, repoRoot, deps) {
 
   const summaryPaths = findSummaryFiles(worktreePath);
   const rescuedRelPaths = new Set();
+  // Compute the worktree's dirty/untracked set once.  Only summaries present in
+  // this set are uncommitted and therefore eligible for rescue.  Committed-and-
+  // clean summaries are absent here and must be left untouched (#260604-tev follow-up).
+  const dirtyPaths = getWorktreeDirtyPaths(worktreePath);
 
   for (const absPath of summaryPaths) {
     // relPath is the path relative to the worktree root (e.g. ".planning/q1-SUMMARY.md")
     // Normalize to forward slashes so the Set comparison against `git status --porcelain`
     // output works on Windows too (git always emits forward slashes in porcelain output).
     const relPath = absPath.slice(worktreePath.length).replace(/^[/\\]/, '').replace(/\\/g, '/');
+
+    // Skip committed-and-clean summaries: the merge brings them over naturally,
+    // and copying them as untracked files would abort the merge.
+    if (!dirtyPaths.has(relPath)) continue;
+
     rescuedRelPaths.add(relPath);
 
     const dest = path.join(repoRoot, relPath);
