@@ -56,7 +56,13 @@ When `TDD_MODE` is `true`, the planner agent is instructed to apply `type: tdd` 
 
 When `CONTEXT_WINDOW >= 500000`, the planner prompt includes the 3 most recent prior phase CONTEXT.md and SUMMARY.md files PLUS any phases explicitly listed in the current phase's `Depends on:` field in ROADMAP.md. Explicit dependencies always load regardless of recency (e.g., Phase 7 declaring `Depends on: Phase 2` always sees Phase 2's context). Bounded recency keeps the planner's context budget focused on recent work.
 
-Parse JSON for: `researcher_model`, `planner_model`, `checker_model`, `research_enabled`, `plan_checker_enabled`, `nyquist_validation_enabled`, `commit_docs`, `text_mode`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`, `has_research`, `has_context`, `has_reviews`, `has_plans`, `plan_count`, `phase_status` (#3569), `planning_exists`, `roadmap_exists`, `phase_req_ids`, `response_language`.
+Parse JSON for: `researcher_model`, `researcher_effort`, `planner_model`, `planner_effort`, `checker_model`, `checker_effort`, `research_enabled`, `plan_checker_enabled`, `nyquist_validation_enabled`, `commit_docs`, `text_mode`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`, `has_research`, `has_context`, `has_reviews`, `has_plans`, `plan_count`, `phase_status` (#3569), `planning_exists`, `roadmap_exists`, `phase_req_ids`, `response_language`.
+
+```bash
+researcher_model_effort_arg=$([ -n "$researcher_effort" ] && [ "$researcher_effort" != "null" ] && echo "effort=\"$researcher_effort\"" || echo "")
+planner_model_effort_arg=$([ -n "$planner_effort" ] && [ "$planner_effort" != "null" ] && echo "effort=\"$planner_effort\"" || echo "")
+checker_model_effort_arg=$([ -n "$checker_effort" ] && [ "$checker_effort" != "null" ] && echo "effort=\"$checker_effort\"" || echo "")
+```
 
 **If `response_language` is set:** Include `response_language: {value}` in all spawned subagent prompts so any user-facing output stays in the configured language.
 
@@ -533,6 +539,7 @@ Agent(
   prompt=research_prompt,
   subagent_type="gsd-phase-researcher",
   model="{researcher_model}",
+  {researcher_model_effort_arg}
   description="Research Phase {phase}"
 )
 ```
@@ -853,6 +860,7 @@ Agent(
   prompt="{above}",
   subagent_type="gsd-pattern-mapper",
   model="{researcher_model}",
+  {researcher_model_effort_arg}
 )
 ```
 
@@ -995,6 +1003,7 @@ Agent(
   prompt=filled_prompt,
   subagent_type="gsd-planner",
   model="{planner_model}",
+  {planner_model_effort_arg}
   description="Plan Phase {phase}"
 )
 ```
@@ -1051,6 +1060,7 @@ Agent(
   Return: ## OUTLINE COMPLETE with plan count.",
   subagent_type="gsd-planner",
   model="{planner_model}",
+  {planner_model_effort_arg}
   description="Outline Phase {phase} (chunked)"
 )
 ```
@@ -1095,6 +1105,7 @@ For each plan entry extracted from `PLAN-OUTLINE.md`:
      Return: ## PLAN COMPLETE with the plan ID.",
      subagent_type="gsd-planner",
      model="{planner_model}",
+     {planner_model_effort_arg}
      description="Plan {plan_id} (chunked {k}/{N})"
    )
    ```
@@ -1253,6 +1264,7 @@ Agent(
   prompt=checker_prompt,
   subagent_type="gsd-plan-checker",
   model="{checker_model}",
+  {checker_model_effort_arg}
   description="Verify Phase {phase} plans"
 )
 ```
@@ -1368,6 +1380,7 @@ Agent(
   prompt=revision_prompt,
   subagent_type="gsd-planner",
   model="{planner_model}",
+  {planner_model_effort_arg}
   description="Revise Phase {phase} plans"
 )
 ```
