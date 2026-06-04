@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-05-31 after Phase 51)
 Phase: 57
 Plan: Not started
 Status: Executing Phase 56
-Last activity: 2026-06-04 - Completed quick task 260604-qzi: Harden /gsd-quick with orchestrator-role boundary
+Last activity: 2026-06-04 - Completed quick task 260604-r78: Fix brittle anchor in --research-phase proximity test
 
 ## Performance Metrics
 
@@ -93,6 +93,7 @@ None. Research is HIGH confidence. Two plan-time verification flags noted above 
 | Phase 55.2-fix-sdk-golden-parity-suite-failures-regression-triage-from- P01 | 20min | 2 tasks | 1 files |
 | 260604-8ol | Amend locked planning artifacts (REQUIREMENTS.md, ROADMAP.md): abolish effort omission for {claude,codex} — bare slots floor to medium (Phase 56 D-08 + D-04) | 2026-06-04 | 8b1ef7be | [260604-8ol-amend-locked-planning-artifacts-abolish-](./quick/260604-8ol-amend-locked-planning-artifacts-abolish-/) |
 | 260604-qzi | Harden /gsd-quick workflow with an orchestrator-role boundary so orchestration is never bypassed for inline edits | 2026-06-04 | 5b86c687 | [260604-qzi-harden-gsd-quick-skill-against-orchestra](./quick/260604-qzi-harden-gsd-quick-skill-against-orchestra/) |
+| 260604-r78 | Fix brittle anchor in --research-phase proximity test in skill-frontmatter-contract.test.cjs | 2026-06-04 | 2231acc8 | [260604-r78-fix-brittle-anchor-in-research-phase-pro](./quick/260604-r78-fix-brittle-anchor-in-research-phase-pro/) |
 
 ## Session Continuity
 
