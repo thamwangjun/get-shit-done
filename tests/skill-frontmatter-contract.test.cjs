@@ -76,17 +76,19 @@ describe('skill frontmatter: /gsd-plan-phase --research-phase flag absorbs the s
     const content = read('get-shit-done/workflows/plan-phase.md');
     // The arg-parsing section of the workflow must mention the new flag
     // by name. This is the structural seam the LLM follows.
-    // Anchored to the argument/flags section to avoid false positives from prose.
-    const argsIdx = content.search(/(?:argument|args?|flags?)\b/i);
-    assert.ok(argsIdx >= 0, 'plan-phase workflow must contain an argument/flags section');
-    // Window widened to 3500: the effort-arg derivation block near the top of the
-    // workflow (prose "effort args" + `*_model_effort_arg` variable names) is the
-    // first /args?|flags?/ match, so the real --research-phase parsing section sits
-    // ~3.2k chars downstream of that anchor rather than immediately after it.
-    const argsWindow = content.slice(argsIdx, argsIdx + 3500);
+    // Anchored to the literal section heading that introduces the flag enumeration.
+    // This is immune to the prose word "args" (offset ~4010) and *_model_effort_arg
+    // variable names that appear ~3.2k chars above the real flags section — those
+    // false positives can no longer serve as the anchor.
+    const argsIdx = content.indexOf('## 2. Parse and Normalize Arguments');
+    assert.ok(argsIdx >= 0, "plan-phase workflow must contain a '## 2. Parse and Normalize Arguments' section");
+    // Tight 300-char window: the real distance from the section heading to
+    // '--research-phase' is ~149 chars, so 300 gives margin while staying
+    // far below any unrelated downstream content.
+    const argsWindow = content.slice(argsIdx, argsIdx + 300);
     assert.ok(
       /--research-phase/.test(argsWindow),
-      'plan-phase.md workflow must reference --research-phase in the argument-parsing section (within 3500 chars of the args/flags header)'
+      'plan-phase.md workflow must reference --research-phase in the argument-parsing section (within 300 chars of the ## 2. Parse and Normalize Arguments heading)'
     );
   });
 
