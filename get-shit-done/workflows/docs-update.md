@@ -28,7 +28,7 @@ fi
 INIT=$($GSD_SDK query docs-init)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 AGENT_SKILLS=$($GSD_SDK query agent-skills gsd-doc-writer)
-doc_writer_model_effort_arg=$($GSD_SDK query resolve-model-effort gsd-doc-writer --raw)
+doc_writer_model_effort_arg=$($GSD_SDK query resolve-model-effort gsd-doc-writer --raw 2>/dev/null || echo "")
 ```
 
 Extract from init JSON:

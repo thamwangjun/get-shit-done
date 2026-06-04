@@ -36,7 +36,7 @@ Parse: `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`.
 
 ```bash
 AUDITOR_MODEL=$($GSD_SDK query resolve-model gsd-security-auditor --raw)
-AUDITOR_MODEL_effort_arg=$($GSD_SDK query resolve-model-effort gsd-security-auditor --raw)
+AUDITOR_MODEL_effort_arg=$($GSD_SDK query resolve-model-effort gsd-security-auditor --raw 2>/dev/null || echo "")
 SECURITY_CFG=$($GSD_SDK query config-get workflow.security_enforcement --raw 2>/dev/null || echo "true")
 ```
 

@@ -36,7 +36,7 @@ Parse: `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`.
 
 ```bash
 AUDITOR_MODEL=$($GSD_SDK query resolve-model gsd-nyquist-auditor --raw)
-AUDITOR_MODEL_effort_arg=$($GSD_SDK query resolve-model-effort gsd-nyquist-auditor --raw)
+AUDITOR_MODEL_effort_arg=$($GSD_SDK query resolve-model-effort gsd-nyquist-auditor --raw 2>/dev/null || echo "")
 NYQUIST_CFG=$($GSD_SDK query config-get workflow.nyquist_validation --raw)
 ```
 

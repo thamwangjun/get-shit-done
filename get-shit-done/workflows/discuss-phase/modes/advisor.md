@@ -38,7 +38,7 @@ Map to calibration tier:
 Resolve advisor model:
 ```bash
 ADVISOR_MODEL=$($GSD_SDK query resolve-model gsd-advisor-researcher --raw)
-ADVISOR_MODEL_effort_arg=$($GSD_SDK query resolve-model-effort gsd-advisor-researcher --raw)
+ADVISOR_MODEL_effort_arg=$($GSD_SDK query resolve-model-effort gsd-advisor-researcher --raw 2>/dev/null || echo "")
 ```
 
 ## Non-technical owner detection

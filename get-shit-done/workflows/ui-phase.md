@@ -49,9 +49,9 @@ Resolve UI agent models:
 
 ```bash
 UI_RESEARCHER_MODEL=$($GSD_SDK query resolve-model gsd-ui-researcher --raw)
-UI_RESEARCHER_MODEL_effort_arg=$($GSD_SDK query resolve-model-effort gsd-ui-researcher --raw)
+UI_RESEARCHER_MODEL_effort_arg=$($GSD_SDK query resolve-model-effort gsd-ui-researcher --raw 2>/dev/null || echo "")
 UI_CHECKER_MODEL=$($GSD_SDK query resolve-model gsd-ui-checker --raw)
-UI_CHECKER_MODEL_effort_arg=$($GSD_SDK query resolve-model-effort gsd-ui-checker --raw)
+UI_CHECKER_MODEL_effort_arg=$($GSD_SDK query resolve-model-effort gsd-ui-checker --raw 2>/dev/null || echo "")
 ```
 
 Check config:
