@@ -462,7 +462,7 @@ async function main() {
     'from-gsd2, frontmatter, gap-analysis, generate-claude-md, generate-claude-profile, ' +
     'generate-dev-preferences, generate-slug, graphify, history-digest, init, intel, ' +
     'learnings, list-todos, milestone, phase, phase-plan-index, phases, profile-questionnaire, ' +
-    'profile-sample, progress, prompt-budget, requirements, resolve-model, roadmap, scaffold, state, ' +
+    'profile-sample, progress, prompt-budget, requirements, resolve-model, resolve-model-effort, roadmap, scaffold, state, ' +
     'template, validate, verify, verify-path-exists, verify-summary, workstream, worktree\n\n' +
     'Global flags:\n' +
     '  --raw              Emit raw output without post-processing\n' +
@@ -620,6 +620,11 @@ async function runCommand(command, args, cwd, raw, defaultValue, originalCommand
 
     case 'resolve-model': {
       commands.cmdResolveModel(cwd, args[1], raw);
+      break;
+    }
+
+    case 'resolve-model-effort': {
+      commands.cmdResolveModelEffort(cwd, args[1], raw);
       break;
     }
 

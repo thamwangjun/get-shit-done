@@ -1606,7 +1606,8 @@ function resolveModelForTier(cwd, agentType, attempt) {
  *      the bare tier alias. Only reached when catalog slot has no effort suffix.
  *      For claude runtime there is no RUNTIME_PROFILE_MAP entry → null.
  *
- * Back-compat invariant: bare claude configs without catalog slot effort → null.
+ * D-08: bare {claude,codex} slots floor to 'medium' (milestone amendment 2026-06-04).
+ * inherit slots and non-effort runtimes still return null (steps 1, 2 above).
  */
 function resolveReasoningEffortInternal(cwd, agentType) {
   const config = loadConfig(cwd);
@@ -1688,7 +1689,10 @@ function resolveReasoningEffortInternal(cwd, agentType) {
   const entry = _resolveRuntimeTier(config, bareTier);
   if (entry?.reasoning_effort) return entry.reasoning_effort;
 
-  return null;
+  // D-08: floor un-assigned {claude,codex} slots to 'medium'.
+  // The allowlist gate (line 1617) already ensures we are on a supported runtime.
+  // inherit slots returned null at line 1635 — they never reach here.
+  return 'medium';
 }
 
 // ─── Summary body helpers ─────────────────────────────────────────────────
