@@ -82,9 +82,14 @@ if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 AGENT_SKILLS=$($GSD_SDK query agent-skills gsd-executor)
 ```
 
-Parse JSON for: `executor_model`, `verifier_model`, `commit_docs`, `parallelization`, `branching_strategy`, `branch_name`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `plans`, `incomplete_plans`, `plan_count`, `incomplete_count`, `state_exists`, `roadmap_exists`, `phase_req_ids`, `response_language`.
+Parse JSON for: `executor_model`, `executor_effort`, `verifier_model`, `verifier_effort`, `commit_docs`, `parallelization`, `branching_strategy`, `branch_name`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `plans`, `incomplete_plans`, `plan_count`, `incomplete_count`, `state_exists`, `roadmap_exists`, `phase_req_ids`, `response_language`.
 
-**Model resolution:** If `executor_model` is `"inherit"`, omit the `model=` parameter from all `Agent()` calls — do NOT pass `model="inherit"` to Agent. Omitting the `model=` parameter causes Claude Code to inherit the current orchestrator model automatically. Only set `model=` when `executor_model` is an explicit model name (e.g., `"claude-sonnet-4-6"`, `"claude-opus-4-7"`).
+**Model resolution:** If `executor_model` is `"inherit"`, omit the `model=` parameter from all `Agent()` calls — do NOT pass `model="inherit"` to Agent. Omitting the `model=` parameter causes Claude Code to inherit the current orchestrator model automatically. Only set `model=` when `executor_model` is an explicit model name (e.g., `"claude-sonnet-4-6"`, `"claude-opus-4-7"`). **Effort resolution:** The `{executor_model_effort_arg}` and `{verifier_model_effort_arg}` tokens are empty when effort is absent (inherit slot or non-effort runtime) — interpolating an empty token renders nothing, requiring no conditional. Pass them unconditionally.
+
+```bash
+executor_model_effort_arg=$([ -n "$executor_effort" ] && [ "$executor_effort" != "null" ] && echo "effort=\"$executor_effort\"" || echo "")
+verifier_model_effort_arg=$([ -n "$verifier_effort" ] && [ "$verifier_effort" != "null" ] && echo "effort=\"$verifier_effort\"" || echo "")
+```
 
 **If `response_language` is set:** Include `response_language: {value}` in all spawned subagent prompts so any user-facing output stays in the configured language.
 
@@ -544,6 +549,7 @@ increases monotonically across waves. `{status}` is `complete` (success),
      # When executor_model is "inherit", omit this parameter entirely so
      # Claude Code inherits the orchestrator model automatically.
      model="{executor_model}",  # omit this line when executor_model == "inherit"
+     {executor_model_effort_arg}
      isolation="worktree",
      prompt="
        <objective>
@@ -1391,7 +1397,8 @@ Read these files before verification:
 
 ${VERIFIER_SKILLS}",
   subagent_type="gsd-verifier",
-  model="{verifier_model}"
+  model="{verifier_model}",
+  {verifier_model_effort_arg}
 )
 ```
 

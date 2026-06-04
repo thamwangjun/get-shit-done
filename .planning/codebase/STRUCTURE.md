@@ -1,213 +1,282 @@
 # Codebase Structure
 
-**Analysis Date:** 2026-04-15
+**Analysis Date:** 2026-05-25
 
 ## Directory Layout
 
 ```
 get-shit-done/                        # Repository root
-├── agents/                           # Agent definition files (31 agents)
+├── agents/                           # 33 GSD agent definition files (.md)
 ├── bin/                              # Installer entry point
-│   └── install.js                    # Runtime installer (3,400+ lines)
-├── commands/                         # User-facing slash command files
-│   └── gsd/                          # 73 command .md files
-├── docs/                             # Contributor and user documentation
-│   ├── ARCHITECTURE.md               # System design deep-dive
-│   ├── AGENTS.md                     # All agents with tool requirements
-│   ├── CLI-TOOLS.md                  # Full gsd-tools.cjs subcommand reference
-│   ├── CONFIGURATION.md              # Complete config.json schema
-│   └── ja-JP/, ko-KR/, pt-BR/, zh-CN/  # Localized docs
-├── get-shit-done/                    # Core framework source
-│   ├── bin/                          # CLI tools
-│   │   ├── gsd-tools.cjs             # CLI entry point (subcommand router)
-│   │   └── lib/                      # Node.js CommonJS modules (24 files)
-│   ├── contexts/                     # Workflow context fragments
-│   │   ├── dev.md                    # Dev workflow context
-│   │   ├── research.md               # Research workflow context
-│   │   └── review.md                 # Review workflow context
-│   ├── references/                   # Shared prompt fragments (45+ files)
-│   ├── templates/                    # Planning artifact templates (30+ files)
-│   │   ├── codebase/                 # Codebase mapping templates
-│   │   └── research-project/         # Research project templates
-│   └── workflows/                    # Workflow orchestration files (71 files)
+│   └── install.js                   # 3,400+ line installer (detects runtime, copies + transforms files)
+├── commands/
+│   └── gsd/                         # 46+ user-facing slash command files (.md)
+├── docs/                             # Authoritative developer documentation
+│   ├── ARCHITECTURE.md              # System design deep-dive
+│   ├── AGENTS.md                    # All agents with tool requirements and spawn patterns
+│   ├── CLI-TOOLS.md                 # Full gsd-tools.cjs subcommand reference
+│   ├── CONFIGURATION.md             # Complete config.json schema
+│   ├── FEATURES.md                  # Feature matrix
+│   ├── TESTING.md                   # Testing guide
+│   ├── adr/                         # Architecture Decision Records
+│   ├── discussions/                 # Design discussion documents
+│   ├── prd/                         # Product requirement documents
+│   └── security/                    # Security documentation
+├── get-shit-done/                    # Installed runtime package content
+│   ├── bin/
+│   │   ├── gsd-tools.cjs            # CLI entry point (~160 subcommands documented)
+│   │   └── lib/                     # 70+ CommonJS module implementations
+│   ├── contexts/                    # Workflow context templates (dev.md, research.md, review.md)
+│   ├── references/                  # Shared prompt fragments (60+ .md files)
+│   ├── templates/                   # Planning artifact boilerplate (30+ .md files)
+│   └── workflows/                   # 60+ workflow orchestration files (.md)
 ├── hooks/                            # Hook source files
-│   ├── gsd-statusline.js             # Terminal status line hook
-│   ├── gsd-context-monitor.js        # Context exhaustion monitor
-│   ├── gsd-check-update.js           # Version check hook
-│   ├── gsd-workflow-guard.js         # Workflow file guard hook
-│   └── dist/                         # Built hook output (committed; installed from here)
-├── plans/                            # Internal GSD development plans
-├── scripts/                          # Build and maintenance scripts
-│   ├── build-hooks.js                # Hook build/validate script
-│   ├── run-tests.cjs                 # Test runner wrapper
-│   ├── secret-scan.sh                # Secret scanning script
-│   └── prompt-injection-scan.sh      # Prompt injection scan
-├── sdk/                              # TypeScript SDK (separate from CLI)
-│   ├── src/                          # TypeScript source (phase-runner, plan-parser, etc.)
-│   ├── prompts/                      # SDK-specific agent/workflow prompt variants
-│   └── docs/                         # SDK documentation
-├── tests/                            # Test suite (180+ test files, .cjs)
-│   └── helpers.cjs                   # Shared test utilities
-├── .planning/                        # GSD state for this repo's own development
-├── .github/                          # GitHub Actions CI workflows
-├── package.json                      # npm manifest
-├── tsconfig.json                     # TypeScript config (for sdk/)
-└── vitest.config.ts                  # Vitest config (for sdk/ TypeScript tests)
+│   ├── gsd-statusline.js            # Terminal status hook
+│   ├── gsd-context-monitor.js       # Context exhaustion tracking
+│   ├── gsd-check-update.js          # Version check hook
+│   ├── gsd-workflow-guard.js        # Workflow file protection hook
+│   ├── gsd-prompt-guard.js          # Prompt injection scanner
+│   ├── gsd-phase-boundary.sh        # Phase boundary shell hook
+│   ├── gsd-session-state.sh         # Session state shell hook
+│   ├── gsd-validate-commit.sh       # Commit validation shell hook
+│   └── dist/                        # Built hook output (generated by npm run build:hooks)
+├── sdk/                              # TypeScript SDK for programmatic use
+│   ├── src/                         # TypeScript source (250+ .ts files)
+│   │   ├── index.ts                 # Public API — GSD class
+│   │   ├── session-runner.ts        # @anthropic-ai/claude-agent-sdk query() orchestration
+│   │   ├── phase-runner.ts          # Phase lifecycle state machine
+│   │   ├── plan-parser.ts           # PLAN.md parser
+│   │   ├── prompt-builder.ts        # Executor prompt construction
+│   │   ├── ws-transport.ts          # WebSocket event broadcaster
+│   │   ├── event-stream.ts          # GSD event stream
+│   │   ├── types.ts                 # Shared TypeScript types
+│   │   ├── config.ts                # Config loading/schema
+│   │   ├── gsd-tools.ts             # Shell bridge to gsd-tools.cjs
+│   │   ├── query/                   # Query layer (command dispatch, fallback, registry)
+│   │   ├── handlers/                # Command handler implementations
+│   │   ├── dispatch/                # Command dispatch routing
+│   │   ├── errors/                  # Error type definitions
+│   │   ├── state/                   # State query modules
+│   │   ├── runtime/                 # Runtime detection and bridge
+│   │   └── workstream/              # Workstream management
+│   ├── prompts/                     # SDK prompt templates
+│   │   └── templates/               # Boilerplate prompt fragments
+│   ├── shared/                      # Cross-layer JSON manifests
+│   │   ├── config-defaults.manifest.json
+│   │   ├── config-schema.manifest.json
+│   │   ├── model-catalog.json
+│   │   └── runtime-aliases.manifest.json
+│   ├── dist/                        # Compiled JS output (generated by tsc)
+│   ├── tsconfig.json                # TypeScript config (ES2022, NodeNext, strict)
+│   └── vitest.config.ts             # SDK-specific Vitest config
+├── scripts/                         # Build and lint scripts
+│   ├── build-hooks.js               # Validates and copies hook JS to hooks/dist/
+│   ├── run-tests.cjs                # Test runner wrapper
+│   ├── lint-*.cjs                   # Various lint checks (descriptions, docs, contracts, etc.)
+│   ├── gen-inventory-manifest.cjs   # Generates INVENTORY-MANIFEST.json
+│   └── changeset/                   # Release changeset scripts
+├── tests/                            # Node.js --test test files
+│   ├── helpers.cjs                  # Shared test utilities (runGsdTools, createTempProject, etc.)
+│   ├── agent-frontmatter.test.cjs   # Validates all agent YAML frontmatter
+│   ├── phase.test.cjs               # Phase CRUD and lifecycle tests
+│   ├── state.test.cjs               # State management tests
+│   ├── commands.test.cjs            # Command routing tests
+│   ├── bug-*.test.cjs               # Bug regression tests
+│   └── *.test.cjs                   # One test file per lib module + integration/regression tests
+├── .planning/                        # GSD state for this project (not shipped to users)
+│   ├── STATE.md                     # Checkpoint state file (file-locked during writes)
+│   ├── ROADMAP.md                   # Phase roadmap
+│   ├── PROJECT.md                   # Project context
+│   ├── config.json                  # GSD config for this project
+│   ├── phases/                      # Phase execution artifacts
+│   ├── codebase/                    # Codebase analysis documents (this directory)
+│   ├── intel/                       # Intelligence files
+│   ├── research/                    # Research artifacts
+│   └── quick/                       # Quick-task artifacts
+├── CLAUDE.md                         # Project instructions for Claude Code
+├── package.json                      # Root package (Node.js >=22, zero runtime deps)
+├── package-lock.json                 # npm lockfile (lockfileVersion 3)
+├── tsconfig.json                     # Root TypeScript config (references sdk/ only)
+├── vitest.config.ts                  # Root Vitest config (workspace references sdk/)
+└── mise.toml                         # mise version manager config
 ```
 
 ## Directory Purposes
 
 **`agents/`:**
-- Purpose: Agent definitions installed into AI tool runtimes at `~/.claude/agents/` (Claude Code) or equivalent
-- Contains: 31 `gsd-*.md` files, each with YAML frontmatter (`name`, `description`, `tools`, `color`) and role instructions
-- Key files: `gsd-planner.md`, `gsd-executor.md`, `gsd-verifier.md`, `gsd-phase-researcher.md`, `gsd-debugger.md`
+- Purpose: All 33 GSD agent definition files. Each agent is a Markdown file with YAML frontmatter declaring tool permissions and a role prompt.
+- Contains: `.md` files named `gsd-<role>.md`
+- Key files: `gsd-executor.md` (plan execution), `gsd-planner.md` (plan creation), `gsd-verifier.md` (quality gate), `gsd-codebase-mapper.md` (this agent), `gsd-plan-checker.md`, `gsd-debugger.md`
 
 **`commands/gsd/`:**
-- Purpose: Slash command files that users invoke directly in their AI tool
-- Contains: 73 `.md` files with YAML frontmatter and prompt bodies that read matching workflows
-- Key files: `do.md` (dispatcher), `plan-phase.md`, `execute-phase.md`, `new-project.md`, `autonomous.md`
+- Purpose: User-facing slash commands installed to the AI runtime. Thin shell-cat wrappers that load the matching workflow.
+- Contains: `.md` files, one per command. YAML frontmatter sets command metadata; body uses `!cat` to read workflow file.
+- Key files: `execute-phase.md`, `plan-phase.md`, `quick.md`, `debug.md`, `new-project.md`
 
 **`get-shit-done/bin/lib/`:**
-- Purpose: CommonJS modules implementing all CLI tool functionality; tested independently
-- Contains: 24 `.cjs` modules, each focused on one domain
-- Key files: `state.cjs`, `phase.cjs`, `core.cjs`, `init.cjs`, `roadmap.cjs`, `verify.cjs`, `config.cjs`
+- Purpose: All CommonJS implementation modules for the gsd-tools CLI.
+- Contains: 70+ `.cjs` files organized by domain. Every module has a `module.exports = { ... }` block.
+- Key files: `core.cjs`, `state.cjs`, `phase.cjs`, `init.cjs`, `planning-workspace.cjs`, `roadmap.cjs`, `config.cjs`, `verify.cjs`, `template.cjs`, `frontmatter.cjs`, `model-profiles.cjs`, `model-catalog.cjs`, `workstream.cjs`
+- Generated files: `*.generated.cjs` files are generated from SDK TypeScript sources — do not edit directly
 
 **`get-shit-done/workflows/`:**
-- Purpose: Orchestration logic; commands reference these files via `@~/.claude/get-shit-done/workflows/` paths
-- Contains: 71 `.md` files with `<purpose>`, `<required_reading>`, `<available_agent_types>`, and `<process>` sections
-- Key files: `plan-phase.md`, `execute-phase.md`, `new-project.md`, `autonomous.md`, `do.md`
+- Purpose: Workflow orchestration files. Called by commands; spawn specialized agents.
+- Contains: 60+ `.md` files. Some workflows have a sibling directory with sub-workflows (e.g., `execute-phase/`, `discuss-phase/`, `help/`).
+- Key files: `execute-phase.md`, `plan-phase.md`, `new-project.md`, `debug.md`, `quick.md`, `map-codebase.md`
 
 **`get-shit-done/references/`:**
-- Purpose: Shared knowledge fragments injected into agent/workflow prompts via `@-reference` syntax
-- Contains: 45+ `.md` files covering gates, checkpoints, model profiles, verification patterns, anti-patterns
-- Key files: `gates.md`, `model-profiles.md`, `verification-patterns.md`, `agent-contracts.md`, `ui-brand.md`
+- Purpose: Shared prompt fragments injected via `@-reference` syntax. Not directly user-facing — loaded by workflows/agents as context.
+- Contains: 60+ `.md` files on topics like verification patterns, gates, model profiles, context budget, anti-patterns, tdd, etc.
+- Key files: `agent-contracts.md`, `gates.md`, `verification-patterns.md`, `model-profiles.md`, `context-budget.md`
 
 **`get-shit-done/templates/`:**
-- Purpose: Pre-structured Markdown boilerplate for planning artifacts, filled by `gsd-tools.cjs template fill`
-- Contains: 30+ `.md` files and a `codebase/` subdirectory with mapper-specific templates
-- Key files: `project.md`, `requirements.md`, `roadmap.md`, `state.md`, `phase-prompt.md`, `context.md`, `summary.md`
+- Purpose: Boilerplate Markdown templates for planning artifacts. Filled by `gsd-tools.cjs template fill`.
+- Contains: 30+ `.md` files
+- Key files: `project.md`, `phase-prompt.md`, `context.md`, `requirements.md`, `discovery.md`, `research.md`
 
 **`hooks/`:**
-- Purpose: Hook source files; edit `.js` files here, then run `npm run build:hooks` to copy to `hooks/dist/`
-- Contains: Source `.js` hooks and `.sh` hooks; `dist/` contains identical copies committed to git
-- Key files: `gsd-statusline.js`, `gsd-context-monitor.js`, `gsd-workflow-guard.js`
+- Purpose: Source for the four (plus extras) hooks that run during AI tool sessions.
+- Contains: `*.js` (JavaScript hooks), `*.sh` (shell hooks), `dist/` (built output)
+- Note: Edit source `hooks/*.js` then run `npm run build:hooks` to copy to `hooks/dist/`. Never edit `hooks/dist/` directly.
+
+**`sdk/src/`:**
+- Purpose: TypeScript SDK for programmatic plan execution and event streaming.
+- Contains: 250+ `.ts` files organized into `query/`, `handlers/`, `dispatch/`, `errors/`, `state/`, `runtime/`, `workstream/` subdirectories
+- Key files: `index.ts` (public API), `session-runner.ts`, `phase-runner.ts`, `plan-parser.ts`, `ws-transport.ts`, `types.ts`
+
+**`sdk/shared/`:**
+- Purpose: JSON manifests shared between SDK TypeScript and CJS lib layer. These are the canonical source of truth for config defaults, model catalog, and runtime aliases.
+- Contains: `config-defaults.manifest.json`, `config-schema.manifest.json`, `model-catalog.json`, `runtime-aliases.manifest.json`
+- Note: CJS `*.generated.cjs` files in `get-shit-done/bin/lib/` mirror these manifests — regenerate via SDK scripts when manifests change
 
 **`tests/`:**
-- Purpose: Full test suite for CLI tools and installer behavior
-- Contains: 180+ `.test.cjs` files plus `helpers.cjs` shared utilities
-- Key files: `helpers.cjs`, `state.test.cjs`, `phase.test.cjs`, `install-hooks-copy.test.cjs`, `agent-frontmatter.test.cjs`
-
-**`sdk/`:**
-- Purpose: TypeScript SDK for programmatic GSD usage (separate product from the CLI/prompt framework)
-- Contains: TypeScript source in `src/`, SDK-specific prompt variants in `prompts/`, integration tests in `src/*.integration.test.ts`
-- Key files: `src/phase-runner.ts`, `src/plan-parser.ts`, `src/cli.ts`, `src/gsd-tools.ts`
+- Purpose: All Node.js `--test` runner test files for the CLI tools layer.
+- Contains: `*.test.cjs` files (one per lib module + integration/regression tests), `helpers.cjs` (shared utilities)
+- Generated: No — all committed source
 
 **`.planning/`:**
-- Purpose: GSD's own project state — GSD uses itself for development
-- Contains: `STATE.md`, `ROADMAP.md`, `config.json`, `phases/`, `codebase/` (this document)
-- Generated: Yes (by GSD workflows) | Committed: Yes (project state is tracked in git)
-
-## Key File Locations
-
-**Entry Points:**
-- `bin/install.js`: Installer — detects runtime, copies files, transforms content per target
-- `get-shit-done/bin/gsd-tools.cjs`: CLI entry point — all Bash calls from workflows/agents go here
-- `commands/gsd/do.md`: Smart dispatcher command — routes freeform text to correct GSD command
-
-**Configuration:**
-- `package.json`: npm manifest, version, test/build scripts
-- `tsconfig.json`: TypeScript config for `sdk/` source
-- `vitest.config.ts`: Vitest config for SDK TypeScript tests
-
-**Core Logic:**
-- `get-shit-done/bin/lib/core.cjs`: Shared utilities, path helpers, lock primitives, `output()`/`error()`
-- `get-shit-done/bin/lib/state.cjs`: STATE.md CRUD and checkpoint progression
-- `get-shit-done/bin/lib/phase.cjs`: Phase directory operations and decimal phase numbering
-- `get-shit-done/bin/lib/init.cjs`: Compound context loading for all workflow `init` commands
-- `get-shit-done/bin/lib/roadmap.cjs`: ROADMAP.md parsing and phase update operations
-- `get-shit-done/bin/lib/verify.cjs`: Plan structure and phase completeness validation
-- `get-shit-done/bin/lib/config.cjs`: `.planning/config.json` CRUD
-- `get-shit-done/bin/lib/frontmatter.cjs`: YAML frontmatter CRUD for agent/workflow files
-- `get-shit-done/bin/lib/template.cjs`: Template fill operations
-
-**Testing:**
-- `tests/helpers.cjs`: Shared utilities — `runGsdTools()`, `createTempProject()`, `createTempGitProject()`, `cleanup()`
-- `tests/*.test.cjs`: Per-module and per-feature test files
+- Purpose: GSD state for this repository's own development. Not shipped to users (via `.npmignore`).
+- Generated: Partially (phase artifacts created by GSD workflows during development)
+- Committed: Yes — the project uses GSD to develop itself
 
 ## Naming Conventions
 
 **Files:**
-- Agent definitions: `gsd-{role}.md` — e.g., `gsd-planner.md`, `gsd-executor.md`
-- Command files: `{command-name}.md` — matches the slash command name, e.g., `plan-phase.md`
-- Workflow files: `{workflow-name}.md` — matches command name exactly, e.g., `execute-phase.md`
-- CLI modules: `{domain}.cjs` — e.g., `state.cjs`, `phase.cjs`, `roadmap.cjs`
-- Test files: `{module-or-feature}.test.cjs` — e.g., `state.test.cjs`, `bug-1736-local-install-commands.test.cjs`
-- Bug regression tests: `bug-{issue-number}-{description}.test.cjs`
-- Reference files: `{topic}.md` — e.g., `gates.md`, `verification-patterns.md`
-- Hook sources: `gsd-{name}.js` or `gsd-{name}.sh`
+- CLI lib modules: `kebab-case.cjs` — e.g., `model-profiles.cjs`, `planning-workspace.cjs`
+- Generated CJS mirrors: `<module-name>.generated.cjs` — e.g., `phase-lifecycle.generated.cjs`, `configuration.generated.cjs`
+- Test files: `kebab-case.test.cjs` — one per lib module
+- Bug regression tests: `bug-<issue-number>-<description>.test.cjs` — e.g., `bug-1891-file-resolution.test.cjs`
+- Agent files: `gsd-<role>.md` — e.g., `gsd-executor.md`, `gsd-codebase-mapper.md`
+- Workflow files: `<kebab-action>.md` — e.g., `execute-phase.md`, `plan-phase.md`
+- Command files: Match workflow names exactly — `commands/gsd/execute-phase.md` → `get-shit-done/workflows/execute-phase.md`
+- SDK TypeScript: `kebab-case.ts` with `kebab-case.test.ts` sibling for tests
 
 **Directories:**
-- Phase artifact directories: `phase-N/` or `phase-N.M/` under `.planning/phases/`
-- All framework source under `get-shit-done/` to namespace from user project content
+- Phase directories: `phase-N` or `phase-N.M` (decimal sub-phases) under `.planning/phases/`
+- Plan files within phases: `{padded_phase}-{NN}-PLAN.md` — e.g., `01-auth-01-PLAN.md`
+
+**Functions:**
+- All functions: `camelCase` — e.g., `findProjectRoot`, `atomicWriteFileSync`, `comparePhaseNum`
+- CLI command handlers: `cmd` prefix — e.g., `cmdPhasesList`, `cmdStateLoad`, `cmdStatePatch`
+- Internal-only helpers: `Internal` suffix — e.g., `findPhaseInternal`, `generateSlugInternal`
+- Module-level constants: `SCREAMING_SNAKE_CASE` — e.g., `CONFIG_DEFAULTS`, `WORKSTREAM_SESSION_ENV_KEYS`
+
+## Key File Locations
+
+**Entry Points:**
+- `bin/install.js`: Installer — run via `npx get-shit-done` or directly
+- `get-shit-done/bin/gsd-tools.cjs`: CLI entry point for all subcommands
+- `sdk/src/index.ts`: SDK public API (exported as `@opengsd/gsd-sdk`)
+
+**Configuration:**
+- `package.json`: Root package metadata and scripts
+- `sdk/tsconfig.json`: TypeScript compiler config (ES2022, NodeNext, strict, outDir `sdk/dist/`)
+- `tsconfig.json`: Root TS config (references `sdk/` only; no root compilation)
+- `vitest.config.ts`: Root Vitest workspace config
+- `.planning/config.json`: Per-project GSD config (mode, model_profile, parallelization, etc.)
+- `sdk/shared/config-defaults.manifest.json`: Canonical config defaults (source of truth)
+- `sdk/shared/model-catalog.json`: Model catalog (source of truth for model IDs and profiles)
+
+**Core Logic:**
+- `get-shit-done/bin/lib/core.cjs`: Shared utilities, constants, path helpers, lock primitives
+- `get-shit-done/bin/lib/planning-workspace.cjs`: `.planning/` path resolution, workstream routing
+- `get-shit-done/bin/lib/state.cjs`: STATE.md CRUD and checkpoint progression
+- `get-shit-done/bin/lib/phase.cjs`: Phase directory CRUD and lifecycle
+- `get-shit-done/bin/lib/init.cjs`: Compound context loading for workflow init steps
+- `sdk/src/session-runner.ts`: Core `query()` execution against Claude Agent SDK
+- `sdk/src/phase-runner.ts`: Phase lifecycle state machine
+
+**Testing:**
+- `tests/helpers.cjs`: Shared test utilities — always import from here, never re-implement
+- `tests/agent-frontmatter.test.cjs`: Must-pass validation for all agent YAML frontmatter
+- `tests/phase.test.cjs`, `tests/state.test.cjs`: Core state/phase logic tests
+- `sdk/src/*.test.ts` and `sdk/src/**/*.test.ts`: SDK unit and integration tests
 
 ## Where to Add New Code
 
-**New Command:**
-- Primary: `commands/gsd/{command-name}.md` — YAML frontmatter + prompt that reads matching workflow
-- Matching workflow: `get-shit-done/workflows/{command-name}.md`
-- If spawning agents: reference existing agent types from `agents/` or add new agent (see below)
-
 **New Agent:**
-- Implementation: `agents/gsd-{role}.md` — YAML frontmatter with `name`, `description`, `tools`, `color`
-- Must include `# hooks:` commented in frontmatter (required by `agent-frontmatter.test.cjs`)
-- If agent writes files: must include `Only use the Write tool` in body (checked case-insensitively)
-- Must NOT include `skills:` in frontmatter (breaks Gemini CLI)
-- Register the new agent name in `tests/agent-frontmatter.test.cjs` valid agent list
+- Implementation: `agents/gsd-<role>.md`
+- Required frontmatter fields: `name`, `description`, `tools`, `color` (no `skills:`)
+- If agent uses `Write` tool: must include `Only use the Write tool` in body and `# hooks:` commented in frontmatter
+- Register in: Add to valid agent list in `tests/agent-frontmatter.test.cjs`
+- Document in: `docs/AGENTS.md`
 
-**New CLI Module:**
-- Implementation: `get-shit-done/bin/lib/{domain}.cjs`
-- Import in `get-shit-done/bin/gsd-tools.cjs` and wire subcommands
-- Test file: `tests/{domain}.test.cjs`
+**New CLI Subcommand:**
+- Implementation: New function in appropriate `get-shit-done/bin/lib/*.cjs` module, or a new module file if domain is distinct
+- Wire up: Add dispatch case in `get-shit-done/bin/gsd-tools.cjs`
+- Tests: `tests/<module-name>.test.cjs` (one per lib module convention)
 
 **New Workflow:**
-- Implementation: `get-shit-done/workflows/{workflow-name}.md`
-- Structure: `<purpose>`, `<required_reading>`, `<available_agent_types>`, `<process>` sections
-- Init call: `node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init {workflow-name} "$PHASE"`
+- Implementation: `get-shit-done/workflows/<action>.md`
+- Add matching command: `commands/gsd/<action>.md` (YAML frontmatter + `!cat` body)
+- Follow pattern: `<required_reading>` block → `gsd-tools.cjs init <workflow>` → spawn agents → update state
 
 **New Reference Fragment:**
-- Shared knowledge: `get-shit-done/references/{topic}.md`
-- Inject via `@~/.claude/get-shit-done/references/{topic}.md` in workflow `<required_reading>`
+- Location: `get-shit-done/references/<topic>.md`
+- Usage: Reference via `@~/.claude/get-shit-done/references/<topic>.md` in workflow `<required_reading>` blocks
 
 **New Template:**
-- Artifact template: `get-shit-done/templates/{artifact-name}.md`
-- Fill via: `node gsd-tools.cjs template fill {template-name} [key=value ...]`
+- Location: `get-shit-done/templates/<artifact>.md`
+- Usage: Fill via `node gsd-tools.cjs template fill <type> --phase N`
 
-**Utilities:**
-- Shared CLI helpers: `get-shit-done/bin/lib/core.cjs` — add to existing module if domain fits
-- Shared test utilities: `tests/helpers.cjs` — add to existing helpers if broadly useful
+**New Hook:**
+- Source: `hooks/gsd-<purpose>.js` (JavaScript) or `hooks/gsd-<purpose>.sh` (shell)
+- Build: Run `npm run build:hooks` to copy to `hooks/dist/`
+- Never edit `hooks/dist/` directly
+
+**New SDK Module:**
+- Location: `sdk/src/<kebab-name>.ts` with sibling `sdk/src/<kebab-name>.test.ts`
+- Export from: `sdk/src/index.ts` if public API
+- If module generates a CJS mirror: add generation script in `sdk/scripts/`; output to `get-shit-done/bin/lib/<name>.generated.cjs`
+
+**Utilities (shared across lib modules):**
+- Shared helpers: `get-shit-done/bin/lib/core.cjs` (if broadly applicable) or new domain module
+- Test utilities: `tests/helpers.cjs` (always extend this file, never create separate helper files)
 
 ## Special Directories
 
-**`.planning/`:**
-- Purpose: GSD's own project state (GSD uses itself for its own development)
-- Generated: Yes, by GSD workflows
-- Committed: Yes — project state, roadmap, and phase plans are tracked in git
-
 **`hooks/dist/`:**
-- Purpose: Built hook files ready for installation into AI tool runtimes
-- Generated: Yes, by `npm run build:hooks` (copies from `hooks/*.js` and `hooks/*.sh`)
-- Committed: Yes — required for npm publish; `install.js` copies from `dist/` not source
+- Purpose: Built hook output installed to target AI runtimes
+- Generated: Yes (by `npm run build:hooks` via `scripts/build-hooks.js`)
+- Committed: Yes (pre-built so users don't need build step)
+- Note: Do not edit directly — source is in `hooks/*.js`
 
-**`node_modules/`:**
-- Purpose: npm dependencies
-- Generated: Yes, by `npm install`
-- Committed: No
+**`sdk/dist/`:**
+- Purpose: Compiled TypeScript output from `tsc`
+- Generated: Yes (by `tsc` with `sdk/tsconfig.json`)
+- Committed: Yes (for npm publishing; verified by `scripts/verify-tarball-sdk-dist.sh`)
 
-**`sdk/`:**
-- Purpose: Separate TypeScript SDK product — programmatic GSD for CI/automated pipelines
-- Generated: No
+**`get-shit-done/bin/lib/*.generated.cjs`:**
+- Purpose: CJS mirrors of TypeScript SDK modules, generated to keep CLI and SDK layers in sync
+- Generated: Yes (by scripts in `sdk/scripts/` — e.g., `gen-phase-lifecycle.mjs`)
 - Committed: Yes
+- Note: Never edit directly — regenerate from SDK source
+
+**`.planning/`:**
+- Purpose: GSD state and planning artifacts for this repository's own development
+- Generated: Partially (artifacts created by GSD workflows)
+- Committed: Yes (entire `.planning/` is tracked for project continuity)
 
 ---
 
-*Structure analysis: 2026-04-15*
+*Structure analysis: 2026-05-25*

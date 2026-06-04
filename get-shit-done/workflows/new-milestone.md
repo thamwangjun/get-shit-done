@@ -236,7 +236,13 @@ AGENT_SKILLS_SYNTHESIZER=$($GSD_SDK query agent-skills gsd-research-synthesizer)
 AGENT_SKILLS_ROADMAPPER=$($GSD_SDK query agent-skills gsd-roadmapper)
 ```
 
-Extract from init JSON: `researcher_model`, `synthesizer_model`, `roadmapper_model`, `commit_docs`, `research_enabled`, `current_milestone`, `project_exists`, `roadmap_exists`, `latest_completed_milestone`, `phase_dir_count`, `phase_archive_path`, `agents_installed`, `missing_agents`.
+Extract from init JSON: `researcher_model`, `researcher_effort`, `synthesizer_model`, `synthesizer_effort`, `roadmapper_model`, `roadmapper_effort`, `commit_docs`, `research_enabled`, `current_milestone`, `project_exists`, `roadmap_exists`, `latest_completed_milestone`, `phase_dir_count`, `phase_archive_path`, `agents_installed`, `missing_agents`.
+
+```bash
+researcher_model_effort_arg=$([ -n "$researcher_effort" ] && [ "$researcher_effort" != "null" ] && echo "effort=\"$researcher_effort\"" || echo "")
+synthesizer_model_effort_arg=$([ -n "$synthesizer_effort" ] && [ "$synthesizer_effort" != "null" ] && echo "effort=\"$synthesizer_effort\"" || echo "")
+roadmapper_model_effort_arg=$([ -n "$roadmapper_effort" ] && [ "$roadmapper_effort" != "null" ] && echo "effort=\"$roadmapper_effort\"" || echo "")
+```
 
 **If `agents_installed` is false:** Display a warning before proceeding:
 ```
@@ -334,7 +340,7 @@ ${AGENT_SKILLS_RESEARCHER}
 Write to: .planning/research/{FILE}
 Use template: ~/.claude/get-shit-done/templates/research-project/{FILE}
 </output>
-", subagent_type="gsd-project-researcher", model="{researcher_model}", description="{DIMENSION} research")
+", subagent_type="gsd-project-researcher", model="{researcher_model}", {researcher_model_effort_arg} description="{DIMENSION} research")
 ```
 
 **Dimension-specific fields:**
@@ -367,7 +373,7 @@ ${AGENT_SKILLS_SYNTHESIZER}
 Write to: .planning/research/SUMMARY.md
 Use template: ~/.claude/get-shit-done/templates/research-project/SUMMARY.md
 Commit after writing.
-", subagent_type="gsd-research-synthesizer", model="{synthesizer_model}", description="Synthesize research")
+", subagent_type="gsd-research-synthesizer", model="{synthesizer_model}", {synthesizer_model_effort_arg} description="Synthesize research")
 ```
 
 > **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Agent() above, stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
@@ -501,7 +507,7 @@ Create roadmap for milestone v[X.Y]:
 
 Write files first, then return.
 </instructions>
-", subagent_type="gsd-roadmapper", model="{roadmapper_model}", description="Create roadmap")
+", subagent_type="gsd-roadmapper", model="{roadmapper_model}", {roadmapper_model_effort_arg} description="Create roadmap")
 ```
 
 > **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Agent() above, stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.

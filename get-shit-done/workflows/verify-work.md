@@ -51,7 +51,12 @@ AGENT_SKILLS_PLANNER=$($GSD_SDK query agent-skills gsd-planner)
 AGENT_SKILLS_CHECKER=$($GSD_SDK query agent-skills gsd-plan-checker)
 ```
 
-Parse JSON for: `planner_model`, `checker_model`, `commit_docs`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `has_verification`, `uat_path`.
+Parse JSON for: `planner_model`, `planner_effort`, `checker_model`, `checker_effort`, `commit_docs`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `has_verification`, `uat_path`.
+
+```bash
+planner_model_effort_arg=$([ -n "$planner_effort" ] && [ "$planner_effort" != "null" ] && echo "effort=\"$planner_effort\"" || echo "")
+checker_model_effort_arg=$([ -n "$checker_effort" ] && [ "$checker_effort" != "null" ] && echo "effort=\"$checker_effort\"" || echo "")
+```
 
 ```bash
 # MVP mode detection via the centralized phase.mvp-mode resolver.
@@ -592,6 +597,7 @@ Plans must be executable prompts.
 """,
   subagent_type="gsd-planner",
   model="{planner_model}",
+  {planner_model_effort_arg}
   description="Plan gap fixes for Phase {phase}"
 )
 ```
@@ -643,6 +649,7 @@ Return one of:
 """,
   subagent_type="gsd-plan-checker",
   model="{checker_model}",
+  {checker_model_effort_arg}
   description="Verify Phase {phase} fix plans"
 )
 ```
@@ -689,6 +696,7 @@ Do NOT replan from scratch unless issues are fundamental.
 """,
   subagent_type="gsd-planner",
   model="{planner_model}",
+  {planner_model_effort_arg}
   description="Revise Phase {phase} plans"
 )
 ```
