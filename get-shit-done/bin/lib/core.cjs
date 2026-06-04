@@ -1629,7 +1629,7 @@ function resolveReasoningEffortInternal(cwd, agentType) {
   // 2. Shared slot derivation — _resolveAgentSlot owns the phase-type lookup
   //    and profile fallback (D-08: eliminates duplicated tier re-derivation).
   //    The returned string may carry a ';effort' suffix (e.g. "opus;high").
-  //    WR-04: reuse the config loaded at line 1566 — avoid a second loadConfig.
+  //    WR-04: reuse the `config` loaded at the top of resolveReasoningEffortInternal — avoid a second loadConfig.
   const tier = _resolveAgentSlotFromConfig(config, agentType);
 
   // RESOLVE-06: inherit/unknown resolved tier → no effort.
@@ -1690,8 +1690,8 @@ function resolveReasoningEffortInternal(cwd, agentType) {
   if (entry?.reasoning_effort) return entry.reasoning_effort;
 
   // D-08: floor un-assigned {claude,codex} slots to 'medium'.
-  // The allowlist gate (line 1617) already ensures we are on a supported runtime.
-  // inherit slots returned null at line 1635 — they never reach here.
+  // The allowlist gate above already ensures we are on a supported runtime.
+  // inherit slots returned null at the tier check above — they never reach here.
   return 'medium';
 }
 
