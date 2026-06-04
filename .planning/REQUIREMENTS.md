@@ -5,7 +5,7 @@
 
 ## v1 Requirements
 
-Requirements for milestone v2.1.0-e. Each maps to a roadmap phase. The work is **purely additive** — extending existing functions in `core.cjs` and the catalog JSON; bare configs must resolve identically to today.
+Requirements for milestone v2.1.0-e. Each maps to a roadmap phase. The parsing and resolver plumbing is **additive** — it extends existing functions in `core.cjs` and the catalog JSON without disturbing model resolution. The effort *semantics*, however, deliberately change: per Phase 56 decision D-08, a bare (un-assigned) slot on `{claude, codex}` now floors to `medium` rather than resolving to `null`/omit. Bare `{claude, codex}` slots therefore resolve differently than before D-08 (this is intended, not a regression). Explicit `inherit` slots and the 8 non-effort runtimes still omit effort entirely.
 
 > **Delimiter decision (2026-05-31):** The effort suffix is joined to the model with a semicolon — `model;effort` (e.g. `opus;high`), **not** a colon. The `;` is chosen so provider IDs that legitimately contain colons (e.g. `openrouter:anthropic/claude-opus`, `bedrock:us.anthropic...`) are never ambiguous: no colon is ever treated as an effort delimiter. The combined `model;effort` string lives only in catalog JSON / config and is parsed immediately into separate fields, so it never reaches a raw shell where `;` is special (planner to verify).
 
@@ -47,7 +47,7 @@ Requirements for milestone v2.1.0-e. Each maps to a roadmap phase. The work is *
 ### Spawn Wiring
 
 - [ ] **SPAWN-01**: The verified Claude effort carrier — subagent frontmatter `effort:` vs an `Agent()` argument, resolved at plan time against the current Agent/Task API — is wired so resolved effort reaches spawned agents
-- [ ] **SPAWN-02**: Spawn templates across `agents/`, `commands/`, and `get-shit-done/workflows/` pass effort conditionally, omitting it entirely when absent
+- [ ] **SPAWN-02**: Spawn templates across `agents/`, `commands/`, and `get-shit-done/workflows/` pass resolved effort to spawned agents. An un-assigned slot on `{claude, codex}` defaults to `medium` — no omission (Phase 56 D-08). Effort is absent only for explicit `inherit` slots and the 8 non-effort runtimes, and that absence is carried mechanically by the pre-built carrier token (empty string → nothing rendered, Phase 56 D-04) rather than by a conditional render instruction.
 - [ ] **SPAWN-03**: Spawn-template edits preserve the fork quality gates (agent-frontmatter, negative-framing, step-numbering, eta-include) — achieved by extending existing `model=` lines rather than renumbering steps
 
 ### Install Translation
@@ -57,7 +57,7 @@ Requirements for milestone v2.1.0-e. Each maps to a roadmap phase. The work is *
 
 ### Validation & Tests
 
-- [ ] **TEST-01**: A pre-change golden snapshot of model resolution proves the change is additive (existing bare configs resolve identically before and after)
+- [ ] **TEST-01**: A golden snapshot of model resolution captures the INTENDED post-D-08 resolution — existing MODEL values for bare configs stay identical before and after, while effort siblings for bare `{claude, codex}` slots move `null` → `medium` (pre ≠ post for those slots is expected, not a regression). `inherit` slots and the 8 non-effort runtimes still snapshot to omitted effort.
 - [ ] **TEST-02**: Parser fixtures cover effort suffixes, bare models, and colon-containing provider IDs
 - [ ] **TEST-03**: Precedence and omit-contract tests per runtime (claude emits, codex translates with `max`→`xhigh`, others omit)
 - [ ] **TEST-04**: Regression assertions avoid the `indexOf`-as-boolean false-pass and substring collisions on `medium`/`high`
