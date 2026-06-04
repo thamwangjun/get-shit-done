@@ -36,6 +36,7 @@ Parse: `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`, 
 
 ```bash
 UI_AUDITOR_MODEL=$($GSD_SDK query resolve-model gsd-ui-auditor --raw)
+UI_AUDITOR_MODEL_effort_arg=$($GSD_SDK query resolve-model-effort gsd-ui-auditor --raw)
 ```
 
 Display banner:
@@ -114,6 +115,7 @@ Agent(
   prompt=ui_audit_prompt,
   subagent_type="gsd-ui-auditor",
   model="{UI_AUDITOR_MODEL}",
+  {UI_AUDITOR_MODEL_effort_arg}
   description="UI Audit Phase {N}"
 )
 ```
