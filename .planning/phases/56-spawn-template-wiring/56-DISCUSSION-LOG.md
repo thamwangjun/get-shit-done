@@ -61,6 +61,29 @@
 
 ---
 
+## Post-decision amendment — abolish effort omission (milestone-level)
+
+After the four areas were locked, the user revisited the omission mechanism with a determinism concern.
+
+**Q: Is the omission style mechanistic?** — Surfaced that "render only when non-empty" relies on orchestrator (LLM) fidelity, not a deterministic guarantee, since the `Agent()` block is interpreted pseudocode, not a code-built call. Offered a more-deterministic pre-built fragment alternative.
+
+**User decision:** Do away with effort omission altogether. When no effort is specified, default to at least `medium`. **Stated rationale: to remove the non-determinism of effort omission.**
+
+**Boundary clarification asked (non-effort runtimes + inherit):**
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| Medium for claude/codex; inherit stays effort-free | Floor null→medium only within {claude,codex}; 8 non-effort runtimes still emit nothing; explicit inherit stays effort-free | ✓ |
+| Medium for claude/codex; inherit also floors to medium | Same but inherit also gets medium | |
+| Let planner resolve edge cases | Lock headline, defer edges | |
+
+**Resulting changes (CONTEXT.md):**
+- D-08 (new, milestone-level): allowlist-gated `medium` floor; inherit stays effort-free; 8 non-effort runtimes still omit (incompatibility, not preference). Reopens the Phase 53 resolver.
+- D-04 revised: pre-built carrier token (`effort="medium"` / `""`) instead of a conditional render instruction — mechanistic, no orchestrator judgment. Directly serves the stated rationale.
+- Flagged locked-artifact supersession: REQUIREMENTS.md SPAWN-02 wording + ROADMAP Phase 53/58 invariant language + Phase 58 golden-snapshot re-baseline.
+
+---
+
 ## Claude's Discretion
 
 - Exact handler name/registration of the effort query (`resolve-model-effort` intended) and whether it shares the `resolve-model` code path.
