@@ -474,8 +474,8 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 56-02-PLAN.md — Wave 2: wire effort into 8 Group A init-fed workflows (parse instruction + pre-built token per Agent() block)
-- [ ] 56-03-PLAN.md — Wave 2: wire effort into 9 Group B standalone-resolve workflows + gsd-debug-session-manager agent (adjacent resolve-model-effort line + Agent() token)
+- [x] 56-02-PLAN.md — Wave 2: wire effort into 8 Group A init-fed workflows (parse instruction + pre-built token per Agent() block)
+- [x] 56-03-PLAN.md — Wave 2: wire effort into 9 Group B standalone-resolve workflows + gsd-debug-session-manager agent (adjacent resolve-model-effort line + Agent() token)
 
 #### Phase 57: Install-Time Translation
 
@@ -572,7 +572,7 @@ Plans:
 | 53. Unified Effort Resolver | v2.1.0-e | 2/2 | Complete    | 2026-06-01 |
 | 54. SDK & Tools JSON Exposure | v2.1.0-e | 2/2 | Complete    | 2026-06-02 |
 | 55. Catalog Schema + User Handover | v2.1.0-e | 3/3 | Complete   | 2026-06-03 |
-| 56. Spawn-Template Wiring | v2.1.0-e | 1/3 | In Progress|  |
+| 56. Spawn-Template Wiring | v2.1.0-e | 3/3 | Complete   | 2026-06-04 |
 | 57. Install-Time Translation | v2.1.0-e | 0/TBD | Not started | - |
 | 58. Regression Coverage | v2.1.0-e | 0/TBD | Not started | - |
 
