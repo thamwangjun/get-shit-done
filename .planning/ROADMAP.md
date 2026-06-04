@@ -305,7 +305,7 @@ Plans:
 
 ### 🚧 v2.1.0-e Per-Agent Thinking Effort (In Progress)
 
-**Milestone Goal:** Add a unified, Claude-first thinking-effort dimension encoded inline as `model;effort` labels (semicolon delimiter — chosen so colons in provider IDs are never ambiguous), resolved through the existing model machinery and passed to `Agent()` spawns. The work is purely additive — bare configs must resolve identically to today.
+**Milestone Goal:** Add a unified, Claude-first thinking-effort dimension encoded inline as `model;effort` labels (semicolon delimiter — chosen so colons in provider IDs are never ambiguous), resolved through the existing model machinery and passed to `Agent()` spawns. The parsing/resolver plumbing is additive, but the effort *semantics* deliberately change: per Phase 56 D-08, a bare (un-assigned) slot on `{claude, codex}` now floors to `medium` instead of resolving to `null`/omit (intended behavior change, not a regression). `inherit` slots and the 8 non-effort runtimes still omit.
 
 #### Phase 52: Parser Foundation
 
@@ -332,14 +332,14 @@ Plans:
 
 #### Phase 53: Unified Effort Resolver
 
-**Goal**: `resolveReasoningEffortInternal` resolves effort for the `claude` runtime (Claude gate lifted via an explicit `{claude, codex}` allowlist), follows the same precedence chain as the model resolver, and accepts `model;effort` in all three config override sites — while bare configs continue to omit effort everywhere
+**Goal**: `resolveReasoningEffortInternal` resolves effort for the `claude` runtime (Claude gate lifted via an explicit `{claude, codex}` allowlist), follows the same precedence chain as the model resolver, and accepts `model;effort` in all three config override sites — while bare slots within `{claude, codex}` now floor to `medium` (Phase 56 D-08), and `inherit` slots plus the non-effort runtimes still omit effort
 **Depends on**: Phase 52
 **Requirements**: RESOLVE-01, RESOLVE-02, RESOLVE-03, RESOLVE-04, RESOLVE-05, RESOLVE-06, CONFIG-01, CONFIG-02, CONFIG-03, CONFIG-04
 **Plan-time verification**: Confirm whether `effort: max` is accepted in Claude Code subagent frontmatter before emitting it on the Claude path. If rejected (the settings file rejects it; frontmatter behavior is undocumented), add a `max`→`xhigh` clamp on the Claude spawn path as well.
 **Success Criteria** (what must be TRUE):
 
   1. With effort assigned in a profile slot, the resolver emits that effort for the `claude` runtime — the Claude gate is lifted via an explicit static `{claude, codex}` allowlist, never a data-derived "any tier carrying reasoning_effort" set
-  2. Effort resolution follows the model precedence chain exactly: per-agent override → phase-type slot → profile slot → adaptiveTierMap → omit; the `inherit` profile and bare adaptive entries omit effort
+  2. Effort resolution follows the model precedence chain exactly: per-agent override → phase-type slot → profile slot → adaptiveTierMap → default; the bare-`{claude, codex}` fallthrough is now `medium` (the Phase 56 D-08 floor), not omit, while the `inherit` profile and bare adaptive entries still omit effort
   3. Profile-slot effort overrides the Codex per-tier `reasoning_effort`; the per-tier value is used only as fallback when the resolved slot carries no effort suffix; `max`→`xhigh` when emitted for Codex and `xhigh` is never emitted for the Codex haiku tier
   4. Every runtime outside `{claude, codex}` omits effort (hard no-op for the 8 null-tier runtimes)
   5. `model;effort` is accepted in `model_overrides.<agent>`, `models.<phase-type>`, and `model_profile_overrides.<runtime>`; config validation rejects/warns on malformed effort tokens consistent with existing tier-typo handling
@@ -356,7 +356,7 @@ Plans:
 
 #### Phase 54: SDK & Tools JSON Exposure
 
-**Goal**: Resolved effort is observable in init/agent-skills JSON via `*_effort` siblings and a canonical `effort` field, with SDK and CLI producing identical model+effort shapes — plumbing that no-ops on a bare catalog
+**Goal**: Resolved effort is observable in init/agent-skills JSON via `*_effort` siblings and a canonical `effort` field, with SDK and CLI producing identical model+effort shapes — the exposure layer reflects whatever the resolver returns, including the Phase 56 D-08 `medium` floor for bare `{claude, codex}` slots
 **Depends on**: Phase 53
 **Requirements**: EXPOSE-01, EXPOSE-02, EXPOSE-03
 **Success Criteria** (what must be TRUE):
@@ -364,7 +364,7 @@ Plans:
   1. The init JSON exposes a `*_effort` sibling for every resolved `*_model` field consumed by workflows
   2. `cmdResolveModel` / agent-skills output includes a canonical resolved `effort` field
   3. SDK (`sdk/src/`) and CLI (`bin/lib/`) resolution produce byte-identical model+effort shapes for the same inputs, verified by a parity test
-  4. On a bare (un-assigned) catalog, every exposed `*_effort` value is `null`/omitted — confirming the exposure layer is inert until catalog values are assigned
+  4. On a bare (un-assigned) catalog, exposed `*_effort` values track the resolver: bare `{claude, codex}` slots expose `medium` (the Phase 56 D-08 floor), while `inherit` slots and the 8 non-effort runtimes remain `null`/omitted — confirming the exposure layer faithfully mirrors the resolver floor (the explicit-null sibling contract from Phase 54 D-01 still holds for inherit/non-effort runtimes)
 
 **Plans**: 2 plans
 
@@ -457,14 +457,14 @@ Plans:
 
 #### Phase 56: Spawn-Template Wiring
 
-**Goal**: Spawn templates across `agents/`, `commands/`, and `get-shit-done/workflows/` conditionally pass resolved effort to spawned agents, omitting it entirely when absent, while preserving all fork quality gates
+**Goal**: Spawn templates across `agents/`, `commands/`, and `get-shit-done/workflows/` pass resolved effort to spawned agents via a pre-built carrier token; bare `{claude, codex}` slots floor to `medium` (D-08), and the residual absent cases (explicit `inherit`, the 8 non-effort runtimes) emit nothing via the empty carrier token (D-04), while preserving all fork quality gates. D-08 reopens the Phase 53 resolver (`resolveReasoningEffortInternal` gains the allowlist-gated `medium` floor) — it is no longer frozen for Phase 56.
 **Depends on**: Phase 55 (catalog values assigned so the first integration test exercises live effort)
 **Requirements**: SPAWN-01, SPAWN-02, SPAWN-03
 **Plan-time verification**: Enumerate the spawn-template blocks before committing scope — grep `agents/*.md`, `commands/gsd/*.md`, `get-shit-done/workflows/*.md` for `subagent_type` + `model=` patterns to size the edit list (count not pre-enumerated by research).
 **Success Criteria** (what must be TRUE):
 
   1. The verified Claude effort carrier (subagent frontmatter `effort:` vs an `Agent()` argument, resolved at plan time against the current Agent/Task API) is wired so resolved effort reaches spawned agents
-  2. Spawn templates across `agents/`, `commands/`, and `get-shit-done/workflows/` pass effort conditionally, omitting it entirely when resolved effort is absent
+  2. Spawn templates across `agents/`, `commands/`, and `get-shit-done/workflows/` pass resolved effort via the pre-built carrier token; bare `{claude, codex}` slots floor to `medium` (D-08), and the residual absent cases (explicit `inherit`, the 8 non-effort runtimes) emit nothing via the empty carrier token (D-04)
   3. Spawn-template edits preserve every fork quality gate (agent-frontmatter 155/155, negative-framing 99/99, step-numbering 632/632, cross-file-refs 219/219, eta-include) — achieved by extending existing `model=` lines rather than renumbering steps
 
 **Plans**: TBD
@@ -478,18 +478,18 @@ Plans:
 
   1. `bin/install.js` translates Claude `effort` to Codex `model_reasoning_effort` only at the Codex emit boundary; the runtime-agnostic resolver stays effort-format-neutral
   2. Effort materializes correctly per runtime at install time — Claude effort preserved, Codex translated (`max`→`xhigh`, haiku tier never `xhigh`), unsupported runtimes omit
-  3. The omit guard is preserved — installing a bare (un-assigned) config produces zero effort emission in every runtime's output
+  3. The omit guard is preserved for runtimes that cannot carry effort — installing a bare (un-assigned) config produces zero effort emission for the 8 non-effort runtimes; `{claude, codex}` instead emit `medium` for bare slots (the Phase 56 D-08 floor)
 
 **Plans**: TBD
 
 #### Phase 58: Regression Coverage
 
-**Goal**: A comprehensive regression suite locks in the additive-only guarantee — a pre-change golden snapshot proves bare configs resolve identically, parser fixtures cover all edge cases, and per-runtime omit/translate contracts hold, with `npm test` green and coverage maintained
+**Goal**: A comprehensive regression suite locks in the intended post-D-08 resolution — a golden snapshot proves bare `{claude, codex}` slots now resolve to `medium` (with MODEL values unchanged; pre ≠ post for those effort siblings is expected, not a regression), parser fixtures cover all edge cases, and per-runtime omit/translate contracts hold, with `npm test` green and coverage maintained
 **Depends on**: Phase 57 (and spans Phases 52–57)
 **Requirements**: TEST-01, TEST-02, TEST-03, TEST-04, TEST-05
 **Success Criteria** (what must be TRUE):
 
-  1. A pre-change golden snapshot of model resolution proves the change is additive — existing bare configs resolve identically before and after across all 33 agents and all profile variants
+  1. A golden snapshot of model resolution proves the INTENDED post-D-08 resolution across all 33 agents and all profile variants — MODEL values for bare configs stay identical, while effort siblings for bare `{claude, codex}` slots move `null` → `medium` (pre ≠ post for those slots is expected, not a regression); `inherit` slots and the 8 non-effort runtimes still snapshot to omitted effort
   2. Parser fixtures cover effort suffixes, bare models, and colon-containing provider IDs (e.g. `openrouter:anthropic/claude-opus` → effort null)
   3. Precedence and omit-contract tests pass per runtime: claude emits, codex translates with `max`→`xhigh`, all other runtimes omit
   4. Regression assertions use strict equality on parsed structures — no `indexOf`-as-boolean false-passes and no substring collisions on `medium`/`high`; each new test confirmed RED before its fix lands
