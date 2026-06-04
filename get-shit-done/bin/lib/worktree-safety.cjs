@@ -413,9 +413,17 @@ function defaultFindSummaryFiles(worktreePath) {
 }
 
 /**
- * Rescue uncommitted SUMMARY.md artifacts from a worktree into the main repo
- * tree before the dirty-state check.  Mirrors the shell-fallback rescue block
- * in quick.md (lines 878–891, #2296/#2070/#2838).
+ * Defense-in-depth fallback: rescue uncommitted SUMMARY.md artifacts from a
+ * worktree into the main repo tree before the dirty-state check.
+ *
+ * PRIMARY MECHANISM (#260604-tev): The executor is now instructed to commit
+ * SUMMARY.md to its per-agent branch (see quick.md executor constraints).
+ * Committed work merges back via worktree.cleanup-wave and survives teardown
+ * without any file-copy rescue.  This function remains as a fallback for the
+ * edge case where the cleanup-wave manifest stays empty and the rescue path
+ * would otherwise be unreachable — it is NOT the primary SUMMARY.md survival
+ * guarantee.  Mirrors the shell-fallback rescue block in quick.md
+ * (lines 878–891, #2296/#2070/#2838).
  *
  * For each *SUMMARY.md found under <worktreePath>/.planning/:
  *   - compute relative path from worktree root  → .planning/<id>-SUMMARY.md
