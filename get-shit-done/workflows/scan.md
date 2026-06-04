@@ -52,6 +52,8 @@ else
 fi
 INIT=$($GSD_SDK query init.map-codebase 2>/dev/null || echo "{}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
+resolved_model=$($GSD_SDK query resolve-model gsd-codebase-mapper --raw)
+resolved_model_effort_arg=$($GSD_SDK query resolve-model-effort gsd-codebase-mapper --raw)
 ```
 
 Look up which documents would be produced for the selected focus (from the mapping table above).
@@ -86,7 +88,8 @@ Spawn a single `gsd-codebase-mapper` agent with the selected focus area:
 Agent(
   prompt="Scan this codebase with focus: {focus}. Write results to .planning/codebase/. Produce only: {document_list}",
   subagent_type="gsd-codebase-mapper",
-  model="{resolved_model}"
+  model="{resolved_model}",
+  {resolved_model_effort_arg}
 )
 ```
 
