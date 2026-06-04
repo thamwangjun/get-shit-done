@@ -2041,3 +2041,67 @@ describe('resolveReasoningEffortInternal inertness on bare catalog', () => {
     }
   });
 });
+
+// ─── D-08: medium floor — resolveReasoningEffortInternal ─────────────────────
+
+describe('resolveReasoningEffortInternal D-08 medium floor', () => {
+  let tmpDir;
+  const { createTempProject, cleanup } = require('./helpers.cjs');
+  const path = require('path');
+  const fs = require('fs');
+
+  function writeConfig(obj) {
+    fs.writeFileSync(
+      path.join(tmpDir, '.planning', 'config.json'),
+      JSON.stringify(obj)
+    );
+  }
+
+  beforeEach(() => {
+    tmpDir = createTempProject();
+  });
+
+  afterEach(() => {
+    cleanup(tmpDir);
+  });
+
+  // D-08: bare slot = adaptive profile (slot is 'sonnet', no ;effort suffix)
+  // The floor only fires when the slot has no effort suffix AND no runtime-tier entry.
+  // 'adaptive' profile slot for gsd-executor is 'sonnet' (bare), which resolves to null
+  // on claude (no RUNTIME_PROFILE_MAP entry for claude) — this is the floor's true target.
+  test('D-08: bare claude slot (adaptive profile) floors to medium', () => {
+    writeConfig({ runtime: 'claude', model_profile: 'adaptive' });
+    const effort = resolveReasoningEffortInternal(tmpDir, 'gsd-executor');
+    assert.strictEqual(effort, 'medium',
+      'bare claude slot with no effort suffix must floor to medium (D-08)');
+  });
+
+  test('D-08: inherit slot returns null even with claude runtime', () => {
+    writeConfig({ runtime: 'claude', model_overrides: { 'gsd-executor': 'inherit' } });
+    const effort = resolveReasoningEffortInternal(tmpDir, 'gsd-executor');
+    assert.strictEqual(effort, null,
+      'inherit slot must return null (RESOLVE-06), not reach the floor');
+  });
+
+  test('D-08: non-effort runtime returns null (no floor applied)', () => {
+    writeConfig({ runtime: 'opencode', model_profile: 'adaptive' });
+    const effort = resolveReasoningEffortInternal(tmpDir, 'gsd-executor');
+    assert.strictEqual(effort, null,
+      'non-effort runtime must return null (allowlist gate), not reach floor');
+  });
+
+  test('D-08: explicit catalog effort suffix preserved, floor not applied', () => {
+    writeConfig({ runtime: 'claude', model_overrides: { 'gsd-executor': 'opus;high' } });
+    const effort = resolveReasoningEffortInternal(tmpDir, 'gsd-executor');
+    assert.strictEqual(effort, 'high',
+      'explicit catalog effort suffix must be preserved; floor must not override it');
+  });
+
+  // Verify inherit-slot and non-effort-runtime with strict equality (not truthiness)
+  test('D-08: inherit via model_overrides returns null (strict)', () => {
+    writeConfig({ runtime: 'claude', model_profile: 'adaptive', model_overrides: { 'gsd-planner': 'inherit' } });
+    const effort = resolveReasoningEffortInternal(tmpDir, 'gsd-planner');
+    assert.strictEqual(effort, null,
+      'inherit override must return null strictly');
+  });
+});
