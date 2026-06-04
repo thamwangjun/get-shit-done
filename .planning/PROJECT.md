@@ -210,4 +210,4 @@ This document evolves at phase transitions and milestone boundaries.
 ---
 ---
 ---
-*Last updated: 2026-05-31 after v2.1.0-e milestone start*
+*Last updated: 2026-06-04 after Phase 56 (spawn-template-wiring) completion — thinking-effort wired into all Group A/B spawn sites + debug-session-manager agent*
