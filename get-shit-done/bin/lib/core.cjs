@@ -1623,6 +1623,9 @@ function resolveReasoningEffortInternal(cwd, agentType) {
   //    The old early-null ("any override → omit effort") is intentionally removed.
   const override = config.model_overrides?.[agentType];
   if (override) {
+    // D-03 + A1: haiku exclusion wins over any explicit ;effort suffix.
+    // 'haiku;high' as an override returns null — haiku never emits effort on any runtime.
+    if (parseModelEffort(override).model === 'haiku') return null;
     return parseModelEffort(override).effort;
   }
 
@@ -1637,6 +1640,11 @@ function resolveReasoningEffortInternal(cwd, agentType) {
 
   // Strip any ;effort suffix before lookup (keys are bare tier aliases).
   const bareTier = parseModelEffort(tier).model;
+
+  // D-03: haiku omits effort on every runtime — no medium floor for haiku (D-08 overridden).
+  // This guard precedes steps 3/3a/4/5 so a catalog haiku slot with reasoning_effort='medium'
+  // still resolves to null (Pitfall 1: step 5 would otherwise emit it).
+  if (bareTier === 'haiku') return null;
 
   // Determine whether the tier came from a user-supplied models.<phase-type> value.
   // When the user sets models.<phase-type>, their explicit choice (including any
