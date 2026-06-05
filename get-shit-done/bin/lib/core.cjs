@@ -1264,6 +1264,22 @@ function parseModelEffort(label) {
   return { model: base, effort: null };
 }
 
+/**
+ * Translate a Claude-form reasoning effort token to its Codex equivalent.
+ * Only the max→xhigh token differs; low/medium/high pass through unchanged.
+ * Null/undefined inputs return null — haiku slots are already null from the resolver.
+ *
+ * D-02: the resolver is Claude-form-neutral (returns 'max', never 'xhigh').
+ *       Translation is a Codex-emit concern; apply this helper at the TOML boundary.
+ *
+ * @param {string|null|undefined} effort - Claude-form effort token
+ * @returns {string|null}
+ */
+function translateEffortForCodex(effort) {
+  if (effort == null) return null;
+  return effort === 'max' ? 'xhigh' : effort;
+}
+
 // Internal helper exposed for tests so the per-process effort warn cache can be
 // reset between cases that intentionally exercise the warning path repeatedly.
 function _resetEffortWarningCacheForTests() {
@@ -2087,6 +2103,7 @@ module.exports = {
   RUNTIME_OVERRIDE_TIERS,
   resolveTierEntry,
   parseModelEffort,
+  translateEffortForCodex,
   EFFORT_TOKENS,
   _resetRuntimeWarningCacheForTests,
   _resetEffortWarningCacheForTests,
