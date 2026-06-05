@@ -52,8 +52,8 @@ Requirements for milestone v2.1.0-e. Each maps to a roadmap phase. The parsing a
 
 ### Install Translation
 
-- [ ] **INSTALL-01**: `bin/install.js` translates Claude `effort` to Codex `reasoning_effort` only at the Codex emit boundary; the runtime-agnostic resolver stays effort-format-neutral
-- [ ] **INSTALL-02**: Effort materializes correctly per runtime at install time — Claude effort preserved, Codex translated, unsupported runtimes omit
+- [x] **INSTALL-01**: `bin/install.js` translates Claude `effort` to Codex `reasoning_effort` only at the Codex emit boundary; the runtime-agnostic resolver stays effort-format-neutral
+- [x] **INSTALL-02**: Effort materializes correctly per runtime at install time — Claude effort preserved, Codex translated, unsupported runtimes omit
 
 ### Validation & Tests
 
@@ -113,8 +113,8 @@ Populated during roadmap creation (2026-05-31). All 30 v1 requirements mapped to
 | SPAWN-01 | Phase 56 | Complete |
 | SPAWN-02 | Phase 56 | Complete |
 | SPAWN-03 | Phase 56 | Complete |
-| INSTALL-01 | Phase 57 | Pending |
-| INSTALL-02 | Phase 57 | Pending |
+| INSTALL-01 | Phase 57 | Complete |
+| INSTALL-02 | Phase 57 | Complete |
 | TEST-01 | Phase 58 | Pending |
 | TEST-02 | Phase 58 | Pending |
 | TEST-03 | Phase 58 | Pending |

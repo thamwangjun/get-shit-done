@@ -492,11 +492,11 @@ Plans:
 
 **Wave 1**
 
-- [ ] 57-01-PLAN.md — Wave 0 RED test stubs (tests/feat-57-install-translation.test.cjs) for INSTALL-01/INSTALL-02 [INSTALL-01, INSTALL-02]
+- [x] 57-01-PLAN.md — Wave 0 RED test stubs (tests/feat-57-install-translation.test.cjs) for INSTALL-01/INSTALL-02 [INSTALL-01, INSTALL-02]
 
 **Wave 2** *(blocked on 57-01)*
 
-- [ ] 57-02-PLAN.md — core.cjs: haiku exclusion (override + bareTier paths, A1) + translateEffortForCodex helper + export [INSTALL-01, INSTALL-02]
+- [x] 57-02-PLAN.md — core.cjs: haiku exclusion (override + bareTier paths, A1) + translateEffortForCodex helper + export [INSTALL-01, INSTALL-02]
 
 **Wave 3** *(blocked on 57-02)*
 
@@ -585,7 +585,7 @@ Plans:
 | 54. SDK & Tools JSON Exposure | v2.1.0-e | 2/2 | Complete    | 2026-06-02 |
 | 55. Catalog Schema + User Handover | v2.1.0-e | 3/3 | Complete   | 2026-06-03 |
 | 56. Spawn-Template Wiring | v2.1.0-e | 3/3 | Complete    | 2026-06-04 |
-| 57. Install-Time Translation | v2.1.0-e | 0/3 | Not started | - |
+| 57. Install-Time Translation | v2.1.0-e | 2/3 | In Progress|  |
 | 58. Regression Coverage | v2.1.0-e | 0/TBD | Not started | - |
 
 *v1.41.3 shipped 2026-05-19 — see `.planning/milestones/v1.41.3-ROADMAP.md`*
