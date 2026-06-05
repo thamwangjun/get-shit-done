@@ -195,12 +195,12 @@ Not applicable — this is a code change (.js/.cjs), not a rename/migration. No 
 | A1 | Haiku-with-explicit-`;effort` suffix is rare/nonexistent, so placing the haiku guard after the override step (step 1) is acceptable | Code Examples | If a user sets `model_overrides.x="haiku;high"`, effort `high` would emit despite D-03's "every runtime, full stop." Confirm intended precedence: tier-exclusion vs explicit override |
 | A2 | Extending `readGsdRuntimeProfileResolver` with a `resolveEffort` sibling is the preferred cwd-threading approach | Architecture Patterns | If planner prefers passing cwd into `generateCodexAgentToml` directly, signature changes ripple to install.js:5018–5019 and the export/test at install.js:11402 |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Does the haiku tier exclusion override an explicit per-agent `;effort` suffix?**
+   - RESOLVED (2026-06-05, user): tier exclusion wins over explicit `;effort` suffix — haiku omits unconditionally on every runtime and every path. The override branch returns null when `parseModelEffort(override).model === 'haiku'` (core.cjs ~1626), in addition to the bareTier guard (~1639). Implemented in 57-02-PLAN.md Task 1.
    - What we know: D-03 says "haiku omits on every runtime, full stop" (tier-based). Step 1 of the resolver returns the override effort BEFORE any tier lookup (core.cjs:1626).
-   - What's unclear: whether an explicit `model_overrides.x = "haiku;high"` should still omit.
-   - Recommendation: implement the stronger reading (tier wins) by checking `parseModelEffort(override).model === 'haiku'` in the override branch too; flag to user at plan/discuss time. (See A1.)
+   - Recommendation (now locked): implement the stronger reading (tier wins) by checking `parseModelEffort(override).model === 'haiku'` in the override branch too. (See A1.)
 
 ## Environment Availability
 
