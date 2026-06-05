@@ -159,6 +159,8 @@ const { MODEL_PROFILES: GSD_MODEL_PROFILES } = require(path.join(_gsdLibDir, 'mo
 const {
   RUNTIME_PROFILE_MAP: GSD_RUNTIME_PROFILE_MAP,
   resolveTierEntry: gsdResolveTierEntry,
+  resolveReasoningEffortInternal: gsdResolveReasoningEffort,
+  translateEffortForCodex: gsdTranslateEffortForCodex,
 } = require(path.join(_gsdLibDir, 'core.cjs'));
 
 const {
@@ -1457,12 +1459,14 @@ function readGsdRuntimeProfileResolver(targetDir = null) {
   // common case (caller passes the project root) and the case where caller
   // passes a nested install dir like `<root>/.codex/`.
   let projectConfig = null;
+  let probedProjectDir = null;
   if (targetDir) {
     let probeDir = path.resolve(targetDir);
     for (let depth = 0; depth < 8; depth += 1) {
       const candidate = path.join(probeDir, '.planning', 'config.json');
       if (fs.existsSync(candidate)) {
         projectConfig = _readGsdConfigFile(candidate, '.planning/config.json');
+        probedProjectDir = probeDir;
         break;
       }
       const parent = path.dirname(probeDir);
@@ -1507,6 +1511,10 @@ function readGsdRuntimeProfileResolver(targetDir = null) {
         tier,
         overrides: merged.model_profile_overrides,
       });
+    },
+    resolveEffort(agentName) {
+      if (!probedProjectDir) return null;
+      return gsdResolveReasoningEffort(probedProjectDir, agentName);
     },
   };
 }
