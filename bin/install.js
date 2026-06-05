@@ -2753,9 +2753,18 @@ function generateCodexAgentToml(agentName, agentContent, modelOverrides = null, 
     const entry = runtimeResolver.resolve(resolvedName) || runtimeResolver.resolve(agentName);
     if (entry?.model) {
       lines.push(`model = ${JSON.stringify(entry.model)}`);
-      if (entry.reasoning_effort) {
-        lines.push(`model_reasoning_effort = ${JSON.stringify(entry.reasoning_effort)}`);
-      }
+    }
+  }
+  // D-01/D-02/D-04: source effort from the floored core resolver and translate at the Codex boundary.
+  // Only emit model_reasoning_effort when the resolver is for the codex runtime (D-04: Claude path untouched).
+  // resolveEffort returns Claude-form effort (null for haiku, 'max' for opus;max, 'medium' bare floor).
+  // gsdTranslateEffortForCodex converts 'max' → 'xhigh'; other values pass through; null → omit.
+  if (runtimeResolver?.resolveEffort && runtimeResolver.runtime === 'codex') {
+    const codexEffort = gsdTranslateEffortForCodex(
+      runtimeResolver.resolveEffort(resolvedName) ?? runtimeResolver.resolveEffort(agentName)
+    );
+    if (codexEffort) {
+      lines.push(`model_reasoning_effort = ${JSON.stringify(codexEffort)}`);
     }
   }
 
