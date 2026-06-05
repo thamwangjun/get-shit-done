@@ -585,7 +585,7 @@ Plans:
 | 54. SDK & Tools JSON Exposure | v2.1.0-e | 2/2 | Complete    | 2026-06-02 |
 | 55. Catalog Schema + User Handover | v2.1.0-e | 3/3 | Complete   | 2026-06-03 |
 | 56. Spawn-Template Wiring | v2.1.0-e | 3/3 | Complete    | 2026-06-04 |
-| 57. Install-Time Translation | v2.1.0-e | 3/3 | Complete   | 2026-06-05 |
+| 57. Install-Time Translation | v2.1.0-e | 3/3 | Complete    | 2026-06-05 |
 | 58. Regression Coverage | v2.1.0-e | 0/TBD | Not started | - |
 
 *v1.41.3 shipped 2026-05-19 — see `.planning/milestones/v1.41.3-ROADMAP.md`*
