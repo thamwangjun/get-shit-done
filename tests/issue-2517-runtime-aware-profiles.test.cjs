@@ -532,6 +532,9 @@ describe('issue #2517: install end-to-end — per-project config reaches Codex T
   });
 
   test('generated Codex TOML embeds model = and model_reasoning_effort = lines', () => {
+    // Phase 57: effort now comes from the floored core resolver (resolveReasoningEffortInternal),
+    // not from RUNTIME_PROFILE_MAP.reasoning_effort. quality+gsd-planner maps to opus;low in
+    // the catalog, so the D-08 floor does not apply and the effort is 'low'.
     writeConfig(tmpDir, { runtime: 'codex', model_profile: 'quality' });
     const resolver = readGsdRuntimeProfileResolver(tmpDir);
     const toml = generateCodexAgentToml(
@@ -541,26 +544,23 @@ describe('issue #2517: install end-to-end — per-project config reaches Codex T
       resolver
     );
     assert.match(toml, /^model = "gpt-5\.4"$/m);
-    assert.match(toml, /^model_reasoning_effort = "xhigh"$/m);
+    assert.match(toml, /^model_reasoning_effort = "low"$/m);
   });
 
-  test('generated TOML omits reasoning_effort when runtime has none', () => {
-    // For a known runtime with model but no reasoning_effort, only model is emitted.
-    // Use the user-override path to simulate this with codex (no built-in returns
-    // model alone, so fabricate via override of an unknown-runtime entry).
+  test('generated TOML omits reasoning_effort for haiku-tier agent (D-03)', () => {
+    // Phase 57: haiku-tier agents always omit model_reasoning_effort (D-03).
+    // Use 'budget' profile which maps gsd-verifier to haiku tier.
     writeConfig(tmpDir, {
       runtime: 'codex',
-      model_profile: 'quality',
-      model_profile_overrides: { codex: { opus: { model: 'custom', reasoning_effort: '' } } },
+      model_profile: 'budget',
     });
     const resolver = readGsdRuntimeProfileResolver(tmpDir);
     const toml = generateCodexAgentToml(
-      'gsd-planner',
-      '---\nname: gsd-planner\n---\nBody.\n',
+      'gsd-verifier',
+      '---\nname: gsd-verifier\n---\nBody.\n',
       null,
       resolver
     );
-    assert.match(toml, /^model = "custom"$/m);
     assert.doesNotMatch(toml, /model_reasoning_effort/);
   });
 
