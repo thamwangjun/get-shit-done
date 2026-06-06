@@ -31,6 +31,8 @@ else
 fi
 INIT=$($GSD_SDK query init.phase-op "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
+code_reviewer_model=$($GSD_SDK query resolve-model gsd-code-reviewer --raw)
+code_reviewer_model_effort_arg=$($GSD_SDK query resolve-model-effort gsd-code-reviewer --raw 2>/dev/null || echo "")
 ```
 
 Parse from init JSON: `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `padded_phase`, `commit_docs`.
@@ -452,7 +454,7 @@ fi
 Spawn the gsd-code-reviewer agent:
 
 ```
-Agent(subagent_type="gsd-code-reviewer", prompt="
+Agent(subagent_type="gsd-code-reviewer", model="{code_reviewer_model}", {code_reviewer_model_effort_arg} prompt="
 <files_to_read>
 ${FILES_TO_READ}
 </files_to_read>
