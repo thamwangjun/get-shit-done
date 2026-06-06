@@ -93,7 +93,7 @@ Agent(
   prompt=filled_prompt,
   subagent_type="gsd-debugger",
   model="{debugger_model}",
-  {debugger_model_effort_arg}
+  effort={debugger_model_effort_arg}
   description="Debug {slug}"
 )
 ```

@@ -89,7 +89,7 @@ Agent(
   prompt="Scan this codebase with focus: {focus}. Write results to .planning/codebase/. Produce only: {document_list}",
   subagent_type="gsd-codebase-mapper",
   model="{resolved_model}",
-  {resolved_model_effort_arg}
+  effort={resolved_model_effort_arg}
 )
 ```
 

@@ -142,7 +142,7 @@ specialist_dispatch_enabled: true
 """,
   subagent_type="gsd-debug-session-manager",
   model="{debugger_model}",
-  {debugger_model_effort_arg}
+  effort={debugger_model_effort_arg}
   description="Continue debug session {SLUG}"
 )
 ```
@@ -221,7 +221,7 @@ specialist_dispatch_enabled: true
 """,
   subagent_type="gsd-debug-session-manager",
   model="{debugger_model}",
-  {debugger_model_effort_arg}
+  effort={debugger_model_effort_arg}
   description="Debug session {slug}"
 )
 ```

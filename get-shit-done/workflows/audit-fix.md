@@ -112,7 +112,7 @@ Agent(
   prompt="Fix finding {ID}: {description}. Files: {file_refs}. Make the minimal change to resolve this specific finding. Do not refactor surrounding code.",
   subagent_type="gsd-executor",
   model="{executor_model}",
-  {executor_model_effort_arg}
+  effort={executor_model_effort_arg}
 )
 ```
 

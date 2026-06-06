@@ -454,7 +454,7 @@ fi
 Spawn the gsd-code-reviewer agent:
 
 ```
-Agent(subagent_type="gsd-code-reviewer", model="{code_reviewer_model}", {code_reviewer_model_effort_arg} prompt="
+Agent(subagent_type="gsd-code-reviewer", model="{code_reviewer_model}", effort={code_reviewer_model_effort_arg} prompt="
 <files_to_read>
 ${FILES_TO_READ}
 </files_to_read>

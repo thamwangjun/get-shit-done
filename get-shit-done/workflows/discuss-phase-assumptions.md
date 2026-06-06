@@ -269,7 +269,7 @@ If no USER-PROFILE.md: calibration_tier = "standard"
 **Spawn Explore subagent:**
 
 ```
-Agent(subagent_type="gsd-assumptions-analyzer", model="{assumptions_analyzer_model}", {assumptions_analyzer_model_effort_arg} prompt="""
+Agent(subagent_type="gsd-assumptions-analyzer", model="{assumptions_analyzer_model}", effort={assumptions_analyzer_model_effort_arg} prompt="""
 Analyze the codebase for Phase {PHASE}: {phase_name}.
 
 Phase goal: {roadmap_description}

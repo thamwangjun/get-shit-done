@@ -459,7 +459,7 @@ Return: ## RESEARCH COMPLETE with file path
 ",
   subagent_type="gsd-phase-researcher",
   model="{planner_model}",
-  {planner_model_effort_arg}
+  effort={planner_model_effort_arg}
   description="Research: ${DESCRIPTION}"
 )
 ```
@@ -518,7 +518,7 @@ Return: ## PLANNING COMPLETE with plan path
 ",
   subagent_type="gsd-planner",
   model="{planner_model}",
-  {planner_model_effort_arg}
+  effort={planner_model_effort_arg}
   description="Quick plan: ${DESCRIPTION}"
 )
 ```
@@ -585,7 +585,7 @@ Agent(
   prompt=checker_prompt,
   subagent_type="gsd-plan-checker",
   model="{checker_model}",
-  {checker_model_effort_arg}
+  effort={checker_model_effort_arg}
   description="Check quick plan: ${DESCRIPTION}"
 )
 ```
@@ -633,7 +633,7 @@ Agent(
   prompt=revision_prompt,
   subagent_type="gsd-planner",
   model="{planner_model}",
-  {planner_model_effort_arg}
+  effort={planner_model_effort_arg}
   description="Revise quick plan: ${DESCRIPTION}"
 )
 ```
@@ -785,7 +785,7 @@ SUMMARY.md and stop — the user must rerun with worktrees disabled.
 ",
   subagent_type="gsd-executor",
   model="{executor_model}",
-  {executor_model_effort_arg}
+  effort={executor_model_effort_arg}
   ${USE_WORKTREES !== "false" ? 'isolation="worktree",' : ''}
   description="Execute: ${DESCRIPTION}"
 )
@@ -865,7 +865,7 @@ Agent(
   Depth: quick",
   subagent_type="gsd-code-reviewer",
   model="{executor_model}",
-  {executor_model_effort_arg}
+  effort={executor_model_effort_arg}
 )
 ```
 
@@ -903,7 +903,7 @@ ${AGENT_SKILLS_VERIFIER}
 Check must_haves against actual codebase. Create VERIFICATION.md at ${QUICK_DIR}/${quick_id}-VERIFICATION.md.",
   subagent_type="gsd-verifier",
   model="{verifier_model}",
-  {verifier_model_effort_arg}
+  effort={verifier_model_effort_arg}
   description="Verify: ${DESCRIPTION}"
 )
 ```

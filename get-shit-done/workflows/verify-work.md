@@ -597,7 +597,7 @@ Plans must be executable prompts.
 """,
   subagent_type="gsd-planner",
   model="{planner_model}",
-  {planner_model_effort_arg}
+  effort={planner_model_effort_arg}
   description="Plan gap fixes for Phase {phase}"
 )
 ```
@@ -649,7 +649,7 @@ Return one of:
 """,
   subagent_type="gsd-plan-checker",
   model="{checker_model}",
-  {checker_model_effort_arg}
+  effort={checker_model_effort_arg}
   description="Verify Phase {phase} fix plans"
 )
 ```
@@ -696,7 +696,7 @@ Do NOT replan from scratch unless issues are fundamental.
 """,
   subagent_type="gsd-planner",
   model="{planner_model}",
-  {planner_model_effort_arg}
+  effort={planner_model_effort_arg}
   description="Revise Phase {phase} plans"
 )
 ```

@@ -103,7 +103,7 @@ research agents.
      ${AGENT_SKILLS_ADVISOR}",
      subagent_type="general-purpose",
      model="{ADVISOR_MODEL}",
-     {ADVISOR_MODEL_effort_arg}
+     effort={ADVISOR_MODEL_effort_arg}
      description="Research: {area_name}"
    )
    ```
