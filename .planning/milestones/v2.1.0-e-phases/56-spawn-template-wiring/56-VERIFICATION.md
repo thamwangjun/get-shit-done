@@ -12,6 +12,7 @@ gaps:
   - truth: "Every Agent() block in Group A carries an effort= arg line adjacent to its model= line, fed by a pre-built {<agent>_model_effort_arg} token"
     status: resolved
     resolution: "plan-phase.md intentionally uses _effort_param suffix (not _model_effort_arg) to avoid tripping tests/skill-frontmatter-contract.test.cjs — the _model_effort_arg substring contains 'arg' which matches the test's args?\\b regex before the intended argument-parsing section. Tokens are functionally wired. 56-02-SUMMARY.md false claim corrected to reflect actual variable names and document the convention deviation with reason."
+    superseded: "Post-verification (2026-06-06): plan-phase.md was updated to use the standard _model_effort_arg suffix after tests/skill-frontmatter-contract.test.cjs was made immune to *_model_effort_arg occurrences (test anchors on '## 2. Parse and Normalize Arguments' heading and slices 300 chars — does not scan the full file). The _effort_param workaround described above no longer applies; _model_effort_arg is now the uniform convention across all 8 Group A workflows."
 ---
 
 # Phase 56: Spawn Template Wiring — Verification Report
