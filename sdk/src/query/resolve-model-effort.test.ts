@@ -231,3 +231,74 @@ describe('initProgress *_effort siblings (EXPOSE-03 / complex.ts)', () => {
     expect(data.planner_effort).toBeNull();
   });
 });
+
+// ─── resolveModel effort parity gaps (Gap 1/2/3 regression) ──────────────────
+
+describe('resolveModel effort parity gaps (Gap 1/2/3 regression)', () => {
+  // Gap 1: claude path — model_profile_overrides carrying ;effort suffix
+  // CLI step 3a (userSuppliedEffort): resolveReasoningEffortInternal reads
+  // model_profile_overrides[runtime][bareTier] and extracts the effort from a
+  // string shorthand like 'claude-sonnet-4-6;medium'. The SDK claude path
+  // previously skipped this step (runtimeTier is null for claude) and returned
+  // effort:null unconditionally.
+  it('Gap 1 — claude path: model_profile_overrides ;suffix is extracted as effort', async () => {
+    const { resolveModel } = await import('./config-query.js');
+    await writeFile(
+      join(tmpDir, '.planning', 'config.json'),
+      JSON.stringify({
+        model_profile: 'balanced',
+        runtime: 'claude',
+        model_profile_overrides: {
+          claude: { sonnet: 'claude-sonnet-4-6;medium' },
+        },
+      }),
+    );
+    // gsd-executor has phaseType='execute'; balanced slot is 'sonnet'.
+    // model_profile_overrides.claude.sonnet = 'claude-sonnet-4-6;medium' →
+    // CLI step 3a extracts effort 'medium'. SDK must do the same.
+    const result = await resolveModel(['gsd-executor'], tmpDir);
+    const data = result.data as Record<string, unknown>;
+    expect(data.effort).toBe('medium');
+  });
+
+  // Gap 2: claude path — D-08 medium floor applies when no override or catalog effort
+  // CLI resolveReasoningEffortInternal returns 'medium' at the end for any bare
+  // {claude,codex} slot that exhausted all precedence steps without finding an effort.
+  // The SDK had no equivalent floor on the claude path.
+  it('Gap 2 — claude path: bare catalog floors to effort:medium (D-08)', async () => {
+    const { resolveModel } = await import('./config-query.js');
+    await writeFile(
+      join(tmpDir, '.planning', 'config.json'),
+      JSON.stringify({
+        model_profile: 'balanced',
+        runtime: 'claude',
+      }),
+    );
+    // No model_overrides, no model_profile_overrides, no models.* overrides.
+    // CLI returns 'medium' from D-08 floor. SDK must do the same.
+    const result = await resolveModel(['gsd-executor'], tmpDir);
+    const data = result.data as Record<string, unknown>;
+    expect(data.effort).toBe('medium');
+  });
+
+  // Gap 3: codex + haiku-tier agent — haiku must return effort:null (D-03)
+  // The codex runtimeTierDefaults has haiku.reasoning_effort='medium'. Without
+  // the haiku guard, the runtimeTier block emitted that value instead of null.
+  it('Gap 3 — codex path: haiku-slotted tier returns effort:null (D-03 haiku guard)', async () => {
+    const { resolveModel } = await import('./config-query.js');
+    await writeFile(
+      join(tmpDir, '.planning', 'config.json'),
+      JSON.stringify({
+        model_profile: 'balanced',
+        runtime: 'codex',
+        models: { execution: 'haiku' },
+      }),
+    );
+    // gsd-executor phaseType='execution'. models.execution='haiku' forces the haiku
+    // tier. codex catalog haiku.reasoning_effort='medium' — but D-03 says haiku
+    // never emits effort on any runtime. SDK must guard this and return null.
+    const result = await resolveModel(['gsd-executor'], tmpDir);
+    const data = result.data as Record<string, unknown>;
+    expect(data.effort).toBeNull();
+  });
+});

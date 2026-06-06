@@ -242,10 +242,12 @@ export const resolveModel: QueryHandler = async (args, projectDir, workstream) =
     : '';
 
   // ─── Effort precedence chain (D-07 — mirrors resolveReasoningEffortInternal) ──
-  // Step 1: allowlist gate — runtimes outside {claude, codex} always resolve null.
-  // Steps 2-4 apply only after the gate passes.
-  const effectiveRuntime = runtime || 'claude'; // empty = implicit claude
-  const effortAllowed = RUNTIMES_WITH_REASONING_EFFORT.has(effectiveRuntime);
+  // Step 0 gate: mirrors CLI resolveReasoningEffortInternal step 0:
+  //   `if (!config.runtime || !RUNTIMES_WITH_REASONING_EFFORT.has(config.runtime)) return null`
+  // When runtime is absent/empty (implicit claude), the CLI returns null.
+  // Only an EXPLICIT runtime in {claude, codex} enables effort resolution.
+  const effectiveRuntime = runtime || 'claude'; // empty = implicit claude (for model resolution)
+  const effortAllowed = runtime !== '' && RUNTIMES_WITH_REASONING_EFFORT.has(effectiveRuntime);
 
   // Check per-agent override first
   const overrides = (config as Record<string, unknown>).model_overrides as Record<string, string> | undefined;
@@ -304,19 +306,68 @@ export const resolveModel: QueryHandler = async (args, projectDir, workstream) =
     //     Only used when the tier string itself carried no ;suffix (step 3 yielded null).
     let effort: string | null = null;
     if (effortAllowed) {
-      // Step 3
-      effort = parseModelEffort(tier).effort ?? null;
-      // Step 4 (only if step 3 yielded nothing)
-      if (!effort && runtimeTier.reasoning_effort) {
-        effort = runtimeTier.reasoning_effort;
+      const bareTierForGuard = (parseModelEffort(tier).model as string) || tier;
+      // D-03: haiku never emits effort on any runtime (Gap 3 fix).
+      if (bareTierForGuard !== 'haiku') {
+        // Step 3
+        effort = parseModelEffort(tier).effort ?? null;
+        // Step 4 (only if step 3 yielded nothing)
+        if (!effort && runtimeTier.reasoning_effort) {
+          effort = runtimeTier.reasoning_effort;
+        }
+        // D-08: floor bare {claude,codex} slots to 'medium' when no explicit effort found.
+        if (effort === null) effort = 'medium';
       }
     }
     const result: Record<string, unknown> = { model: runtimeTier.model, profile, effort };
     return { data: result };
   }
 
+  // ─── Claude-path effort resolution (Gap 1 + Gap 2 fix) ──────────────────────
+  // resolveRuntimeTier returns null for claude (line ~200: `if (!runtime || runtime === 'claude') return null`)
+  // so the runtimeTier block above never runs on the claude path. Mirror the CLI's
+  // resolveReasoningEffortInternal steps 3a, 4, 5, D-08 here.
+  //
+  // Step 3a: check model_profile_overrides[runtime][bareTier] for explicit effort.
+  //   - A string value like 'claude-sonnet-4-6;medium' → extract 'medium' (Gap 1)
+  //   - An object with reasoning_effort field → use that value
+  //   - A bare string (no ;suffix) → null, fall through
+  // Step 4: catalog slot effort (same-slot invariant / D-08): rawAlias may carry ;suffix
+  //   e.g. MODEL_PROFILES['gsd-executor']['balanced'] = 'sonnet;medium' → effort 'medium'.
+  //   The SDK strips the suffix into `alias`; we retrieve it from `rawAlias` here.
+  //   phaseTier may also carry a ;suffix when set via models.<phaseType>='opus;high'.
+  // D-08: floor bare {claude,codex} slots to 'medium' (Gap 2)
+  //   Any slot that exhausted all precedence steps without finding an effort returns 'medium'.
+  // D-03: haiku never emits effort — bareTier === 'haiku' short-circuits to null.
+  const isClaudeRuntime = runtime === '' || runtime === 'claude';
+  let claudePathEffort: string | null = null;
+  if (effortAllowed) {
+    // rawSlot is the full tier/slot string before ;suffix stripping — equivalent to
+    // what _resolveAgentSlotFromConfig returns in the CLI (may carry ;effort suffix).
+    const rawSlot = typeof phaseTier === 'string' ? phaseTier : rawAlias;
+    const bareTier = (parseModelEffort(rawSlot).model as string) || rawSlot;
+    if (bareTier !== 'haiku') {
+      // Step 3a: model_profile_overrides[effectiveRuntime][bareTier]
+      const profileOverrides = (config as Record<string, unknown>).model_profile_overrides as
+        Record<string, unknown> | undefined;
+      const runtimeOverrides = profileOverrides?.[effectiveRuntime] as Record<string, unknown> | undefined;
+      const rawOverride = runtimeOverrides?.[bareTier];
+      if (typeof rawOverride === 'string') {
+        claudePathEffort = parseModelEffort(rawOverride).effort ?? null;
+      } else if (rawOverride && typeof rawOverride === 'object') {
+        claudePathEffort = (rawOverride as Record<string, string | null>).reasoning_effort ?? null;
+      }
+      // Step 4: catalog slot ;effort suffix (rawAlias or phaseTier may carry ;suffix)
+      if (claudePathEffort === null) {
+        claudePathEffort = parseModelEffort(rawSlot).effort ?? null;
+      }
+      // D-08: floor to 'medium' when no explicit effort was found
+      if (claudePathEffort === null) claudePathEffort = 'medium';
+    }
+  }
+
   if (resolveModelIds === 'omit') {
-    return { data: { model: '', profile, effort: null } };
+    return { data: { model: '', profile, effort: claudePathEffort } };
   }
 
   // #3643: runtime:claude bails out of resolveRuntimeTier (line 149) because
@@ -328,15 +379,14 @@ export const resolveModel: QueryHandler = async (args, projectDir, workstream) =
   // Empty/missing runtime is implicit Claude (per the resolveRuntimeTier bail-out
   // at line ~149); without this branch the resolved-IDs path silently fell
   // through to the alias return for projects that never set `runtime` explicitly.
-  const isClaudeRuntime = runtime === '' || runtime === 'claude';
   if (resolveModelIds === true && isClaudeRuntime && isRuntimeTierName(tier)) {
     const claudeDefault = resolveRuntimeTierDefault('claude', tier);
     if (claudeDefault?.model) {
-      return { data: { model: claudeDefault.model, profile, effort: null } };
+      return { data: { model: claudeDefault.model, profile, effort: claudePathEffort } };
     }
   }
 
-  return { data: { model: alias, profile, effort: null } };
+  return { data: { model: alias, profile, effort: claudePathEffort } };
 };
 
 // ─── resolveModelEffort ───────────────────────────────────────────────────────

@@ -279,8 +279,8 @@ describe('resolveModel', () => {
       }),
     );
     const result = await resolveModel(['gsd-executor'], tmpDir);
-    // D-05: always-emit effort field; claude bare catalog resolves null
-    expect(result.data).toEqual({ model: 'claude-sonnet-4-6', profile: 'balanced', effort: null });
+    // D-05: always-emit effort field; D-08: claude+balanced slot 'sonnet;medium' → effort:'medium'
+    expect(result.data).toEqual({ model: 'claude-sonnet-4-6', profile: 'balanced', effort: 'medium' });
   });
 
   it('#3643: runtime:claude + resolve_model_ids:true + quality returns full opus id', async () => {
@@ -294,7 +294,8 @@ describe('resolveModel', () => {
       }),
     );
     const result = await resolveModel(['gsd-planner'], tmpDir);
-    expect(result.data).toEqual({ model: 'claude-opus-4-8', profile: 'quality', effort: null });
+    // D-08: claude+quality slot 'opus;low' → effort:'low' (slot carries explicit effort)
+    expect(result.data).toEqual({ model: 'claude-opus-4-8', profile: 'quality', effort: 'low' });
   });
 
   it('#3643: runtime:claude + resolve_model_ids:true + budget returns full haiku id', async () => {
@@ -324,7 +325,8 @@ describe('resolveModel', () => {
       }),
     );
     const result = await resolveModel(['gsd-executor'], tmpDir);
-    expect(result.data).toEqual({ model: 'claude-opus-4-8', profile: 'budget', effort: null });
+    // D-08: claude+models.execution='opus' (bare, no ;suffix) → floor to effort:'medium'
+    expect(result.data).toEqual({ model: 'claude-opus-4-8', profile: 'budget', effort: 'medium' });
   });
 
   it('#3643 regression-guard: runtime:claude WITHOUT resolve_model_ids still returns alias', async () => {
@@ -337,8 +339,8 @@ describe('resolveModel', () => {
       }),
     );
     const result = await resolveModel(['gsd-executor'], tmpDir);
-    // D-05: always-emit effort field (null on bare catalog)
-    expect(result.data).toEqual({ model: 'sonnet', profile: 'balanced', effort: null });
+    // D-05: always-emit effort field; D-08: claude+balanced slot 'sonnet;medium' → effort:'medium'
+    expect(result.data).toEqual({ model: 'sonnet', profile: 'balanced', effort: 'medium' });
   });
 
   it('#3643 regression-guard: runtime:claude + resolve_model_ids:"omit" still wins over alias mapping', async () => {
@@ -352,7 +354,8 @@ describe('resolveModel', () => {
       }),
     );
     const result = await resolveModel(['gsd-executor'], tmpDir);
-    expect(result.data).toEqual({ model: '', profile: 'balanced', effort: null });
+    // D-08: claude+balanced slot 'sonnet;medium' → effort:'medium' even on resolve_model_ids:'omit'
+    expect(result.data).toEqual({ model: '', profile: 'balanced', effort: 'medium' });
   });
 
   it('#3643 regression-guard: model_overrides[agent] beats claude+resolve_model_ids:true', async () => {
