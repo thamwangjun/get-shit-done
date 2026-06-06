@@ -71,7 +71,7 @@ Agent(
   prompt="Quick research: {specific_question}. Return 3-5 key findings, no more than 200 words.",
   subagent_type="gsd-phase-researcher",
   model="{phase_researcher_model}",
-  {phase_researcher_model_effort_arg}
+  effort={phase_researcher_model_effort_arg}
 )
 ```
 

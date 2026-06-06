@@ -114,7 +114,7 @@ Agent(
     "${AGENT_SKILLS_AUDITOR}",
   subagent_type="gsd-nyquist-auditor",
   model="{AUDITOR_MODEL}",
-  {AUDITOR_MODEL_effort_arg}
+  effort={AUDITOR_MODEL_effort_arg}
   description="Fill validation gaps for Phase {N}"
 )
 ```

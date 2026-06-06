@@ -120,7 +120,7 @@ Agent(
     "${AGENT_SKILLS_AUDITOR}",
   subagent_type="gsd-security-auditor",
   model="{AUDITOR_MODEL}",
-  {AUDITOR_MODEL_effort_arg}
+  effort={AUDITOR_MODEL_effort_arg}
   description="Verify threat mitigations for Phase {N}"
 )
 ```

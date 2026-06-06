@@ -173,7 +173,7 @@ Agent(
   prompt=ui_research_prompt,
   subagent_type="gsd-ui-researcher",
   model="{UI_RESEARCHER_MODEL}",
-  {UI_RESEARCHER_MODEL_effort_arg}
+  effort={UI_RESEARCHER_MODEL_effort_arg}
   description="UI Design Contract Phase {N}"
 )
 ```
@@ -227,7 +227,7 @@ Agent(
   prompt=ui_checker_prompt,
   subagent_type="gsd-ui-checker",
   model="{UI_CHECKER_MODEL}",
-  {UI_CHECKER_MODEL_effort_arg}
+  effort={UI_CHECKER_MODEL_effort_arg}
   description="Verify UI-SPEC Phase {N}"
 )
 ```

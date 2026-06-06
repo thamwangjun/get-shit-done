@@ -115,7 +115,7 @@ Agent(
   prompt=ui_audit_prompt,
   subagent_type="gsd-ui-auditor",
   model="{UI_AUDITOR_MODEL}",
-  {UI_AUDITOR_MODEL_effort_arg}
+  effort={UI_AUDITOR_MODEL_effort_arg}
   description="UI Audit Phase {N}"
 )
 ```

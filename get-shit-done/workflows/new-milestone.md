@@ -340,7 +340,7 @@ ${AGENT_SKILLS_RESEARCHER}
 Write to: .planning/research/{FILE}
 Use template: ~/.claude/get-shit-done/templates/research-project/{FILE}
 </output>
-", subagent_type="gsd-project-researcher", model="{researcher_model}", {researcher_model_effort_arg} description="{DIMENSION} research")
+", subagent_type="gsd-project-researcher", model="{researcher_model}", effort={researcher_model_effort_arg} description="{DIMENSION} research")
 ```
 
 **Dimension-specific fields:**
@@ -373,7 +373,7 @@ ${AGENT_SKILLS_SYNTHESIZER}
 Write to: .planning/research/SUMMARY.md
 Use template: ~/.claude/get-shit-done/templates/research-project/SUMMARY.md
 Commit after writing.
-", subagent_type="gsd-research-synthesizer", model="{synthesizer_model}", {synthesizer_model_effort_arg} description="Synthesize research")
+", subagent_type="gsd-research-synthesizer", model="{synthesizer_model}", effort={synthesizer_model_effort_arg} description="Synthesize research")
 ```
 
 > **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Agent() above, stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
@@ -507,7 +507,7 @@ Create roadmap for milestone v[X.Y]:
 
 Write files first, then return.
 </instructions>
-", subagent_type="gsd-roadmapper", model="{roadmapper_model}", {roadmapper_model_effort_arg} description="Create roadmap")
+", subagent_type="gsd-roadmapper", model="{roadmapper_model}", effort={roadmapper_model_effort_arg} description="Create roadmap")
 ```
 
 > **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Agent() above, stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
