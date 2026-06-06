@@ -57,11 +57,11 @@ Requirements for milestone v2.1.0-e. Each maps to a roadmap phase. The parsing a
 
 ### Validation & Tests
 
-- [ ] **TEST-01**: A golden snapshot of model resolution captures the INTENDED post-D-08 resolution — existing MODEL values for bare configs stay identical before and after, while effort siblings for bare `{claude, codex}` slots move `null` → `medium` (pre ≠ post for those slots is expected, not a regression). `inherit` slots and the 8 non-effort runtimes still snapshot to omitted effort.
-- [ ] **TEST-02**: Parser fixtures cover effort suffixes, bare models, and colon-containing provider IDs
-- [ ] **TEST-03**: Precedence and omit-contract tests per runtime (claude emits, codex translates with `max`→`xhigh`, others omit)
-- [ ] **TEST-04**: Regression assertions avoid the `indexOf`-as-boolean false-pass and substring collisions on `medium`/`high`
-- [ ] **TEST-05**: Full `npm test` passes with zero new regressions; ≥70% line coverage on `get-shit-done/bin/lib/*.cjs` maintained
+- [x] **TEST-01**: A golden snapshot of model resolution captures the INTENDED post-D-08 resolution — existing MODEL values for bare configs stay identical before and after, while effort siblings for bare `{claude, codex}` slots move `null` → `medium` (pre ≠ post for those slots is expected, not a regression). `inherit` slots and the 8 non-effort runtimes still snapshot to omitted effort.
+- [x] **TEST-02**: Parser fixtures cover effort suffixes, bare models, and colon-containing provider IDs
+- [x] **TEST-03**: Precedence and omit-contract tests per runtime (claude emits, codex translates with `max`→`xhigh`, others omit)
+- [x] **TEST-04**: Regression assertions avoid the `indexOf`-as-boolean false-pass and substring collisions on `medium`/`high`
+- [x] **TEST-05**: Full `npm test` passes with zero new regressions; ≥70% line coverage on `get-shit-done/bin/lib/*.cjs` maintained
 
 ## v2 Requirements
 
@@ -115,11 +115,11 @@ Populated during roadmap creation (2026-05-31). All 30 v1 requirements mapped to
 | SPAWN-03 | Phase 56 | Complete |
 | INSTALL-01 | Phase 57 | Complete |
 | INSTALL-02 | Phase 57 | Complete |
-| TEST-01 | Phase 58 | Pending |
-| TEST-02 | Phase 58 | Pending |
-| TEST-03 | Phase 58 | Pending |
-| TEST-04 | Phase 58 | Pending |
-| TEST-05 | Phase 58 | Pending |
+| TEST-01 | Phase 58 | Complete |
+| TEST-02 | Phase 58 | Complete |
+| TEST-03 | Phase 58 | Complete |
+| TEST-04 | Phase 58 | Complete |
+| TEST-05 | Phase 58 | Complete |
 
 **Coverage:**
 

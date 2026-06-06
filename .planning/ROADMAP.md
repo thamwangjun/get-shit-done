@@ -595,7 +595,7 @@ Plans:
 | 55. Catalog Schema + User Handover | v2.1.0-e | 3/3 | Complete   | 2026-06-03 |
 | 56. Spawn-Template Wiring | v2.1.0-e | 3/3 | Complete    | 2026-06-04 |
 | 57. Install-Time Translation | v2.1.0-e | 3/3 | Complete    | 2026-06-05 |
-| 58. Regression Coverage | v2.1.0-e | 3/3 | Complete   | 2026-06-06 |
+| 58. Regression Coverage | v2.1.0-e | 3/3 | Complete    | 2026-06-06 |
 
 *v1.41.3 shipped 2026-05-19 — see `.planning/milestones/v1.41.3-ROADMAP.md`*
 *v1.41.5 shipped 2026-05-24 — see `.planning/milestones/v1.41.5-ROADMAP.md`*
