@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-05-31 after Phase 51)
 Phase: 58
 Plan: Not started
 Status: Executing Phase 58
-Last activity: 2026-06-06
+Last activity: 2026-06-06 - Completed quick task 260606-tbq: Fix 3 SDK effort resolution gaps in config-query.ts
 
 ## Performance Metrics
 
@@ -98,6 +98,7 @@ None. Research is HIGH confidence. Two plan-time verification flags noted above 
 | 260604-swm | Fix mktemp BSD/GNU bug in ship.md/profile-user.md and add portability guard test | 2026-06-04 | 389d5ab5 | [260604-swm-fix-mktemp-bsd-gnu-bug-in-ship-md-and-ad](./quick/260604-swm-fix-mktemp-bsd-gnu-bug-in-ship-md-and-ad/) |
 | 260604-tev | Fix gsd-quick losing SUMMARY.md in worktree mode: executor now commits SUMMARY.md so it survives teardown; rescue skips committed summaries | 2026-06-04 | f2ef1394 | [260604-tev-fix-gsd-quick-losing-summary-md-in-workt](./quick/260604-tev-fix-gsd-quick-losing-summary-md-in-workt/) |
 | 260606-ety | Fix remaining test failures: pin hono>=4.12.23 via overrides (npm-audit #3588) + allowlist intentional execute-plan.md bare-line @~ ref (INTG-02); cluster 1 confirmed already green | 2026-06-06 | e7c2eedb | [260606-ety-fix-test-failures-hono-npm-audit-advisor](./quick/260606-ety-fix-test-failures-hono-npm-audit-advisor/) |
+| 260606-tbq | Fix 3 SDK effort resolution gaps in sdk/src/query/config-query.ts so the SDK produces identical model+effort shapes to the CLI | 2026-06-06 | 477326cb | [260606-tbq-fix-3-sdk-effort-resolution-gaps-in-sdk-](./quick/260606-tbq-fix-3-sdk-effort-resolution-gaps-in-sdk-/) |
 
 ## Session Continuity
 
