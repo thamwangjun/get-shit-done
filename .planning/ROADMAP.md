@@ -519,8 +519,8 @@ Plans:
 
 **Wave 1** *(no file overlap — parallel)*
 
-- [ ] 58-01-PLAN.md — Build scripts/gen-golden-effort-snapshot.mjs (atomic write) + commit literal golden fixture tests/fixtures/golden-effort-snapshot.json [TEST-01]
-- [ ] 58-02-PLAN.md — Extend tests/fixtures/parse-model-effort.json with colon-provider-ID gap cases [TEST-02]
+- [x] 58-01-PLAN.md — Build scripts/gen-golden-effort-snapshot.mjs (atomic write) + commit literal golden fixture tests/fixtures/golden-effort-snapshot.json [TEST-01]
+- [x] 58-02-PLAN.md — Extend tests/fixtures/parse-model-effort.json with colon-provider-ID gap cases [TEST-02]
 
 **Wave 2** *(blocked on Wave 1 — consumes the golden + parser fixtures)*
 
@@ -595,7 +595,7 @@ Plans:
 | 55. Catalog Schema + User Handover | v2.1.0-e | 3/3 | Complete   | 2026-06-03 |
 | 56. Spawn-Template Wiring | v2.1.0-e | 3/3 | Complete    | 2026-06-04 |
 | 57. Install-Time Translation | v2.1.0-e | 3/3 | Complete    | 2026-06-05 |
-| 58. Regression Coverage | v2.1.0-e | 0/TBD | Not started | - |
+| 58. Regression Coverage | v2.1.0-e | 2/3 | In Progress|  |
 
 *v1.41.3 shipped 2026-05-19 — see `.planning/milestones/v1.41.3-ROADMAP.md`*
 *v1.41.5 shipped 2026-05-24 — see `.planning/milestones/v1.41.5-ROADMAP.md`*

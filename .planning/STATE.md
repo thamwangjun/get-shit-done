@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v2.1.0-e
 milestone_name: Per-Agent Thinking Effort
 status: executing
-last_updated: "2026-06-06T05:46:20.773Z"
-last_activity: 2026-06-06 -- Phase 58 planning complete
+last_updated: "2026-06-06T05:51:19.738Z"
+last_activity: 2026-06-06 -- Phase 58 execution started
 progress:
   total_phases: 9
   completed_phases: 8
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-31 after Phase 51)
 
 **Core value:** Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships
-**Current focus:** Phase 57 — install-time-translation
+**Current focus:** Phase 58 — regression-coverage
 
 ## Current Position
 
-Phase: 58
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-06-06 -- Phase 58 planning complete
+Phase: 58 (regression-coverage) — EXECUTING
+Plan: 1 of 3
+Status: Executing Phase 58
+Last activity: 2026-06-06 -- Phase 58 execution started
 
 ## Performance Metrics
 
