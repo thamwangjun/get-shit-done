@@ -1,5 +1,24 @@
 # Milestones
 
+## v2.1.0-e Per-Agent Thinking Effort (Shipped: 2026-06-06)
+
+**Phases completed:** 9 phases (52–58, plus inserted 55.1, 55.2), 28 plans
+**Git range:** 2026-05-31 → 2026-06-06 · 309 commits · 281 files, +28,568 / -1,952 lines
+**Timeline:** 6 days (2026-05-31 → 2026-06-06)
+**Known deferred items at close:** 20 (see STATE.md Deferred Items)
+
+**Key accomplishments:**
+
+- Implemented `parseModelEffort(label)` with semicolon delimiter, 5-token allowlist, one-time typo warning, and backward-compatible `effort: null` for bare models; shared `_resolveAgentSlot` helper eliminates the #3023 model/effort divergence class (Phase 52)
+- Rewrote `resolveReasoningEffortInternal` as a unified `{claude, codex}` precedence chain: static allowlist replaces data-derived expression, full override → slot → D-08 medium floor chain, `model;effort` accepted in all 3 config override sites (Phase 53)
+- Exposed resolved effort in init JSON via 20 `*_effort` sibling fields, canonical `effort` field in `cmdResolveModel`; SDK `config-query.ts` mirrors CLI shapes including codex rawSlotForRuntime fix (EXPOSE-03, Phase 54)
+- Widened `model-catalog.json` + `sdk/src/model-catalog.ts` to carry `model;effort` slot strings; 31 capable agents received user-assigned effort values via the CATALOG-02 handover boundary (Phase 55)
+- Wired effort carrier into 17 Group A init-fed + 8 Group B standalone-resolve workflows + debug-session-manager agent; D-08 medium floor confirmed for bare `{claude, codex}` slots; 8 additional workflows wired post-audit (Phase 56)
+- Redirected install.js Codex emit seam through `resolveEffort` + `translateEffortForCodex`; haiku exclusion (never `xhigh`); per-runtime matrix: Claude preserves, Codex translates, 8 others omit (Phase 57)
+- Locked in post-D-08 resolution via 330-row golden snapshot, 14-case parser fixture, 365-test regression suite (feat-58-regression.test.cjs); npm test 8,243/8,255 pass, ≥70% coverage maintained (Phase 58)
+
+---
+
 ## v2.1.0-d Whole-Integer Step Numbering (Shipped: 2026-05-31)
 
 **Phases completed:** 4 phases, 19 plans

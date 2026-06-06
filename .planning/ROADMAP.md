@@ -17,7 +17,7 @@
 - ✗ **v2.1.0-b Workflow Compliance Reinforcement** — Phases 44–48 (abandoned 2026-05-28, 0/5 phases complete)
 - ✅ **v2.1.0-c Install-Time Content Materialization** — Phases 44–47.1 (shipped 2026-05-29)
 - ✅ **v2.1.0-d Whole-Integer Step Numbering** — Phases 48–51 (shipped 2026-05-31)
-- 🚧 **v2.1.0-e Per-Agent Thinking Effort** — Phases 52–58 (in progress)
+- ✅ **v2.1.0-e Per-Agent Thinking Effort** — Phases 52–58 (shipped 2026-06-06)
 
 ## Phases
 
@@ -303,7 +303,8 @@ Plans:
 
 </details>
 
-### 🚧 v2.1.0-e Per-Agent Thinking Effort (In Progress)
+<details>
+<summary>✅ v2.1.0-e Per-Agent Thinking Effort (Phases 52–58) — SHIPPED 2026-06-06</summary>
 
 **Milestone Goal:** Add a unified, Claude-first thinking-effort dimension encoded inline as `model;effort` labels (semicolon delimiter — chosen so colons in provider IDs are never ambiguous), resolved through the existing model machinery and passed to `Agent()` spawns. The parsing/resolver plumbing is additive, but the effort *semantics* deliberately change: per Phase 56 D-08, a bare (un-assigned) slot on `{claude, codex}` now floors to `medium` instead of resolving to `null`/omit (intended behavior change, not a regression). `inherit` slots and the 8 non-effort runtimes still omit.
 
@@ -526,6 +527,10 @@ Plans:
 
 - [x] 58-03-PLAN.md — Write tests/feat-58-regression.test.cjs: static golden + omit/translate contract + antipattern guard + full-suite/coverage gate [TEST-01, TEST-03, TEST-04, TEST-05]
 
+Full details: `.planning/milestones/v2.1.0-e-ROADMAP.md`
+
+</details>
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -602,4 +607,4 @@ Plans:
 *v2.1.0-a shipped 2026-05-26 — see `.planning/milestones/v2.1.0-a-ROADMAP.md`*
 *v2.1.0-c shipped 2026-05-29 — see `.planning/milestones/v2.1.0-c-ROADMAP.md`*
 *v2.1.0-d shipped 2026-05-31 — see `.planning/milestones/v2.1.0-d-ROADMAP.md`*
-*v2.1.0-e in progress — Phases 52–58, started 2026-05-31*
+*v2.1.0-e shipped 2026-06-06 — see `.planning/milestones/v2.1.0-e-ROADMAP.md`*

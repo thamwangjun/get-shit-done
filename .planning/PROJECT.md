@@ -8,20 +8,9 @@ An opinionated fork of the GSD (Get Shit Done) framework that applies systematic
 
 Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships — upstream content additions are modified, not accepted verbatim.
 
-## Current Milestone: v2.1.0-e Per-Agent Thinking Effort
+## Shipped: v2.1.0-e Per-Agent Thinking Effort (2026-06-06)
 
-**Goal:** Add a unified, Claude-first thinking-effort dimension encoded inline as `model:effort` labels (e.g. `opus:medium`), resolved through the existing model machinery and passed to `Agent()` spawns.
-
-**Target features:**
-- `model:effort` label syntax + parser (`low`/`medium`/`high`/`xhigh`/`max`); bare model omits effort (backward-compatible)
-- Effort encoded inline in `model-catalog.json` profile slots and `adaptiveTierMap`; `inherit` stays effort-free (per-agent values user-assigned via handover)
-- Unified resolution: lift the Claude block in `resolveReasoningEffortInternal`; profile-slot effort is single source of truth and overrides Codex per-tier `reasoning_effort`; `max`→`xhigh` on Codex
-- `model:effort` accepted in config `model_overrides.<agent>`, `models.<phase-type>`, `model_profile_overrides.<runtime>`
-- SDK + tools expose resolved `effort` in init/agent-skills JSON (`core.cjs`, `commands.cjs`, `gsd-tools.cjs`, `sdk/src/model-catalog.ts`)
-- Spawn templates across `agents/`, `commands/`, `get-shit-done/workflows/` pass `effort` to `Agent()` (conditionally; omitted when absent)
-- Validation rejects malformed effort tokens; regression coverage for parse/precedence/omit/Codex-mapping
-
-**Key context:** Unifies and extends the existing Codex-only `reasoning_effort` machinery rather than building parallel logic. Catalog effort values are hand-assigned by the user during an execution handover — Claude builds plumbing and tests only. No `custom_profiles` block in scope.
+Unified, Claude-first thinking-effort dimension encoded as `model;effort` labels (semicolon delimiter). 28 plans across 9 phases (plus 2 inserted triage phases). Core deliverables: `parseModelEffort` parser, unified `{claude, codex}` resolver with D-08 medium floor, 20 `*_effort` init siblings, catalog schema widened + 31 agents hand-assigned, spawn templates wired across all Group A/B workflows, install.js Codex emit boundary, 330-row golden snapshot + 365-test regression suite. npm test 8,243/8,255 pass. Full details: `.planning/milestones/v2.1.0-e-ROADMAP.md`.
 
 ## Shipped: v2.1.0-d Whole-Integer Step Numbering (2026-05-31)
 
@@ -115,9 +104,26 @@ Every file installed by `bin/install.js` is now fully self-contained. Eta v4 is 
 - ✓ XREF-01: `tests/cross-file-step-refs.test.cjs` detects stale cross-file step references — v2.1.0-d
 - ✓ GATE-01: `npm test` 11,728 pass / 3 fail, negative-framing 99/99 — v2.1.0-d
 
+- ✓ PARSE-01: `parseModelEffort` semicolon-delimiter parser with 5-token allowlist and one-time typo warning — v2.1.0-e
+- ✓ PARSE-02: Bare model strings return `effort: null` (backward-compatible) — v2.1.0-e
+- ✓ PARSE-03: Shared `_resolveAgentSlot` helper eliminates model/effort divergence class — v2.1.0-e
+- ✓ PARSE-04: `parseModelEffort` mirrored in SDK with shared parity fixture — v2.1.0-e
+- ✓ RESOLVE-01: Static `{claude, codex}` allowlist lifts Claude gate (replaces data-derived expression) — v2.1.0-e
+- ✓ RESOLVE-02: Effort precedence chain: override → slot → D-08 medium floor — v2.1.0-e
+- ✓ RESOLVE-03: Profile-slot effort overrides Codex per-tier; per-tier is fallback — v2.1.0-e
+- ✓ RESOLVE-04: `max`→`xhigh` on Codex; never `xhigh` for haiku tier — v2.1.0-e
+- ✓ RESOLVE-05: Non-`{claude, codex}` runtimes always omit effort — v2.1.0-e
+- ✓ RESOLVE-06: `inherit` profile and bare adaptive entries omit effort — v2.1.0-e
+- ✓ CONFIG-01/02/03/04: `model;effort` accepted in all 3 config override sites with malformed-token warning — v2.1.0-e
+- ✓ CATALOG-01/02/03: Catalog schema widened; 31 capable agents hand-assigned; SDK mirror widened — v2.1.0-e
+- ✓ EXPOSE-01/02/03: 20 `*_effort` init siblings, `cmdResolveModel` canonical effort, SDK/CLI parity — v2.1.0-e
+- ✓ SPAWN-01/02/03: Spawn templates wired (17 Group A + 8 Group B + debug-session-manager + 8 additional); D-08 floor; fork quality gates preserved — v2.1.0-e
+- ✓ INSTALL-01/02: install.js Codex emit seam redirected; per-runtime effort materialization correct — v2.1.0-e
+- ✓ TEST-01/02/03/04/05: 330-row golden snapshot, 14-case parser fixture, 365-test regression suite; npm test 8,243/8,255 — v2.1.0-e
+
 ### Active
 
-*(None — all active requirements shipped with v2.1.0-d)*
+*(None — all active requirements shipped with v2.1.0-e. Next milestone requirements defined at /gsd-new-milestone.)*
 
 ### Out of Scope
 
@@ -141,7 +147,7 @@ Every file installed by `bin/install.js` is now fully self-contained. Eta v4 is 
   - `.planning/fork_plans/B0-SYNC_CATALOGUE_V01.md` — CATALOGUE.json sync process
   - `.planning/fork_plans/C0-POSITIVE_FRAMING_PASS_V01.md` — positive framing pass across all prompt content files
 
-- **Current state**: v2.1.0-d shipped 2026-05-31. All prompt content step labels are whole integers. Three enforcement layers: `tests/step-numbering-scan.test.cjs` (632/632: decimal + letter-suffix + out-of-order detection), `scripts/normalize-step-numbers.cjs` (cross-file-aware idempotent CLI), `tests/cross-file-step-refs.test.cjs` (219/219: stale cross-file ref detection). `npm test` 11,728 pass / 3 fail. Negative-framing scanner 99/99. Historical milestone delivery records in `.planning/MILESTONES.md`.
+- **Current state**: v2.1.0-e shipped 2026-06-06. Per-agent thinking effort fully wired: `parseModelEffort` parser, `resolveReasoningEffortInternal` unified `{claude, codex}` resolver (D-08 medium floor for bare slots), 20 `*_effort` init siblings, 31 capable agents with hand-assigned catalog effort, all spawn templates wired (Group A + B + 8 post-audit), install.js Codex translate boundary, 330-row golden snapshot + 365-test regression suite. `npm test` 8,243/8,255 pass. Negative-framing scanner 99/99. Step-numbering 632/632. Cross-file-step-refs 219/219. Historical milestone delivery records in `.planning/MILESTONES.md`.
 - **Test suite**: `npm test` runs Node.js built-in test runner. `agent-frontmatter.test.cjs` is the critical gate — all agent YAML frontmatter is validated there. Fork-side tests: negative-framing-scan (99/99), ios-scaffold-safety (6/6), bug-1924-ensure-hooks-dist-on-demand (8/8), agent-frontmatter (155/155), execute-phase-wave (15/15), semver-compare (12/17 — 5 failing: HOOK-03 writeResult, HOOK-04 GitHub API), version-detection (2/4 — 2 failing: INST-01 git rev-parse, INST-02 no-network sentinel), debug-session-management (HDOC subtest intentionally skipped), qwen-install (16/16), read-injection-scanner (19/19).
 - **File-writing agents** (those with `Write` in their tools list) must retain the string `Only use the Write tool` in their prompt body. Dynamic `FILE_WRITING_AGENTS` list used (WR-04: no longer hardcoded).
 - **Scanner precedence**: When tests conflict with fork standards (e.g., test asserts for upstream negative-framing strings), modify the test to reflect fork behavior — established precedent in v1.36.0 Phase 3.
@@ -188,6 +194,14 @@ Every file installed by `bin/install.js` is now fully self-contained. Eta v4 is 
 | `scanForOutOfOrder` strip-then-match anchor: strip list markers/blockquotes before matching `Step N` pattern | List-marker and blockquote prefixed step labels exist in the corpus; G-01 limitation test flipped from asserting failure to asserting detection | ✓ Good — v2.1.0-d |
 | Cross-file ref scanner only validates whole-integer refs (`(\d+)`), not decimal | Decimal cross-file refs are the normalize script's domain; this scanner locks in the invariant for whole-integer integrity after normalization | ✓ Good — v2.1.0-d |
 
+| Semicolon delimiter for `model;effort` (not colon) | Provider IDs legitimately contain colons (e.g., `openrouter:anthropic/claude-opus`); `;` is unambiguous as effort delimiter | ✓ Good — v2.1.0-e |
+| Static `{claude, codex}` allowlist replaces data-derived RUNTIMES_WITH_REASONING_EFFORT | Data-derived form auto-admits future runtimes gaining `reasoning_effort`; static allowlist is explicit and auditable | ✓ Good — v2.1.0-e |
+| D-08: bare `{claude, codex}` slots floor to `medium` (not omit) | Omission was effectively "leave thinking to default" which is non-deterministic; medium is a principled safe floor for both claude and codex | ✓ Good — v2.1.0-e Phase 56 |
+| `effort=` argument on `Agent()` calls as carrier convention (not frontmatter) | `Agent()` argument is forward-compatible with per-invocation effort support when Claude Code confirms it; frontmatter `effort:` would contradict D-01 and cannot vary per-spawn-site | ✓ Good — v2.1.0-e Phase 56 D-01 |
+| CATALOG-02 user-handover boundary: Claude widens schema, user assigns effort values | Higher effort is not monotonically better; documented overthinking regressions; user knows their agent workload profiles better | ✓ Good — v2.1.0-e Phase 55 |
+| Phases 55.1 + 55.2 inserted as urgent triage (not planned) | 201 root + 17 SDK test failures from catalog changes blocked forward progress; insertion is the GSD pattern for urgent blockers | ✓ Good — v2.1.0-e |
+| rawSlotForRuntime (pre-strip slot) in codex SDK path (EXPOSE-03 fix) | Stripping the tier alias before parseModelEffort returned null effort, allowing Codex per-tier built-in to override catalog intent; pre-strip read preserves catalog effort through the strip step | ✓ Good — v2.1.0-e b4bc8cc0 |
+
 > Historical Key Decisions (implementation-specific, settled) are archived in .planning/PROJECT_HISTORY.md.
 
 ## Evolution
@@ -210,4 +224,4 @@ This document evolves at phase transitions and milestone boundaries.
 ---
 ---
 ---
-*Last updated: 2026-06-04 after Phase 56 (spawn-template-wiring) completion — thinking-effort wired into all Group A/B spawn sites + debug-session-manager agent*
+*Last updated: 2026-06-06 after v2.1.0-e milestone completion*

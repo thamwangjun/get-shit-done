@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v2.1.0-e
 milestone_name: Per-Agent Thinking Effort
-status: executing
-stopped_at: Phase 58 context gathered
-last_updated: "2026-06-06T06:14:06.593Z"
+status: milestone_complete
+stopped_at: Milestone v2.1.0-e archived
+last_updated: "2026-06-06T15:30:00.000Z"
 last_activity: 2026-06-06
 progress:
   total_phases: 9
@@ -21,7 +21,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-05-31 after Phase 51)
 
 **Core value:** Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships
-**Current focus:** Phase 58 — regression-coverage
+**Current focus:** Milestone v2.1.0-e complete — planning next milestone
 
 ## Current Position
 
@@ -107,6 +107,33 @@ Last activity: 2026-06-06 - Completed quick task 260606-vf5: Fix v2.1.0-e audit 
 Last session: 2026-06-06T05:29:06.808Z
 Stopped at: Phase 58 context gathered
 Resume file: .planning/phases/58-regression-coverage/58-CONTEXT.md
+
+## Deferred Items
+
+Items acknowledged and deferred at milestone close on 2026-06-06:
+
+| Category | Item | Status |
+|----------|------|--------|
+| uat_gap | Phase 52: 52-UAT.md (testing, 0 pending scenarios) | deferred |
+| quick_task | 260529-dxz-address-phase-45-and-phase-46-tech-debts | unknown |
+| quick_task | 260529-inw-compare-test-suite-of-current-branch-vs- | unknown |
+| quick_task | 260529-nyk-revert-observability-layer-to-v1-01-0 | unknown |
+| quick_task | 260530-6ks-investigate-3-test-failures-isinstalleda | unknown |
+| quick_task | 260530-6xt-investigate-failing-test-import-command- | unknown |
+| quick_task | 260530-710-fix-the-regex-with-option-a | unknown |
+| quick_task | 260530-e5j-update-roadmap-letter-suffix-scope | unknown |
+| quick_task | 260531-mg7-convert-eta-includes-of-summary-md-and-t | unknown |
+| quick_task | 260531-mvd-replace-dead-context-window-ternary-gate | unknown |
+| quick_task | 260531-ncu-address-intg-02-test-exclusion-list-todo | unknown |
+| quick_task | 260601-bfj-root-cause-and-fix-the-flaky-scaffolds-c | unknown |
+| quick_task | 260603-execute-phase-context-analysis | missing |
+| quick_task | 260604-qzi-harden-gsd-quick-skill-against-orchestra | unknown |
+| quick_task | 260604-r78-fix-brittle-anchor-in-research-phase-pro | unknown |
+| quick_task | 260604-so1-fix-mktemp-bsd-gnu-incompatibility-in-qu | unknown |
+| quick_task | 260604-swm-fix-mktemp-bsd-gnu-bug-in-ship-md-and-ad | unknown |
+| quick_task | 260604-tev-fix-gsd-quick-losing-summary-md-in-workt | unknown |
+| quick_task | 260606-tbq-fix-3-sdk-effort-resolution-gaps-in-sdk- | unknown |
+| quick_task | 260606-vf5-fix-v2-1-0-e-audit-gaps-expose-03-sdk-co | unknown |
 
 ## Operator Next Steps
 
