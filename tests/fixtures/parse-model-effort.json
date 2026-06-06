@@ -10,5 +10,7 @@
   { "input": "a;b;high", "expectedModel": "a;b", "expectedEffort": "high" },
   { "input": "a;b;hihg", "expectedModel": "a;b", "expectedEffort": null },
   { "input": "opus;", "expectedModel": "opus", "expectedEffort": null },
-  { "input": "", "expectedModel": "", "expectedEffort": null }
+  { "input": "", "expectedModel": "", "expectedEffort": null },
+  { "input": "bedrock:us.anthropic.claude-3-5-sonnet-20241022-v2:0", "expectedModel": "bedrock:us.anthropic.claude-3-5-sonnet-20241022-v2:0", "expectedEffort": null },
+  { "input": "openrouter:anthropic/claude-opus;high", "expectedModel": "openrouter:anthropic/claude-opus", "expectedEffort": "high" }
 ]
