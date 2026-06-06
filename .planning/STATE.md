@@ -3,8 +3,7 @@ gsd_state_version: 1.0
 milestone: v2.1.0-e
 milestone_name: Per-Agent Thinking Effort
 status: executing
-stopped_at: context exhaustion at 75% (2026-06-06)
-last_updated: "2026-06-06T02:51:46.170Z"
+last_updated: "2026-06-06T05:29:06.811Z"
 last_activity: "2026-06-06 - Completed quick task 260606-ety: fix remaining test failures (hono npm-audit + INTG-02 allowlist)"
 progress:
   total_phases: 9
@@ -101,9 +100,9 @@ None. Research is HIGH confidence. Two plan-time verification flags noted above 
 
 ## Session Continuity
 
-Last session: 2026-06-06T02:51:46.167Z
-Stopped at: context exhaustion at 75% (2026-06-06)
-Resume file: None
+Last session: 2026-06-06T05:29:06.808Z
+Stopped at: Phase 58 context gathered
+Resume file: .planning/phases/58-regression-coverage/58-CONTEXT.md
 
 ## Operator Next Steps
 
