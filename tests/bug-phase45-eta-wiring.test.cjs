@@ -117,6 +117,7 @@ describe('INTG-02: zero bare-line @~ survivors across source layers', () => {
       '@~/.claude/get-shit-done/references/checkpoints.md',
       '@~/.claude/get-shit-done/references/tdd.md',
       '@~/.claude/get-shit-done/references/executor-examples.md',
+      '@~/.claude/get-shit-done/workflows/execute-plan.md',
     ]),
     'get-shit-done/workflows/execute-plan.md': new Set([
       '@~/.claude/get-shit-done/references/git-integration.md',
