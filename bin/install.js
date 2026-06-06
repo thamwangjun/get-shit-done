@@ -1513,7 +1513,14 @@ function readGsdRuntimeProfileResolver(targetDir = null) {
       });
     },
     resolveEffort(agentName) {
-      if (!probedProjectDir) return null;
+      // WR-01: effort resolution honors the same precedence gate as model
+      // resolution — it only fires when a runtime is configured AND a
+      // per-project `.planning/config.json` was probed. A home-only config
+      // (no per-project `.planning/`) intentionally produces no effort line,
+      // because `core.loadConfig`'s home-defaults fallback omits `runtime` and
+      // would yield null anyway. Gating here makes that contract explicit so
+      // model and effort emit paths do not silently diverge.
+      if (!merged.runtime || !probedProjectDir) return null;
       return gsdResolveReasoningEffort(probedProjectDir, agentName);
     },
   };
