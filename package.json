@@ -101,6 +101,7 @@
     "test:slow": "node scripts/run-tests.cjs --suite slow",
     "test:coverage": "c8 --check-coverage --lines 70 --reporter text --include 'get-shit-done/bin/lib/*.cjs' --exclude 'tests/**' --all node scripts/run-tests.cjs",
     "test:coverage:unit": "c8 --check-coverage --lines 70 --reporter text --include 'get-shit-done/bin/lib/*.cjs' --exclude 'tests/**' --all node scripts/run-tests.cjs --suite unit",
-    "test:coverage:all": "npm run test:coverage"
+    "test:coverage:all": "npm run test:coverage",
+    "gen:golden-snapshot": "node scripts/gen-golden-effort-snapshot.mjs"
   }
 }
