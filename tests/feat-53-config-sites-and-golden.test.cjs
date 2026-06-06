@@ -269,9 +269,14 @@ describe('D-08: cross-resolver golden snapshot — bare config back-compat + sam
           // For inherit profile, no slot effort exists → effort remains null.
           // D-08 floor: for non-inherit profiles, bare slots (no ;effort) floor to 'medium'.
           const slot = _resolveAgentSlot(projectDir, agent);
-          const slotEffort = parseModelEffort(slot).effort;
-          // Apply D-08 floor: inherit profile stays null; all other bare slots → 'medium'
-          const expectedEffort = (profile === 'inherit') ? slotEffort : (slotEffort ?? 'medium');
+          const parsedSlot = parseModelEffort(slot);
+          const slotEffort = parsedSlot.effort;
+          // Apply D-08 floor: inherit profile stays null; all other bare slots → 'medium'.
+          // D-03 exclusion: haiku omits effort on every runtime, so haiku slots stay null
+          // regardless of profile — they never reach the D-08 floor (core.cjs ~line 1663).
+          const expectedEffort = (parsedSlot.model === 'haiku')
+            ? null
+            : (profile === 'inherit') ? slotEffort : (slotEffort ?? 'medium');
           const effort = resolveReasoningEffortInternal(projectDir, agent);
           assert.strictEqual(effort, expectedEffort,
             `bare claude config must yield slot effort (${JSON.stringify(expectedEffort)}) for agent=${agent} profile=${profile}`);
@@ -284,7 +289,10 @@ describe('D-08: cross-resolver golden snapshot — bare config back-compat + sam
           // The same-slot invariant holds: model comes from the slot, effort comes from the
           // slot or the D-08 floor if the slot carries no explicit effort.
           const slotEffort = parsed.effort;
-          const expectedEffort = (profile === 'inherit') ? slotEffort : (slotEffort ?? 'medium');
+          // D-03 exclusion: haiku omits effort on every runtime → stays null (core.cjs ~line 1663).
+          const expectedEffort = (parsed.model === 'haiku')
+            ? null
+            : (profile === 'inherit') ? slotEffort : (slotEffort ?? 'medium');
           // resolveReasoningEffortInternal must agree with slot-parsed effort (+ D-08 floor)
           const resolvedEffort = resolveReasoningEffortInternal(projectDir, agent);
           assert.strictEqual(resolvedEffort, expectedEffort,
