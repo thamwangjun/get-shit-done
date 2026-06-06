@@ -101,10 +101,11 @@ None. Research is HIGH confidence. Two plan-time verification flags noted above 
 | 260606-tbq | Fix 3 SDK effort resolution gaps in sdk/src/query/config-query.ts so the SDK produces identical model+effort shapes to the CLI | 2026-06-06 | 477326cb | [260606-tbq-fix-3-sdk-effort-resolution-gaps-in-sdk-](./quick/260606-tbq-fix-3-sdk-effort-resolution-gaps-in-sdk-/) |
 | 260606-vf5 | Fix v2.1.0-e audit gaps: EXPOSE-03 SDK codex catalog-effort drop + 8 unwired spawn-template workflows | 2026-06-06 | 4148f88d | [260606-vf5-fix-v2-1-0-e-audit-gaps-expose-03-sdk-co](./quick/260606-vf5-fix-v2-1-0-e-audit-gaps-expose-03-sdk-co/) |
 | 260606-x8b | Add effort= keyword to Agent invocations in prompt files that use effort_arg variables | 2026-06-07 | 405b9526 | [260606-x8b-add-effort-keyword-to-agent-invocations-](./quick/260606-x8b-add-effort-keyword-to-agent-invocations-/) |
+| 260607-0kd | Add null-omit comments to effort= lines in Agent invocations | 2026-06-07 | 4de5a455 | [260607-0kd-add-null-omit-comments-to-effort-lines-i](./quick/260607-0kd-add-null-omit-comments-to-effort-lines-i/) |
 
 ## Session Continuity
 
-Last activity: 2026-06-07 - Completed quick task 260606-x8b: Add effort= keyword to Agent invocations in prompt files that use effort_arg variables
+Last activity: 2026-06-07 - Completed quick task 260607-0kd: Add null-omit comments to effort= lines in Agent invocations
 Last session: 2026-06-06T05:29:06.808Z
 Stopped at: Phase 58 context gathered
 Resume file: .planning/phases/58-regression-coverage/58-CONTEXT.md
