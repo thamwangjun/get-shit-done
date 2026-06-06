@@ -515,7 +515,16 @@ Plans:
   4. Regression assertions use strict equality on parsed structures — no `indexOf`-as-boolean false-passes and no substring collisions on `medium`/`high`; each new test confirmed RED before its fix lands
   5. Full `npm test` passes with zero new regressions versus the pre-milestone baseline; ≥70% line coverage on `get-shit-done/bin/lib/*.cjs` maintained
 
-**Plans**: TBD
+**Plans**: 3 plans (2 waves)
+
+**Wave 1** *(no file overlap — parallel)*
+
+- [ ] 58-01-PLAN.md — Build scripts/gen-golden-effort-snapshot.mjs (atomic write) + commit literal golden fixture tests/fixtures/golden-effort-snapshot.json [TEST-01]
+- [ ] 58-02-PLAN.md — Extend tests/fixtures/parse-model-effort.json with colon-provider-ID gap cases [TEST-02]
+
+**Wave 2** *(blocked on Wave 1 — consumes the golden + parser fixtures)*
+
+- [ ] 58-03-PLAN.md — Write tests/feat-58-regression.test.cjs: static golden + omit/translate contract + antipattern guard + full-suite/coverage gate [TEST-01, TEST-03, TEST-04, TEST-05]
 
 ## Progress
 
