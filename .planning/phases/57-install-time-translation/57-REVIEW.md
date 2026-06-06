@@ -1,158 +1,170 @@
 ---
 phase: 57-install-time-translation
-reviewed: 2026-06-05T00:00:00Z
+reviewed: 2026-06-06T00:00:00Z
 depth: standard
-files_reviewed: 3
+files_reviewed: 4
 files_reviewed_list:
   - bin/install.js
   - get-shit-done/bin/lib/core.cjs
   - tests/feat-57-install-translation.test.cjs
+  - tests/issue-2517-runtime-aware-profiles.test.cjs
 findings:
-  critical: 0
+  critical: 1
   warning: 3
   info: 2
-  total: 5
+  total: 6
 status: issues_found
 ---
 
 # Phase 57: Code Review Report
 
-**Reviewed:** 2026-06-05
+**Reviewed:** 2026-06-06
 **Depth:** standard
-**Files Reviewed:** 3
+**Files Reviewed:** 4
 **Status:** issues_found
 
 ## Summary
 
-Reviewed the Phase 57 diff regions only: the `translateEffortForCodex` helper and the
-haiku-tier exclusion in `core.cjs`, plus the Codex TOML emit-seam redirect and the new
-`resolveEffort()` sibling on the install resolver in `bin/install.js`.
+Phase 57 introduces install-time effort translation: a new `translateEffortForCodex` helper in
+`core.cjs`, a haiku-tier effort exclusion in `resolveReasoningEffortInternal`, and a rewired Codex
+TOML emit seam in `bin/install.js` that sources effort from the floored core resolver and translates
+`max → xhigh` at the boundary.
 
 The `translateEffortForCodex` helper is correct and well-scoped (`max→xhigh`, pass-through,
-`null`/`undefined → null`). The haiku exclusion logic in `resolveReasoningEffortInternal` is
-correct and well-placed (override path and bareTier path both short-circuit before the D-08
-medium floor). No Critical defects found.
+`null`/`undefined → null`). The haiku exclusion logic is correctly placed (both override and bareTier
+paths short-circuit before the D-08 medium floor).
 
-The chief concern is a **config-source precedence inconsistency** between the resolver's
-`resolve()` (model) and `resolveEffort()` (effort) methods: `resolve()` merges
-`~/.gsd/defaults.json` home defaults with the project config, but `resolveEffort()` delegates
-to `core.loadConfig`, which reads **only** `.planning/config.json` and never consults home
-defaults. This means a user with `runtime`/`model_profile`/`model_overrides` set globally (not
-per-project) gets a Codex model line but no — or a wrong — `model_reasoning_effort` line, even
-though the function's own doc comment (lines 1430-1437) claims both paths honor the same
-precedence "end-to-end."
+The chief blocker is that the haiku behavior change left a pre-existing test RED — `npm test` fails.
+Three warnings concern config-source precedence divergence between the model and effort emit paths,
+a `??` fallback that mis-handles intentional haiku `null`, and effort/model emit being decoupled.
+
+## Critical Issues
+
+### CR-01: Phase 57 leaves the test suite RED — stale haiku effort assertion not updated
+
+**File:** `tests/issue-2517-runtime-aware-profiles.test.cjs:175-178`
+**Issue:** The Phase 57 change `if (bareTier === 'haiku') return null;` (core.cjs:1663) makes
+haiku-tier slots omit effort on every runtime. The sibling test at lines 550-565 was updated and the
+new `feat-57` test at lines 123-134 covers it, but the duplicate assertion in a separate `describe`
+block was missed and still expects `'medium'`:
+
+```
+test('haiku tier -> gpt-5.4-mini with reasoning_effort medium', () => {
+  writeConfig(tmpDir, { runtime: 'codex', model_profile: 'budget' });
+  assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-codebase-mapper'), 'gpt-5.4-mini');
+  assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'gsd-codebase-mapper'), 'medium'); // now null
+});
+```
+
+Confirmed failing:
+```
+✖ haiku tier -> gpt-5.4-mini with reasoning_effort medium
+  null !== 'medium'  (tests/issue-2517-runtime-aware-profiles.test.cjs:178)
+# tests 97 # pass 96 # fail 1
+```
+
+CLAUDE.md requires `npm test` to pass on every commit. A known-RED suite is a ship blocker.
+
+**Fix:** Update the assertion to the intended Phase 57 behavior and rename the test:
+```javascript
+test('haiku tier -> gpt-5.4-mini with NO reasoning_effort (Phase 57 D-03)', () => {
+  writeConfig(tmpDir, { runtime: 'codex', model_profile: 'budget' });
+  assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-codebase-mapper'), 'gpt-5.4-mini');
+  assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'gsd-codebase-mapper'), null);
+});
+```
 
 ## Warnings
 
 ### WR-01: `resolveEffort()` ignores `~/.gsd/defaults.json`, diverging from `resolve()` precedence
 
-**File:** `bin/install.js:1515-1518` (and `2762-2764`); `get-shit-done/bin/lib/core.cjs:280` (`loadConfig`)
-**Issue:** The resolver object computes the model via `resolve()`, which uses the `merged`
-object (lines 1482-1495) blending per-project config with `homeDefaults` from
-`~/.gsd/defaults.json`. The new `resolveEffort()` instead calls
-`gsdResolveReasoningEffort(probedProjectDir, agentName)` → `core.loadConfig(probedProjectDir)`,
-which reads only `<probedProjectDir>/.planning/config.json` and performs **no** home-defaults
-merge (that merge lives in `config.cjs`, not in the core `loadConfig` at core.cjs:280).
+**File:** `bin/install.js:1462-1518`; `get-shit-done/bin/lib/core.cjs:280, 515, 529-550`
+**Issue:** The resolver computes the model via `resolve()`, which uses `merged` (install.js:1482-1495)
+blending per-project config with `homeDefaults`. The new `resolveEffort()` instead delegates to
+`gsdResolveReasoningEffort(probedProjectDir, agentName)` → `core.loadConfig(probedProjectDir)`.
 
-Consequences for a user who configures GSD globally rather than per-project:
-- `runtime`/`model_profile` only in `~/.gsd/defaults.json` → `resolve()` emits a Codex model,
-  but `resolveEffort()` sees `config.runtime == null` and returns `null` at core.cjs:1634, so
-  `model_reasoning_effort` is silently omitted. The two TOML lines disagree about runtime.
-- `model_overrides` only in `~/.gsd/defaults.json` → effort override (e.g. `opus;max`) is
-  ignored by `resolveEffort()` (core.cjs:1640 sees no override), so `xhigh` is never emitted
-  even though the model line reflects the override.
+Two structural facts make these paths diverge:
+1. `resolveEffort` only fires when `probedProjectDir` is set, which requires a `.planning/config.json`
+   to exist (install.js:1466-1469). So `core.loadConfig` always reads the project config's try-branch
+   and never reaches the home-defaults fallback (only reached when `.planning/` is absent, core.cjs:515).
+2. Even when the home-defaults fallback *is* reached, it omits `runtime` entirely (core.cjs:529-550 has
+   no `runtime:` field), so `resolveReasoningEffortInternal`'s gate (core.cjs:1634) returns null.
 
-The docstring at lines 1430-1437 explicitly promises both paths honor `loadConfig`'s precedence
-"end-to-end," so this is a contract violation, not just a latent gap.
+Consequence for a user who configures GSD globally (home defaults) but not per-project: `resolve()`
+emits a Codex model line (home-merged), while `resolveEffort()` returns null (no project config, or
+project config lacks runtime/overrides), so `model_reasoning_effort` is silently omitted or wrong.
 
-**Fix:** Make `resolveEffort()` consult the same merged config the resolver already computed.
-Either pass the merged runtime/overrides into the core resolver, or have the core resolver
-accept an injected config. Minimal version — guard on merged runtime and reuse merged state:
+**Fix:** Thread the resolver's already-computed `merged` runtime/overrides into the effort path so it
+honors the same precedence as `resolve()`, or narrow the resolver's doc contract and add a test
+documenting that home-only config does not produce effort. Minimal version:
 ```js
 resolveEffort(agentName) {
   if (!merged.runtime || !probedProjectDir) return null;
-  // core.loadConfig reads only .planning/config.json; thread the home-merged
-  // runtime + model_overrides so global-only config is honored, matching resolve().
-  return gsdResolveReasoningEffort(probedProjectDir, agentName, {
-    runtime: merged.runtime,
-    modelOverrides: merged.model_overrides,
-  });
+  return gsdResolveReasoningEffort(probedProjectDir, agentName /*, { runtime: merged.runtime, modelOverrides: merged.model_overrides } */);
 }
 ```
-(requires `resolveReasoningEffortInternal` to accept an optional config-override arg; or, if
-that is too invasive for this phase, narrow the docstring claim and add a test asserting the
-home-only-config case is unsupported.)
 
-### WR-02: `?? resolveEffort(agentName)` second probe can re-trigger full config reload and mask intended null
+### WR-02: `?? resolveEffort(agentName)` collapses an intentional haiku `null` and double-loads config
 
 **File:** `bin/install.js:2763-2765`
 **Issue:** `gsdTranslateEffortForCodex(runtimeResolver.resolveEffort(resolvedName) ?? runtimeResolver.resolveEffort(agentName))`.
-For a haiku-tier agent the first call correctly returns `null` (intended omit). Because `??`
-treats `null` as "absent," it then calls `resolveEffort(agentName)` a second time. When
-`resolvedName !== agentName` (frontmatter `name` differs from the file-derived `agentName`),
-the second lookup can resolve a *different* agent slot and produce a non-null effort, emitting a
-`model_reasoning_effort` line for an agent whose primary slot is haiku — contradicting D-03.
-The model line at 2750-2756 uses the same `resolve(resolvedName) || resolve(agentName)` fallback,
-but for the effort path a `null` from the primary name is a *deliberate signal* (haiku omit),
-not "not found," so collapsing it with `??` is semantically wrong. Each call also re-enters
-`core.loadConfig` (disk read), so this is a double config load per agent.
+For a haiku-tier agent the first call correctly returns `null` (intended omit). Because `??` treats
+`null` as "absent," it then probes `resolveEffort(agentName)` a second time. When `resolvedName !==
+agentName` (frontmatter `name` differs from the file-derived `agentName`), the second lookup can
+resolve a *different* slot and produce a non-null effort, emitting `model_reasoning_effort` for an
+agent whose primary slot is haiku — contradicting D-03. Each call also re-enters `core.loadConfig`
+(disk read), so this is a redundant config load per agent.
 
 **Fix:** Resolve once against the canonical name and do not fall back on a meaningful `null`:
 ```js
 const effortName = runtimeResolver.resolve(resolvedName) ? resolvedName : agentName;
 const codexEffort = gsdTranslateEffortForCodex(runtimeResolver.resolveEffort(effortName));
 ```
-This keeps the model and effort lines sourced from the *same* agent name, and never treats an
-intentional haiku `null` as a reason to probe a second slot.
+This keeps model and effort lines sourced from the same agent name and never treats an intentional
+haiku `null` as a reason to probe a second slot.
 
-### WR-03: Effort emitted under runtime gate independent of whether a model line was emitted
+### WR-03: Effort emit decoupled from model emit — no invariant ties the two TOML lines together
 
 **File:** `bin/install.js:2747-2769`
-**Issue:** The effort block (2762-2769) is gated only on `runtimeResolver.runtime === 'codex'`,
-decoupled from the model-emit block above it. When a `modelOverride` is present (2748-2749) the
-code pushes a `model` line from the raw override string but then *also* runs `resolveEffort()`,
-which derives effort from the core resolver's own override parse — generally consistent, but the
-two values are computed from independent code paths (raw string vs. `parseModelEffort`). If the
-override string and the core resolver ever disagree (e.g. a future override format the install
-path passes through verbatim but core rejects), the TOML emits a `model` line with no matching
-effort, or vice-versa, with no invariant tying them together. There is no assertion that an
-effort line is only emitted alongside a model line.
+**Issue:** Before Phase 57, `model_reasoning_effort` was emitted only inside the `else if
+(runtimeResolver)` branch, so a per-agent `modelOverrides[agent]` model produced no effort line. The
+new effort block (2762-2768) runs unconditionally, gated only on `runtimeResolver.runtime === 'codex'`,
+outside the `if (modelOverride) ... else if (runtimeResolver)` chain. It happens to be consistent
+today because `resolveReasoningEffortInternal` step-1 reads the same `model_overrides[agent]`
+(core.cjs:1640), but the model line (raw override string) and the effort line (`parseModelEffort` of
+the same override) are computed via independent code paths with no asserted invariant. A future change
+to either path could emit a model line with a mismatched or missing effort.
 
-**Fix:** Compute model and effort from a single resolved slot so they cannot diverge, or gate
-the effort emit on the same branch that produced the model line:
+**Fix:** Compute model and effort from a single resolved slot, or gate the effort emit on the same
+branch that produced the model line:
 ```js
 let modelEmitted = false;
-// ... in each branch that pushes a `model = ...` line, set modelEmitted = true ...
-if (modelEmitted && runtimeResolver?.resolveEffort && runtimeResolver.runtime === 'codex') {
-  // emit effort
-}
+// set modelEmitted = true in each branch that pushes a `model = ...` line
+if (modelEmitted && runtimeResolver?.resolveEffort && runtimeResolver.runtime === 'codex') { /* emit */ }
 ```
 
 ## Info
 
-### IN-01: `resolveEffort` doc contract not reflected in the resolver's return-shape JSDoc
+### IN-01: Stale doc-comment lists haiku effort as "medium"
 
-**File:** `bin/install.js:1449`
-**Issue:** The JSDoc return shape still reads
-`{ runtime, resolve(agentName) -> { model, reasoning_effort? } | null }` and does not mention
-the newly added `resolveEffort(agentName)` sibling. Callers reading the contract will not learn
-that effort now flows through a separate method.
-**Fix:** Update the `@returns` line to document `resolveEffort(agentName) -> string|null` and
-note its Claude-form output (translation happens at the TOML boundary).
+**File:** `tests/issue-2517-runtime-aware-profiles.test.cjs:11`
+**Issue:** The file header still documents `haiku -> gpt-5.4-mini (medium)`, contradicting the Phase 57
+haiku-omit behavior.
+**Fix:** Update to `haiku -> gpt-5.4-mini (no reasoning_effort)`.
 
-### IN-02: Stale `reasoning_effort?` reference in `resolve()` contract after seam moved
+### IN-02: Stale `resolve()` contract comment after the effort seam moved
 
-**File:** `bin/install.js:1449`, `2751`
+**File:** `bin/install.js:2751` (and resolver JSDoc near 1449)
 **Issue:** The comment at 2751 still advertises that `resolve()` embeds "Codex-native model +
-reasoning_effort," but the Phase 57 change removed the `entry.reasoning_effort` emit from the
-`resolve()` path (now only `entry.model` is used, 2754-2756) and routed effort exclusively
-through `resolveEffort()`. The lingering comment misdescribes the current data flow and may lead
-a future editor to re-add the removed line.
-**Fix:** Trim the comment to "Embeds Codex-native model from RUNTIME_PROFILE_MAP" and point to
-the dedicated effort block below for `model_reasoning_effort`.
+reasoning_effort," but Phase 57 removed the `entry.reasoning_effort` emit from the `resolve()` path
+(now only `entry.model` is used, 2754-2756) and routed effort exclusively through `resolveEffort()`.
+The JSDoc return shape near 1449 also omits the new `resolveEffort(agentName)` sibling. The lingering
+comment misdescribes the data flow and may lead a future editor to re-add the removed line.
+**Fix:** Trim the 2751 comment to "Embeds Codex-native model from RUNTIME_PROFILE_MAP" and document
+`resolveEffort(agentName) -> string|null (Claude-form; translated at TOML boundary)` in the JSDoc.
 
 ---
 
-_Reviewed: 2026-06-05_
+_Reviewed: 2026-06-06_
 _Reviewer: Claude (gsd-code-reviewer)_
 _Depth: standard_
