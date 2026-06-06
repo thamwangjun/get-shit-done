@@ -1446,7 +1446,12 @@ function _readGsdConfigFile(absPath, label) {
  * null when `model_profile` is `inherit` so the literal alias passes through
  * unchanged.
  *
- * Returns { runtime, resolve(agentName) -> { model, reasoning_effort? } | null }
+ * Returns {
+ *   runtime,
+ *   resolve(agentName) -> { model, reasoning_effort? } | null,
+ *   resolveEffort(agentName) -> string|null (Claude-form effort; null for haiku
+ *     per D-03; translated to Codex form at the TOML boundary)
+ * }
  */
 function readGsdRuntimeProfileResolver(targetDir = null) {
   const homeDefaults = _readGsdConfigFile(
