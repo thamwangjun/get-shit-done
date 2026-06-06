@@ -45,6 +45,8 @@ else
 fi
 INIT=$($GSD_SDK query audit-uat 2>/dev/null || echo "{}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
+executor_model=$($GSD_SDK query resolve-model gsd-executor --raw)
+executor_model_effort_arg=$($GSD_SDK query resolve-model-effort gsd-executor --raw 2>/dev/null || echo "")
 ```
 
 Read existing UAT and verification files to extract findings:
@@ -108,7 +110,9 @@ For each **auto-fixable** finding (up to `--max`, ordered by severity desc):
 ```
 Agent(
   prompt="Fix finding {ID}: {description}. Files: {file_refs}. Make the minimal change to resolve this specific finding. Do not refactor surrounding code.",
-  subagent_type="gsd-executor"
+  subagent_type="gsd-executor",
+  model="{executor_model}",
+  {executor_model_effort_arg}
 )
 ```
 

@@ -189,6 +189,8 @@ else
 fi
 INIT=$($GSD_SDK query init.phase-op "{NN}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
+plan_checker_model=$($GSD_SDK query resolve-model gsd-plan-checker --raw)
+plan_checker_model_effort_arg=$($GSD_SDK query resolve-model-effort gsd-plan-checker --raw 2>/dev/null || echo "")
 expected_phase_dir=$(echo "$INIT" | node -e "process.stdout.write(JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')).expected_phase_dir)")
 ```
 
@@ -210,6 +212,8 @@ Delegate validation to gsd-plan-checker:
 ```
 Agent({
   subagent_type: "gsd-plan-checker",
+  model: "{plan_checker_model}",
+  {plan_checker_model_effort_arg}
   prompt: "Validate: .planning/phases/{phase}/{plan}-PLAN.md — check frontmatter completeness, task structure, and GSD conventions. Report any issues."
 })
 ```

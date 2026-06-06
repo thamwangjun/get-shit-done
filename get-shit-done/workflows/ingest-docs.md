@@ -52,8 +52,23 @@ If `PATH_NOT_FOUND` or `MANIFEST_NOT_FOUND`: display error and exit.
 Run the init query:
 
 ```bash
-INIT=$(node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" init ingest-docs)
+# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk (#3668)
+GSD_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/get-shit-done/bin/gsd-tools.cjs"
+if [ -f "$GSD_TOOLS" ]; then
+  GSD_SDK="node $GSD_TOOLS"
+elif command -v gsd-sdk >/dev/null 2>&1; then
+  GSD_SDK="gsd-sdk"
+else
+  echo "ERROR: gsd-sdk not found on PATH and $GSD_TOOLS does not exist." >&2
+  echo "Run: npx -y @opengsd/get-shit-done-redux@latest --claude --local" >&2
+  exit 1
+fi
+INIT=$($GSD_SDK init ingest-docs)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
+doc_synthesizer_model=$($GSD_SDK query resolve-model gsd-doc-synthesizer --raw)
+doc_synthesizer_model_effort_arg=$($GSD_SDK query resolve-model-effort gsd-doc-synthesizer --raw 2>/dev/null || echo "")
+roadmapper_model=$($GSD_SDK query resolve-model gsd-roadmapper --raw)
+roadmapper_model_effort_arg=$($GSD_SDK query resolve-model-effort gsd-roadmapper --raw 2>/dev/null || echo "")
 ```
 
 Parse `project_exists`, `planning_exists`, `has_git`, `git_worktree_root`, `in_nested_subdir`, `project_path` from INIT.
@@ -185,6 +200,8 @@ Spawn `gsd-doc-synthesizer` once:
 ```
 Agent({
   subagent_type: "gsd-doc-synthesizer",
+  model: "{doc_synthesizer_model}",
+  {doc_synthesizer_model_effort_arg}
   prompt: "
     CLASSIFICATIONS_DIR: .planning/intel/classifications/
     INTEL_DIR: .planning/intel/
@@ -252,6 +269,8 @@ Delegate to `gsd-roadmapper`:
 ```
 Agent({
   subagent_type: "gsd-roadmapper",
+  model: "{roadmapper_model}",
+  {roadmapper_model_effort_arg}
   prompt: "
     Mode: new-project-from-ingest
     Intel: .planning/intel/SYNTHESIS.md (entry point)
@@ -295,7 +314,7 @@ Preview the merge diff to the user and gate via approve-revise-abort before writ
 Commit the ingest results:
 
 ```bash
-node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" commit \
+$GSD_SDK query commit \
   "docs: ingest {N} docs from {SCAN_PATH} (#2387)" --files \
   .planning/PROJECT.md \
   .planning/REQUIREMENTS.md \

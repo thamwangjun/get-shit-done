@@ -58,11 +58,20 @@ This would take ~30 seconds and might surface useful context.
 [Yes, research this] / [No, let's keep exploring]
 ```
 
-If yes, spawn a research agent:
+If yes, resolve the model and spawn a research agent:
+```bash
+# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk (#3668)
+GSD_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/get-shit-done/bin/gsd-tools.cjs"
+if [ -f "$GSD_TOOLS" ]; then GSD_SDK="node $GSD_TOOLS"; elif command -v gsd-sdk >/dev/null 2>&1; then GSD_SDK="gsd-sdk"; else echo "ERROR: gsd-sdk not found." >&2; exit 1; fi
+phase_researcher_model=$($GSD_SDK query resolve-model gsd-phase-researcher --raw)
+phase_researcher_model_effort_arg=$($GSD_SDK query resolve-model-effort gsd-phase-researcher --raw 2>/dev/null || echo "")
+```
 ```
 Agent(
   prompt="Quick research: {specific_question}. Return 3-5 key findings, no more than 200 words.",
-  subagent_type="gsd-phase-researcher"
+  subagent_type="gsd-phase-researcher",
+  model="{phase_researcher_model}",
+  {phase_researcher_model_effort_arg}
 )
 ```
 

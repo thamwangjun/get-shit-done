@@ -78,6 +78,8 @@ fi
 INIT=$($GSD_SDK query init.phase-op "${PHASE}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 AGENT_SKILLS_ANALYZER=$($GSD_SDK query agent-skills gsd-assumptions-analyzer)
+assumptions_analyzer_model=$($GSD_SDK query resolve-model gsd-assumptions-analyzer --raw)
+assumptions_analyzer_model_effort_arg=$($GSD_SDK query resolve-model-effort gsd-assumptions-analyzer --raw 2>/dev/null || echo "")
 ```
 
 Parse JSON for: `commit_docs`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`,
@@ -267,7 +269,7 @@ If no USER-PROFILE.md: calibration_tier = "standard"
 **Spawn Explore subagent:**
 
 ```
-Agent(subagent_type="gsd-assumptions-analyzer", prompt="""
+Agent(subagent_type="gsd-assumptions-analyzer", model="{assumptions_analyzer_model}", {assumptions_analyzer_model_effort_arg} prompt="""
 Analyze the codebase for Phase {PHASE}: {phase_name}.
 
 Phase goal: {roadmap_description}
