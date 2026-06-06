@@ -1,0 +1,2396 @@
+{
+  "generated": "2026-06-06",
+  "description": "Static post-D-08 golden: agent × profile × runtime",
+  "rows": [
+    {
+      "agent": "gsd-planner",
+      "profile": "quality",
+      "runtime": "claude",
+      "expectedModel": "opus",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-planner",
+      "profile": "quality",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-planner",
+      "profile": "balanced",
+      "runtime": "claude",
+      "expectedModel": "opus",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-planner",
+      "profile": "balanced",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-planner",
+      "profile": "budget",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-planner",
+      "profile": "budget",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-planner",
+      "profile": "adaptive",
+      "runtime": "claude",
+      "expectedModel": "opus",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-planner",
+      "profile": "adaptive",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4",
+      "expectedEffort": "xhigh"
+    },
+    {
+      "agent": "gsd-planner",
+      "profile": "inherit",
+      "runtime": "claude",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-planner",
+      "profile": "inherit",
+      "runtime": "codex",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-roadmapper",
+      "profile": "quality",
+      "runtime": "claude",
+      "expectedModel": "opus",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-roadmapper",
+      "profile": "quality",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-roadmapper",
+      "profile": "balanced",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-roadmapper",
+      "profile": "balanced",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-roadmapper",
+      "profile": "budget",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-roadmapper",
+      "profile": "budget",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-roadmapper",
+      "profile": "adaptive",
+      "runtime": "claude",
+      "expectedModel": "opus",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-roadmapper",
+      "profile": "adaptive",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4",
+      "expectedEffort": "xhigh"
+    },
+    {
+      "agent": "gsd-roadmapper",
+      "profile": "inherit",
+      "runtime": "claude",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-roadmapper",
+      "profile": "inherit",
+      "runtime": "codex",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-executor",
+      "profile": "quality",
+      "runtime": "claude",
+      "expectedModel": "opus",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-executor",
+      "profile": "quality",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-executor",
+      "profile": "balanced",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-executor",
+      "profile": "balanced",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-executor",
+      "profile": "budget",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-executor",
+      "profile": "budget",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-executor",
+      "profile": "adaptive",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-executor",
+      "profile": "adaptive",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-executor",
+      "profile": "inherit",
+      "runtime": "claude",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-executor",
+      "profile": "inherit",
+      "runtime": "codex",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-phase-researcher",
+      "profile": "quality",
+      "runtime": "claude",
+      "expectedModel": "opus",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-phase-researcher",
+      "profile": "quality",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-phase-researcher",
+      "profile": "balanced",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-phase-researcher",
+      "profile": "balanced",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-phase-researcher",
+      "profile": "budget",
+      "runtime": "claude",
+      "expectedModel": "haiku",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-phase-researcher",
+      "profile": "budget",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4-mini",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-phase-researcher",
+      "profile": "adaptive",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-phase-researcher",
+      "profile": "adaptive",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-phase-researcher",
+      "profile": "inherit",
+      "runtime": "claude",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-phase-researcher",
+      "profile": "inherit",
+      "runtime": "codex",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-project-researcher",
+      "profile": "quality",
+      "runtime": "claude",
+      "expectedModel": "opus",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-project-researcher",
+      "profile": "quality",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-project-researcher",
+      "profile": "balanced",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-project-researcher",
+      "profile": "balanced",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-project-researcher",
+      "profile": "budget",
+      "runtime": "claude",
+      "expectedModel": "haiku",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-project-researcher",
+      "profile": "budget",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4-mini",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-project-researcher",
+      "profile": "adaptive",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-project-researcher",
+      "profile": "adaptive",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-project-researcher",
+      "profile": "inherit",
+      "runtime": "claude",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-project-researcher",
+      "profile": "inherit",
+      "runtime": "codex",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-research-synthesizer",
+      "profile": "quality",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-research-synthesizer",
+      "profile": "quality",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-research-synthesizer",
+      "profile": "balanced",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-research-synthesizer",
+      "profile": "balanced",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-research-synthesizer",
+      "profile": "budget",
+      "runtime": "claude",
+      "expectedModel": "haiku",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-research-synthesizer",
+      "profile": "budget",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4-mini",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-research-synthesizer",
+      "profile": "adaptive",
+      "runtime": "claude",
+      "expectedModel": "haiku",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-research-synthesizer",
+      "profile": "adaptive",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4-mini",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-research-synthesizer",
+      "profile": "inherit",
+      "runtime": "claude",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-research-synthesizer",
+      "profile": "inherit",
+      "runtime": "codex",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-debugger",
+      "profile": "quality",
+      "runtime": "claude",
+      "expectedModel": "opus",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-debugger",
+      "profile": "quality",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-debugger",
+      "profile": "balanced",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-debugger",
+      "profile": "balanced",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-debugger",
+      "profile": "budget",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-debugger",
+      "profile": "budget",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-debugger",
+      "profile": "adaptive",
+      "runtime": "claude",
+      "expectedModel": "opus",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-debugger",
+      "profile": "adaptive",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4",
+      "expectedEffort": "xhigh"
+    },
+    {
+      "agent": "gsd-debugger",
+      "profile": "inherit",
+      "runtime": "claude",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-debugger",
+      "profile": "inherit",
+      "runtime": "codex",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-codebase-mapper",
+      "profile": "quality",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-codebase-mapper",
+      "profile": "quality",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-codebase-mapper",
+      "profile": "balanced",
+      "runtime": "claude",
+      "expectedModel": "haiku",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-codebase-mapper",
+      "profile": "balanced",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4-mini",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-codebase-mapper",
+      "profile": "budget",
+      "runtime": "claude",
+      "expectedModel": "haiku",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-codebase-mapper",
+      "profile": "budget",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4-mini",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-codebase-mapper",
+      "profile": "adaptive",
+      "runtime": "claude",
+      "expectedModel": "haiku",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-codebase-mapper",
+      "profile": "adaptive",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4-mini",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-codebase-mapper",
+      "profile": "inherit",
+      "runtime": "claude",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-codebase-mapper",
+      "profile": "inherit",
+      "runtime": "codex",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-verifier",
+      "profile": "quality",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-verifier",
+      "profile": "quality",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-verifier",
+      "profile": "balanced",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-verifier",
+      "profile": "balanced",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-verifier",
+      "profile": "budget",
+      "runtime": "claude",
+      "expectedModel": "haiku",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-verifier",
+      "profile": "budget",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4-mini",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-verifier",
+      "profile": "adaptive",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-verifier",
+      "profile": "adaptive",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-verifier",
+      "profile": "inherit",
+      "runtime": "claude",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-verifier",
+      "profile": "inherit",
+      "runtime": "codex",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-plan-checker",
+      "profile": "quality",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-plan-checker",
+      "profile": "quality",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-plan-checker",
+      "profile": "balanced",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-plan-checker",
+      "profile": "balanced",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-plan-checker",
+      "profile": "budget",
+      "runtime": "claude",
+      "expectedModel": "haiku",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-plan-checker",
+      "profile": "budget",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4-mini",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-plan-checker",
+      "profile": "adaptive",
+      "runtime": "claude",
+      "expectedModel": "haiku",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-plan-checker",
+      "profile": "adaptive",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4-mini",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-plan-checker",
+      "profile": "inherit",
+      "runtime": "claude",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-plan-checker",
+      "profile": "inherit",
+      "runtime": "codex",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-integration-checker",
+      "profile": "quality",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-integration-checker",
+      "profile": "quality",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-integration-checker",
+      "profile": "balanced",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-integration-checker",
+      "profile": "balanced",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-integration-checker",
+      "profile": "budget",
+      "runtime": "claude",
+      "expectedModel": "haiku",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-integration-checker",
+      "profile": "budget",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4-mini",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-integration-checker",
+      "profile": "adaptive",
+      "runtime": "claude",
+      "expectedModel": "haiku",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-integration-checker",
+      "profile": "adaptive",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4-mini",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-integration-checker",
+      "profile": "inherit",
+      "runtime": "claude",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-integration-checker",
+      "profile": "inherit",
+      "runtime": "codex",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-nyquist-auditor",
+      "profile": "quality",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-nyquist-auditor",
+      "profile": "quality",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-nyquist-auditor",
+      "profile": "balanced",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-nyquist-auditor",
+      "profile": "balanced",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-nyquist-auditor",
+      "profile": "budget",
+      "runtime": "claude",
+      "expectedModel": "haiku",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-nyquist-auditor",
+      "profile": "budget",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4-mini",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-nyquist-auditor",
+      "profile": "adaptive",
+      "runtime": "claude",
+      "expectedModel": "haiku",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-nyquist-auditor",
+      "profile": "adaptive",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4-mini",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-nyquist-auditor",
+      "profile": "inherit",
+      "runtime": "claude",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-nyquist-auditor",
+      "profile": "inherit",
+      "runtime": "codex",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-pattern-mapper",
+      "profile": "quality",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-pattern-mapper",
+      "profile": "quality",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-pattern-mapper",
+      "profile": "balanced",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-pattern-mapper",
+      "profile": "balanced",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-pattern-mapper",
+      "profile": "budget",
+      "runtime": "claude",
+      "expectedModel": "haiku",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-pattern-mapper",
+      "profile": "budget",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4-mini",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-pattern-mapper",
+      "profile": "adaptive",
+      "runtime": "claude",
+      "expectedModel": "haiku",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-pattern-mapper",
+      "profile": "adaptive",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4-mini",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-pattern-mapper",
+      "profile": "inherit",
+      "runtime": "claude",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-pattern-mapper",
+      "profile": "inherit",
+      "runtime": "codex",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-ui-researcher",
+      "profile": "quality",
+      "runtime": "claude",
+      "expectedModel": "opus",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-ui-researcher",
+      "profile": "quality",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-ui-researcher",
+      "profile": "balanced",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-ui-researcher",
+      "profile": "balanced",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-ui-researcher",
+      "profile": "budget",
+      "runtime": "claude",
+      "expectedModel": "haiku",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-ui-researcher",
+      "profile": "budget",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4-mini",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-ui-researcher",
+      "profile": "adaptive",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-ui-researcher",
+      "profile": "adaptive",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-ui-researcher",
+      "profile": "inherit",
+      "runtime": "claude",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-ui-researcher",
+      "profile": "inherit",
+      "runtime": "codex",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-ui-checker",
+      "profile": "quality",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-ui-checker",
+      "profile": "quality",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-ui-checker",
+      "profile": "balanced",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-ui-checker",
+      "profile": "balanced",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-ui-checker",
+      "profile": "budget",
+      "runtime": "claude",
+      "expectedModel": "haiku",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-ui-checker",
+      "profile": "budget",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4-mini",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-ui-checker",
+      "profile": "adaptive",
+      "runtime": "claude",
+      "expectedModel": "haiku",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-ui-checker",
+      "profile": "adaptive",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4-mini",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-ui-checker",
+      "profile": "inherit",
+      "runtime": "claude",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-ui-checker",
+      "profile": "inherit",
+      "runtime": "codex",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-ui-auditor",
+      "profile": "quality",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-ui-auditor",
+      "profile": "quality",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-ui-auditor",
+      "profile": "balanced",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-ui-auditor",
+      "profile": "balanced",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-ui-auditor",
+      "profile": "budget",
+      "runtime": "claude",
+      "expectedModel": "haiku",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-ui-auditor",
+      "profile": "budget",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4-mini",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-ui-auditor",
+      "profile": "adaptive",
+      "runtime": "claude",
+      "expectedModel": "haiku",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-ui-auditor",
+      "profile": "adaptive",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4-mini",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-ui-auditor",
+      "profile": "inherit",
+      "runtime": "claude",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-ui-auditor",
+      "profile": "inherit",
+      "runtime": "codex",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-doc-writer",
+      "profile": "quality",
+      "runtime": "claude",
+      "expectedModel": "opus",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-doc-writer",
+      "profile": "quality",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-doc-writer",
+      "profile": "balanced",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-doc-writer",
+      "profile": "balanced",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-doc-writer",
+      "profile": "budget",
+      "runtime": "claude",
+      "expectedModel": "haiku",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-doc-writer",
+      "profile": "budget",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4-mini",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-doc-writer",
+      "profile": "adaptive",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-doc-writer",
+      "profile": "adaptive",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-doc-writer",
+      "profile": "inherit",
+      "runtime": "claude",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-doc-writer",
+      "profile": "inherit",
+      "runtime": "codex",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-doc-verifier",
+      "profile": "quality",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-doc-verifier",
+      "profile": "quality",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-doc-verifier",
+      "profile": "balanced",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-doc-verifier",
+      "profile": "balanced",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-doc-verifier",
+      "profile": "budget",
+      "runtime": "claude",
+      "expectedModel": "haiku",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-doc-verifier",
+      "profile": "budget",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4-mini",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-doc-verifier",
+      "profile": "adaptive",
+      "runtime": "claude",
+      "expectedModel": "haiku",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-doc-verifier",
+      "profile": "adaptive",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4-mini",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-doc-verifier",
+      "profile": "inherit",
+      "runtime": "claude",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-doc-verifier",
+      "profile": "inherit",
+      "runtime": "codex",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-advisor-researcher",
+      "profile": "quality",
+      "runtime": "claude",
+      "expectedModel": "opus",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-advisor-researcher",
+      "profile": "quality",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-advisor-researcher",
+      "profile": "balanced",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-advisor-researcher",
+      "profile": "balanced",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-advisor-researcher",
+      "profile": "budget",
+      "runtime": "claude",
+      "expectedModel": "haiku",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-advisor-researcher",
+      "profile": "budget",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4-mini",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-advisor-researcher",
+      "profile": "adaptive",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-advisor-researcher",
+      "profile": "adaptive",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-advisor-researcher",
+      "profile": "inherit",
+      "runtime": "claude",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-advisor-researcher",
+      "profile": "inherit",
+      "runtime": "codex",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-ai-researcher",
+      "profile": "quality",
+      "runtime": "claude",
+      "expectedModel": "opus",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-ai-researcher",
+      "profile": "quality",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-ai-researcher",
+      "profile": "balanced",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-ai-researcher",
+      "profile": "balanced",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-ai-researcher",
+      "profile": "budget",
+      "runtime": "claude",
+      "expectedModel": "haiku",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-ai-researcher",
+      "profile": "budget",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4-mini",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-ai-researcher",
+      "profile": "adaptive",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-ai-researcher",
+      "profile": "adaptive",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-ai-researcher",
+      "profile": "inherit",
+      "runtime": "claude",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-ai-researcher",
+      "profile": "inherit",
+      "runtime": "codex",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-assumptions-analyzer",
+      "profile": "quality",
+      "runtime": "claude",
+      "expectedModel": "opus",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-assumptions-analyzer",
+      "profile": "quality",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-assumptions-analyzer",
+      "profile": "balanced",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-assumptions-analyzer",
+      "profile": "balanced",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-assumptions-analyzer",
+      "profile": "budget",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-assumptions-analyzer",
+      "profile": "budget",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-assumptions-analyzer",
+      "profile": "adaptive",
+      "runtime": "claude",
+      "expectedModel": "opus",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-assumptions-analyzer",
+      "profile": "adaptive",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4",
+      "expectedEffort": "xhigh"
+    },
+    {
+      "agent": "gsd-assumptions-analyzer",
+      "profile": "inherit",
+      "runtime": "claude",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-assumptions-analyzer",
+      "profile": "inherit",
+      "runtime": "codex",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-code-fixer",
+      "profile": "quality",
+      "runtime": "claude",
+      "expectedModel": "opus",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-code-fixer",
+      "profile": "quality",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-code-fixer",
+      "profile": "balanced",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-code-fixer",
+      "profile": "balanced",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-code-fixer",
+      "profile": "budget",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-code-fixer",
+      "profile": "budget",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-code-fixer",
+      "profile": "adaptive",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-code-fixer",
+      "profile": "adaptive",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-code-fixer",
+      "profile": "inherit",
+      "runtime": "claude",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-code-fixer",
+      "profile": "inherit",
+      "runtime": "codex",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-code-reviewer",
+      "profile": "quality",
+      "runtime": "claude",
+      "expectedModel": "opus",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-code-reviewer",
+      "profile": "quality",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-code-reviewer",
+      "profile": "balanced",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-code-reviewer",
+      "profile": "balanced",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-code-reviewer",
+      "profile": "budget",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-code-reviewer",
+      "profile": "budget",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-code-reviewer",
+      "profile": "adaptive",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-code-reviewer",
+      "profile": "adaptive",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-code-reviewer",
+      "profile": "inherit",
+      "runtime": "claude",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-code-reviewer",
+      "profile": "inherit",
+      "runtime": "codex",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-debug-session-manager",
+      "profile": "quality",
+      "runtime": "claude",
+      "expectedModel": "opus",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-debug-session-manager",
+      "profile": "quality",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-debug-session-manager",
+      "profile": "balanced",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-debug-session-manager",
+      "profile": "balanced",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-debug-session-manager",
+      "profile": "budget",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-debug-session-manager",
+      "profile": "budget",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-debug-session-manager",
+      "profile": "adaptive",
+      "runtime": "claude",
+      "expectedModel": "opus",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-debug-session-manager",
+      "profile": "adaptive",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4",
+      "expectedEffort": "xhigh"
+    },
+    {
+      "agent": "gsd-debug-session-manager",
+      "profile": "inherit",
+      "runtime": "claude",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-debug-session-manager",
+      "profile": "inherit",
+      "runtime": "codex",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-doc-classifier",
+      "profile": "quality",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-doc-classifier",
+      "profile": "quality",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-doc-classifier",
+      "profile": "balanced",
+      "runtime": "claude",
+      "expectedModel": "haiku",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-doc-classifier",
+      "profile": "balanced",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4-mini",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-doc-classifier",
+      "profile": "budget",
+      "runtime": "claude",
+      "expectedModel": "haiku",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-doc-classifier",
+      "profile": "budget",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4-mini",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-doc-classifier",
+      "profile": "adaptive",
+      "runtime": "claude",
+      "expectedModel": "haiku",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-doc-classifier",
+      "profile": "adaptive",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4-mini",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-doc-classifier",
+      "profile": "inherit",
+      "runtime": "claude",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-doc-classifier",
+      "profile": "inherit",
+      "runtime": "codex",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-doc-synthesizer",
+      "profile": "quality",
+      "runtime": "claude",
+      "expectedModel": "opus",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-doc-synthesizer",
+      "profile": "quality",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-doc-synthesizer",
+      "profile": "balanced",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-doc-synthesizer",
+      "profile": "balanced",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-doc-synthesizer",
+      "profile": "budget",
+      "runtime": "claude",
+      "expectedModel": "haiku",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-doc-synthesizer",
+      "profile": "budget",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4-mini",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-doc-synthesizer",
+      "profile": "adaptive",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-doc-synthesizer",
+      "profile": "adaptive",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-doc-synthesizer",
+      "profile": "inherit",
+      "runtime": "claude",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-doc-synthesizer",
+      "profile": "inherit",
+      "runtime": "codex",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-domain-researcher",
+      "profile": "quality",
+      "runtime": "claude",
+      "expectedModel": "opus",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-domain-researcher",
+      "profile": "quality",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-domain-researcher",
+      "profile": "balanced",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-domain-researcher",
+      "profile": "balanced",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-domain-researcher",
+      "profile": "budget",
+      "runtime": "claude",
+      "expectedModel": "haiku",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-domain-researcher",
+      "profile": "budget",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4-mini",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-domain-researcher",
+      "profile": "adaptive",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-domain-researcher",
+      "profile": "adaptive",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-domain-researcher",
+      "profile": "inherit",
+      "runtime": "claude",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-domain-researcher",
+      "profile": "inherit",
+      "runtime": "codex",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-eval-auditor",
+      "profile": "quality",
+      "runtime": "claude",
+      "expectedModel": "opus",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-eval-auditor",
+      "profile": "quality",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-eval-auditor",
+      "profile": "balanced",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-eval-auditor",
+      "profile": "balanced",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-eval-auditor",
+      "profile": "budget",
+      "runtime": "claude",
+      "expectedModel": "haiku",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-eval-auditor",
+      "profile": "budget",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4-mini",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-eval-auditor",
+      "profile": "adaptive",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-eval-auditor",
+      "profile": "adaptive",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-eval-auditor",
+      "profile": "inherit",
+      "runtime": "claude",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-eval-auditor",
+      "profile": "inherit",
+      "runtime": "codex",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-eval-planner",
+      "profile": "quality",
+      "runtime": "claude",
+      "expectedModel": "opus",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-eval-planner",
+      "profile": "quality",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-eval-planner",
+      "profile": "balanced",
+      "runtime": "claude",
+      "expectedModel": "opus",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-eval-planner",
+      "profile": "balanced",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-eval-planner",
+      "profile": "budget",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-eval-planner",
+      "profile": "budget",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-eval-planner",
+      "profile": "adaptive",
+      "runtime": "claude",
+      "expectedModel": "opus",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-eval-planner",
+      "profile": "adaptive",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4",
+      "expectedEffort": "xhigh"
+    },
+    {
+      "agent": "gsd-eval-planner",
+      "profile": "inherit",
+      "runtime": "claude",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-eval-planner",
+      "profile": "inherit",
+      "runtime": "codex",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-framework-selector",
+      "profile": "quality",
+      "runtime": "claude",
+      "expectedModel": "opus",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-framework-selector",
+      "profile": "quality",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-framework-selector",
+      "profile": "balanced",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-framework-selector",
+      "profile": "balanced",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-framework-selector",
+      "profile": "budget",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-framework-selector",
+      "profile": "budget",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-framework-selector",
+      "profile": "adaptive",
+      "runtime": "claude",
+      "expectedModel": "opus",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-framework-selector",
+      "profile": "adaptive",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4",
+      "expectedEffort": "xhigh"
+    },
+    {
+      "agent": "gsd-framework-selector",
+      "profile": "inherit",
+      "runtime": "claude",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-framework-selector",
+      "profile": "inherit",
+      "runtime": "codex",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-intel-updater",
+      "profile": "quality",
+      "runtime": "claude",
+      "expectedModel": "opus",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-intel-updater",
+      "profile": "quality",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-intel-updater",
+      "profile": "balanced",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-intel-updater",
+      "profile": "balanced",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-intel-updater",
+      "profile": "budget",
+      "runtime": "claude",
+      "expectedModel": "haiku",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-intel-updater",
+      "profile": "budget",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4-mini",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-intel-updater",
+      "profile": "adaptive",
+      "runtime": "claude",
+      "expectedModel": "haiku",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-intel-updater",
+      "profile": "adaptive",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4-mini",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-intel-updater",
+      "profile": "inherit",
+      "runtime": "claude",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-intel-updater",
+      "profile": "inherit",
+      "runtime": "codex",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-security-auditor",
+      "profile": "quality",
+      "runtime": "claude",
+      "expectedModel": "opus",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-security-auditor",
+      "profile": "quality",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-security-auditor",
+      "profile": "balanced",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-security-auditor",
+      "profile": "balanced",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-security-auditor",
+      "profile": "budget",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-security-auditor",
+      "profile": "budget",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-security-auditor",
+      "profile": "adaptive",
+      "runtime": "claude",
+      "expectedModel": "opus",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-security-auditor",
+      "profile": "adaptive",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4",
+      "expectedEffort": "xhigh"
+    },
+    {
+      "agent": "gsd-security-auditor",
+      "profile": "inherit",
+      "runtime": "claude",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-security-auditor",
+      "profile": "inherit",
+      "runtime": "codex",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-user-profiler",
+      "profile": "quality",
+      "runtime": "claude",
+      "expectedModel": "opus",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-user-profiler",
+      "profile": "quality",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4",
+      "expectedEffort": "low"
+    },
+    {
+      "agent": "gsd-user-profiler",
+      "profile": "balanced",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-user-profiler",
+      "profile": "balanced",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-user-profiler",
+      "profile": "budget",
+      "runtime": "claude",
+      "expectedModel": "sonnet",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-user-profiler",
+      "profile": "budget",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.3-codex",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-user-profiler",
+      "profile": "adaptive",
+      "runtime": "claude",
+      "expectedModel": "opus",
+      "expectedEffort": "medium"
+    },
+    {
+      "agent": "gsd-user-profiler",
+      "profile": "adaptive",
+      "runtime": "codex",
+      "expectedModel": "gpt-5.4",
+      "expectedEffort": "xhigh"
+    },
+    {
+      "agent": "gsd-user-profiler",
+      "profile": "inherit",
+      "runtime": "claude",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    },
+    {
+      "agent": "gsd-user-profiler",
+      "profile": "inherit",
+      "runtime": "codex",
+      "expectedModel": "inherit",
+      "expectedEffort": null
+    }
+  ],
+  "omitContract": [
+    {
+      "runtime": "gemini",
+      "sampleAgent": "gsd-executor",
+      "sampleProfile": "balanced",
+      "expectedEffort": null
+    },
+    {
+      "runtime": "qwen",
+      "sampleAgent": "gsd-executor",
+      "sampleProfile": "balanced",
+      "expectedEffort": null
+    },
+    {
+      "runtime": "opencode",
+      "sampleAgent": "gsd-executor",
+      "sampleProfile": "balanced",
+      "expectedEffort": null
+    },
+    {
+      "runtime": "copilot",
+      "sampleAgent": "gsd-executor",
+      "sampleProfile": "balanced",
+      "expectedEffort": null
+    },
+    {
+      "runtime": "hermes",
+      "sampleAgent": "gsd-executor",
+      "sampleProfile": "balanced",
+      "expectedEffort": null
+    },
+    {
+      "runtime": "kilo",
+      "sampleAgent": "gsd-executor",
+      "sampleProfile": "balanced",
+      "expectedEffort": null
+    },
+    {
+      "runtime": "cline",
+      "sampleAgent": "gsd-executor",
+      "sampleProfile": "balanced",
+      "expectedEffort": null
+    },
+    {
+      "runtime": "cursor",
+      "sampleAgent": "gsd-executor",
+      "sampleProfile": "balanced",
+      "expectedEffort": null
+    },
+    {
+      "runtime": "windsurf",
+      "sampleAgent": "gsd-executor",
+      "sampleProfile": "balanced",
+      "expectedEffort": null
+    },
+    {
+      "runtime": "augment",
+      "sampleAgent": "gsd-executor",
+      "sampleProfile": "balanced",
+      "expectedEffort": null
+    },
+    {
+      "runtime": "trae",
+      "sampleAgent": "gsd-executor",
+      "sampleProfile": "balanced",
+      "expectedEffort": null
+    },
+    {
+      "runtime": "codebuddy",
+      "sampleAgent": "gsd-executor",
+      "sampleProfile": "balanced",
+      "expectedEffort": null
+    },
+    {
+      "runtime": "antigravity",
+      "sampleAgent": "gsd-executor",
+      "sampleProfile": "balanced",
+      "expectedEffort": null
+    }
+  ]
+}
