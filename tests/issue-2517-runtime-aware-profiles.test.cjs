@@ -8,7 +8,7 @@
  * When `runtime` is set to a non-Claude value, profile tiers resolve to runtime-
  * native model IDs.
  *
- *   Codex:   opus -> gpt-5.4 (xhigh), sonnet -> gpt-5.3-codex (medium), haiku -> gpt-5.4-mini (medium)
+ *   Codex:   opus -> gpt-5.4 (xhigh), sonnet -> gpt-5.3-codex (medium), haiku -> gpt-5.4-mini (no reasoning_effort)
  *
  * `runtime: "claude"` is the implicit default and is treated as a no-op for
  * resolution — it does not override `resolve_model_ids: "omit"` or any other
