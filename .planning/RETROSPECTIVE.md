@@ -2,6 +2,48 @@
 
 *A living document updated after each milestone. Lessons feed forward into future planning.*
 
+## Milestone: v2.1.0-e — Per-Agent Thinking Effort
+
+**Shipped:** 2026-06-06
+**Phases:** 9 (52–58, +55.1, +55.2) | **Plans:** 28 | **Timeline:** 2026-05-31 → 2026-06-06 (6 days) | **Commits:** 309
+
+### What Was Built
+
+- `parseModelEffort(label)` with semicolon delimiter, 5-token allowlist, one-time typo warning, backward-compatible `effort: null` for bare models; shared `_resolveAgentSlot` helper eliminates the #3023 model/effort divergence class
+- Unified `resolveReasoningEffortInternal` replacing data-derived allowlist with static `{claude, codex}` set; full precedence chain (override → slot → D-08 medium floor); `model;effort` accepted at all 3 config override sites
+- 20 `*_effort` sibling fields added across `init.cjs`; `cmdResolveModel` canonical `effort` field; SDK `config-query.ts` parity via `rawSlotForRuntime` codex fix (EXPOSE-03)
+- `model-catalog.json` + `sdk/src/model-catalog.ts` widened; 31 capable agents received user-assigned effort values via CATALOG-02 handover boundary
+- Spawn templates wired: 17 Group A init-fed + 8 Group B standalone-resolve + debug-session-manager + 8 additional post-audit workflows; D-08 medium floor throughout
+- install.js Codex emit seam redirected through `resolveEffort` + `translateEffortForCodex`; haiku exclusion; per-runtime matrix correct
+- 330-row golden snapshot + 365-test regression suite + 14-case parser fixture; npm test 8,243/8,255 pass
+
+### What Worked
+
+- **Handover boundary for catalog effort values**: Making CATALOG-02 an explicit user-owned handover (not auto-fill) was the right decision — agent effort values reflect actual workload knowledge the user has about their agents, not a model guess. The `check-completeness.js` verification script made the post-handover gate clean.
+- **Inserted phases pattern for regressions**: When Phase 55's catalog changes caused 201 root + 17 SDK test failures, inserting Phases 55.1 and 55.2 as triage phases (not blocking Phase 56) was faster than stopping to fix inline. The milestone delivered on time without compromising the core requirement phases.
+- **rawSlotForRuntime fix identified at audit time**: The EXPOSE-03 SDK codex catalog-effort drop was caught by the milestone audit (not during implementation). The audit's 3-source cross-reference (VERIFICATION.md × REQUIREMENTS.md × SUMMARY.md) found the gap that phase-level testing missed.
+- **Static allowlist discipline**: Replacing the data-derived `RUNTIMES_WITH_REASONING_EFFORT` with `new Set(['claude', 'codex'])` was straightforward once the RESOLVE-01 requirement named it explicitly. Static beats data-derived for capability gating.
+
+### What Was Inefficient
+
+- **EXPOSE-03 missed in Phase 54**: The SDK codex rawSlotForRuntime issue was introduced in Phase 54 but not caught until the milestone audit. The parity fixture at Phase 54 time should have included a codex path test with a catalog slot that has an effort suffix.
+- **8 spawn-template workflows missed in Phase 56**: The SPAWN-02 wiring missed 8 workflows (audit-fix, code-review, explore, import, ingest-docs, diagnose-issues, discuss-phase-assumptions, code-review-fix) that were addressed in a post-audit quick task. A more thorough grep at Phase 56 planning time would have caught these.
+- **55.1 + 55.2 phase pair**: The two inserted triage phases added overhead. The Phase 55 plan could have staged the catalog changes more incrementally — widening the schema type before running tests with the new values would have surfaced the 201 failures earlier (and in a smaller blast radius).
+
+### Patterns Established
+
+- Audit `rawSlot` (pre-strip) vs stripped alias for effort parsing in SDK paths — effort must be read before alias-stripping removes the semicolon suffix
+- Post-catalog-change: run both root suite AND SDK suite immediately, not just at gate time — divergence manifests in the SDK golden parity tests, which are a separate runner
+- Handover phases with `check-completeness.js` verification scripts are a reusable pattern for user-assigned content (catalog effort, agent tuning)
+
+### Key Lessons
+
+- When implementing a feature that introduces a new parsing seam (effort suffix), add an explicit parity test for the SDK's inner codex path — the standard golden parity fixture may only test the claude path
+- `grep subagent_type` + `grep model=` in agents/commands/workflows before committing spawn-template scope prevents post-audit quick-task cleanup
+- Inserted triage phases (55.1, 55.2) should be tracked in the milestone ROADMAP archive and MILESTONES.md accomplishments — they represent real work even though they carry no primary requirement assignments
+
+---
+
 ## Milestone: v2.1.0-c — Install-Time Content Materialization
 
 **Shipped:** 2026-05-29
