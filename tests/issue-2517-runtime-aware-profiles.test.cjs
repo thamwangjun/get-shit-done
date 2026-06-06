@@ -172,10 +172,10 @@ describe('issue #2517: runtime "codex" — Codex tier resolution', () => {
     assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'gsd-roadmapper'), 'medium');
   });
 
-  test('haiku tier -> gpt-5.4-mini with reasoning_effort medium', () => {
+  test('haiku tier -> gpt-5.4-mini with NO reasoning_effort (Phase 57 D-03)', () => {
     writeConfig(tmpDir, { runtime: 'codex', model_profile: 'budget' });
     assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-codebase-mapper'), 'gpt-5.4-mini');
-    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'gsd-codebase-mapper'), 'medium');
+    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'gsd-codebase-mapper'), null);
   });
 
   test('adaptive profile resolves on Codex (no #1713/#1806 regression)', () => {
