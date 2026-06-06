@@ -539,7 +539,7 @@ Agent(
   prompt=research_prompt,
   subagent_type="gsd-phase-researcher",
   model="{researcher_model}",
-  effort={researcher_model_effort_arg}
+  effort={researcher_model_effort_arg}  # omit this line when researcher_model_effort_arg == null
   description="Research Phase {phase}"
 )
 ```
@@ -860,7 +860,7 @@ Agent(
   prompt="{above}",
   subagent_type="gsd-pattern-mapper",
   model="{researcher_model}",
-  effort={researcher_model_effort_arg}
+  effort={researcher_model_effort_arg}  # omit this line when researcher_model_effort_arg == null
 )
 ```
 
@@ -1003,7 +1003,7 @@ Agent(
   prompt=filled_prompt,
   subagent_type="gsd-planner",
   model="{planner_model}",
-  effort={planner_model_effort_arg}
+  effort={planner_model_effort_arg}  # omit this line when planner_model_effort_arg == null
   description="Plan Phase {phase}"
 )
 ```
@@ -1060,7 +1060,7 @@ Agent(
   Return: ## OUTLINE COMPLETE with plan count.",
   subagent_type="gsd-planner",
   model="{planner_model}",
-  effort={planner_model_effort_arg}
+  effort={planner_model_effort_arg}  # omit this line when planner_model_effort_arg == null
   description="Outline Phase {phase} (chunked)"
 )
 ```
@@ -1105,7 +1105,7 @@ For each plan entry extracted from `PLAN-OUTLINE.md`:
      Return: ## PLAN COMPLETE with the plan ID.",
      subagent_type="gsd-planner",
      model="{planner_model}",
-     effort={planner_model_effort_arg}
+     effort={planner_model_effort_arg}  # omit this line when planner_model_effort_arg == null
      description="Plan {plan_id} (chunked {k}/{N})"
    )
    ```
@@ -1264,7 +1264,7 @@ Agent(
   prompt=checker_prompt,
   subagent_type="gsd-plan-checker",
   model="{checker_model}",
-  effort={checker_model_effort_arg}
+  effort={checker_model_effort_arg}  # omit this line when checker_model_effort_arg == null
   description="Verify Phase {phase} plans"
 )
 ```
@@ -1380,7 +1380,7 @@ Agent(
   prompt=revision_prompt,
   subagent_type="gsd-planner",
   model="{planner_model}",
-  effort={planner_model_effort_arg}
+  effort={planner_model_effort_arg}  # omit this line when planner_model_effort_arg == null
   description="Revise Phase {phase} plans"
 )
 ```

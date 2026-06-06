@@ -164,7 +164,7 @@ Use Agent tool with `subagent_type="gsd-codebase-mapper"`, `model="{mapper_model
 Agent(
   subagent_type="gsd-codebase-mapper",
   model="{mapper_model}",
-  effort={mapper_model_effort_arg}
+  effort={mapper_model_effort_arg}  # omit this line when mapper_model_effort_arg == null
   run_in_background=true,
   description="Map codebase tech stack",
   prompt="Focus: tech
@@ -191,7 +191,7 @@ ${AGENT_SKILLS_MAPPER}"
 Agent(
   subagent_type="gsd-codebase-mapper",
   model="{mapper_model}",
-  effort={mapper_model_effort_arg}
+  effort={mapper_model_effort_arg}  # omit this line when mapper_model_effort_arg == null
   run_in_background=true,
   description="Map codebase architecture",
   prompt="Focus: arch
@@ -218,7 +218,7 @@ ${AGENT_SKILLS_MAPPER}"
 Agent(
   subagent_type="gsd-codebase-mapper",
   model="{mapper_model}",
-  effort={mapper_model_effort_arg}
+  effort={mapper_model_effort_arg}  # omit this line when mapper_model_effort_arg == null
   run_in_background=true,
   description="Map codebase conventions",
   prompt="Focus: quality
@@ -245,7 +245,7 @@ ${AGENT_SKILLS_MAPPER}"
 Agent(
   subagent_type="gsd-codebase-mapper",
   model="{mapper_model}",
-  effort={mapper_model_effort_arg}
+  effort={mapper_model_effort_arg}  # omit this line when mapper_model_effort_arg == null
   run_in_background=true,
   description="Map codebase concerns",
   prompt="Focus: concerns

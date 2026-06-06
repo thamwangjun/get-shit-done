@@ -213,7 +213,7 @@ Delegate validation to gsd-plan-checker:
 Agent({
   subagent_type: "gsd-plan-checker",
   model: "{plan_checker_model}",
-  effort={plan_checker_model_effort_arg}
+  effort={plan_checker_model_effort_arg}  # omit this line when plan_checker_model_effort_arg == null
   prompt: "Validate: .planning/phases/{phase}/{plan}-PLAN.md — check frontmatter completeness, task structure, and GSD conventions. Report any issues."
 })
 ```

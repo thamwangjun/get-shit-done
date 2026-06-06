@@ -201,7 +201,7 @@ Spawn `gsd-doc-synthesizer` once:
 Agent({
   subagent_type: "gsd-doc-synthesizer",
   model: "{doc_synthesizer_model}",
-  effort={doc_synthesizer_model_effort_arg}
+  effort={doc_synthesizer_model_effort_arg}  # omit this line when doc_synthesizer_model_effort_arg == null
   prompt: "
     CLASSIFICATIONS_DIR: .planning/intel/classifications/
     INTEL_DIR: .planning/intel/
@@ -270,7 +270,7 @@ Delegate to `gsd-roadmapper`:
 Agent({
   subagent_type: "gsd-roadmapper",
   model: "{roadmapper_model}",
-  effort={roadmapper_model_effort_arg}
+  effort={roadmapper_model_effort_arg}  # omit this line when roadmapper_model_effort_arg == null
   prompt: "
     Mode: new-project-from-ingest
     Intel: .planning/intel/SYNTHESIS.md (entry point)

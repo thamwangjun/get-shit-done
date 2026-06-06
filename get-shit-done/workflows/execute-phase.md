@@ -549,7 +549,7 @@ increases monotonically across waves. `{status}` is `complete` (success),
      # When executor_model is "inherit", omit this parameter entirely so
      # Claude Code inherits the orchestrator model automatically.
      model="{executor_model}",  # omit this line when executor_model == "inherit"
-     effort={executor_model_effort_arg}
+     effort={executor_model_effort_arg}  # omit this line when executor_model_effort_arg == null
      isolation="worktree",
      prompt="
        <objective>
@@ -1398,7 +1398,7 @@ Read these files before verification:
 ${VERIFIER_SKILLS}",
   subagent_type="gsd-verifier",
   model="{verifier_model}",
-  effort={verifier_model_effort_arg}
+  effort={verifier_model_effort_arg}  # omit this line when verifier_model_effort_arg == null
 )
 ```
 

@@ -103,7 +103,7 @@ research agents.
      ${AGENT_SKILLS_ADVISOR}",
      subagent_type="general-purpose",
      model="{ADVISOR_MODEL}",
-     effort={ADVISOR_MODEL_effort_arg}
+     effort={ADVISOR_MODEL_effort_arg}  # omit this line when ADVISOR_MODEL_effort_arg == null
      description="Research: {area_name}"
    )
    ```

@@ -95,7 +95,7 @@ Verify cross-phase wiring and E2E user flows.
 ${AGENT_SKILLS_CHECKER}",
   subagent_type="gsd-integration-checker",
   model="{integration_checker_model}",
-  effort={integration_checker_model_effort_arg}
+  effort={integration_checker_model_effort_arg}  # omit this line when integration_checker_model_effort_arg == null
 )
 ```
 

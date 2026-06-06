@@ -142,7 +142,7 @@ specialist_dispatch_enabled: true
 """,
   subagent_type="gsd-debug-session-manager",
   model="{debugger_model}",
-  effort={debugger_model_effort_arg}
+  effort={debugger_model_effort_arg}  # omit this line when debugger_model_effort_arg == null
   description="Continue debug session {SLUG}"
 )
 ```
@@ -221,7 +221,7 @@ specialist_dispatch_enabled: true
 """,
   subagent_type="gsd-debug-session-manager",
   model="{debugger_model}",
-  effort={debugger_model_effort_arg}
+  effort={debugger_model_effort_arg}  # omit this line when debugger_model_effort_arg == null
   description="Debug session {slug}"
 )
 ```
