@@ -300,20 +300,39 @@ export const resolveModel: QueryHandler = async (args, projectDir, workstream) =
     // D-05: emit canonical `effort` (not `reasoning_effort`).
     // Effort resolution for the runtimeTier path (steps 2-4 of the chain):
     //   Step 2: per-agent override (already handled above — no override here).
-    //   Step 3: shared slot carries a ;suffix — parseModelEffort(tier).effort.
-    //   Step 4: Codex per-tier fallback — runtimeTier.reasoning_effort (the merged
-    //     value from resolveRuntimeTier, which folds user overrides + catalog).
-    //     Only used when the tier string itself carried no ;suffix (step 3 yielded null).
+    //   Step 2.5: model_profile_overrides[runtime][tier].reasoning_effort — explicit user
+    //     override for this runtime tier. Wins over both catalog slot and built-in. This is
+    //     extracted from the userEntry before it is merged into runtimeTier.reasoning_effort,
+    //     so we can distinguish "user set this" from "built-in default".
+    //   Step 3: shared slot carries a ;suffix — parseModelEffort(rawSlotForRuntime).effort.
+    //     rawSlotForRuntime is the pre-strip slot (phaseTier string or rawAlias). Using the
+    //     already-stripped `tier` here drops the ;suffix from catalog entries like 'opus;low',
+    //     causing the Codex built-in (step 4) to win instead (EXPOSE-03 root cause).
+    //   Step 4: Codex per-tier built-in — runtimeTier.reasoning_effort — used only when
+    //     neither the user override (step 2.5) nor the catalog slot suffix (step 3) yielded a value.
+    // rawSlotForRuntime mirrors the rawSlot variable in the claudePathEffort block below.
+    const rawSlotForRuntime = typeof phaseTier === 'string' ? phaseTier : rawAlias;
+    // Step 2.5: read user override entry to check if reasoning_effort was explicitly set.
+    const runtimeProfileOverrides = (config as Record<string, unknown>).model_profile_overrides as
+      Record<string, unknown> | undefined;
+    const runtimeUserOverrides = runtimeProfileOverrides?.[runtime] as Record<string, unknown> | undefined;
+    const userTierEntry = normalizeRuntimeTierEntry(runtimeUserOverrides?.[tier]);
+    const userSuppliedEffort = userTierEntry?.reasoning_effort ?? null;
     let effort: string | null = null;
     if (effortAllowed) {
       const bareTierForGuard = (parseModelEffort(tier).model as string) || tier;
       // D-03: haiku never emits effort on any runtime (Gap 3 fix).
       if (bareTierForGuard !== 'haiku') {
-        // Step 3
-        effort = parseModelEffort(tier).effort ?? null;
-        // Step 4 (only if step 3 yielded nothing)
-        if (!effort && runtimeTier.reasoning_effort) {
-          effort = runtimeTier.reasoning_effort;
+        if (userSuppliedEffort) {
+          // Step 2.5: explicit user override wins over catalog slot and built-in.
+          effort = userSuppliedEffort;
+        } else {
+          // Step 3: catalog slot ;suffix wins over built-in (EXPOSE-03 fix).
+          effort = parseModelEffort(rawSlotForRuntime).effort ?? null;
+          // Step 4: fall back to built-in if catalog slot carried no explicit effort.
+          if (!effort && runtimeTier.reasoning_effort) {
+            effort = runtimeTier.reasoning_effort;
+          }
         }
         // D-08: floor bare {claude,codex} slots to 'medium' when no explicit effort found.
         if (effort === null) effort = 'medium';

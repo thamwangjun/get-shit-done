@@ -358,6 +358,22 @@ describe('resolveModel', () => {
     expect(result.data).toEqual({ model: '', profile: 'balanced', effort: 'medium' });
   });
 
+  it('codex runtime quality-profile agent returns catalog slot effort not built-in (EXPOSE-03)', async () => {
+    const { resolveModel } = await import('./config-query.js');
+    await writeFile(
+      join(tmpDir, '.planning', 'config.json'),
+      JSON.stringify({
+        runtime: 'codex',
+        model_profile: 'quality',
+      }),
+    );
+    // gsd-planner quality slot = 'opus;low' (from model-catalog.json: golden = 'opus;low').
+    // Codex built-in for 'opus' tier = 'xhigh'. Catalog slot effort must win: effort = 'low'.
+    const result = await resolveModel(['gsd-planner'], tmpDir);
+    const data = result.data as { model: string; effort: string | null };
+    expect(data.effort).toBe('low');
+  });
+
   it('#3643 regression-guard: model_overrides[agent] beats claude+resolve_model_ids:true', async () => {
     const { resolveModel } = await import('./config-query.js');
     await writeFile(
