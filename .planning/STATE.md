@@ -72,6 +72,12 @@ None.
 
 None. Research is HIGH confidence across all five phases.
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260607-b0u | Restore lost functionality in compressed docs-update.md workflow | 2026-06-07 | 5c56b40a | [260607-b0u-restore-lost-functionality-in-compressed](./quick/260607-b0u-restore-lost-functionality-in-compressed/) |
+
 ## Session Continuity
 
 Last activity: 2026-06-07 — Roadmap written for v2.1.0-f
