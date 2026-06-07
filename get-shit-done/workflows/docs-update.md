@@ -1,9 +1,8 @@
 <purpose>
-Generate, update, and verify all project documentation — both canonical doc types and existing hand-written docs. The orchestrator detects the project's doc structure, assembles a work manifest tracking every item, dispatches parallel doc-writer and doc-verifier agents across waves, reviews existing docs for accuracy, identifies documentation gaps, and fixes inaccuracies via a bounded fix loop. All state is persisted in a work manifest so no work item is lost between steps. Output: Complete, structure-aware documentation verified against the live codebase.
+Generate, update, and verify all project documentation. Detect doc structure, assemble work manifest, dispatch parallel doc-writer and doc-verifier agents, review existing docs, identify gaps, fix inaccuracies via bounded loop. All state persists in manifest. Output: Complete, structure-aware documentation verified against live codebase.
 </purpose>
 
 <available_agent_types>
-Valid GSD subagent types (use exact names — do not fall back to 'general-purpose'):
 - gsd-doc-writer — Writes and updates project documentation files
 - gsd-doc-verifier — Verifies factual claims in docs against the live codebase
 </available_agent_types>
@@ -14,7 +13,6 @@ Valid GSD subagent types (use exact names — do not fall back to 'general-purpo
 Load docs-update context:
 
 ```bash
-# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk (#3668)
 GSD_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/get-shit-done/bin/gsd-tools.cjs"
 if [ -f "$GSD_TOOLS" ]; then
   GSD_SDK="node $GSD_TOOLS"
@@ -31,285 +29,119 @@ AGENT_SKILLS=$($GSD_SDK query agent-skills gsd-doc-writer)
 doc_writer_model_effort_arg=$($GSD_SDK query resolve-model-effort gsd-doc-writer --raw 2>/dev/null || echo "")
 ```
 
-Extract from init JSON:
-- `doc_writer_model` — model string to pass to each spawned agent (never hardcode a model name)
-- `commit_docs` — whether to commit generated files when done
-- `existing_docs` — array of `{path, has_gsd_marker}` objects for existing Markdown files
-- `project_type` — object with boolean signals: `has_package_json`, `has_api_routes`, `has_cli_bin`, `is_open_source`, `has_deploy_config`, `is_monorepo`, `has_tests`
-- `doc_tooling` — object with booleans: `docusaurus`, `vitepress`, `mkdocs`, `storybook`
-- `monorepo_workspaces` — array of workspace glob patterns (empty if not a monorepo)
-- `project_root` — absolute path to the project root
+Extract from init JSON: `doc_writer_model`, `commit_docs`, `existing_docs` (array of `{path, has_gsd_marker}`), `project_type` (boolean signals), `doc_tooling`, `monorepo_workspaces`, `project_root`.
 </step>
 
 <step name="classify_project">
-Map the `project_type` boolean signals from the init JSON to a primary type label and collect conditional doc signals.
-
-**Primary type classification (first match wins):**
+Map `project_type` signals to primary type:
 
 | Condition | primary_type |
 |-----------|-------------|
-| `is_monorepo` is true | `"monorepo"` |
-| `has_cli_bin` is true AND `has_api_routes` is false | `"cli-tool"` |
-| `has_api_routes` is true AND `is_open_source` is false | `"saas"` |
-| `is_open_source` is true AND `has_api_routes` is false | `"open-source-library"` |
-| (none of the above) | `"generic"` |
+| `is_monorepo` | `"monorepo"` |
+| `has_cli_bin` AND NOT `has_api_routes` | `"cli-tool"` |
+| `has_api_routes` AND NOT `is_open_source` | `"saas"` |
+| `is_open_source` AND NOT `has_api_routes` | `"open-source-library"` |
+| else | `"generic"` |
 
-**Conditional doc signals (D-02 union rule — check independently after primary classification):**
+Check conditional signals independently:
+- `has_api_routes` → Queue API.md
+- `is_open_source` → Queue CONTRIBUTING.md
+- `has_deploy_config` → Queue DEPLOYMENT.md
 
-After determining primary_type, check each signal independently regardless of the primary type. A CLI tool that is also open source with API routes still gets all three conditional docs.
-
-| Signal | Conditional Doc |
-|--------|----------------|
-| `has_api_routes` is true | Queue API.md |
-| `is_open_source` is true | Queue CONTRIBUTING.md |
-| `has_deploy_config` is true | Queue DEPLOYMENT.md |
-
-Present the classification result:
-```
-Project type: {primary_type}
-Conditional docs queued: {list or "none"}
-```
+Display: `Project type: {primary_type}` and `Conditional docs queued: {list}`
 </step>
 
 <step name="build_doc_queue">
-Assemble the complete doc queue from always-on docs plus conditional docs from classify_project.
+Always-on docs (every project):
+1. README  2. ARCHITECTURE  3. GETTING-STARTED  4. DEVELOPMENT  5. TESTING  6. CONFIGURATION
 
-**Always-on docs (queued for every project, no exceptions):**
-1. README
-2. ARCHITECTURE
-3. GETTING-STARTED
-4. DEVELOPMENT
-5. TESTING
-6. CONFIGURATION
+Add conditional docs from classify_project. Max 9 docs total.
 
-**Conditional docs (add only if signal matched in classify_project):**
-- API (if `has_api_routes`)
-- CONTRIBUTING (if `is_open_source`)
-- DEPLOYMENT (if `has_deploy_config`)
-
-**IMPORTANT: CHANGELOG.md is NEVER queued. The doc queue is built exclusively from the 9 known doc types listed above. Do not derive the queue from `existing_docs` directly — existing_docs is only used in the next step to determine create vs update mode.**
-
-**Doc queue limit:** Maximum 9 docs. Always-on (6) + up to 3 conditional = at most 9.
+**Text mode (`workflow.text_mode: true` in config or `--text` flag):** Set `TEXT_MODE=true` if `--text` is present in `$ARGUMENTS` OR `text_mode` from init JSON is `true`. When TEXT_MODE is active, replace every `AskUserQuestion` call in this workflow with a plain-text numbered list and ask the user to type their choice number. This is required for non-Claude runtimes (OpenAI Codex, Gemini CLI, etc.) where `AskUserQuestion` is unavailable.
 
 **CONTRIBUTING.md confirmation (new file only):**
+If CONTRIBUTING.md is conditional AND not in `existing_docs` AND `--force` is absent:
 
-If CONTRIBUTING.md is in the conditional queue AND does NOT appear in the `existing_docs` array from init JSON:
-
-1. If `--force` is present in `$ARGUMENTS`: skip this check, include CONTRIBUTING.md in the queue.
-
-**Text mode (`workflow.text_mode: true` in config or `--text` flag):** Set `TEXT_MODE=true` if `--text` is present in `$ARGUMENTS` OR `text_mode` from init JSON is `true`. When TEXT_MODE is active, replace every `AskUserQuestion` call with a plain-text numbered list and ask the user to type their choice number. This is required for non-Claude runtimes (OpenAI Codex, Gemini CLI, etc.) where `AskUserQuestion` is not available.
-2. Otherwise, use AskUserQuestion to confirm:
-
+Use AskUserQuestion (or text mode if unavailable):
 ```
 AskUserQuestion([{
-  question: "This project appears to be open source (LICENSE file detected). CONTRIBUTING.md does not exist yet. Would you like to create one?",
-  header: "Contributing",
-  multiSelect: false,
+  question: "Open source detected. Create CONTRIBUTING.md?",
   options: [
-    { label: "Yes, create it", description: "Generate CONTRIBUTING.md with project guidelines" },
-    { label: "No, skip it", description: "This project does not need a CONTRIBUTING.md" }
+    { label: "Yes, create it" },
+    { label: "No, skip it" }
   ]
 }])
 ```
+Remove from queue if user selects "No".
 
-If the user selects "No, skip it": remove CONTRIBUTING.md from the doc queue.
-If CONTRIBUTING.md already exists in `existing_docs`: skip this prompt entirely, include it for update.
+**Non-canonical existing docs:**
+Scan `existing_docs` for files not matching canonical paths. Add to `review_queue` for accuracy verification.
 
-**Existing non-canonical docs (review queue):**
-
-After assembling the canonical doc queue above, scan the `existing_docs` array from init JSON for files that do NOT match any canonical path in the queue (neither primary nor fallback path from the resolve_modes table). These are hand-written docs like `docs/api/endpoint-map.md` or `docs/frontend/pages/not-found.md`.
-
-For each non-canonical existing doc found:
-- Add to a separate `review_queue`
-- These will be passed to gsd-doc-verifier in the verify_docs step for accuracy checking
-- If inaccuracies are found, they will be dispatched to gsd-doc-writer in `fix` mode for surgical corrections
-
-If non-canonical docs are found, display them in the queue presentation:
-
-```
-Existing docs queued for accuracy review:
-  - docs/api/endpoint-map.md (hand-written)
-  - docs/api/README.md (hand-written)
-  - docs/frontend/pages/not-found.md (hand-written)
-```
-
-If none found, omit this section from the queue presentation.
-
-**Documentation gap detection (missing non-canonical docs):**
-
-After assembling the canonical and review queues, analyze the codebase to identify areas that should have documentation but don't. This ensures the command creates complete project documentation, not just the 9 canonical types.
-
-1. **Scan the codebase for undocumented areas:**
-   - Use Glob/Grep to discover significant source directories (e.g., `src/components/`, `src/pages/`, `src/services/`, `src/api/`, `lib/`, `routes/`)
-   - Compare against existing docs: for each major source directory, check if corresponding documentation exists in the docs tree
-   - Look at the project's existing doc structure for patterns — if the project has `docs/frontend/components/`, `docs/services/`, etc., these indicate the project's documentation conventions
-
-2. **Identify gaps based on project conventions:**
-   - If the project has a `docs/` directory with grouped subdirectories, each source module area that has a corresponding docs subdirectory but is missing documentation files represents a gap
-   - If the project has frontend components/pages but no component docs, flag this
-   - If the project has service modules but no service docs, flag this
-   - Skip areas that are already covered by canonical docs (e.g., don't flag missing API docs if `docs/API.md` is already in the canonical queue)
-
-3. **Present discovered gaps to the user:**
-
+**Documentation gap detection:**
+Analyze codebase for undocumented areas (e.g., `src/components/`, `src/services/`). If gaps found:
 ```
 AskUserQuestion([{
-  question: "Found {N} documentation gaps in the codebase. Which should be created?",
-  header: "Doc gaps",
+  question: "Found {N} documentation gaps. Which should be created?",
   multiSelect: true,
-  options: [
-    { label: "{area}", description: "{why it needs docs — e.g., '5 components in src/components/ with no docs'}" },
-    ...up to 4 options (group related gaps if more than 4)
-  ]
+  options: [{label: "{area}", description: "{reason}"}, ...]
 }])
 ```
+Add selected gaps to generation queue with mode = `"create"`.
 
-4. For each gap the user selects:
-   - Add to the generation queue with mode = `"create"`
-   - Set the output path to match the project's existing doc directory structure
-   - The gsd-doc-writer will receive a `doc_assignment` with `type: "custom"` and a description of what to document, using the project's source files as content discovery targets
-
-If no gaps are detected, omit this section entirely.
-
-Present the assembled queue to the user before proceeding:
-
-Present the mode resolution table from resolve_modes (shown above), followed by:
-
-```
-{If non-canonical docs found, show as a table:}
-
-Existing docs queued for accuracy review:
-
-| Path | Type |
-|------|------|
-| {path} | hand-written |
-| ... | ... |
-
-CHANGELOG.md: excluded (out of scope)
-```
-
-The mode resolution table IS the queue presentation — it shows every doc with its resolved path, mode, and source. Do not duplicate the list in a separate format.
-
-Then confirm with AskUserQuestion:
-
+Present queued docs before proceeding:
 ```
 AskUserQuestion([{
-  question: "Doc queue assembled ({N} docs). Proceed with generation?",
-  header: "Doc queue",
-  multiSelect: false,
+  question: "Doc queue assembled ({N} docs). Proceed?",
   options: [
-    { label: "Proceed", description: "Generate all {N} docs in the queue" },
-    { label: "Abort", description: "Cancel doc generation" }
+    { label: "Proceed" },
+    { label: "Abort" }
   ]
 }])
 ```
-
-If the user selects "Abort": exit the workflow. Otherwise continue to resolve_modes.
+Exit if user selects "Abort".
 </step>
 
 <step name="resolve_modes">
-For each doc in the assembled queue, determine whether to create (new file) or update (existing file).
+For each queued doc, determine create (new) or update (existing) mode.
 
-**Doc type to canonical path mapping (defaults):**
+**Doc type to canonical path mapping:**
 
-| Type | Default Path | Fallback Path |
-|------|-------------|---------------|
-| `readme` | `README.md` | — |
-| `architecture` | `docs/ARCHITECTURE.md` | `ARCHITECTURE.md` |
-| `getting_started` | `docs/GETTING-STARTED.md` | `GETTING-STARTED.md` |
-| `development` | `docs/DEVELOPMENT.md` | `DEVELOPMENT.md` |
-| `testing` | `docs/TESTING.md` | `TESTING.md` |
-| `api` | `docs/API.md` | `API.md` |
-| `configuration` | `docs/CONFIGURATION.md` | `CONFIGURATION.md` |
-| `deployment` | `docs/DEPLOYMENT.md` | `DEPLOYMENT.md` |
-| `contributing` | `CONTRIBUTING.md` | — |
+| Type | Default Path | Fallback |
+|------|-------------|----------|
+| readme | README.md | — |
+| architecture | docs/ARCHITECTURE.md | ARCHITECTURE.md |
+| getting_started | docs/GETTING-STARTED.md | GETTING-STARTED.md |
+| development | docs/DEVELOPMENT.md | DEVELOPMENT.md |
+| testing | docs/TESTING.md | TESTING.md |
+| api | docs/API.md | API.md |
+| configuration | docs/CONFIGURATION.md | CONFIGURATION.md |
+| deployment | docs/DEPLOYMENT.md | DEPLOYMENT.md |
+| contributing | CONTRIBUTING.md | — |
 
-**Structure-aware path resolution:**
+**Structure-aware resolution:**
+Detect if project uses grouped subdirectories (e.g., `docs/architecture/`, `docs/api/`) or flat structure.
 
-Before applying the default path table, inspect the project's existing docs directory structure to detect whether the project uses **grouped subdirectories** or **flat files**. This determines how ALL new docs are placed.
+If grouped: place docs in appropriate subdirectories per resolution table.
+If flat: use default paths as-is.
 
-**Step 1: Detect the project's docs organization pattern.**
+For each queued doc:
+1. Check resolved_path in `existing_docs`
+2. If found: mode = `"update"`, read file content
+3. If not found: mode = `"create"`
 
-List subdirectories under `docs/` from the `existing_docs` paths. If the project has 2+ subdirectories (e.g., `docs/architecture/`, `docs/api/`, `docs/guides/`, `docs/frontend/`), the project uses a **grouped structure**. If docs are only flat files directly in `docs/` (e.g., `docs/ARCHITECTURE.md`), it uses a **flat structure**.
-
-**Step 2: Resolve paths based on the detected pattern.**
-
-**If GROUPED structure detected:**
-
-Every doc type MUST be placed in an appropriate subdirectory — no doc should be left flat in `docs/` when the project organizes into groups. Use the following resolution logic:
-
-| Type | Subdirectory resolution (in priority order) |
-|------|----------------------------------------------|
-| `architecture` | existing `docs/architecture/` → create `docs/architecture/` if not present |
-| `getting_started` | existing `docs/guides/` → existing `docs/getting-started/` → create `docs/guides/` |
-| `development` | existing `docs/guides/` → existing `docs/development/` → create `docs/guides/` |
-| `testing` | existing `docs/testing/` → existing `docs/guides/` → create `docs/testing/` |
-| `api` | existing `docs/api/` → create `docs/api/` if not present |
-| `configuration` | existing `docs/configuration/` → existing `docs/guides/` → create `docs/configuration/` |
-| `deployment` | existing `docs/deployment/` → existing `docs/guides/` → create `docs/deployment/` |
-
-For each type, check the resolution chain left-to-right. Use the first existing subdirectory. If none exist, create the rightmost option.
-
-The filename within the subdirectory should be contextual — e.g., `docs/guides/getting-started.md`, `docs/architecture/overview.md`, `docs/api/reference.md` — rather than `docs/architecture/ARCHITECTURE.md`. Match the naming style of existing files in that subdirectory (lowercase-kebab, UPPERCASE, etc.).
-
-**If FLAT structure detected (or no docs/ directory):**
-
-Use the default path table above as-is (e.g., `docs/ARCHITECTURE.md`, `docs/TESTING.md`).
-
-**Step 3: Store each resolved path and create directories.**
-
-For each doc type, store the resolved path as `resolved_path`. Then create all necessary directories:
-```bash
-mkdir -p {each unique directory from resolved paths}
-```
-
-**Mode resolution logic:**
-
-For each doc type in the queue:
-1. Check if the `resolved_path` appears in the `existing_docs` array from the init JSON
-2. If not found at resolved path, check the default and fallback paths from the table
-3. If found at any path: mode = `"update"` — use the Read tool to load the current file content (will be passed as `existing_content` in the doc_assignment block). Use the found path as the output path (do not move existing docs).
-4. If not found: mode = `"create"` — no existing content to load. Use the `resolved_path`.
-
-**Ensure docs/ directory exists:**
-Before proceeding to the next step, create the `docs/` directory and any resolved subdirectories if they do not exist:
+Create directories:
 ```bash
 mkdir -p docs/
 ```
 
-**Output a mode resolution table:**
+Output mode resolution table showing doc, resolved path, mode, and source.
 
-Present a table showing the resolved path, mode, and source for every doc in the queue:
-
-```
-Mode resolution:
-
-| Doc | Resolved Path | Mode | Source |
-|-----|---------------|------|--------|
-| readme | README.md | update | found at README.md |
-| architecture | docs/architecture/overview.md | create | new directory |
-| getting_started | docs/guides/getting-started.md | update | found, hand-written |
-| development | docs/guides/development.md | create | matched docs/guides/ |
-| testing | docs/guides/testing.md | create | matched docs/guides/ |
-| configuration | docs/guides/configuration.md | create | matched docs/guides/ |
-| api | docs/api/reference.md | create | new directory |
-| deployment | docs/guides/deployment.md | update | found, hand-written |
-```
-
-This table MUST be shown to the user — it is the primary confirmation of where files will be written and whether existing files will be updated. It appears as part of the queue presentation BEFORE the AskUserQuestion confirmation.
-
-Track the resolved mode and file path for each queued doc. For update-mode docs, store the loaded file content — it will be passed to the agent in the next steps.
-
-**CRITICAL: Persist the work manifest.**
-
-After resolve_modes completes, write ALL work items to `.planning/tmp/docs-work-manifest.json`. This is the single source of truth for every subsequent step — the orchestrator MUST read this file at each step instead of relying on memory.
-
+**Persist work manifest:**
 ```bash
 mkdir -p .planning/tmp
 ```
 
-Write the manifest using the Write tool:
-
+Write `.planning/tmp/docs-work-manifest.json`:
 ```json
 {
   "canonical_queue": [
@@ -317,790 +149,342 @@ Write the manifest using the Write tool:
       "type": "readme",
       "resolved_path": "README.md",
       "mode": "create|update|supplement",
-      "preservation_mode": null,
       "wave": 1,
       "status": "pending"
     }
   ],
-  "review_queue": [
-    {
-      "path": "docs/frontend/components/button.md",
-      "type": "hand-written",
-      "status": "pending_review"
-    }
-  ],
-  "gap_queue": [
-    {
-      "description": "Frontend components in src/components/",
-      "output_path": "docs/frontend/components/overview.md",
-      "status": "pending"
-    }
-  ],
+  "review_queue": [{path, type, status}],
+  "gap_queue": [{description, output_path, status}],
   "created_at": "{ISO timestamp}"
 }
 ```
 
-Every subsequent step (dispatch, collect, verify, fix_loop, report) MUST begin by reading `.planning/tmp/docs-work-manifest.json` and update the `status` field for items it processes. This prevents the orchestrator from "forgetting" any work item across the multi-step workflow.
+Every subsequent step reads this manifest and updates `status`.
 </step>
 
 <step name="preservation_check">
-Check for hand-written docs in the queue and gather user decisions before dispatch.
+Check skip conditions in order:
+1. `--force` present → treat all queued docs as mode: regenerate, then continue to `dispatch_wave_1`.
+2. `--verify-only` present → jump to `verify_only_report` and run no generation step (no dispatch, sequential_generation, commit, or report).
+3. No queued doc has `has_gsd_marker: false` → skip the prompt and continue to `dispatch_wave_1`.
 
-**Skip conditions (check in order):**
-
-1. If `--force` is present in `$ARGUMENTS`: treat all docs as mode: regenerate, skip to detect_runtime_capabilities.
-2. If `--verify-only` is present in `$ARGUMENTS`: skip to verify_only_report (do not continue to detect_runtime_capabilities).
-3. If no docs in the queue have `has_gsd_marker: false` in the `existing_docs` array: skip to detect_runtime_capabilities.
-
-**For each queued doc where `has_gsd_marker` is false (hand-written doc detected):**
-
-Present the following choice using `AskUserQuestion` if available, or inline prompt otherwise:
-
+For each queued doc with `has_gsd_marker: false`:
 ```
-{filename} appears to be hand-written (no GSD marker found).
-
-How should this file be handled?
-  [1] preserve    -- Skip entirely. Leave unchanged.
-  [2] supplement  -- Append only missing sections. Existing content untouched.
-  [3] regenerate  -- Overwrite with a fresh GSD-generated doc.
+AskUserQuestion([{
+  question: "{filename} is hand-written. How should it be handled?",
+  options: [
+    { label: "preserve" },
+    { label: "supplement" },
+    { label: "regenerate" }
+  ]
+}])
 ```
 
-Record each decision. Update the doc queue:
-- `preserve` decisions: remove the doc from the queue entirely
-- `supplement` decisions: set mode to `supplement` in the doc_assignment block; include `existing_content` (full file content)
-- `regenerate` decisions: set mode to `create` (treat as a fresh write)
+Update queue:
+- preserve: remove from queue
+- supplement: set mode to `supplement`, include existing_content
+- regenerate: set mode to `create`
 
-**Fallback when AskUserQuestion is unavailable:** Default all hand-written docs to `preserve` (safest default). Display message:
+After recording decisions, continue to `dispatch_wave_1`.
 
-```
-AskUserQuestion unavailable — hand-written docs preserved by default.
-Use --force to regenerate all docs, or re-run in Claude Code to get per-file prompts.
-```
-
-After all decisions recorded, continue to detect_runtime_capabilities.
+Fallback (no AskUserQuestion): default to `preserve`.
 </step>
 
-<!-- If Task tool is unavailable at runtime, skip dispatch/collect waves and use sequential_generation instead. -->
+<step name="dispatch_wave_1" condition="Task tool available">
+Read manifest, use items with `wave: 1`.
 
-<step name="dispatch_wave_1" condition="Task tool is available">
-**Read the work manifest first:** `Read .planning/tmp/docs-work-manifest.json` — use `canonical_queue` items with `wave: 1` for this step.
-
-Spawn 3 parallel gsd-doc-writer agents for Wave 1 docs: README, ARCHITECTURE, CONFIGURATION.
-
-These are foundational docs with no cross-references needed, making them ideal for parallel generation.
-
-Use `run_in_background=true` for all three to enable parallel execution.
-
-**Agent 1: README**
+Spawn 3 parallel agents for README, ARCHITECTURE, CONFIGURATION:
 
 ```
 Agent(
   subagent_type="gsd-doc-writer",
   model="{doc_writer_model}",
-  effort={doc_writer_model_effort_arg}  # omit this line when doc_writer_model_effort_arg == null
+  effort={doc_writer_model_effort_arg}, # omit this line when doc_writer_model_effort_arg == null
   run_in_background=true,
-  description="Generate README.md for target project",
+  description="Generate {type}",
   prompt="<doc_assignment>
-type: readme
-mode: {create|update|supplement}
-preservation_mode: {preserve|supplement|regenerate|null}
+type: {type}
+mode: {mode}
+preservation_mode: {value|null}
 project_context: {INIT JSON}
-{existing_content: | (include full file content here if mode is update or supplement, else omit this line)}
+{existing_content: ... | (if update/supplement)}
 </doc_assignment>
 
 {AGENT_SKILLS}
 
-Write the doc file directly. Return confirmation only — do not return doc content."
+Write file directly. Return confirmation only."
 )
 ```
 
-**Agent 2: ARCHITECTURE**
+Spawn one agent per doc. For CONFIGURATION, add note: `Apply VERIFY markers to undiscoverable infrastructure claims.`
 
-```
-Agent(
-  subagent_type="gsd-doc-writer",
-  model="{doc_writer_model}",
-  effort={doc_writer_model_effort_arg}  # omit this line when doc_writer_model_effort_arg == null
-  run_in_background=true,
-  description="Generate ARCHITECTURE.md for target project",
-  prompt="<doc_assignment>
-type: architecture
-mode: {create|update|supplement}
-preservation_mode: {preserve|supplement|regenerate|null}
-project_context: {INIT JSON}
-{existing_content: | (include full file content here if mode is update or supplement, else omit this line)}
-</doc_assignment>
-
-{AGENT_SKILLS}
-
-Write the doc file directly. Return confirmation only — do not return doc content."
-)
-```
-
-**Agent 3: CONFIGURATION**
-
-```
-Agent(
-  subagent_type="gsd-doc-writer",
-  model="{doc_writer_model}",
-  effort={doc_writer_model_effort_arg}  # omit this line when doc_writer_model_effort_arg == null
-  run_in_background=true,
-  description="Generate CONFIGURATION.md for target project",
-  prompt="<doc_assignment>
-type: configuration
-mode: {create|update|supplement}
-preservation_mode: {preserve|supplement|regenerate|null}
-project_context: {INIT JSON}
-{existing_content: | (include full file content here if mode is update or supplement, else omit this line)}
-note: Apply VERIFY markers to any infrastructure claim not discoverable from the repository.
-</doc_assignment>
-
-{AGENT_SKILLS}
-
-Write the doc file directly. Return confirmation only — do not return doc content."
-)
-```
-
-**CRITICAL:** Agent prompts must contain ONLY the `<doc_assignment>` block, the `${AGENT_SKILLS}` variable, and the return instruction. Do not include project planning context, workflow prose, or any internal tooling references in agent prompts.
-
-> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling all Wave 1 Agent() calls above with `run_in_background=true`, do NOT generate any documentation independently while the subagents are active. Wait for all Wave 1 agents to complete before proceeding. This prevents duplicate work and wasted context.
+Do NOT generate docs independently while subagents run.
 
 Continue to collect_wave_1.
 </step>
 
 <step name="collect_wave_1">
-**Read the work manifest first:** `Read .planning/tmp/docs-work-manifest.json` — update `status` to `"completed"` or `"failed"` for each Wave 1 item after collection. Write the updated manifest back to disk.
+Read manifest, update status after collection.
 
-Wait for all 3 Wave 1 agents to complete using the TaskOutput tool.
-
-Call TaskOutput for all 3 agents in parallel (single message with 3 TaskOutput calls):
-
+Call TaskOutput for all 3 agents in parallel:
 ```
-TaskOutput tool:
-  task_id: "{task_id from README agent result}"
-  block: true
-  timeout: 300000
-
-TaskOutput tool:
-  task_id: "{task_id from ARCHITECTURE agent result}"
-  block: true
-  timeout: 300000
-
-TaskOutput tool:
-  task_id: "{task_id from CONFIGURATION agent result}"
-  block: true
-  timeout: 300000
+TaskOutput: {task_id}, block=true, timeout=300000
 ```
 
-**Expected confirmation format from each agent:**
-```
-## Doc Generation Complete
-**Type:** {type}
-**Mode:** {mode}
-**File written:** `{path}` ({N} lines)
-Ready for orchestrator summary.
-```
-
-**After collection, verify the Wave 1 files exist on disk** using the `resolved_path` from each manifest entry:
+Verify files exist:
 ```bash
 ls -la {resolved_path_1} {resolved_path_2} {resolved_path_3} 2>/dev/null
 ```
 
-If any agent failed or its file is missing:
-- Note the failure
-- Continue with the successful docs (do NOT halt Wave 2 for a single failure)
-- The missing doc will be noted in the final report
+Note failures; continue regardless.
 
 Continue to dispatch_wave_2.
 </step>
 
-<step name="dispatch_wave_2" condition="Task tool is available">
-**Read the work manifest first:** `Read .planning/tmp/docs-work-manifest.json` — use `canonical_queue` items with `wave: 2` for this step.
+<step name="dispatch_wave_2" condition="Task tool available">
+Read manifest, use items with `wave: 2`.
 
-Spawn agents for all queued Wave 2 docs: GETTING-STARTED, DEVELOPMENT, TESTING, and any conditional docs (API, DEPLOYMENT, CONTRIBUTING) that were queued in build_doc_queue.
+Spawn agents for GETTING-STARTED, DEVELOPMENT, TESTING, and conditional docs (API, DEPLOYMENT, CONTRIBUTING) with `run_in_background=true`.
 
-Wave 2 agents can reference Wave 1 outputs for cross-referencing — include the `wave_1_outputs` field in each doc_assignment block.
+Each doc_assignment includes `wave_1_outputs: [README.md, docs/ARCHITECTURE.md, docs/CONFIGURATION.md]`.
 
-Use `run_in_background=true` for all Wave 2 agents to enable parallel execution within the wave.
+For DEPLOYMENT, add: `Apply VERIFY markers to undiscoverable infrastructure claims.`
 
-**Agent: GETTING-STARTED**
-
-```
-Agent(
-  subagent_type="gsd-doc-writer",
-  model="{doc_writer_model}",
-  effort={doc_writer_model_effort_arg}  # omit this line when doc_writer_model_effort_arg == null
-  run_in_background=true,
-  description="Generate GETTING-STARTED.md for target project",
-  prompt="<doc_assignment>
-type: getting_started
-mode: {create|update|supplement}
-preservation_mode: {preserve|supplement|regenerate|null}
-project_context: {INIT JSON}
-{existing_content: | (include full file content here if mode is update or supplement, else omit this line)}
-wave_1_outputs:
-  - README.md
-  - docs/ARCHITECTURE.md
-  - docs/CONFIGURATION.md
-</doc_assignment>
-
-{AGENT_SKILLS}
-
-Write the doc file directly. Return confirmation only — do not return doc content."
-)
-```
-
-**Agent: DEVELOPMENT**
-
-```
-Agent(
-  subagent_type="gsd-doc-writer",
-  model="{doc_writer_model}",
-  effort={doc_writer_model_effort_arg}  # omit this line when doc_writer_model_effort_arg == null
-  run_in_background=true,
-  description="Generate DEVELOPMENT.md for target project",
-  prompt="<doc_assignment>
-type: development
-mode: {create|update|supplement}
-preservation_mode: {preserve|supplement|regenerate|null}
-project_context: {INIT JSON}
-{existing_content: | (include full file content here if mode is update or supplement, else omit this line)}
-wave_1_outputs:
-  - README.md
-  - docs/ARCHITECTURE.md
-  - docs/CONFIGURATION.md
-</doc_assignment>
-
-{AGENT_SKILLS}
-
-Write the doc file directly. Return confirmation only — do not return doc content."
-)
-```
-
-**Agent: TESTING**
-
-```
-Agent(
-  subagent_type="gsd-doc-writer",
-  model="{doc_writer_model}",
-  effort={doc_writer_model_effort_arg}  # omit this line when doc_writer_model_effort_arg == null
-  run_in_background=true,
-  description="Generate TESTING.md for target project",
-  prompt="<doc_assignment>
-type: testing
-mode: {create|update|supplement}
-preservation_mode: {preserve|supplement|regenerate|null}
-project_context: {INIT JSON}
-{existing_content: | (include full file content here if mode is update or supplement, else omit this line)}
-wave_1_outputs:
-  - README.md
-  - docs/ARCHITECTURE.md
-  - docs/CONFIGURATION.md
-</doc_assignment>
-
-{AGENT_SKILLS}
-
-Write the doc file directly. Return confirmation only — do not return doc content."
-)
-```
-
-**Conditional Agent: API** (only if `has_api_routes` was true — spawn only if API.md was queued)
-
-```
-Agent(
-  subagent_type="gsd-doc-writer",
-  model="{doc_writer_model}",
-  effort={doc_writer_model_effort_arg}  # omit this line when doc_writer_model_effort_arg == null
-  run_in_background=true,
-  description="Generate API.md for target project",
-  prompt="<doc_assignment>
-type: api
-mode: {create|update|supplement}
-preservation_mode: {preserve|supplement|regenerate|null}
-project_context: {INIT JSON}
-{existing_content: | (include full file content here if mode is update or supplement, else omit this line)}
-wave_1_outputs:
-  - README.md
-  - docs/ARCHITECTURE.md
-  - docs/CONFIGURATION.md
-</doc_assignment>
-
-{AGENT_SKILLS}
-
-Write the doc file directly. Return confirmation only — do not return doc content."
-)
-```
-
-**Conditional Agent: DEPLOYMENT** (only if `has_deploy_config` was true — spawn only if DEPLOYMENT.md was queued)
-
-```
-Agent(
-  subagent_type="gsd-doc-writer",
-  model="{doc_writer_model}",
-  effort={doc_writer_model_effort_arg}  # omit this line when doc_writer_model_effort_arg == null
-  run_in_background=true,
-  description="Generate DEPLOYMENT.md for target project",
-  prompt="<doc_assignment>
-type: deployment
-mode: {create|update|supplement}
-preservation_mode: {preserve|supplement|regenerate|null}
-project_context: {INIT JSON}
-{existing_content: | (include full file content here if mode is update or supplement, else omit this line)}
-note: Apply VERIFY markers to any infrastructure claim not discoverable from the repository.
-wave_1_outputs:
-  - README.md
-  - docs/ARCHITECTURE.md
-  - docs/CONFIGURATION.md
-</doc_assignment>
-
-{AGENT_SKILLS}
-
-Write the doc file directly. Return confirmation only — do not return doc content."
-)
-```
-
-**Conditional Agent: CONTRIBUTING** (only if `is_open_source` was true — spawn only if CONTRIBUTING.md was queued)
-
-```
-Agent(
-  subagent_type="gsd-doc-writer",
-  model="{doc_writer_model}",
-  effort={doc_writer_model_effort_arg}  # omit this line when doc_writer_model_effort_arg == null
-  run_in_background=true,
-  description="Generate CONTRIBUTING.md for target project",
-  prompt="<doc_assignment>
-type: contributing
-mode: {create|update|supplement}
-preservation_mode: {preserve|supplement|regenerate|null}
-project_context: {INIT JSON}
-{existing_content: | (include full file content here if mode is update or supplement, else omit this line)}
-wave_1_outputs:
-  - README.md
-  - docs/ARCHITECTURE.md
-  - docs/CONFIGURATION.md
-</doc_assignment>
-
-{AGENT_SKILLS}
-
-Write the doc file directly. Return confirmation only — do not return doc content."
-)
-```
-
-**CRITICAL:** Agent prompts must contain ONLY the `<doc_assignment>` block, the `${AGENT_SKILLS}` variable, and the return instruction. Do not include project planning context, workflow prose, or any internal tooling references in agent prompts.
-
-> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling all Wave 2 Agent() calls above with `run_in_background=true`, do NOT generate any documentation independently while the subagents are active. Wait for all Wave 2 agents to complete before proceeding. This prevents duplicate work and wasted context.
+Do NOT generate docs independently while subagents run.
 
 Continue to collect_wave_2.
 </step>
 
 <step name="collect_wave_2">
-**Read the work manifest first:** `Read .planning/tmp/docs-work-manifest.json` — update `status` to `"completed"` or `"failed"` for each Wave 2 item after collection. Write the updated manifest back to disk.
+Read manifest, update status.
 
-Wait for all Wave 2 agents to complete using the TaskOutput tool.
+Call TaskOutput for all Wave 2 agents in parallel.
 
-Call TaskOutput for all Wave 2 agents in parallel (single message with N TaskOutput calls — one per spawned Wave 2 agent):
+Verify files exist via bash.
 
-```
-TaskOutput tool:
-  task_id: "{task_id from GETTING-STARTED agent result}"
-  block: true
-  timeout: 300000
+Note failures; continue.
 
-TaskOutput tool:
-  task_id: "{task_id from DEVELOPMENT agent result}"
-  block: true
-  timeout: 300000
-
-TaskOutput tool:
-  task_id: "{task_id from TESTING agent result}"
-  block: true
-  timeout: 300000
-
-# Add one TaskOutput call per conditional agent spawned (API, DEPLOYMENT, CONTRIBUTING)
-```
-
-**After collection, verify all Wave 2 files exist on disk** using the `resolved_path` from each manifest entry:
-```bash
-ls -la {resolved_path for each wave 2 item} 2>/dev/null
-```
-
-If any agent failed or its file is missing, note the failure and continue. Missing docs will be reported in the final report.
-
-Continue to dispatch_monorepo_packages (if monorepo_workspaces is non-empty) or commit_docs.
+Continue to dispatch_monorepo_packages (if `monorepo_workspaces` non-empty) or commit_docs.
 </step>
 
-<step name="dispatch_monorepo_packages" condition="monorepo_workspaces is non-empty">
-After Wave 2 collection, generate per-package READMEs for each monorepo workspace.
-
-**Condition:** Only run this step if `monorepo_workspaces` from the init JSON is non-empty.
-
-**Resolve workspace packages from glob patterns:**
-
+<step name="dispatch_monorepo_packages" condition="monorepo_workspaces non-empty">
+Expand workspace globs:
 ```bash
-# Expand workspace globs to actual package directories
 for pattern in {monorepo_workspaces}; do
   ls -d $pattern 2>/dev/null
 done
 ```
 
-**For each resolved directory that contains a `package.json`:**
-
-Determine mode:
-- If `{package_dir}/README.md` exists: mode = `update`, read existing content
+For each directory with `package.json`:
+- If `{dir}/README.md` exists: mode = `update`
 - Else: mode = `create`
 
-Spawn a `gsd-doc-writer` agent with `run_in_background=true`:
-
+Spawn agent with `run_in_background=true`:
 ```
 Agent(
   subagent_type="gsd-doc-writer",
   model="{doc_writer_model}",
-  effort={doc_writer_model_effort_arg}  # omit this line when doc_writer_model_effort_arg == null
+  effort={doc_writer_model_effort_arg}, # omit this line when doc_writer_model_effort_arg == null
   run_in_background=true,
   description="Generate per-package README for {package_dir}",
   prompt="<doc_assignment>
 type: readme
 mode: {create|update}
 scope: per_package
-package_dir: {absolute path to package directory}
-project_context: {INIT JSON with project_root set to package directory}
-{existing_content: | (include full README.md content here if mode is update, else omit)}
+package_dir: {absolute path}
+project_context: {INIT JSON, project_root={package_dir}}
+{existing_content: ... | (if update)}
 </doc_assignment>
 
 {AGENT_SKILLS}
 
-Write {package_dir}/README.md directly. Return confirmation only — do not return doc content."
+Write {package_dir}/README.md directly. Return confirmation only."
 )
 ```
 
-> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling all per-package Agent() calls above with `run_in_background=true`, do NOT generate any package READMEs independently while the subagents are active. Wait for all agents to complete via TaskOutput before proceeding. This prevents duplicate work and wasted context.
-
-Collect confirmations via TaskOutput for all package agents. Note failures in the final report.
-
-**Fallback when Task tool is unavailable:** Generate per-package READMEs sequentially inline after the `sequential_generation` step. For each package directory with a `package.json`, construct the equivalent `doc_assignment` block and generate the README following gsd-doc-writer instructions.
+Collect via TaskOutput. Note failures.
 
 Continue to commit_docs.
 </step>
 
-<step name="sequential_generation" condition="Task tool is NOT available (e.g. Antigravity, Gemini CLI, Codex, Copilot)">
-**Read the work manifest first:** `Read .planning/tmp/docs-work-manifest.json` — use `canonical_queue` items for generation order. Update `status` after each doc is generated. Write the updated manifest back to disk after all docs are complete.
+<step name="sequential_generation" condition="Task tool NOT available">
+Read manifest. Generate docs sequentially using file system tools only. Do NOT use browser tools.
 
-When the `Task` tool is unavailable, generate docs sequentially in the current context. This step replaces dispatch_wave_1, collect_wave_1, dispatch_wave_2, and collect_wave_2.
+Read `agents/gsd-doc-writer.md` once before beginning.
 
-**IMPORTANT:** Do NOT use `browser_subagent`, `Explore`, or any browser-based tool. Use only file system tools (Read, Bash, Write, Grep, Glob, or equivalent tools available in your runtime).
+**Wave 1:** README, ARCHITECTURE, CONFIGURATION (in order)
+For each, construct doc_assignment, explore codebase, write file.
 
-Read `agents/gsd-doc-writer.md` instructions once before beginning. Follow the create_mode or update_mode instructions from that agent for each doc, using the same doc_assignment fields as the parallel path.
+**Wave 2:** GETTING-STARTED, DEVELOPMENT, TESTING, API (if queued), DEPLOYMENT (if queued), CONTRIBUTING (if queued)
+Include `wave_1_outputs` field.
 
-**Wave 1 (sequential — complete all three before starting Wave 2):**
-
-For each Wave 1 doc, construct the equivalent doc_assignment block and generate the file inline:
-
-1. **README** — mode from resolve_modes; for update/supplement mode, include existing_content
-   - Construct doc_assignment: `type: readme`, `mode: {create|update|supplement}`, `preservation_mode: {value|null}`, `project_context: {INIT JSON}`, `existing_content:` (if update/supplement)
-   - Explore the codebase (Read, Grep, Glob, Bash) following gsd-doc-writer create_mode / update_mode instructions
-   - Write the file to the resolved path (README.md)
-
-2. **ARCHITECTURE** — mode from resolve_modes; for update/supplement mode, include existing_content
-   - Construct doc_assignment: `type: architecture`, `mode: {create|update|supplement}`, `preservation_mode: {value|null}`, `project_context: {INIT JSON}`, `existing_content:` (if update/supplement)
-   - Explore the codebase following gsd-doc-writer instructions
-   - Write the file to the resolved path (docs/ARCHITECTURE.md, or ARCHITECTURE.md if found at root as fallback)
-
-3. **CONFIGURATION** — mode from resolve_modes; for update/supplement mode, include existing_content
-   - Construct doc_assignment: `type: configuration`, `mode: {create|update|supplement}`, `preservation_mode: {value|null}`, `project_context: {INIT JSON}`, `existing_content:` (if update/supplement)
-   - Apply VERIFY markers to any infrastructure claim not discoverable from the repository
-   - Explore the codebase following gsd-doc-writer instructions
-   - Write the file to the resolved path (docs/CONFIGURATION.md, or CONFIGURATION.md if found at root as fallback)
-
-**Wave 2 (sequential — begin only after all Wave 1 docs are written):**
-
-Wave 2 docs can reference Wave 1 outputs since they are already written. Include `wave_1_outputs` in each doc_assignment.
-
-4. **GETTING-STARTED** — mode from resolve_modes; include wave_1_outputs: [README.md, docs/ARCHITECTURE.md, docs/CONFIGURATION.md]
-5. **DEVELOPMENT** — mode from resolve_modes; include wave_1_outputs
-6. **TESTING** — mode from resolve_modes; include wave_1_outputs
-7. **API** (only if queued) — mode from resolve_modes; include wave_1_outputs
-8. **DEPLOYMENT** (only if queued) — Apply VERIFY markers to any infrastructure claim not discoverable from the repository; include wave_1_outputs
-9. **CONTRIBUTING** (only if queued) — mode from resolve_modes; include wave_1_outputs
-
-**Monorepo per-package READMEs (only if `monorepo_workspaces` is non-empty):**
-
-After all 9 root-level docs are written, generate per-package READMEs sequentially:
-
-For each resolved package directory (from workspace glob expansion) that contains a `package.json`:
-- Determine mode: if `{package_dir}/README.md` exists, mode = `update`; else mode = `create`
-- Construct doc_assignment: `type: readme`, `mode: {create|update}`, `scope: per_package`, `package_dir: {absolute path}`, `project_context: {INIT JSON with project_root set to package directory}`, `existing_content:` (if update)
-- Follow gsd-doc-writer instructions for per_package scope
-- Write the file to `{package_dir}/README.md`
+**Per-package READMEs** (if `monorepo_workspaces` non-empty):
+After root-level docs, generate per-package READMEs sequentially.
 
 Continue to verify_docs.
 </step>
 
 <step name="verify_docs">
-Verify factual claims in ALL docs — both canonical (generated) and non-canonical (existing hand-written) — against the live codebase.
+Read manifest. Extract `canonical_queue` (completed) and `review_queue` (hand-written). Both verified.
 
-**CRITICAL: Read the work manifest first.**
+Skip if `--verify-only` already handled this (early exit).
 
+**Phase 1: Verify canonical docs**
+For each successful doc:
+```xml
+<verify_assignment>
+doc_path: {relative path}
+project_root: {from init JSON}
+</verify_assignment>
 ```
-Read .planning/tmp/docs-work-manifest.json
-```
 
-Extract `canonical_queue` (items with `status: "completed"`) and `review_queue` (items with `status: "pending_review"`). Both queues are verified in this step.
+Read result from `.planning/tmp/verify-{filename}.json`.
+Update manifest: `status: "verified"`.
 
-**Skip condition:** If `--verify-only` is present in `$ARGUMENTS`, this step was already handled by `verify_only_report` (early exit). Skip.
+**Phase 2: Verify non-canonical docs**
+Verify all review_queue docs (not optional).
 
-**Phase 1: Verify canonical docs (generated/updated docs)**
+Non-canonical docs with failures eligible for fix_loop via `fix` mode.
 
-For each doc in `canonical_queue` that was successfully written to disk:
-
-1. Spawn the `gsd-doc-verifier` agent (or invoke sequentially if Task tool is unavailable) with a `<verify_assignment>` block:
-   ```xml
-   <verify_assignment>
-   doc_path: {relative path to the doc file, e.g. README.md}
-   project_root: {project_root from init JSON}
-   </verify_assignment>
-   ```
-
-2. After the verifier completes, read the result JSON from `.planning/tmp/verify-{doc_filename}.json`.
-
-3. Update the manifest: set `status: "verified"` for each canonical doc processed.
-
-**Phase 2: Verify non-canonical docs (existing hand-written docs)**
-
-This is NOT optional. Every doc in `review_queue` MUST be verified.
-
-For each doc in `review_queue` from the manifest:
-
-1. Spawn the `gsd-doc-verifier` agent with the same `<verify_assignment>` block as above.
-2. Read the result JSON from `.planning/tmp/verify-{doc_filename}.json`.
-3. Update the manifest: set `status: "verified"` for each review_queue doc processed.
-
-Non-canonical docs with failures ARE eligible for the fix_loop. When a non-canonical doc has `claims_failed > 0`, dispatch it to gsd-doc-writer in `fix` mode with the failures array — the writer's fix mode does surgical corrections on specific lines regardless of doc type (no template needed). The writer applies targeted fixes to failing claims only — restructuring, rephrasing, or reformatting beyond the failing claims is out of scope.
-
-**Phase 3: Present combined verification summary**
-
-Collect ALL results (canonical + non-canonical) into a single `verification_results` array:
+**Phase 3: Summary**
+Present combined verification table (canonical + non-canonical):
 
 ```
 Verification results:
 
-Canonical docs (generated):
+Canonical docs:
+| Doc | Claims | Passed | Failed |
+|-----|--------|--------|--------|
 
-| Doc                    | Claims | Passed | Failed |
-|------------------------|--------|--------|--------|
-| README.md              | 12     | 10     | 2      |
-| docs/architecture/overview.md | 8 | 8   | 0      |
+Existing docs:
+| Doc | Claims | Passed | Failed |
+|-----|--------|--------|--------|
 
-Existing docs (reviewed):
-
-| Doc                    | Claims | Passed | Failed |
-|------------------------|--------|--------|--------|
-| docs/frontend/components/button.md | 5 | 4 | 1   |
-| docs/services/api.md   | 8      | 8      | 0      |
-
-Total: {total_checked} claims checked, {total_failed} failures
+Total: {total_checked} claims, {total_failed} failures
 ```
 
-Write the updated manifest back to disk.
-
-If all docs have `claims_failed === 0`: skip fix_loop, continue to scan_for_secrets.
-If any doc (canonical OR non-canonical) has `claims_failed > 0`: continue to fix_loop.
+If all pass: skip fix_loop, continue to scan_for_secrets.
+If any fail: continue to fix_loop.
 </step>
 
 <step name="fix_loop">
-**Read the work manifest first:** `Read .planning/tmp/docs-work-manifest.json` — identify ALL docs (canonical AND non-canonical) with `claims_failed > 0` from the verification results in `.planning/tmp/verify-*.json`. Both queues are eligible for fixes.
+Read manifest. Identify all docs (canonical + non-canonical) with `claims_failed > 0`.
 
-Correct flagged inaccuracies by re-sending failing docs to the doc-writer in fix mode. Per D-06, max 2 iterations. Per D-05, halt immediately on regression.
+Skip if none.
 
-**Skip condition:** If all docs passed verification (no failures), skip this step.
+**Iteration tracking:** MAX_FIX_ITERATIONS = 2, iteration = 0, track previously-passed docs.
 
-**Iteration tracking:**
-- `MAX_FIX_ITERATIONS = 2`
-- `iteration = 0`
-- `previous_passed_docs` = set of doc_paths where claims_failed === 0 after initial verification
+For each iteration (< MAX_FIX_ITERATIONS and failures exist):
 
-**For each iteration (while iteration < MAX_FIX_ITERATIONS and there are docs with failures):**
+1. For each doc with failures:
+   Read current content from disk.
+   Spawn agent with fix assignment:
+   ```xml
+   <doc_assignment>
+   type: {original type}
+   mode: fix
+   doc_path: {relative path}
+   project_context: {INIT JSON}
+   existing_content: {current content}
+   failures:
+     - line: {line}
+       claim: "{claim}"
+       expected: "{expected}"
+       actual: "{actual}"
+   </doc_assignment>
+   ```
 
-1. For each doc with `claims_failed > 0` in the latest verification_results:
-   a. Read the current file content from disk.
-   b. Spawn `gsd-doc-writer` agent (or invoke sequentially) with a fix assignment:
-      ```xml
-      <doc_assignment>
-      type: {original doc type from the queue, e.g. readme}
-      mode: fix
-      doc_path: {relative path}
-      project_context: {INIT JSON}
-      existing_content: {current file content read from disk}
-      failures:
-        - line: {line}
-          claim: "{claim}"
-          expected: "{expected}"
-          actual: "{actual}"
-      </doc_assignment>
-      ```
-   c. One agent spawn per doc with failures. Do not batch multiple docs into one spawn.
+2. Re-verify ALL docs (not just fixed ones).
+   Read updated result JSONs.
 
-2. After all fix agents complete, re-verify ALL docs (not just the ones that were fixed):
-   - Re-run the same verification process as verify_docs step.
-   - Read updated result JSONs from `.planning/tmp/verify-{doc_filename}.json`.
+3. **Regression detection:**
+   If any previously-passed doc now has failures: HALT immediately.
+   ```
+   REGRESSION DETECTED — halting fix loop.
+   {doc_path} previously passed but now has {count} failures.
+   ```
+   Continue to scan_for_secrets.
 
-3. **Regression detection (D-05):**
-   For each doc in the new verification_results:
-   - If this doc was in `previous_passed_docs` (passed in the prior round) AND now has `claims_failed > 0`, this is a REGRESSION.
-   - If regression detected: HALT the loop immediately. Present:
-     ```
-     REGRESSION DETECTED -- halting fix loop.
+4. Update previously-passed set. Increment iteration.
 
-     {doc_path} previously passed verification but now has {claims_failed} failures after fix iteration {iteration + 1}.
-
-     This means the fix introduced new errors. Remaining failures require manual review.
-     ```
-     Continue to scan_for_secrets (do not attempt further fixes).
-
-4. Update `previous_passed_docs` with docs that now pass.
-5. Increment `iteration`.
-
-**After loop exhaustion (iteration === MAX_FIX_ITERATIONS and failures remain):**
-
-Present remaining failures:
-```
-Fix loop completed ({MAX_FIX_ITERATIONS} iterations). Remaining failures:
-
-| Doc               | Failed Claims |
-|-------------------|---------------|
-| {doc_path}        | {count}       |
-
-These failures require manual correction. Review the verification output in .planning/tmp/verify-*.json for details.
-```
-
-Continue to scan_for_secrets.
+**After loop exhaustion:**
+Present remaining failures table. Continue to scan_for_secrets.
 </step>
 
 <step name="verify_only_report">
-**Reached when `--verify-only` is present in `$ARGUMENTS`.** This is an early-exit step — do not proceed to dispatch, generation, commit, or report steps after this step.
+Reached when `--verify-only` present. Early exit — no dispatch, generation, commit, or report after this.
 
-Invoke the gsd-doc-verifier agent in read-only mode for each file in `existing_docs` from the init JSON:
+For each file in `existing_docs`:
+```xml
+<verify_assignment>
+doc_path: {doc.path}
+project_root: {project_root}
+</verify_assignment>
+```
 
-1. For each doc in `existing_docs`:
-   a. Spawn `gsd-doc-verifier` (or invoke sequentially if Task tool is unavailable) with:
-      ```xml
-      <verify_assignment>
-      doc_path: {doc.path}
-      project_root: {project_root from init JSON}
-      </verify_assignment>
-      ```
-   b. Read the result JSON from `.planning/tmp/verify-{doc_filename}.json`.
+Read result JSONs. Count VERIFY markers via grep for `<!-- VERIFY:`.
 
-2. Also count VERIFY markers in each doc: grep for `<!-- VERIFY:` in the file content.
-
-Present a combined summary table:
-
+Present combined table:
 ```
 --verify-only audit:
 
-| File                     | Claims Checked | Passed | Failed | VERIFY Markers |
-|--------------------------|----------------|--------|--------|----------------|
-| README.md                | 12             | 10     | 2      | 0              |
-| docs/ARCHITECTURE.md     | 8              | 8      | 0      | 0              |
-| docs/CONFIGURATION.md    | 5              | 3      | 2      | 5              |
-| ...                 | ...            | ...    | ...    | ...            |
+| File | Claims Checked | Passed | Failed | VERIFY Markers |
+|------|----------------|--------|--------|----------------|
 
-Total: {total_checked} claims checked, {total_failed} failures, {total_markers} VERIFY markers requiring manual review
+Total: {total_checked} claims, {total_failed} failures, {total_markers} VERIFY markers
 ```
 
-If any failures exist, show details:
-```
-Failed claims:
-  README.md:34 - "src/cli/index.ts" (expected: file exists, actual: file not found)
-  docs/CONFIGURATION.md:12 - "npm run deploy" (expected: script in package.json, actual: script not found)
-```
+Show failed claims details if any.
 
-Display note:
-```
-To fix failures automatically: /gsd:docs-update (runs generation + fix loop)
-To regenerate all docs from scratch: /gsd:docs-update --force
-```
+Clean up: remove `.planning/tmp/verify-*.json` files.
 
-Clean up temp files: remove `.planning/tmp/verify-*.json` files.
-
-End workflow — do not proceed to any dispatch, commit, or report steps.
+End workflow.
 </step>
 
 <step name="scan_for_secrets">
-CRITICAL SECURITY CHECK: Scan all generated/updated doc files for accidentally leaked secrets before committing. Per D-07, this runs once after the fix loop completes, before commit_docs.
+Build file list from generation queue (docs actually written).
 
-Build the file list from the generation queue -- include all docs that were written to disk (created, updated, supplemented, or fixed). Do not hardcode a static list; use the actual list of files that were generated or modified.
-
-Run secret pattern detection:
-
+Detect patterns:
 ```bash
-# Check for common API key patterns in generated docs
 grep -E '(sk-[a-zA-Z0-9]{20,}|sk_live_[a-zA-Z0-9]+|sk_test_[a-zA-Z0-9]+|ghp_[a-zA-Z0-9]{36}|gho_[a-zA-Z0-9]{36}|glpat-[a-zA-Z0-9_-]+|AKIA[A-Z0-9]{16}|xox[baprs]-[a-zA-Z0-9-]+|-----BEGIN.*PRIVATE KEY|eyJ[a-zA-Z0-9_-]+\.eyJ[a-zA-Z0-9_-]+\.)' \
-  {space-separated list of generated doc files} 2>/dev/null \
-  && SECRETS_FOUND=true || SECRETS_FOUND=false
+  {generated files} 2>/dev/null && SECRETS_FOUND=true || SECRETS_FOUND=false
 ```
 
-**If SECRETS_FOUND=true:**
-
+If secrets found:
 ```
 SECURITY ALERT: Potential secrets detected in generated documentation!
 
-Found patterns that look like API keys or tokens in:
 {show grep output}
 
-This would expose credentials if committed.
-
-Action required:
-1. Review the flagged lines above
-2. Remove any real secrets from the doc files
-3. Re-run /gsd:docs-update to regenerate clean docs
-```
-
-Then confirm with AskUserQuestion:
-
-```
 AskUserQuestion([{
-  question: "Potential secrets detected in generated docs. How would you like to proceed?",
-  header: "Security",
-  multiSelect: false,
+  question: "How should we proceed?",
   options: [
-    { label: "Safe to proceed", description: "I've reviewed the flagged lines — no real secrets, commit the docs" },
-    { label: "Abort commit", description: "Skip committing — I'll clean up the docs first" }
+    { label: "Safe to proceed" },
+    { label: "Abort commit" }
   ]
 }])
 ```
 
-If the user selects "Abort commit": skip commit_docs and continue to report. If "Safe to proceed": continue to commit_docs.
+If "Abort commit": skip commit_docs. If "Safe to proceed": continue to commit_docs.
 
-**If SECRETS_FOUND=false:**
-
-Continue to commit_docs.
+If no secrets: continue to commit_docs.
 </step>
 
 <step name="commit_docs">
-Only run this step if `commit_docs` is `true` from the init JSON. If `commit_docs` is false, skip to report.
+Only run if `commit_docs` is true.
 
-Assemble the list of files that were actually generated (do not include files that failed or were skipped):
+Assemble list of successfully written files (exclude failures/skipped).
 
 ```bash
 $GSD_SDK query commit "docs: generate project documentation" \
-  --files README.md docs/ARCHITECTURE.md docs/CONFIGURATION.md docs/GETTING-STARTED.md docs/DEVELOPMENT.md docs/TESTING.md
-# Append any conditional docs that were generated:
-# --files ... docs/API.md docs/DEPLOYMENT.md CONTRIBUTING.md
-# Append per-package READMEs if monorepo dispatch ran:
-# --files ... packages/core/README.md packages/cli/README.md
+  --files {space-separated list of generated files}
 ```
-
-Only include files that were successfully written to disk. Do not include failed or skipped docs.
 
 Continue to report.
 </step>
 
 <step name="report">
-**Read the work manifest first:** `Read .planning/tmp/docs-work-manifest.json` — use the manifest to compile the complete report covering all canonical docs, review_queue results, and gap_queue results. The manifest is the source of truth for what was processed.
-
-Present a completion summary to the user.
-
-**Summary format:**
+Read manifest. Compile summary from canonical_queue, review_queue, gap_queue.
 
 ```
 Documentation generation complete.
@@ -1108,54 +492,38 @@ Documentation generation complete.
 Project type: {primary_type}
 
 Generated docs:
-| File                     | Mode   | Lines |
-|--------------------------|--------|-------|
-| README.md                | create | 87    |
-| docs/ARCHITECTURE.md     | update | 124   |
-| docs/GETTING-STARTED.md  | create | 63    |
-| docs/DEVELOPMENT.md      | create | 71    |
-| docs/TESTING.md          | create | 58    |
-| docs/CONFIGURATION.md    | create | 45    |
-[conditional docs if generated]
+| File | Mode | Lines |
+|------|------|-------|
 
-{If monorepo per-package READMEs were generated:}
+{If per-package READMEs generated:}
 Per-package READMEs:
-| Package             | Mode   | Lines |
-|---------------------|--------|-------|
-| packages/core       | create | 42    |
-| packages/cli        | create | 38    |
+| Package | Mode | Lines |
+|---------|------|-------|
 
-{If any docs failed or were skipped:}
+{If failures/skipped:}
 Skipped / failed:
-  - docs/API.md: agent did not complete
+  - {file}: {reason}
 
 {If preservation_check ran:}
 Preservation decisions:
-  - {filename}: {preserve|supplement|regenerate}
+  - {file}: {decision}
 
-{If docs/DEPLOYMENT.md or docs/CONFIGURATION.md were generated:}
-VERIFY markers: {N} markers placed in docs/DEPLOYMENT.md and/or docs/CONFIGURATION.md for infrastructure claims that require manual verification.
+{If DEPLOYMENT/CONFIGURATION generated:}
+VERIFY markers: {N} placed for infrastructure claims requiring manual review.
 
-{If review_queue was non-empty:}
-
+{If review_queue non-empty:}
 Existing doc accuracy review:
-
 | Doc | Claims Checked | Passed | Failed | Fixed |
 |-----|----------------|--------|--------|-------|
-| docs/api/endpoint-map.md | 5 | 4 | 1 | 1 |
 
-{For any remaining unfixed failures after fix_loop:}
-Remaining inaccuracies could not be auto-corrected — manual review recommended for flagged items above.
+{If unfixed failures remain:}
+Remaining inaccuracies require manual review.
 
-{If commit_docs was true:}
+{If commit_docs true:}
 All generated files committed.
 ```
 
-Remind the user they can fact-check generated docs:
-
-```
-Run `/gsd:docs-update --verify-only` to fact-check generated docs against the codebase.
-```
+Remind: Run `/gsd:docs-update --verify-only` to fact-check generated docs.
 
 End workflow.
 </step>
@@ -1163,21 +531,21 @@ End workflow.
 </process>
 
 <success_criteria>
-- [ ] docs-init JSON loaded and all fields extracted
-- [ ] Project type correctly classified from project_type signals
-- [ ] Doc queue contains all always-on docs plus only the conditional docs matching project signals
-- [ ] CHANGELOG.md was NOT generated or queued
-- [ ] Each doc was generated in correct mode (create for new, update for existing)
-- [ ] Wave 1 docs (README, ARCHITECTURE, CONFIGURATION) completed before Wave 2 started
+- [ ] docs-init JSON loaded, all fields extracted
+- [ ] Project type correctly classified from signals
+- [ ] Doc queue contains always-on + conditional docs matching signals
+- [ ] CHANGELOG.md NOT generated/queued
+- [ ] Correct mode per doc (create/update)
+- [ ] Wave 1 (README, ARCHITECTURE, CONFIGURATION) completed before Wave 2
 - [ ] Generated docs contain zero GSD methodology content
-- [ ] docs/DEPLOYMENT.md and docs/CONFIGURATION.md use VERIFY markers for undiscoverable claims (if generated)
-- [ ] All generated files committed (if commit_docs is true)
-- [ ] Hand-written docs (no GSD marker) prompted for preserve/supplement/regenerate before dispatch (unless --force)
-- [ ] --force flag skipped preservation prompts and regenerated all docs
-- [ ] --verify-only flag reported doc status without generating files
-- [ ] Per-package READMEs generated for monorepo workspaces (if applicable)
-- [ ] verify_docs step checked all generated docs against the live codebase
-- [ ] fix_loop ran at most 2 iterations and halted on regression
-- [ ] scan_for_secrets ran before commit and blocked on detected patterns
-- [ ] --verify-only invokes gsd-doc-verifier for full fact-checking (not just VERIFY marker count)
+- [ ] DEPLOYMENT/CONFIGURATION use VERIFY markers for undiscoverable claims
+- [ ] Files committed if commit_docs true
+- [ ] Hand-written docs prompted for preserve/supplement/regenerate (unless --force)
+- [ ] --force skipped preservation, regenerated all
+- [ ] --verify-only reported status without generating
+- [ ] Per-package READMEs generated for monorepos
+- [ ] verify_docs checked all generated docs against codebase
+- [ ] fix_loop ran max 2 iterations, halted on regression
+- [ ] scan_for_secrets ran before commit, blocked on detected patterns
+- [ ] --verify-only invoked gsd-doc-verifier for fact-checking
 </success_criteria>
