@@ -104,10 +104,11 @@ None. Research is HIGH confidence. Two plan-time verification flags noted above 
 | 260607-0kd | Add null-omit comments to effort= lines in Agent invocations | 2026-06-07 | 4de5a455 | [260607-0kd-add-null-omit-comments-to-effort-lines-i](./quick/260607-0kd-add-null-omit-comments-to-effort-lines-i/) |
 | 260607-0v5 | Create a regression guard test at tests/bare-effort-arg-scan.test.cjs that fails if any bare {*_effort_arg} token appears in an Agent() invocation | 2026-06-07 | f1661253 | [260607-0v5-create-a-regression-guard-test](./quick/260607-0v5-create-a-regression-guard-test/) |
 | 260607-1fz | Create tests/null-omit-comment-scan.test.cjs — a regression guard that fails if any standalone effort={*_effort_arg} line inside an Agent() invocation is missing its null-omit comment | 2026-06-07 | 734b3619 | [260607-1fz-create-tests-null-omit-comment-scan-test](./quick/260607-1fz-create-tests-null-omit-comment-scan-test/) |
+| 260607-j5s | Milestone v2.1.0-e introduced some changes to the prompt files in this project. These changes, some of them have tests for them (to detect regression) while there are some gaps. I want you as part of this task, find the gaps in testing. This is an investigation only task. | 2026-06-07 | 897be466 | [260607-j5s-milestone-v2-1-0-e-introduced-some-chang](./quick/260607-j5s-milestone-v2-1-0-e-introduced-some-chang/) |
 
 ## Session Continuity
 
-Last activity: 2026-06-07 - Completed quick task 260607-1fz: Create null-omit-comment-scan regression guard test
+Last activity: 2026-06-07 - Completed quick task 260607-j5s: Find testing gaps for Milestone v2.1.0-e
 Last session: 2026-06-06T05:29:06.808Z
 Stopped at: Phase 58 context gathered
 Resume file: .planning/phases/58-regression-coverage/58-CONTEXT.md
