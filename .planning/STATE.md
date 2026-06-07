@@ -78,10 +78,11 @@ None. Research is HIGH confidence across all five phases.
 |---|-------------|------|--------|-----------|
 | 260607-b0u | Restore lost functionality in compressed docs-update.md workflow | 2026-06-07 | 5c56b40a | [260607-b0u-restore-lost-functionality-in-compressed](./quick/260607-b0u-restore-lost-functionality-in-compressed/) |
 | 260607-brw | Update 3 stale assertions in tests/bug-2801-ingest-docs-handler.test.cjs to accept #3668 gsd-sdk PATH fallback | 2026-06-07 | 29fa5de8 | [260607-brw-update-3-stale-assertions-in-tests-bug-2](./quick/260607-brw-update-3-stale-assertions-in-tests-bug-2/) |
+| 260607-bx9 | Fix model-effort resolver test failures by regenerating golden snapshot and updating stale sonnet;medium expectations | 2026-06-07 | 7507cc07 | [260607-bx9-fix-model-effort-resolver-test-failures-](./quick/260607-bx9-fix-model-effort-resolver-test-failures-/) |
 
 ## Session Continuity
 
-Last activity: 2026-06-07 — Completed quick task 260607-brw: relax bug-2801 assertions for #3668 SDK-resolution fallback
+Last activity: 2026-06-07 — Completed quick task 260607-bx9: fix model-effort resolver test failures (golden snapshot regen + stale expectations)
 Stopped at: Phase 59 context gathered
 Resume file: .planning/phases/59-comment-cleanup/59-CONTEXT.md
 
