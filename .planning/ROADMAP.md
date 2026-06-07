@@ -586,7 +586,10 @@ Full details: `.planning/milestones/v2.1.0-e-ROADMAP.md`
   4. A passing test asserts `ingest-docs.md` contains `resolve-model-effort gsd-doc-synthesizer`, `resolve-model-effort gsd-roadmapper`, `doc_synthesizer_model_effort_arg`, and `roadmapper_model_effort_arg` (two agents — both spawn sites covered)
   5. `npm test 2>&1 | tee /tmp/gsd-test-output.txt` passes with 0 new failures; the new tests are live (not skipped)
 
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+
+- [ ] 60-01-PLAN.md — Add 8 Group B effort-wiring regression tests (EWC-01..EWC-08) to tests/phase-56-effort-wiring.test.cjs
 
 #### Phase 61: Worktree Safety Coverage
 
@@ -702,7 +705,7 @@ Full details: `.planning/milestones/v2.1.0-e-ROADMAP.md`
 | 57. Install-Time Translation | v2.1.0-e | 3/3 | Complete    | 2026-06-05 |
 | 58. Regression Coverage | v2.1.0-e | 3/3 | Complete    | 2026-06-06 |
 | 59. Comment Cleanup | v2.1.0-f | 1/1 | Complete    | 2026-06-07 |
-| 60. Effort Wiring Coverage | v2.1.0-f | 0/TBD | Not started | - |
+| 60. Effort Wiring Coverage | v2.1.0-f | 0/1 | In Progress | - |
 | 61. Worktree Safety Coverage | v2.1.0-f | 0/TBD | Not started | - |
 | 62. Rubric Inlining Coverage | v2.1.0-f | 0/TBD | Not started | - |
 | 63. Security Framing Coverage | v2.1.0-f | 0/TBD | Not started | - |
