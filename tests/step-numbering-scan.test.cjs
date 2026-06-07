@@ -14,15 +14,6 @@
  * EXCLUDED:     get-shit-done/workflows/{plan-phase,new-milestone,new-project}.md
  *               (Pattern C files — `## N.N.` headings without "Step" keyword;
  *                deferred to follow-on milestone per CONTEXT.md D-07)
- *
- * Phase 48 RED expectation: 7 files fail (letter-suffix detection added via UAT gap closure):
- *   - agents/gsd-verifier.md (Step 2a, Step 2b, Step 2c, Step 3b, Step 4b, Step 7b, Step 7c, Step 9b)
- *   - agents/gsd-intel-updater.md (Step 6.5)
- *   - agents/gsd-phase-researcher.md (Step 1.3, 1.5, 2.5, 2.6)
- *   - get-shit-done/workflows/progress.md (Step 1.5, 1.6)
- *   - get-shit-done/workflows/quick.md (Step 2.5, 4.5, 4.75, 5.5, 5.6, 6.25, 6.5)
- *   - get-shit-done/workflows/execute-phase.md (Pattern A/B 7.0-7.3, Pattern D 2.5/5.5-5.8)
- *   - get-shit-done/workflows/execute-phase/steps/post-merge-gate.md (inline "step 5.8" ref)
  */
 
 const { describe, test } = require('node:test');
