@@ -567,10 +567,11 @@ Full details: `.planning/milestones/v2.1.0-e-ROADMAP.md`
 **Depends on**: Phase 58 (previous milestone complete)
 **Requirements**: DOC-01
 **Success Criteria** (what must be TRUE):
+
   1. Lines 18–26 of `tests/step-numbering-scan.test.cjs` (the "Phase 48 RED expectation" JSDoc comment) are absent from the file
   2. Running `node --test tests/step-numbering-scan.test.cjs` reports the same test count as before the edit — no tests lost, no parse errors introduced
-  3. `npm test 2>&1 | tee /tmp/gsd-test-output.txt` still passes with 0 new failures after the deletion
-**Plans**: TBD
+  3. `npm test 2>&1 | tee /tmp/gsd-test-output.txt` still passes with 0 new failures after the deletion**Plans**: 1 plan
+- [ ] 59-01-PLAN.md — Remove stale Phase 48 RED expectation JSDoc comment from tests/step-numbering-scan.test.cjs [DOC-01]
 
 #### Phase 60: Effort Wiring Coverage
 
@@ -578,11 +579,13 @@ Full details: `.planning/milestones/v2.1.0-e-ROADMAP.md`
 **Depends on**: Phase 59
 **Requirements**: EWC-01, EWC-02, EWC-03, EWC-04, EWC-05, EWC-06, EWC-07, EWC-08
 **Success Criteria** (what must be TRUE):
+
   1. A passing test asserts `audit-fix.md` contains both `resolve-model-effort gsd-executor` and `executor_model_effort_arg`
   2. Passing tests assert `diagnose-issues.md`, `code-review.md`, `explore.md`, `import.md`, and `discuss-phase-assumptions.md` each contain their respective `resolve-model-effort <agent>` and `<agent>_model_effort_arg` tokens
   3. A passing test asserts `code-review-fix.md` contains `resolve-model-effort gsd-code-reviewer`, `resolve-model-effort gsd-code-fixer`, `code_reviewer_model_effort_arg`, and `code_fixer_model_effort_arg` (two agents — both spawn sites covered)
   4. A passing test asserts `ingest-docs.md` contains `resolve-model-effort gsd-doc-synthesizer`, `resolve-model-effort gsd-roadmapper`, `doc_synthesizer_model_effort_arg`, and `roadmapper_model_effort_arg` (two agents — both spawn sites covered)
   5. `npm test 2>&1 | tee /tmp/gsd-test-output.txt` passes with 0 new failures; the new tests are live (not skipped)
+
 **Plans**: TBD
 
 #### Phase 61: Worktree Safety Coverage
@@ -591,10 +594,12 @@ Full details: `.planning/milestones/v2.1.0-e-ROADMAP.md`
 **Depends on**: Phase 60
 **Requirements**: WSC-01
 **Success Criteria** (what must be TRUE):
+
   1. A passing test in `tests/bug-3097-3099-executor-worktree-path-safety.test.cjs` slices the `<task_commit_protocol>` XML block from `gsd-executor.md` and asserts the slice contains `.git/worktrees/` (the worktree-positive condition)
   2. The same test asserts the protocol block contains the submodule skip-branch mechanism (e.g., `GIT_CONTENT=` or `skip worktree guards`) so the guard is provably not activated for submodule paths
   3. Assertions are scoped to the `<task_commit_protocol>` block slice, not the full file, preventing vacuous passes from documentation text elsewhere in `gsd-executor.md`
   4. `npm test 2>&1 | tee /tmp/gsd-test-output.txt` passes with 0 new failures
+
 **Plans**: TBD
 
 #### Phase 62: Rubric Inlining Coverage
@@ -603,10 +608,12 @@ Full details: `.planning/milestones/v2.1.0-e-ROADMAP.md`
 **Depends on**: Phase 61
 **Requirements**: RIC-01
 **Success Criteria** (what must be TRUE):
+
   1. A passing test in `tests/debug-session-management.test.cjs` (or a nearby appropriate file) reads `agents/gsd-user-profiler.md` and asserts the content contains `<step name="load_rubric">` (confirming the load_rubric step exists)
   2. The same test asserts the content contains `user-profiling.md` (confirming the specific rubric filename is referenced, not generic include language)
   3. The two assertions are separate `assert.ok()` calls so failure attribution is unambiguous
   4. `npm test 2>&1 | tee /tmp/gsd-test-output.txt` passes with 0 new failures
+
 **Plans**: TBD
 
 #### Phase 63: Security Framing Coverage
@@ -615,11 +622,13 @@ Full details: `.planning/milestones/v2.1.0-e-ROADMAP.md`
 **Depends on**: Phase 62
 **Requirements**: SFC-01
 **Success Criteria** (what must be TRUE):
+
   1. The test block at lines 133–139 of `tests/debug-session-management.test.cjs` has no `{ skip: '...' }` option — it executes unconditionally
   2. The test asserts `gsd-debugger.md` content contains `untrusted user input` (fork's affirmative security language)
   3. The test asserts `gsd-debugger.md` content contains `evidence data only` (fork's scope-restriction language)
   4. The stale `DATA_START` assertion is absent — it has been replaced entirely by the two fork-language assertions above
   5. `npm test 2>&1 | tee /tmp/gsd-test-output.txt` passes with 0 new failures; `debug-session-management.test.cjs` reports one fewer skipped test than before this phase
+
 **Plans**: TBD
 
 ## Progress
@@ -692,7 +701,7 @@ Full details: `.planning/milestones/v2.1.0-e-ROADMAP.md`
 | 56. Spawn-Template Wiring | v2.1.0-e | 3/3 | Complete    | 2026-06-04 |
 | 57. Install-Time Translation | v2.1.0-e | 3/3 | Complete    | 2026-06-05 |
 | 58. Regression Coverage | v2.1.0-e | 3/3 | Complete    | 2026-06-06 |
-| 59. Comment Cleanup | v2.1.0-f | 0/TBD | Not started | - |
+| 59. Comment Cleanup | v2.1.0-f | 0/1 | Not started | - |
 | 60. Effort Wiring Coverage | v2.1.0-f | 0/TBD | Not started | - |
 | 61. Worktree Safety Coverage | v2.1.0-f | 0/TBD | Not started | - |
 | 62. Rubric Inlining Coverage | v2.1.0-f | 0/TBD | Not started | - |
