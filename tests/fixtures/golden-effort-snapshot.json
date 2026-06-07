@@ -1,5 +1,5 @@
 {
-  "generated": "2026-06-06",
+  "generated": "2026-06-07",
   "description": "Static post-D-08 golden: agent × profile × runtime",
   "rows": [
     {
@@ -35,14 +35,14 @@
       "profile": "budget",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-planner",
       "profile": "budget",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-planner",
@@ -91,28 +91,28 @@
       "profile": "balanced",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-roadmapper",
       "profile": "balanced",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-roadmapper",
       "profile": "budget",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-roadmapper",
       "profile": "budget",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-roadmapper",
@@ -161,28 +161,28 @@
       "profile": "balanced",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-executor",
       "profile": "balanced",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-executor",
       "profile": "budget",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-executor",
       "profile": "budget",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-executor",
@@ -231,14 +231,14 @@
       "profile": "balanced",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-phase-researcher",
       "profile": "balanced",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-phase-researcher",
@@ -301,14 +301,14 @@
       "profile": "balanced",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-project-researcher",
       "profile": "balanced",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-project-researcher",
@@ -357,28 +357,28 @@
       "profile": "quality",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-research-synthesizer",
       "profile": "quality",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-research-synthesizer",
       "profile": "balanced",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-research-synthesizer",
       "profile": "balanced",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-research-synthesizer",
@@ -441,28 +441,28 @@
       "profile": "balanced",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-debugger",
       "profile": "balanced",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-debugger",
       "profile": "budget",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-debugger",
       "profile": "budget",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-debugger",
@@ -497,14 +497,14 @@
       "profile": "quality",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-codebase-mapper",
       "profile": "quality",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-codebase-mapper",
@@ -567,28 +567,28 @@
       "profile": "quality",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-verifier",
       "profile": "quality",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-verifier",
       "profile": "balanced",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-verifier",
       "profile": "balanced",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-verifier",
@@ -637,28 +637,28 @@
       "profile": "quality",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-plan-checker",
       "profile": "quality",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-plan-checker",
       "profile": "balanced",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-plan-checker",
       "profile": "balanced",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-plan-checker",
@@ -707,28 +707,28 @@
       "profile": "quality",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-integration-checker",
       "profile": "quality",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-integration-checker",
       "profile": "balanced",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-integration-checker",
       "profile": "balanced",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-integration-checker",
@@ -777,28 +777,28 @@
       "profile": "quality",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-nyquist-auditor",
       "profile": "quality",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-nyquist-auditor",
       "profile": "balanced",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-nyquist-auditor",
       "profile": "balanced",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-nyquist-auditor",
@@ -847,28 +847,28 @@
       "profile": "quality",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-pattern-mapper",
       "profile": "quality",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-pattern-mapper",
       "profile": "balanced",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-pattern-mapper",
       "profile": "balanced",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-pattern-mapper",
@@ -931,14 +931,14 @@
       "profile": "balanced",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-ui-researcher",
       "profile": "balanced",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-ui-researcher",
@@ -987,28 +987,28 @@
       "profile": "quality",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-ui-checker",
       "profile": "quality",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-ui-checker",
       "profile": "balanced",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-ui-checker",
       "profile": "balanced",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-ui-checker",
@@ -1057,28 +1057,28 @@
       "profile": "quality",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-ui-auditor",
       "profile": "quality",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-ui-auditor",
       "profile": "balanced",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-ui-auditor",
       "profile": "balanced",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-ui-auditor",
@@ -1141,14 +1141,14 @@
       "profile": "balanced",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-doc-writer",
       "profile": "balanced",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-doc-writer",
@@ -1197,28 +1197,28 @@
       "profile": "quality",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-doc-verifier",
       "profile": "quality",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-doc-verifier",
       "profile": "balanced",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-doc-verifier",
       "profile": "balanced",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-doc-verifier",
@@ -1281,14 +1281,14 @@
       "profile": "balanced",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-advisor-researcher",
       "profile": "balanced",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-advisor-researcher",
@@ -1351,14 +1351,14 @@
       "profile": "balanced",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-ai-researcher",
       "profile": "balanced",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-ai-researcher",
@@ -1421,28 +1421,28 @@
       "profile": "balanced",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-assumptions-analyzer",
       "profile": "balanced",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-assumptions-analyzer",
       "profile": "budget",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-assumptions-analyzer",
       "profile": "budget",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-assumptions-analyzer",
@@ -1491,28 +1491,28 @@
       "profile": "balanced",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-code-fixer",
       "profile": "balanced",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-code-fixer",
       "profile": "budget",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-code-fixer",
       "profile": "budget",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-code-fixer",
@@ -1561,28 +1561,28 @@
       "profile": "balanced",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-code-reviewer",
       "profile": "balanced",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-code-reviewer",
       "profile": "budget",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-code-reviewer",
       "profile": "budget",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-code-reviewer",
@@ -1631,28 +1631,28 @@
       "profile": "balanced",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-debug-session-manager",
       "profile": "balanced",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-debug-session-manager",
       "profile": "budget",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-debug-session-manager",
       "profile": "budget",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-debug-session-manager",
@@ -1687,14 +1687,14 @@
       "profile": "quality",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-doc-classifier",
       "profile": "quality",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-doc-classifier",
@@ -1771,14 +1771,14 @@
       "profile": "balanced",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-doc-synthesizer",
       "profile": "balanced",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-doc-synthesizer",
@@ -1841,14 +1841,14 @@
       "profile": "balanced",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-domain-researcher",
       "profile": "balanced",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-domain-researcher",
@@ -1911,14 +1911,14 @@
       "profile": "balanced",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-eval-auditor",
       "profile": "balanced",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-eval-auditor",
@@ -1995,14 +1995,14 @@
       "profile": "budget",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-eval-planner",
       "profile": "budget",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-eval-planner",
@@ -2051,28 +2051,28 @@
       "profile": "balanced",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-framework-selector",
       "profile": "balanced",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-framework-selector",
       "profile": "budget",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-framework-selector",
       "profile": "budget",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-framework-selector",
@@ -2121,14 +2121,14 @@
       "profile": "balanced",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-intel-updater",
       "profile": "balanced",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-intel-updater",
@@ -2191,28 +2191,28 @@
       "profile": "balanced",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-security-auditor",
       "profile": "balanced",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-security-auditor",
       "profile": "budget",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-security-auditor",
       "profile": "budget",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-security-auditor",
@@ -2261,28 +2261,28 @@
       "profile": "balanced",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-user-profiler",
       "profile": "balanced",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-user-profiler",
       "profile": "budget",
       "runtime": "claude",
       "expectedModel": "sonnet",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-user-profiler",
       "profile": "budget",
       "runtime": "codex",
       "expectedModel": "gpt-5.3-codex",
-      "expectedEffort": "medium"
+      "expectedEffort": "high"
     },
     {
       "agent": "gsd-user-profiler",
