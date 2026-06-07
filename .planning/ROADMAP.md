@@ -18,6 +18,7 @@
 - ✅ **v2.1.0-c Install-Time Content Materialization** — Phases 44–47.1 (shipped 2026-05-29)
 - ✅ **v2.1.0-d Whole-Integer Step Numbering** — Phases 48–51 (shipped 2026-05-31)
 - ✅ **v2.1.0-e Per-Agent Thinking Effort** — Phases 52–58 (shipped 2026-06-06)
+- 🚧 **v2.1.0-f Testing Coverage Gaps** — Phases 59–63 (in progress)
 
 ## Phases
 
@@ -226,6 +227,35 @@ Full details: `.planning/milestones/v2.1.0-d-ROADMAP.md`
 
 </details>
 
+<details>
+<summary>✅ v2.1.0-e Per-Agent Thinking Effort (Phases 52–58) — SHIPPED 2026-06-06</summary>
+
+**Milestone Goal:** Add a unified, Claude-first thinking-effort dimension encoded inline as `model;effort` labels (semicolon delimiter — chosen so colons in provider IDs are never ambiguous), resolved through the existing model machinery and passed to `Agent()` spawns.
+
+- [x] Phase 52: Parser Foundation (3/3 plans) — completed 2026-05-31
+- [x] Phase 53: Unified Effort Resolver (2/2 plans) — completed 2026-06-01
+- [x] Phase 54: SDK & Tools JSON Exposure (2/2 plans) — completed 2026-06-02
+- [x] Phase 55: Catalog Schema + User Handover (3/3 plans) — completed 2026-06-03
+- [x] Phase 55.1: Fix Tests Failing from Phase 55 Work (4/4 plans) — completed 2026-06-04
+- [x] Phase 55.2: Fix SDK Golden-Parity Suite Failures (5/5 plans) — completed 2026-06-04
+- [x] Phase 56: Spawn-Template Wiring (3/3 plans) — completed 2026-06-04
+- [x] Phase 57: Install-Time Translation (3/3 plans) — completed 2026-06-05
+- [x] Phase 58: Regression Coverage (3/3 plans) — completed 2026-06-06
+
+Full details: `.planning/milestones/v2.1.0-e-ROADMAP.md`
+
+</details>
+
+### 🚧 v2.1.0-f Testing Coverage Gaps (In Progress)
+
+**Milestone Goal:** Close all behavioral and documentation testing gaps identified in the v2.1.0-e gap report before they accumulate into undetected regressions. Work is entirely additive test code across four existing test files — no agent or workflow source files change.
+
+- [ ] **Phase 59: Comment Cleanup** - Remove stale Phase 48 RED expectation comment from step-numbering-scan.test.cjs
+- [ ] **Phase 60: Effort Wiring Coverage** - Add 8 Group B effort-wiring regression tests to phase-56-effort-wiring.test.cjs
+- [ ] **Phase 61: Worktree Safety Coverage** - Assert submodule exclusion logic in executor worktree path-safety test
+- [ ] **Phase 62: Rubric Inlining Coverage** - Assert gsd-user-profiler.md load_rubric step references Eta-inlined rubric
+- [ ] **Phase 63: Security Framing Coverage** - Rewrite skipped debugger security test to assert fork's hardened language
+
 ## Phase Details
 
 <details>
@@ -304,7 +334,7 @@ Plans:
 </details>
 
 <details>
-<summary>✅ v2.1.0-e Per-Agent Thinking Effort (Phases 52–58) — SHIPPED 2026-06-06</summary>
+<summary>✅ v2.1.0-e Phase Details (Phases 52–58) — SHIPPED 2026-06-06</summary>
 
 **Milestone Goal:** Add a unified, Claude-first thinking-effort dimension encoded inline as `model;effort` labels (semicolon delimiter — chosen so colons in provider IDs are never ambiguous), resolved through the existing model machinery and passed to `Agent()` spawns. The parsing/resolver plumbing is additive, but the effort *semantics* deliberately change: per Phase 56 D-08, a bare (un-assigned) slot on `{claude, codex}` now floors to `medium` instead of resolving to `null`/omit (intended behavior change, not a regression). `inherit` slots and the 8 non-effort runtimes still omit.
 
@@ -336,7 +366,6 @@ Plans:
 **Goal**: `resolveReasoningEffortInternal` resolves effort for the `claude` runtime (Claude gate lifted via an explicit `{claude, codex}` allowlist), follows the same precedence chain as the model resolver, and accepts `model;effort` in all three config override sites — while bare slots within `{claude, codex}` now floor to `medium` (Phase 56 D-08), and `inherit` slots plus the non-effort runtimes still omit effort
 **Depends on**: Phase 52
 **Requirements**: RESOLVE-01, RESOLVE-02, RESOLVE-03, RESOLVE-04, RESOLVE-05, RESOLVE-06, CONFIG-01, CONFIG-02, CONFIG-03, CONFIG-04
-**Plan-time verification**: Confirm whether `effort: max` is accepted in Claude Code subagent frontmatter before emitting it on the Claude path. If rejected (the settings file rejects it; frontmatter behavior is undocumented), add a `max`→`xhigh` clamp on the Claude spawn path as well.
 **Success Criteria** (what must be TRUE):
 
   1. With effort assigned in a profile slot, the resolver emits that effort for the `claude` runtime — the Claude gate is lifted via an explicit static `{claude, codex}` allowlist, never a data-derived "any tier carrying reasoning_effort" set
@@ -382,7 +411,6 @@ Plans:
 **Goal**: The catalog schema/type widens to carry `model;effort` slot strings (Claude-built), then the user hand-assigns per-agent effort values across all 33 agents during an explicit execution handover
 **Depends on**: Phase 54
 **Requirements**: CATALOG-01, CATALOG-02, CATALOG-03
-**⚠️ USER-HANDOVER BOUNDARY**: This phase contains a manual handover. Claude prepares the schema/type widening (CATALOG-01 in `model-catalog.json`, CATALOG-03 in the `sdk/src/model-catalog.ts` mirror) but does NOT auto-fill effort values. The user hand-assigns the per-agent `model;effort` values in `sdk/shared/model-catalog.json` and its TS mirror themselves (CATALOG-02), then hands back. Before handover, all plumbing is inert (every slot returns `effort: null`); after assignment, the first real integration test exercises live values.
 **Success Criteria** (what must be TRUE):
 
   1. `model-catalog.json` profile slots (`golden`/`balanced`/`budget`) and `adaptiveTierMap` entries accept inline `model;effort` labels — the schema/type widens from the fixed alias union to a string (Claude-built, CATALOG-01)
@@ -406,7 +434,7 @@ Plans:
 
 ### Phase 55.2: Fix SDK golden-parity suite failures (regression triage from phase 55) (INSERTED)
 
-**Goal:** The 17 failing SDK golden native-handler parity tests (from /tmp/gsd-55-1-sdk.txt) are back to green WITHOUT relaxing assertions to hide divergence. Sibling to 55.1: 55.1 reconciled the ROOT suite (now green, fail 0), this reconciles the SDK suite. Each failure is root-caused as one of: (a) missing native handler in the SDK registry — `intel.update`, `verify.codebase-drift`; (b) stale golden fixture needing regeneration after a legitimate gsd-tools.cjs JSON change; or (c) real SDK/CLI divergence where the native handler output drifted from gsd-tools.cjs. Failure clusters: hard "no native handler registered" (intel.update, verify.codebase-drift); JSON-parity mismatches (intel.status/diff/validate/query/extract-exports, history.digest, phase-plan-index, init.quick/todos/manager/map-codebase, audit-open, validate.health); meta/policy (executeForCjs native_failure classification, golden coverage policy). Suspected introducing commits: e4a841cd, abfcbf2b (phase 55-01), possibly interacting with phase-54 SDK work (44c150b42, f0107ba64, 26679eb8c).
+**Goal:** The 17 failing SDK golden native-handler parity tests (from /tmp/gsd-55-1-sdk.txt) are back to green WITHOUT relaxing assertions to hide divergence.
 **Requirements**: none mapped (test-reconciliation phase)
 **Depends on:** Phase 55
 **Plans:** 5/5 plans complete
@@ -417,7 +445,6 @@ Plans:
 - ROOT suite stays green (`npm test` → fail 0) — no regression.
 - VERIFICATION records, per test, whether the cause was missing-handler / stale-fixture / real-divergence, plus the introducing commit found during investigation.
 
-**Test discipline (CLAUDE.md):** run each suite once, pipe to a temp file, read the file — never re-run to re-read. Use `command grep`. ROOT: `npm test 2>&1 | tee /tmp/gsd-55-2-root.txt`. SDK: `cd sdk && npm test 2>&1 | tee /tmp/gsd-55-2-sdk.txt`.
 Plans:
 **Wave 1**
 
@@ -458,15 +485,14 @@ Plans:
 
 #### Phase 56: Spawn-Template Wiring
 
-**Goal**: Spawn templates across `agents/`, `commands/`, and `get-shit-done/workflows/` pass resolved effort to spawned agents via a pre-built carrier token; bare `{claude, codex}` slots floor to `medium` (D-08), and the residual absent cases (explicit `inherit`, the 8 non-effort runtimes) emit nothing via the empty carrier token (D-04), while preserving all fork quality gates. D-08 reopens the Phase 53 resolver (`resolveReasoningEffortInternal` gains the allowlist-gated `medium` floor) — it is no longer frozen for Phase 56.
-**Depends on**: Phase 55 (catalog values assigned so the first integration test exercises live effort)
+**Goal**: Spawn templates across `agents/`, `commands/`, and `get-shit-done/workflows/` pass resolved effort to spawned agents via a pre-built carrier token
+**Depends on**: Phase 55
 **Requirements**: SPAWN-01, SPAWN-02, SPAWN-03
-**Plan-time verification**: Enumerate the spawn-template blocks before committing scope — grep `agents/*.md`, `commands/gsd/*.md`, `get-shit-done/workflows/*.md` for `subagent_type` + `model=` patterns to size the edit list (count not pre-enumerated by research).
 **Success Criteria** (what must be TRUE):
 
-  1. The verified Claude effort carrier (subagent frontmatter `effort:` vs an `Agent()` argument, resolved at plan time against the current Agent/Task API) is wired so resolved effort reaches spawned agents
-  2. Spawn templates across `agents/`, `commands/`, and `get-shit-done/workflows/` pass resolved effort via the pre-built carrier token; bare `{claude, codex}` slots floor to `medium` (D-08), and the residual absent cases (explicit `inherit`, the 8 non-effort runtimes) emit nothing via the empty carrier token (D-04)
-  3. Spawn-template edits preserve every fork quality gate (agent-frontmatter 155/155, negative-framing 99/99, step-numbering 632/632, cross-file-refs 219/219, eta-include) — achieved by extending existing `model=` lines rather than renumbering steps
+  1. The verified Claude effort carrier is wired so resolved effort reaches spawned agents
+  2. Spawn templates across `agents/`, `commands/`, and `get-shit-done/workflows/` pass resolved effort via the pre-built carrier token; bare `{claude, codex}` slots floor to `medium` (D-08)
+  3. Spawn-template edits preserve every fork quality gate (agent-frontmatter 155/155, negative-framing 99/99, step-numbering 632/632, cross-file-refs 219/219, eta-include)
 
 **Plans**: 3 plans (2 waves)
 **Wave 1**
@@ -481,13 +507,13 @@ Plans:
 #### Phase 57: Install-Time Translation
 
 **Goal**: `bin/install.js` translates canonical Claude effort to Codex `reasoning_effort` only at the Codex emit boundary, with each runtime materializing effort correctly at install time
-**Depends on**: Phase 53 (resolver); independent of Phases 55–56 and may proceed in parallel after Phase 54
+**Depends on**: Phase 53 (resolver); independent of Phases 55–56
 **Requirements**: INSTALL-01, INSTALL-02
 **Success Criteria** (what must be TRUE):
 
-  1. `bin/install.js` translates Claude `effort` to Codex `model_reasoning_effort` only at the Codex emit boundary; the runtime-agnostic resolver stays effort-format-neutral
+  1. `bin/install.js` translates Claude `effort` to Codex `model_reasoning_effort` only at the Codex emit boundary
   2. Effort materializes correctly per runtime at install time — Claude effort preserved, Codex translated (`max`→`xhigh`, haiku tier never `xhigh`), unsupported runtimes omit
-  3. The omit guard is preserved for runtimes that cannot carry effort — installing a bare (un-assigned) config produces zero effort emission for the 8 non-effort runtimes; `{claude, codex}` instead emit `medium` for bare slots (the Phase 56 D-08 floor)
+  3. The omit guard is preserved for runtimes that cannot carry effort
 
 **Plans**: 3 plans (3 waves)
 
@@ -505,16 +531,16 @@ Plans:
 
 #### Phase 58: Regression Coverage
 
-**Goal**: A comprehensive regression suite locks in the intended post-D-08 resolution — a golden snapshot proves bare `{claude, codex}` slots now resolve to `medium` (with MODEL values unchanged; pre ≠ post for those effort siblings is expected, not a regression), parser fixtures cover all edge cases, and per-runtime omit/translate contracts hold, with `npm test` green and coverage maintained
+**Goal**: A comprehensive regression suite locks in the intended post-D-08 resolution — a golden snapshot proves bare `{claude, codex}` slots now resolve to `medium`, parser fixtures cover all edge cases, and per-runtime omit/translate contracts hold, with `npm test` green and coverage maintained
 **Depends on**: Phase 57 (and spans Phases 52–57)
 **Requirements**: TEST-01, TEST-02, TEST-03, TEST-04, TEST-05
 **Success Criteria** (what must be TRUE):
 
-  1. A golden snapshot of model resolution proves the INTENDED post-D-08 resolution across all 33 agents and all profile variants — MODEL values for bare configs stay identical, while effort siblings for bare `{claude, codex}` slots move `null` → `medium` (pre ≠ post for those slots is expected, not a regression); `inherit` slots and the 8 non-effort runtimes still snapshot to omitted effort
-  2. Parser fixtures cover effort suffixes, bare models, and colon-containing provider IDs (e.g. `openrouter:anthropic/claude-opus` → effort null)
-  3. Precedence and omit-contract tests pass per runtime: claude emits, codex translates with `max`→`xhigh`, all other runtimes omit
-  4. Regression assertions use strict equality on parsed structures — no `indexOf`-as-boolean false-passes and no substring collisions on `medium`/`high`; each new test confirmed RED before its fix lands
-  5. Full `npm test` passes with zero new regressions versus the pre-milestone baseline; ≥70% line coverage on `get-shit-done/bin/lib/*.cjs` maintained
+  1. A golden snapshot of model resolution proves the intended post-D-08 resolution across all 33 agents and all profile variants
+  2. Parser fixtures cover effort suffixes, bare models, and colon-containing provider IDs
+  3. Precedence and omit-contract tests pass per runtime: claude emits, codex translates, all other runtimes omit
+  4. Regression assertions use strict equality on parsed structures — each new test confirmed RED before its fix lands
+  5. Full `npm test` passes with zero new regressions versus the pre-milestone baseline; coverage ≥70%
 
 **Plans**: 3 plans (2 waves)
 
@@ -530,6 +556,71 @@ Plans:
 Full details: `.planning/milestones/v2.1.0-e-ROADMAP.md`
 
 </details>
+
+### v2.1.0-f Testing Coverage Gaps (Phases 59–63)
+
+**Milestone Goal:** Close all behavioral and documentation testing gaps identified in the v2.1.0-e gap report before they accumulate into undetected regressions. Work is entirely additive test code across four existing test files — no agent or workflow source files change. Baseline: `npm test` 8,243 pass / 8,255 total. Target: that suite plus all new tests passing.
+
+#### Phase 59: Comment Cleanup
+
+**Goal**: The stale Phase 48 RED expectation comment is removed from `tests/step-numbering-scan.test.cjs`, establishing a clean baseline before any substantive test additions
+**Depends on**: Phase 58 (previous milestone complete)
+**Requirements**: DOC-01
+**Success Criteria** (what must be TRUE):
+  1. Lines 18–26 of `tests/step-numbering-scan.test.cjs` (the "Phase 48 RED expectation" JSDoc comment) are absent from the file
+  2. Running `node --test tests/step-numbering-scan.test.cjs` reports the same test count as before the edit — no tests lost, no parse errors introduced
+  3. `npm test 2>&1 | tee /tmp/gsd-test-output.txt` still passes with 0 new failures after the deletion
+**Plans**: TBD
+
+#### Phase 60: Effort Wiring Coverage
+
+**Goal**: Eight Group B workflow effort-wiring regression tests exist in `tests/phase-56-effort-wiring.test.cjs`, guarding the spawn-template wiring added in v2.1.0-e Phase 56 against silent regression
+**Depends on**: Phase 59
+**Requirements**: EWC-01, EWC-02, EWC-03, EWC-04, EWC-05, EWC-06, EWC-07, EWC-08
+**Success Criteria** (what must be TRUE):
+  1. A passing test asserts `audit-fix.md` contains both `resolve-model-effort gsd-executor` and `executor_model_effort_arg`
+  2. Passing tests assert `diagnose-issues.md`, `code-review.md`, `explore.md`, `import.md`, and `discuss-phase-assumptions.md` each contain their respective `resolve-model-effort <agent>` and `<agent>_model_effort_arg` tokens
+  3. A passing test asserts `code-review-fix.md` contains `resolve-model-effort gsd-code-reviewer`, `resolve-model-effort gsd-code-fixer`, `code_reviewer_model_effort_arg`, and `code_fixer_model_effort_arg` (two agents — both spawn sites covered)
+  4. A passing test asserts `ingest-docs.md` contains `resolve-model-effort gsd-doc-synthesizer`, `resolve-model-effort gsd-roadmapper`, `doc_synthesizer_model_effort_arg`, and `roadmapper_model_effort_arg` (two agents — both spawn sites covered)
+  5. `npm test 2>&1 | tee /tmp/gsd-test-output.txt` passes with 0 new failures; the new tests are live (not skipped)
+**Plans**: TBD
+
+#### Phase 61: Worktree Safety Coverage
+
+**Goal**: A test asserts that the `<task_commit_protocol>` block in `gsd-executor.md` explicitly distinguishes submodule `.git` files from worktree `.git` files — the worktree guards fire for `.git/worktrees/` paths but are skipped for submodule paths
+**Depends on**: Phase 60
+**Requirements**: WSC-01
+**Success Criteria** (what must be TRUE):
+  1. A passing test in `tests/bug-3097-3099-executor-worktree-path-safety.test.cjs` slices the `<task_commit_protocol>` XML block from `gsd-executor.md` and asserts the slice contains `.git/worktrees/` (the worktree-positive condition)
+  2. The same test asserts the protocol block contains the submodule skip-branch mechanism (e.g., `GIT_CONTENT=` or `skip worktree guards`) so the guard is provably not activated for submodule paths
+  3. Assertions are scoped to the `<task_commit_protocol>` block slice, not the full file, preventing vacuous passes from documentation text elsewhere in `gsd-executor.md`
+  4. `npm test 2>&1 | tee /tmp/gsd-test-output.txt` passes with 0 new failures
+**Plans**: TBD
+
+#### Phase 62: Rubric Inlining Coverage
+
+**Goal**: A test asserts that `gsd-user-profiler.md` load_rubric step references the Eta-inlined rubric via a `<reference>` block rather than a bare file read instruction
+**Depends on**: Phase 61
+**Requirements**: RIC-01
+**Success Criteria** (what must be TRUE):
+  1. A passing test in `tests/debug-session-management.test.cjs` (or a nearby appropriate file) reads `agents/gsd-user-profiler.md` and asserts the content contains `<step name="load_rubric">` (confirming the load_rubric step exists)
+  2. The same test asserts the content contains `user-profiling.md` (confirming the specific rubric filename is referenced, not generic include language)
+  3. The two assertions are separate `assert.ok()` calls so failure attribution is unambiguous
+  4. `npm test 2>&1 | tee /tmp/gsd-test-output.txt` passes with 0 new failures
+**Plans**: TBD
+
+#### Phase 63: Security Framing Coverage
+
+**Goal**: The previously-skipped test in `tests/debug-session-management.test.cjs` is active and passing, asserting that `gsd-debugger.md` contains the fork's hardened security paragraph rather than the upstream's `DATA_START` sentinel
+**Depends on**: Phase 62
+**Requirements**: SFC-01
+**Success Criteria** (what must be TRUE):
+  1. The test block at lines 133–139 of `tests/debug-session-management.test.cjs` has no `{ skip: '...' }` option — it executes unconditionally
+  2. The test asserts `gsd-debugger.md` content contains `untrusted user input` (fork's affirmative security language)
+  3. The test asserts `gsd-debugger.md` content contains `evidence data only` (fork's scope-restriction language)
+  4. The stale `DATA_START` assertion is absent — it has been replaced entirely by the two fork-language assertions above
+  5. `npm test 2>&1 | tee /tmp/gsd-test-output.txt` passes with 0 new failures; `debug-session-management.test.cjs` reports one fewer skipped test than before this phase
+**Plans**: TBD
 
 ## Progress
 
@@ -601,6 +692,11 @@ Full details: `.planning/milestones/v2.1.0-e-ROADMAP.md`
 | 56. Spawn-Template Wiring | v2.1.0-e | 3/3 | Complete    | 2026-06-04 |
 | 57. Install-Time Translation | v2.1.0-e | 3/3 | Complete    | 2026-06-05 |
 | 58. Regression Coverage | v2.1.0-e | 3/3 | Complete    | 2026-06-06 |
+| 59. Comment Cleanup | v2.1.0-f | 0/TBD | Not started | - |
+| 60. Effort Wiring Coverage | v2.1.0-f | 0/TBD | Not started | - |
+| 61. Worktree Safety Coverage | v2.1.0-f | 0/TBD | Not started | - |
+| 62. Rubric Inlining Coverage | v2.1.0-f | 0/TBD | Not started | - |
+| 63. Security Framing Coverage | v2.1.0-f | 0/TBD | Not started | - |
 
 *v1.41.3 shipped 2026-05-19 — see `.planning/milestones/v1.41.3-ROADMAP.md`*
 *v1.41.5 shipped 2026-05-24 — see `.planning/milestones/v1.41.5-ROADMAP.md`*
