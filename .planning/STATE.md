@@ -1,17 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.1.0-e
-milestone_name: Per-Agent Thinking Effort
-status: milestone_complete
-stopped_at: Milestone v2.1.0-e archived
-last_updated: "2026-06-06T15:30:00.000Z"
-last_activity: 2026-06-06
+milestone: v2.1.0-f
+milestone_name: Testing Coverage Gaps
+status: planning
+last_updated: "2026-06-07T06:34:36.186Z"
+last_activity: 2026-06-07
 progress:
-  total_phases: 9
-  completed_phases: 9
-  total_plans: 28
-  completed_plans: 28
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -25,10 +24,10 @@ See: .planning/PROJECT.md (updated 2026-05-31 after Phase 51)
 
 ## Current Position
 
-Phase: 58
-Plan: Not started
-Status: Executing Phase 58
-Last activity: 2026-06-06 - Completed quick task 260606-tbq: Fix 3 SDK effort resolution gaps in config-query.ts
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-06-07 — Milestone v2.1.0-f started
 
 ## Performance Metrics
 

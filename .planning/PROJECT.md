@@ -20,6 +20,18 @@ Every step label across all prompt content files is a whole integer. Three new e
 
 Every file installed by `bin/install.js` is now fully self-contained. Eta v4 is wired as the install-time template engine in both copy loops; all 82 source files converted from bare-line `@~/` static refs to `<%~ include() %>` tags. Zero unresolved references in any installed runtime — verified by `tests/install-eta-regression.test.cjs` (6/6) and full Claude install walk (TEST-01 with 27-entry `ALLOWED_INLINE_REFS`).
 
+## Current Milestone: v2.1.0-f Testing Coverage Gaps
+
+**Goal:** Close all behavioral and documentation testing gaps identified in the v2.1.0-e gap report before they accumulate into undetected regressions.
+
+**Target features:**
+- GAP-E: Effort wiring regression tests for 8 Group B workflows (audit-fix, diagnose-issues, code-review, code-review-fix, explore, import, ingest-docs, discuss-phase-assumptions)
+- GAP-H: Submodule exclusion test asserting executor worktree guard does NOT fire for `.git/modules/...` paths
+- GAP-K: Assertion that `gsd-debugger.md` contains hardened security paragraph ("untrusted user input")
+- GAP-L: Assertion that `gsd-user-profiler.md` load_rubric step references the Eta-inlined rubric
+- GAP-M1: Remove stale "Phase 48 RED expectation" comment from `step-numbering-scan.test.cjs`
+- GAP-M2: Wire up skipped `debug-session-management.test.cjs` test to assert fork security language
+
 ## Requirements
 
 ### Validated
@@ -123,7 +135,12 @@ Every file installed by `bin/install.js` is now fully self-contained. Eta v4 is 
 
 ### Active
 
-*(None — all active requirements shipped with v2.1.0-e. Next milestone requirements defined at /gsd-new-milestone.)*
+- [ ] GAP-E: Effort wiring tests for 8 Group B workflows added to `phase-56-effort-wiring.test.cjs`
+- [ ] GAP-H: Submodule exclusion path asserted in `bug-3097-3099-executor-worktree-path-safety.test.cjs`
+- [ ] GAP-K: Hardened debugger security paragraph asserted in `debug-session-management.test.cjs`
+- [ ] GAP-L: User-profiler Eta-inlined rubric reference asserted
+- [ ] GAP-M1: Stale Phase 48 RED expectation comment removed from `step-numbering-scan.test.cjs`
+- [ ] GAP-M2: Skipped debugger security test updated to assert fork language
 
 ### Out of Scope
 
@@ -224,4 +241,4 @@ This document evolves at phase transitions and milestone boundaries.
 ---
 ---
 ---
-*Last updated: 2026-06-06 after v2.1.0-e milestone completion*
+*Last updated: 2026-06-07 after v2.1.0-f milestone start*
