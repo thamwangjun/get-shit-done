@@ -571,7 +571,7 @@ Full details: `.planning/milestones/v2.1.0-e-ROADMAP.md`
   1. Lines 18–26 of `tests/step-numbering-scan.test.cjs` (the "Phase 48 RED expectation" JSDoc comment) are absent from the file
   2. Running `node --test tests/step-numbering-scan.test.cjs` reports the same test count as before the edit — no tests lost, no parse errors introduced
   3. `npm test 2>&1 | tee /tmp/gsd-test-output.txt` still passes with 0 new failures after the deletion**Plans**: 1 plan
-- [ ] 59-01-PLAN.md — Remove stale Phase 48 RED expectation JSDoc comment from tests/step-numbering-scan.test.cjs [DOC-01]
+- [x] 59-01-PLAN.md — Remove stale Phase 48 RED expectation JSDoc comment from tests/step-numbering-scan.test.cjs [DOC-01]
 
 #### Phase 60: Effort Wiring Coverage
 
@@ -701,7 +701,7 @@ Full details: `.planning/milestones/v2.1.0-e-ROADMAP.md`
 | 56. Spawn-Template Wiring | v2.1.0-e | 3/3 | Complete    | 2026-06-04 |
 | 57. Install-Time Translation | v2.1.0-e | 3/3 | Complete    | 2026-06-05 |
 | 58. Regression Coverage | v2.1.0-e | 3/3 | Complete    | 2026-06-06 |
-| 59. Comment Cleanup | v2.1.0-f | 0/1 | Not started | - |
+| 59. Comment Cleanup | v2.1.0-f | 1/1 | Complete   | 2026-06-07 |
 | 60. Effort Wiring Coverage | v2.1.0-f | 0/TBD | Not started | - |
 | 61. Worktree Safety Coverage | v2.1.0-f | 0/TBD | Not started | - |
 | 62. Rubric Inlining Coverage | v2.1.0-f | 0/TBD | Not started | - |
