@@ -100,8 +100,8 @@ describe('bug-2801: gsd-tools init ingest-docs handler exists', () => {
   });
 });
 
-describe('bug-2801: ingest-docs.md workflow calls gsd-tools not gsd-sdk', () => {
-  test('no bash code block in ingest-docs.md calls gsd-sdk', () => {
+describe('bug-2801: ingest-docs.md workflow uses #3668 SDK-resolution (no primary gsd-sdk call)', () => {
+  test('no bash code block in ingest-docs.md calls gsd-sdk as a primary invocation', () => {
     const content = fs.readFileSync(WORKFLOW_FILE, 'utf-8');
     // Extract bash fenced code blocks structurally.
     const bashBlocks = [];
@@ -112,17 +112,43 @@ describe('bug-2801: ingest-docs.md workflow calls gsd-tools not gsd-sdk', () => 
     }
     assert.ok(bashBlocks.length > 0, 'expected bash code blocks in workflow');
 
-    // Check every line in every bash block — not just lines that start with the token,
-    // since gsd-sdk can appear in subshell expansions like $(gsd-sdk query ...).
-    const sdkCalls = bashBlocks
+    // Check every non-comment line in every bash block for gsd-sdk references.
+    const allSdkLines = bashBlocks
       .join('\n')
       .split('\n')
+      .filter((line) => !/^\s*#/.test(line))
       .filter((line) => /\bgsd-sdk\b/.test(line));
 
+    // The #3668 fallback block legitimately references gsd-sdk in exactly three ways:
+    //   1. `command -v gsd-sdk` — PATH probe
+    //   2. `GSD_SDK="gsd-sdk"` — variable assignment fallback
+    //   3. `gsd-sdk not found` — error message
+    // Filter these out; anything remaining is an illegitimate primary invocation.
+    const illegitimateLines = allSdkLines.filter(
+      (line) =>
+        !/command\s+-v\s+gsd-sdk/.test(line) &&
+        !/GSD_SDK="gsd-sdk"/.test(line) &&
+        !/gsd-sdk not found/.test(line)
+    );
+
     assert.deepStrictEqual(
-      sdkCalls,
+      illegitimateLines,
       [],
-      `workflow bash blocks still reference gsd-sdk (should use gsd-tools): ${sdkCalls.join(', ')}`
+      `primary gsd-sdk invocation found — only the #3668 fallback block may reference gsd-sdk: ${illegitimateLines.join(', ')}`
+    );
+
+    // Positive guard: no non-comment bash line may contain a primary literal gsd-sdk query/init call
+    // (the original bug-2801 form: `gsd-sdk query init.ingest-docs` or `gsd-sdk init ...`).
+    const primaryCalls = bashBlocks
+      .join('\n')
+      .split('\n')
+      .filter((line) => !/^\s*#/.test(line))
+      .filter((line) => /\bgsd-sdk\s+(query|init)\b/.test(line));
+
+    assert.deepStrictEqual(
+      primaryCalls,
+      [],
+      `primary literal gsd-sdk query/init call found (bug-2801 regression): ${primaryCalls.join(', ')}`
     );
   });
 
@@ -133,12 +159,33 @@ describe('bug-2801: ingest-docs.md workflow calls gsd-tools not gsd-sdk', () => 
     const bashLines = [...content.matchAll(codeBlockRe)]
       .flatMap((m) => m[1].split('\n'))
       .filter((l) => !/^\s*#/.test(l));
-    // Per #2851 the only valid form is the absolute-path node invocation; the
-    // legacy bare `gsd-tools` is the bug being fixed and must not be accepted.
-    const initLine = bashLines.find((l) =>
-      /\bnode\s+["']?\$HOME\/\.claude\/get-shit-done\/bin\/gsd-tools\.cjs["']?\s+init\s+ingest-docs\b/.test(l)
+
+    // Under #3668, the workflow builds a GSD_TOOLS variable pointing to gsd-tools.cjs,
+    // assigns GSD_SDK="node $GSD_TOOLS", then calls $GSD_SDK init ingest-docs.
+    // Assert all three elements are present.
+    const hasGsdToolsResolution = bashLines.some((l) =>
+      /GSD_TOOLS=.*get-shit-done\/bin\/gsd-tools\.cjs/.test(l)
     );
-    assert.ok(initLine, 'workflow must invoke init ingest-docs via canonical node-path gsd-tools.cjs');
+    assert.ok(
+      hasGsdToolsResolution,
+      'workflow must resolve GSD_TOOLS to get-shit-done/bin/gsd-tools.cjs'
+    );
+
+    const hasGsdSdkNodeAssignment = bashLines.some((l) =>
+      /GSD_SDK="node \$GSD_TOOLS"/.test(l)
+    );
+    assert.ok(
+      hasGsdSdkNodeAssignment,
+      'workflow must assign GSD_SDK="node $GSD_TOOLS" (canonical node-path form)'
+    );
+
+    const hasInitInvocation = bashLines.some((l) =>
+      /\$GSD_SDK\s+(query\s+)?init.*ingest-docs\b|\$GSD_SDK\s+init\s+ingest-docs\b/.test(l)
+    );
+    assert.ok(
+      hasInitInvocation,
+      'workflow must invoke init ingest-docs via $GSD_SDK variable'
+    );
   });
 
   test('cmdInitIngestDocs is exported from init.cjs', () => {
