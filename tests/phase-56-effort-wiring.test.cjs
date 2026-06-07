@@ -226,3 +226,121 @@ describe('phase-56 GAP B: Group B standalone-resolve sites carry resolve-model-e
   });
 
 });
+
+// ─── Phase 60 Group B: newly-covered workflows ───────────────────────────────
+
+describe('phase-60 Group B effort wiring: newly-covered workflows', () => {
+
+  test('audit-fix.md has resolve-model-effort gsd-executor and executor_model_effort_arg', () => {
+    const content = read('get-shit-done/workflows/audit-fix.md');
+    assert.ok(
+      content.includes('resolve-model-effort gsd-executor'),
+      'audit-fix.md must contain "resolve-model-effort gsd-executor"'
+    );
+    assert.ok(
+      content.includes('executor_model_effort_arg'),
+      'audit-fix.md must define/reference executor_model_effort_arg'
+    );
+  });
+
+  test('diagnose-issues.md has resolve-model-effort gsd-debugger and debugger_model_effort_arg', () => {
+    const content = read('get-shit-done/workflows/diagnose-issues.md');
+    assert.ok(
+      content.includes('resolve-model-effort gsd-debugger'),
+      'diagnose-issues.md must contain "resolve-model-effort gsd-debugger"'
+    );
+    assert.ok(
+      content.includes('debugger_model_effort_arg'),
+      'diagnose-issues.md must define/reference debugger_model_effort_arg'
+    );
+  });
+
+  test('code-review.md has resolve-model-effort gsd-code-reviewer and code_reviewer_model_effort_arg', () => {
+    const content = read('get-shit-done/workflows/code-review.md');
+    assert.ok(
+      content.includes('resolve-model-effort gsd-code-reviewer'),
+      'code-review.md must contain "resolve-model-effort gsd-code-reviewer"'
+    );
+    assert.ok(
+      content.includes('code_reviewer_model_effort_arg'),
+      'code-review.md must define/reference code_reviewer_model_effort_arg'
+    );
+  });
+
+  test('code-review-fix.md has resolve-model-effort for gsd-code-reviewer and gsd-code-fixer with both arg tokens', () => {
+    const content = read('get-shit-done/workflows/code-review-fix.md');
+    assert.ok(
+      content.includes('resolve-model-effort gsd-code-reviewer'),
+      'code-review-fix.md must contain "resolve-model-effort gsd-code-reviewer"'
+    );
+    assert.ok(
+      content.includes('resolve-model-effort gsd-code-fixer'),
+      'code-review-fix.md must contain "resolve-model-effort gsd-code-fixer"'
+    );
+    assert.ok(
+      content.includes('code_reviewer_model_effort_arg'),
+      'code-review-fix.md must define/reference code_reviewer_model_effort_arg'
+    );
+    assert.ok(
+      content.includes('code_fixer_model_effort_arg'),
+      'code-review-fix.md must define/reference code_fixer_model_effort_arg'
+    );
+  });
+
+  test('explore.md has resolve-model-effort gsd-phase-researcher and phase_researcher_model_effort_arg', () => {
+    const content = read('get-shit-done/workflows/explore.md');
+    assert.ok(
+      content.includes('resolve-model-effort gsd-phase-researcher'),
+      'explore.md must contain "resolve-model-effort gsd-phase-researcher"'
+    );
+    assert.ok(
+      content.includes('phase_researcher_model_effort_arg'),
+      'explore.md must define/reference phase_researcher_model_effort_arg'
+    );
+  });
+
+  test('import.md has resolve-model-effort gsd-plan-checker and plan_checker_model_effort_arg', () => {
+    const content = read('get-shit-done/workflows/import.md');
+    assert.ok(
+      content.includes('resolve-model-effort gsd-plan-checker'),
+      'import.md must contain "resolve-model-effort gsd-plan-checker"'
+    );
+    assert.ok(
+      content.includes('plan_checker_model_effort_arg'),
+      'import.md must define/reference plan_checker_model_effort_arg'
+    );
+  });
+
+  test('ingest-docs.md has resolve-model-effort for gsd-doc-synthesizer and gsd-roadmapper with both arg tokens', () => {
+    const content = read('get-shit-done/workflows/ingest-docs.md');
+    assert.ok(
+      content.includes('resolve-model-effort gsd-doc-synthesizer'),
+      'ingest-docs.md must contain "resolve-model-effort gsd-doc-synthesizer"'
+    );
+    assert.ok(
+      content.includes('resolve-model-effort gsd-roadmapper'),
+      'ingest-docs.md must contain "resolve-model-effort gsd-roadmapper"'
+    );
+    assert.ok(
+      content.includes('doc_synthesizer_model_effort_arg'),
+      'ingest-docs.md must define/reference doc_synthesizer_model_effort_arg'
+    );
+    assert.ok(
+      content.includes('roadmapper_model_effort_arg'),
+      'ingest-docs.md must define/reference roadmapper_model_effort_arg'
+    );
+  });
+
+  test('discuss-phase-assumptions.md has resolve-model-effort gsd-assumptions-analyzer and assumptions_analyzer_model_effort_arg', () => {
+    const content = read('get-shit-done/workflows/discuss-phase-assumptions.md');
+    assert.ok(
+      content.includes('resolve-model-effort gsd-assumptions-analyzer'),
+      'discuss-phase-assumptions.md must contain "resolve-model-effort gsd-assumptions-analyzer"'
+    );
+    assert.ok(
+      content.includes('assumptions_analyzer_model_effort_arg'),
+      'discuss-phase-assumptions.md must define/reference assumptions_analyzer_model_effort_arg'
+    );
+  });
+
+});
