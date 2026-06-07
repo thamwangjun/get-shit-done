@@ -1,172 +1,201 @@
-# Architecture Patterns
+# Architecture
 
-**Domain:** Per-agent thinking-effort dimension for GSD (v2.1.0-e)
-**Researched:** 2026-05-31
-**Confidence:** HIGH (all integration points read directly from source)
+**Domain:** Coverage gap closure — adding 6 test changes to existing test files
+**Researched:** 2026-06-07
+**Confidence:** HIGH (all integration points read directly from source files)
 
-## Recommended Architecture
+---
 
-The effort dimension extends the **existing Codex-only `reasoning_effort` machinery** rather than building parallel logic. The central design rule is **same-slot derivation**: model and effort must come from the SAME resolved profile/phase-type slot, because the slot itself now carries the effort inline as `model;effort` (e.g. `opus;high`). This structurally prevents the #3023-class divergence bug where `model` and `reasoning_effort` derived from different tier sources.
+## Files Modified vs Created
 
+| Gap | File | Operation | Lines Affected |
+|-----|------|-----------|---------------|
+| GAP-E | `tests/phase-56-effort-wiring.test.cjs` | MODIFY — append 8 new `test()` entries inside existing `describe` blocks or a new `describe` block | After line 228 (end of file) |
+| GAP-H | `tests/bug-3097-3099-executor-worktree-path-safety.test.cjs` | MODIFY — add 1 new `test()` inside existing `describe('bug #3097: ...')` | After line 62 |
+| GAP-K | `tests/debug-session-management.test.cjs` | MODIFY — remove `{ skip: ... }` option object from line 133 | Line 133 |
+| GAP-M2 | `tests/debug-session-management.test.cjs` | MODIFY — remove `.skip` from `test.skip` at line 184 and add anti-heredoc assertion | Line 184–187 |
+| GAP-L | `tests/debug-session-management.test.cjs` OR new file | ADD test — gsd-user-profiler.md structural assertion (see decision below) | New `describe` block |
+| GAP-M1 | `tests/step-numbering-scan.test.cjs` | MODIFY — comment-only edit (JSDoc header update) | Lines 1–26 |
+
+**Net file creation: 0 new files required.** All gaps fit into existing files.
+
+---
+
+## Integration Points
+
+### GAP-E: 8 new entries in `phase-56-effort-wiring.test.cjs`
+
+**Pattern.** The file has two shapes, both self-contained and copy-paste-safe:
+
+Shape 1 (Group A — multi-token check):
+```js
+test('<workflow>.md carries <token_a> and <token_b>', () => {
+  const content = read('get-shit-done/workflows/<workflow>.md');
+  assert.ok(content.includes('<token_a>'), '<workflow>.md must define/reference <token_a>');
+  assert.ok(content.includes('<token_b>'), '<workflow>.md must define/reference <token_b>');
+});
 ```
-                       ┌─────────────────────────────────────────┐
-   model-catalog.json  │ agents.<name>.golden|balanced|budget     │  "opus;high"
-   (single source) ────│ adaptiveTierMap.heavy|standard|light     │  "opus;high"
-                       │ runtimeTierDefaults.codex.<tier>         │  fallback effort
-                       └────────────────────┬────────────────────┘
-                                            │ loaded by
-              ┌─────────────────────────────┴──────────────────────────┐
-   model-catalog.cjs (CJS)                              model-catalog.ts (TS mirror)
-   MODEL_PROFILES carries "opus;high"                   MODEL_PROFILES carries "opus;high"
-              │                                                          │
-   ┌──────────┴───────────┐                              ┌──────────────┴───────────┐
-   │ NEW parseModelEffort │  splits "opus;high"          │ install.js readGsdRuntime │
-   │  → {model, effort}   │  → {model:"opus",effort}     │ ProfileResolver (Codex TOML)│
-   └──────────┬───────────┘                              └──────────────┬───────────┘
-              │ used by                                                  │ emits
-   resolveModelInternal ──► returns bare "opus" (strips effort)   reasoning_effort=
-   resolveReasoningEffortInternal ──► returns effort from SAME slot   model_reasoning_effort
-              │
-   commands.cjs cmdResolveModel ─► init.cjs *_model + NEW *_effort fields
-              │
-   workflows/agents/commands spawn templates ─► Agent(model=, effort=?)
+
+Shape 2 (Group B — single resolve-model-effort line):
+```js
+test('<workflow>.md has resolve-model-effort <agent>', () => {
+  const content = read('get-shit-done/workflows/<workflow>.md');
+  assert.ok(
+    content.includes('resolve-model-effort <agent>'),
+    '<workflow>.md must contain "resolve-model-effort <agent>"'
+  );
+});
 ```
 
-### Component Boundaries
+**Data access.** The module-level `read(rel)` helper (lines 29–35) reads from `ROOT` (repo root, one level above `__dirname`). New tests use `read(...)` exactly like existing tests — no import change needed.
 
-| Component | Responsibility | Communicates With |
-|-----------|---------------|-------------------|
-| `model-catalog.json` | Single source of truth: effort inline in profile slots + `adaptiveTierMap`; `inherit` stays effort-free | catalog loaders (cjs + ts) |
-| **NEW** `parseModelEffort(slot)` in `core.cjs` | Split `"model;effort"` → `{ model, effort }`; bare model → `{ model, effort: null }` | both resolvers |
-| `resolveModelInternal` (`core.cjs`) | Returns the bare **model** (effort stripped) — back-compat string return preserved | `parseModelEffort` |
-| `resolveReasoningEffortInternal` (`core.cjs`) | Returns the **effort** derived from the SAME slot the model came from; Claude-first (block lifted from runtime-only gate) | `parseModelEffort`, `_resolveRuntimeTier` |
-| `cmdResolveModel` (`commands.cjs`) | Exposes `{ model, effort? }` to CLI consumers | both resolvers |
-| `init.cjs` | Adds `*_effort` siblings to each `*_model` field in init JSON | `resolveModelInternal`, NEW effort resolver |
-| `install.js` `readGsdRuntimeProfileResolver` + `generateCodexAgentToml` | Codex/OpenCode TOML emit; translate `effort`→`reasoning_effort`, `max`→`xhigh` | catalog, `gsdResolveTierEntry` |
-| Spawn templates (`agents/`, `commands/`, `workflows/`) | Conditionally pass `effort` to `Agent()` | init JSON `*_effort` fields |
+**Placement.** New Group-A entries go inside the existing `describe('phase-56 GAP A: ...')` block (before its closing `}`); new Group-B entries go inside `describe('phase-56 GAP B: ...')` block. No new `describe` wrappers needed unless a new GAP letter is introduced.
 
-### Data Flow
+**No shared helpers are needed.** `read()` is already the shared helper; `helpers.cjs` is not imported by this file at all.
 
-1. Catalog slot `"opus;high"` is loaded into `MODEL_PROFILES[agent][profile]`.
-2. `resolveModelInternal` computes the tier slot as today, then calls `parseModelEffort(slot)` and returns `.model` only — preserving its string contract.
-3. `resolveReasoningEffortInternal` walks the **identical** precedence chain, calls `parseModelEffort` on the **same** resolved slot, and returns `.effort`. The Claude gate (`RUNTIMES_WITH_REASONING_EFFORT.has`) is lifted so effort flows for Claude too; Codex per-tier `runtimeTierDefaults.codex.reasoning_effort` becomes fallback only when the slot has no `;`.
-4. `cmdResolveModel` / `init.cjs` surface `{model, effort}` to workflows.
-5. Spawn templates emit `effort=` only when non-null.
+---
 
-## Patterns to Follow
+### GAP-H: submodule exclusion in `bug-3097-3099-executor-worktree-path-safety.test.cjs`
 
-### Pattern 1: Same-slot derivation (the #3023 guard)
-**What:** Both resolvers compute `tier`/`slot` with **identical** precedence logic, then derive their respective field from the SAME `parseModelEffort(slot)` result.
-**When:** Always — this is the core invariant.
-**How:** Extract the shared tier-resolution into a helper (e.g. `_resolveAgentSlot(cwd, agentType)`) returning the raw slot string (with possible `;effort`). Both `resolveModelInternal` and `resolveReasoningEffortInternal` call it, then `parseModelEffort`. This removes the duplicated phase-type-tier lookup currently copy-pasted across both functions (core.cjs:1285-1307 vs 1468-1500) — the exact place the original divergence risk lives.
+**Existing mock pattern.** The file does NOT create a fake filesystem. It reads the actual product file at load-time into two module-level constants:
+```js
+const executorSrc = fs.readFileSync(path.join(ROOT, 'agents', 'gsd-executor.md'), 'utf8');
+```
+All tests slice into `executorSrc` by finding XML tags (`<task_commit_protocol>`) and doing string pattern matching inside that slice. No temp dirs, no git mocks, no file system setup.
 
-### Pattern 2: parser placement
-**What:** `parseModelEffort(slot)` is a small pure helper in `core.cjs`, exported, also reimplemented in `model-catalog.ts`.
-**Where:** `core.cjs` near `resolveTierEntry` (line ~1236). Delimiter is `;` (NOT `:`) — chosen so colons in provider IDs are never delimiters. Rules:
-- `"opus;high"` → `{ model: "opus", effort: "high" }`
-- `"opus"` (no `;`) → `{ model: "opus", effort: null }` (back-compat: omit)
-- `"openrouter:anthropic/claude-opus"` (no `;`) → `{ model: "openrouter:anthropic/claude-opus", effort: null }` (provider colons untouched)
-- `"inherit"` → `{ model: "inherit", effort: null }`
-- Validate effort token against `low|medium|high|xhigh|max`; a non-token suffix after `;` (e.g. `"opus;hihg"`) is an unambiguous typo → strip to base model, return `effort: null`, and warn (matching `_warnedConfigKeys` pattern).
+**What the existing tests assert about `.git` file detection.** Current tests (lines 42–50) verify that `rev-parse --git-dir` or `.git/worktrees/` pattern is used for worktree detection. They do NOT assert the submodule exclusion path.
 
-### Pattern 3: precedence chain — model and effort aligned
-The effort precedence MUST mirror the existing model precedence (core.cjs:1270-1353) exactly, because effort rides inline on the same slots:
+**What the new submodule test needs to assert.** `gsd-executor.md` lines 455–464 (read above) show the product already contains the submodule disambiguation:
+```bash
+# Distinguish worktree (gitdir: .git/worktrees/...) from submodule (gitdir: ../.git/modules/...)
+if echo "$GIT_CONTENT" | command grep -q "^gitdir:.*\.git/worktrees/"; then
+  # This is a worktree
+else
+  # This is a submodule or other non-worktree .git file — skip worktree guards
+```
 
-| Rank | Model source (existing) | Effort source (new) |
-|------|------------------------|---------------------|
-| 1 | `config.model_overrides[agent]` (full ID → returns as-is) | parse `;effort` off the override string; if none → omit |
-| 2 | phase-type slot `config.models[phaseType]` (if valid tier) | same slot's `;effort` |
-| 3 | profile slot `MODEL_PROFILES[agent][profile]` | same slot's `;effort` |
-| 4 | `model_profile_overrides[runtime][tier]` (runtime resolution) | `resolveTierEntry` effort; profile-slot effort OVERRIDES Codex `runtimeTierDefaults.codex.reasoning_effort` (per-tier value is fallback only when slot has no `;`) |
-| 5 | `adaptiveTierMap[routingTier]` (adaptive profile) | adaptiveTierMap slot `;effort` (heavy→`opus;high` etc.) |
-| — | omit (bare model, `inherit`, or no match) | omit |
+The new test should slice the same `task_commit_protocol` block from `executorSrc` (same pattern as existing tests) and assert the presence of a submodule-distinguishing comment or the `\.git/modules/` pattern. No additional mocking is needed — the assertion is text-only against the product source.
 
-**Key alignment fix:** Today `resolveModelInternal` accepts `model_overrides` as opaque full IDs (returns immediately). For effort, `parseModelEffort` must run on the override string too, so a user writing `model_overrides.gsd-executor: "gpt-5.4;high"` gets both. This is the one place the override path gains effort awareness — guard it so a bare full ID (`"openai/gpt-5.4"`) still omits effort.
+**Suggested test shape:**
+```js
+test('sentinel distinguishes submodule .git files from worktree .git files', () => {
+  const protocolIdx = executorSrc.indexOf('<task_commit_protocol>');
+  const protocolEnd = executorSrc.indexOf('</task_commit_protocol>');
+  const protocol = executorSrc.slice(protocolIdx, protocolEnd);
+  assert.ok(
+    protocol.includes('submodule') || protocol.includes('.git/modules/'),
+    'task_commit_protocol must explicitly exclude submodule .git files from worktree guards',
+  );
+});
+```
 
-## Patterns to Avoid
+**Placement:** Inside `describe('bug #3097: cwd-drift sentinel in gsd-executor.md', ...)` after the existing 3 tests (after line 62).
 
-### Avoid: Divergent tier lookups (the bug being fixed)
-**What goes wrong:** Re-deriving tier independently in the effort resolver (current copy-paste at core.cjs:1484-1500 mirrors 1287-1307). Any future edit to one block without the other reintroduces #3023 model/effort divergence.
-**Instead:** Use a single shared `_resolveAgentSlot` helper feeding both resolvers via `parseModelEffort`.
+---
 
-### Avoid: Translating effort inside the resolver
-**What goes wrong:** Emitting `xhigh` from `max`, or renaming to `reasoning_effort`, inside `resolveReasoningEffortInternal` couples runtime-agnostic resolution to Codex naming and breaks Claude effort passing.
-**Instead:** Keep the resolver returning canonical effort (`low|medium|high|xhigh|max`); apply translation (`effort`→`reasoning_effort`, `max`→`xhigh`) only at `install.js` Codex TOML emit (install.js:2748-2749) and at the SDK boundary.
+### GAP-K: unskipping line 133 in `debug-session-management.test.cjs`
 
-### Avoid: install.js resolver drift
-**What goes wrong:** `readGsdRuntimeProfileResolver` (install.js:1498-1511) does NOT replicate the phase-type slot (#3023) chain — it only does profile→tier. Adding effort there naively diverges from `core.cjs`.
-**Instead:** Route effort through `gsdResolveTierEntry` + a shared `parseModelEffort` (export from a surface install.js already requires — it imports `resolveTierEntry`/`RUNTIME_PROFILE_MAP` at install.js:160-161). Reuse, never reimplement.
+**Current state (line 133):**
+```js
+test('gsd-debugger contains security note about DATA_START', { skip: 'fork intentionally diverges from upstream contract' }, () => {
+```
+The test body reads `gsd-debugger.md` and asserts `content.includes('DATA_START')`.
 
-### Avoid: Breaking the fork test gates in spawn templates
-**What goes wrong:** Adding `effort=` lines with decimal sub-steps, broken `<%~ include %>` tags, or negative-framing comments ("do not pass effort when...") trips `step-numbering-scan`, `cross-file-step-refs`, or the negative-framing scanner.
-**Instead:** Mirror the existing `model=` conditional comment style (execute-phase.md:555-558) with positive framing: "Include `effort=` only when `executor_effort` is a non-empty value." Keep whole-integer step labels; place the `effort=` line adjacent to `model=` inside the same code fence (no new step).
+**What verification shows.** A grep of `agents/gsd-debugger.md` for `DATA_START` returns no results — the agent does NOT contain the string `DATA_START`. The test was skipped because the fork diverges from the upstream contract. The skip reason is still valid unless the profiler agent or session manager is the right target.
 
-## Install-Time Runtime Translation
+**Decision for GAP-K.** The skip removal is only safe if `gsd-debugger.md` has been updated to include `DATA_START`. Before removing the skip, confirm `DATA_START` is now present in `gsd-debugger.md`. If it is not yet present, GAP-K is blocked on the product file change and the skip should remain.
 
-`bin/install.js` already owns runtime translation for models. Effort needs translation in exactly these places:
+**If the product file has been updated:** Change line 133 from `{ skip: '...' }` to no options object. The test body already contains the correct assertion. No structural change to the file needed.
 
-| Location | Today | Add for effort |
-|----------|-------|----------------|
-| `generateCodexAgentToml` (install.js:2715-2755) | emits `model` + `model_reasoning_effort` from `entry.reasoning_effort` | when resolved slot carries `;effort`, that value (after `max`→`xhigh`) feeds `model_reasoning_effort`; profile-slot effort overrides the per-tier default |
-| `readGsdRuntimeProfileResolver.resolve()` (install.js:1500-1510) | returns `gsdResolveTierEntry(...)` `{model, reasoning_effort?}` | parse `;effort` off the resolved `tier` slot before/around `gsdResolveTierEntry`; slot effort wins over tier-default `reasoning_effort` |
-| Claude/OpenCode/Gemini agent emit | no effort today | Claude spawn path carries effort via init JSON → markdown templates (NOT TOML); other runtimes omit unless they accept an effort field |
+---
 
-**Translation rule:** Canonical `effort` (resolver output) → Codex `reasoning_effort` with `max`→`xhigh`. Claude keeps `effort` verbatim (Claude-first). Runtimes with no effort surface silently omit (mirror the `entry.reasoning_effort` truthy guard at install.js:2748).
+### GAP-M2: unskipping line 184 in `debug-session-management.test.cjs`
 
-## SDK + init JSON Contract Changes
+**Current state (lines 184–187):**
+```js
+test.skip('gsd-debug-session-manager includes anti-heredoc rule', () => {
+  const content = fs.readFileSync(path.join(process.cwd(), 'agents', 'gsd-debug-session-manager.md'), 'utf8');
+  assert.ok(/only use the write tool/i.test(content), 'session manager missing anti-heredoc rule');
+});
+```
 
-### `sdk/src/model-catalog.ts`
-- `MODEL_PROFILES` values become `"model;effort"` strings — **widen** `AgentCatalogEntry.golden|balanced|budget` from the literal `'opus'|'sonnet'|'haiku'` union to `string` (slots may now carry `;effort`).
-- `adaptiveTierMap` value type widens from `'opus'|'sonnet'|'haiku'` to `string`.
-- Add a `parseModelEffort` TS helper (mirror of the cjs one) and optionally `getAgentToEffortMapForProfile`.
-- `RuntimeTierEntry.reasoning_effort?` stays as the Codex fallback.
+**What verification shows.** `gsd-debug-session-manager.md` does NOT use `Write` in its `tools:` frontmatter field (tools is not visible from the grep, but the agent is a session manager, not a file writer). The `agent-frontmatter.test.cjs` file-writing agent rule only applies to agents with `Write` in their `tools:` line. If `Write` is NOT listed, the anti-heredoc rule is not required by the frontmatter test, but could still be present as a best practice.
 
-### `commands.cjs` / init JSON contract
-- `cmdResolveModel` already emits `reasoning_effort` (commands.cjs:250). **Add** a canonical `effort` field; keep `reasoning_effort` for Codex back-compat (or alias). Recommended shape: `{ model, profile, effort? }` where `effort` is canonical; Codex emit translates.
-- `init.cjs`: every `*_model` field (init.cjs:197-198, 343-345, 530-532, 583-585, 640-643, 762-763, 1096, 1552-1553) gains a sibling `*_effort` field, e.g. `executor_effort: resolveReasoningEffortInternal(cwd,'gsd-executor')`. Workflows parse it alongside `executor_model`.
-- `agent-skills` output path (init.cjs ~1834) should likewise carry effort if it carries model.
+**Decision for GAP-M2.** Check `tools:` in `agents/gsd-debug-session-manager.md` frontmatter. If `Write` is absent, the anti-heredoc text is not contractually required; the unskip would assert something that may not exist. Confirm the product file has had `only use the Write tool` added before removing `.skip`. If the phrase is now present, change `test.skip(` to `test(`.
 
-## Scalability / Consistency Considerations
+---
 
-| Concern | Approach |
-|---------|----------|
-| 33 agents × 3 profile slots + adaptiveTierMap | Effort is hand-assigned by user during execution handover — Claude builds plumbing + tests only; `inherit` stays effort-free |
-| New runtimes added later | Only the install-emit boundary translates; resolver stays canonical, so a new runtime adds one emit branch |
-| Back-compat (bare slots) | `parseModelEffort` of a delimiter-free slot → `effort:null` → every consumer omits — zero behavior change for existing catalogs |
+### GAP-L: new test for `gsd-user-profiler.md`
 
-## Suggested Build Order (dependency-respecting)
+**Best home: `tests/debug-session-management.test.cjs` — NO.**
 
-1. **Parser** — `parseModelEffort` in `core.cjs` (+ validation, warn on malformed) and TS mirror. Unit-testable in isolation. No consumers yet.
-2. **Shared slot resolver** — extract `_resolveAgentSlot(cwd, agentType)` from the duplicated tier logic; refactor `resolveModelInternal` to use it + `parseModelEffort().model` (return unchanged). Regression: existing model tests stay green.
-3. **Effort resolution** — rewrite `resolveReasoningEffortInternal` to use the shared slot + `parseModelEffort().effort`; lift Claude gate; profile-slot effort overrides Codex tier default. Regression: parse/precedence/omit/Codex-mapping.
-4. **SDK + tools exposure** — `cmdResolveModel` `effort` field; `init.cjs` `*_effort` siblings; `model-catalog.ts` type widening + helper.
-5. **[HANDOVER BOUNDARY] Catalog assignment** — user hand-assigns `;effort` to `model-catalog.json` slots + `adaptiveTierMap`. Claude does NOT pick effort values. Everything before this point is plumbing that no-ops on bare slots; everything after consumes real values.
-6. **Spawn-template wiring** — add conditional `effort=` lines to spawn templates in `agents/`, `commands/`, `workflows/`, mirroring the `model=` conditional comment style; respect whole-integer steps + eta includes + positive framing.
-7. **Install translation** — `generateCodexAgentToml` + `readGsdRuntimeProfileResolver`: slot effort → `reasoning_effort`, `max`→`xhigh`, slot overrides tier default.
-8. **Tests** — parse, precedence alignment (model vs effort same slot), omit (bare/inherit), Codex mapping, install-emit, spawn-template gates (`step-numbering-scan`, `cross-file-step-refs`, negative-framing).
+The file is debug-workflow-specific. `gsd-user-profiler.md` is a profiling agent; putting it there would create a naming mismatch.
 
-**Build-order rationale:** Parser (1) has no deps. Slot extraction (2) must precede effort resolution (3) so both share one tier path (the #3023 guard). Exposure (4) needs the resolvers. Catalog assignment (5) is the user-handover boundary — plumbing is inert until slots gain `;` effort suffixes, so steps 1-4 ship safely against a bare catalog. Spawn wiring (6) and install translation (7) consume resolved effort and can proceed in parallel after (4)/(5). Tests (8) gate throughout, but the dedicated gate-conformance suite lands last with the spawn edits.
+**Best home: `tests/agent-skills.test.cjs` — NO.**
 
-## Exact Functions/Files to Touch
+That file tests the `agent-skills` gsd-tools CLI subcommand, not agent structural contracts.
 
-| File | Function | Change |
-|------|----------|--------|
-| `get-shit-done/bin/lib/core.cjs` | NEW `parseModelEffort`, NEW `_resolveAgentSlot`, `resolveModelInternal`, `resolveReasoningEffortInternal` | parser, shared slot, same-slot derivation, lift Claude gate |
-| `get-shit-done/bin/lib/core.cjs` | exports block (~line 1880) | export `parseModelEffort` |
-| `get-shit-done/bin/lib/commands.cjs` | `cmdResolveModel` (236-252) | add canonical `effort` field |
-| `get-shit-done/bin/lib/init.cjs` | all `*_model` builders | add `*_effort` siblings |
-| `get-shit-done/bin/lib/model-catalog.cjs` | `MODEL_PROFILES` (54-61) | tolerate `;effort` slots (keep raw for parser; no split here) |
-| `sdk/src/model-catalog.ts` | interfaces + `MODEL_PROFILES` + NEW `parseModelEffort` | widen tier types to `string`, mirror parser |
-| `bin/install.js` | `readGsdRuntimeProfileResolver.resolve` (1500-1510), `generateCodexAgentToml` (2715-2755) | effort→`reasoning_effort`, `max`→`xhigh`, slot overrides default |
-| `agents/`, `commands/gsd/`, `get-shit-done/workflows/` spawn templates | `Agent()` blocks | conditional `effort=` adjacent to `model=` |
+**Best home: new dedicated file — PREFERRED.**
 
-## Sources
+The precedent for agent structural contract tests is either:
+- `agent-frontmatter.test.cjs` (validates frontmatter shape for all agents — already covers `gsd-user-profiler` automatically because `ALL_AGENTS` is built dynamically from `fs.readdirSync(AGENTS_DIR)`)
+- A named regression test like `bug-<N>-<desc>.test.cjs` for a specific contract
 
-- `sdk/shared/model-catalog.json` (catalog structure) — HIGH
-- `get-shit-done/bin/lib/core.cjs:1236-1504` (resolvers, #3023/#3030 comments) — HIGH
-- `get-shit-done/bin/lib/commands.cjs:236-252` (cmdResolveModel) — HIGH
-- `get-shit-done/bin/lib/init.cjs:197-1553` (`*_model` builders) — HIGH
-- `sdk/src/model-catalog.ts` (TS mirror) — HIGH
-- `bin/install.js:1449-1512, 2715-2755` (Codex emit) — HIGH
-- `get-shit-done/workflows/execute-phase.md:85-558` (spawn template, model conditional) — HIGH
-- `.planning/PROJECT.md` (v2.1.0-e decisions, gate inventory) — HIGH
+Since `agent-frontmatter.test.cjs` already dynamically includes `gsd-user-profiler` in its frontmatter scans (no explicit name list required; `ALL_AGENTS` is built by globbing `agents/gsd-*.md`), the gap is about a content-level assertion, not frontmatter.
+
+**Recommended approach:** Add a new `describe` block at the bottom of `tests/debug-session-management.test.cjs` or, if the contract being asserted is about profiler output format, in a new file `tests/profile-pipeline.test.cjs`. However, `tests/profile-pipeline.test.cjs` already exists (shown in the directory listing). Check its contents before creating a duplicate.
+
+**Minimal-risk placement:** Append a new `describe('gsd-user-profiler structural contract', ...)` block at the end of `tests/debug-session-management.test.cjs`. This is the lowest-friction option: zero new files, same `'use strict'` + `require('node:test')` + `require('node:fs')` imports already present, same `process.cwd()` path convention used by most tests in that file.
+
+**Test shape for GAP-L:**
+```js
+describe('gsd-user-profiler structural contract', () => {
+  test('gsd-user-profiler.md has tools: Read (no Write)', () => {
+    const content = fs.readFileSync(
+      path.join(process.cwd(), 'agents', 'gsd-user-profiler.md'), 'utf8'
+    );
+    const toolsMatch = content.match(/^tools:\s*(.+)$/m);
+    assert.ok(toolsMatch, 'gsd-user-profiler.md missing tools: frontmatter');
+    assert.ok(toolsMatch[1].includes('Read'), 'gsd-user-profiler.md must have Read in tools');
+    assert.ok(!toolsMatch[1].includes('Write'), 'gsd-user-profiler.md must not have Write (read-only profiler)');
+  });
+
+  test('gsd-user-profiler.md returns output in <analysis> tags', () => {
+    const content = fs.readFileSync(
+      path.join(process.cwd(), 'agents', 'gsd-user-profiler.md'), 'utf8'
+    );
+    assert.ok(content.includes('<analysis>'), 'gsd-user-profiler.md must document <analysis> output tags');
+  });
+});
+```
+
+The `path` and `fs` constants are already declared at the top of `debug-session-management.test.cjs`; the new block requires no additional imports.
+
+---
+
+### GAP-M1: comment update in `step-numbering-scan.test.cjs`
+
+**Nature of change.** Lines 1–26 are a module-level JSDoc block describing the scan's expected violation inventory. This is a pure comment — the `describe`/`test` structure and all runtime assertions begin at line 28 (`'use strict'`). Updating the comment (e.g. removing files that have been fixed, or updating the "Phase 48 RED expectation" count) has zero behavioral effect on test outcomes.
+
+**Confirmation:** `scanContent`, `scanForOutOfOrder`, `collectMarkdownFiles`, `SCAN_DIRS`, `PATTERN_C_EXCLUDES`, and `ALL_FILES` are entirely unaffected by JSDoc edits. The corpus scan `describe` blocks at lines 294–337 iterate `SCAN_FILES` dynamically; no hardcoded file list exists in the runtime path.
+
+**This is strictly a comment edit with no behavioral change.**
+
+---
+
+## Build Order
+
+The following order minimizes re-runs of `npm test` and respects file-level dependencies:
+
+| Step | Action | Rationale |
+|------|--------|-----------|
+| 1 | GAP-M1: edit JSDoc comment in `step-numbering-scan.test.cjs` | Zero risk; no behavioral change; validate `npm test` still passes as baseline |
+| 2 | GAP-E: append 8 new `test()` entries to `phase-56-effort-wiring.test.cjs` | Pure additions to an existing file; no shared state; new tests either pass (product has tokens) or fail cleanly with a clear message |
+| 3 | GAP-H: add submodule test to `bug-3097-3099-executor-worktree-path-safety.test.cjs` | Reads same `executorSrc` constant; no new mocking needed; pure addition inside existing `describe` |
+| 4 | GAP-L: append `gsd-user-profiler` `describe` block to `debug-session-management.test.cjs` | Appends to existing file; all imports already present; does not touch GAP-K or GAP-M2 lines |
+| 5 | GAP-K: remove `{ skip: '...' }` from line 133 | Conditional on product-side confirmation that `gsd-debugger.md` now contains `DATA_START`; must run `npm test` after to confirm test passes (not just skips) |
+| 6 | GAP-M2: change `test.skip` to `test` at line 184 | Conditional on product-side confirmation that `gsd-debug-session-manager.md` now contains `only use the Write tool`; do after GAP-K so both changes are visible in the same test run |
+
+**Gate:** Run `npm test 2>&1 | tee /tmp/gsd-test-output.txt` after steps 1–4 (the unconditional changes) to establish a green baseline before touching the skip removals in steps 5–6.
+
+**Dependency note:** Steps 5 and 6 are product-file-gated, not test-file-gated. If the product files (`gsd-debugger.md`, `gsd-debug-session-manager.md`) have not been updated to include the asserted content, the unskips will produce NEW TEST FAILURES rather than gap closures. Verify with `grep -n "DATA_START" agents/gsd-debugger.md` and `grep -ni "only use the write tool" agents/gsd-debug-session-manager.md` before proceeding to steps 5–6.
