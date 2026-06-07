@@ -9,9 +9,9 @@ GSD (Get Shit Done) is a meta-prompting framework that installs slash commands, 
 ## Commands
 
 ```bash
-npm test                  # Run all tests
-npm run test:coverage     # Run tests with c8 coverage (requires ≥70% line coverage)
-npm run build:hooks       # Validate hook syntax and copy to hooks/dist/ (required before npm publish)
+npm test 2>&1 | tee /tmp/gsd-test-output.txt                # Run all tests
+npm run test:coverage 2>&1 | tee /tmp/gsd-test-output.txt   # Run tests with c8 coverage (requires ≥70% line coverage)
+npm run build:hooks                                         # Validate hook syntax and copy to hooks/dist/ (required before npm publish)
 ```
 
 Run a single test file: `node --test tests/phase.test.cjs`. Tests use Node.js built-in `--test` runner (no external framework); coverage is measured only against `get-shit-done/bin/lib/*.cjs`. Requires Node.js >=20 (SDK) / >=22 (root).
