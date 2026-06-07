@@ -55,6 +55,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SFC-01 | Phase 63 | Pending |
 
 **Coverage:**
+
 - v2.1.0-f requirements: 11 total
 - Mapped to phases: 11
 - Unmapped: 0 ✓

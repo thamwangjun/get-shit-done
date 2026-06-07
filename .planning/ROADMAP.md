@@ -250,7 +250,7 @@ Full details: `.planning/milestones/v2.1.0-e-ROADMAP.md`
 
 **Milestone Goal:** Close all behavioral and documentation testing gaps identified in the v2.1.0-e gap report before they accumulate into undetected regressions. Work is entirely additive test code across four existing test files — no agent or workflow source files change.
 
-- [ ] **Phase 59: Comment Cleanup** - Remove stale Phase 48 RED expectation comment from step-numbering-scan.test.cjs
+- [x] **Phase 59: Comment Cleanup** - Remove stale Phase 48 RED expectation comment from step-numbering-scan.test.cjs (completed 2026-06-07)
 - [ ] **Phase 60: Effort Wiring Coverage** - Add 8 Group B effort-wiring regression tests to phase-56-effort-wiring.test.cjs
 - [ ] **Phase 61: Worktree Safety Coverage** - Assert submodule exclusion logic in executor worktree path-safety test
 - [ ] **Phase 62: Rubric Inlining Coverage** - Assert gsd-user-profiler.md load_rubric step references Eta-inlined rubric
@@ -701,7 +701,7 @@ Full details: `.planning/milestones/v2.1.0-e-ROADMAP.md`
 | 56. Spawn-Template Wiring | v2.1.0-e | 3/3 | Complete    | 2026-06-04 |
 | 57. Install-Time Translation | v2.1.0-e | 3/3 | Complete    | 2026-06-05 |
 | 58. Regression Coverage | v2.1.0-e | 3/3 | Complete    | 2026-06-06 |
-| 59. Comment Cleanup | v2.1.0-f | 1/1 | Complete   | 2026-06-07 |
+| 59. Comment Cleanup | v2.1.0-f | 1/1 | Complete    | 2026-06-07 |
 | 60. Effort Wiring Coverage | v2.1.0-f | 0/TBD | Not started | - |
 | 61. Worktree Safety Coverage | v2.1.0-f | 0/TBD | Not started | - |
 | 62. Rubric Inlining Coverage | v2.1.0-f | 0/TBD | Not started | - |
