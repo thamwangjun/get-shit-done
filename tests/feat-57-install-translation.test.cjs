@@ -192,9 +192,8 @@ Executor instructions here.
     );
   });
 
-  test('Codex TOML emits model_reasoning_effort = "medium" for bare opus/sonnet slot (D-08 floor, translated)', () => {
-    // Bare slot (no ;effort) on codex → D-08 floor = 'medium'. No translation needed.
-    // This may pass today for the 'medium' case, but is part of the integrated suite.
+  test('Codex TOML emits model_reasoning_effort = "high" for bare opus/sonnet slot (D-08 floor, translated)', () => {
+    // gsd-executor balanced is sonnet;high in the catalog → effort 'high' on codex.
     writeConfig(projectDir, {
       runtime: 'codex',
       model_profile: 'balanced',
@@ -202,8 +201,8 @@ Executor instructions here.
     const runtimeResolver = readGsdRuntimeProfileResolver(projectDir);
     const toml = generateCodexAgentToml('gsd-executor', AGENT_CONTENT, null, runtimeResolver);
     assert.ok(
-      toml.includes('model_reasoning_effort = "medium"'),
-      `Expected TOML to contain 'model_reasoning_effort = "medium"' but got:\n${toml}`
+      toml.includes('model_reasoning_effort = "high"'),
+      `Expected TOML to contain 'model_reasoning_effort = "high"' but got:\n${toml}`
     );
   });
 

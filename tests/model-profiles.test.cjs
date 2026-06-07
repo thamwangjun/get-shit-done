@@ -44,7 +44,7 @@ describe('MODEL_PROFILES', () => {
   });
 
   test('all profile values are valid model aliases', () => {
-    const validModels = ['opus', 'sonnet', 'haiku', 'opus;low', 'sonnet;medium'];
+    const validModels = ['opus', 'sonnet', 'haiku', 'opus;low', 'sonnet;medium', 'sonnet;high'];
     for (const [agent, profiles] of Object.entries(MODEL_PROFILES)) {
       for (const [profile, model] of Object.entries(profiles)) {
         assert.ok(
@@ -88,12 +88,12 @@ describe('getAgentToModelMapForProfile', () => {
     const map = getAgentToModelMapForProfile('balanced');
     assert.strictEqual(map['gsd-planner'], 'opus;low');
     assert.strictEqual(map['gsd-codebase-mapper'], 'haiku');
-    assert.strictEqual(map['gsd-verifier'], 'sonnet;medium');
+    assert.strictEqual(map['gsd-verifier'], 'sonnet;high');
   });
 
   test('returns correct models for budget profile', () => {
     const map = getAgentToModelMapForProfile('budget');
-    assert.strictEqual(map['gsd-planner'], 'sonnet;medium');
+    assert.strictEqual(map['gsd-planner'], 'sonnet;high');
     assert.strictEqual(map['gsd-phase-researcher'], 'haiku');
   });
 

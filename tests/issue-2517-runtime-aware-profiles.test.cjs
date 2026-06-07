@@ -166,10 +166,10 @@ describe('issue #2517: runtime "codex" — Codex tier resolution', () => {
     assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'gsd-planner'), 'low');
   });
 
-  test('sonnet tier -> gpt-5.3-codex with reasoning_effort medium', () => {
+  test('sonnet tier -> gpt-5.3-codex with reasoning_effort high', () => {
     writeConfig(tmpDir, { runtime: 'codex', model_profile: 'balanced' });
     assert.strictEqual(resolveModelInternal(tmpDir, 'gsd-roadmapper'), 'gpt-5.3-codex');
-    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'gsd-roadmapper'), 'medium');
+    assert.strictEqual(resolveReasoningEffortInternal(tmpDir, 'gsd-roadmapper'), 'high');
   });
 
   test('haiku tier -> gpt-5.4-mini with NO reasoning_effort (Phase 57 D-03)', () => {
