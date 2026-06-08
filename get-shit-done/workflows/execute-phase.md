@@ -9,7 +9,7 @@ Subagents load full execute-plan context; orchestrator stays lean (~10-15% for 2
 
 <runtime_compatibility>
 **Claude Code:** Uses `Agent(subagent_type="gsd-executor", ...)` — blocks until complete.
-**Copilot:** No reliable completion signals. Use sequential inline execution: read execute-plan.md directly per plan. Only parallel if user explicitly requests; rely on filesystem spot-checks.
+**Copilot:** No reliable completion signals. Use sequential inline execution: read execute-plan.md directly per plan. Only attempt parallel spawning when the user explicitly requests it — and in that case, rely on the spot-check fallback (commits visible + SUMMARY.md exists) to detect completion; do not trust the signal alone.
 **Other runtimes:** If Agent unavailable, use sequential inline as fallback. Check at runtime.
 **Fallback rule:** If spawned agent finishes (commits visible, SUMMARY.md exists) but signal not received, treat as successful via spot-check. Never block indefinitely — verify via git state.
 </runtime_compatibility>
@@ -73,6 +73,8 @@ executor_model_effort_arg=$([ -n "$executor_effort" ] && [ "$executor_effort" !=
 verifier_model_effort_arg=$([ -n "$verifier_effort" ] && [ "$verifier_effort" != "null" ] && echo "effort=\"$verifier_effort\"" || echo "")
 ```
 
+**If `response_language` is set:** Include `response_language: {value}` in all spawned subagent prompts so any user-facing output stays in the configured language.
+
 Read runtime config; fail if incompatible:
 ```bash
 RUNTIME=$($GSD_SDK query config-get runtime --default claude 2>/dev/null || echo "claude")
@@ -94,6 +96,7 @@ else
   SUBMODULE_PATHS=""
 fi
 ```
+This per-plan intersection avoids blanket worktree disabling that would penalise plans nowhere near a submodule; the decision flows into `execute_waves` step 4 (`USE_WORKTREES_FOR_PLAN`).
 
 **Auto-chain sync (REQUIRED):** If user invoked manually (no `--auto`), clear ephemeral chain flag:
 ```bash
@@ -216,6 +219,7 @@ Remove successful plans from execute_waves list.
 3. **Describe what's being built:** Read each plan's `<objective>`. Extract 2-3 sentences per plan explaining what's built and why.
 
 4. **Per-plan worktree decision:** Execute `get-shit-done/workflows/execute-phase/steps/per-plan-worktree-gate.md` for each plan. Append to `WAVE_WORKTREE_PLANS` if not dropped. Set `USE_WORKTREES_FOR_PLAN` per plan.
+   The dispatch branches in step 5 MUST gate on `USE_WORKTREES_FOR_PLAN` for the current plan, not on the project-level `USE_WORKTREES`.
 
 5. **Spawn executor agents:**
 
@@ -276,7 +280,7 @@ Agent(
     Run `git commit` normally — hooks run by default. Do NOT pass `--no-verify` unless `workflow.worktree_skip_hooks=true`.
     Do NOT modify STATE.md or ROADMAP.md. execute-plan.md auto-detects worktree mode and skips shared file updates.
     REQUIRED: SUMMARY.md MUST be committed before return. Worktree mode commits SUMMARY.md and REQUIREMENTS.md only. Do NOT skip.
-    REQUIRED ORDER: Write SUMMARY.md → commit → narration. No text between Write and commit (#2070).
+    REQUIRED ORDER: Write SUMMARY.md → commit → narration. No text between Write and commit (truncation risk; #2070 rescue is not primary defense).
     </parallel_execution>
 
     <execution_context>
@@ -329,7 +333,7 @@ Omit `isolation="worktree"`. Replace `<parallel_execution>` block with:
 ```
 <sequential_execution>
 Sequential executor on main working tree. Use normal commits with hooks.
-REQUIRED ORDER: Write SUMMARY.md → commit → narration.
+REQUIRED ORDER: Write SUMMARY.md → commit → only then any narration. No text between Write and commit (truncation risk; #2070 rescue is not primary defense).
 </sequential_execution>
 ```
 
