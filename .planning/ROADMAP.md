@@ -639,7 +639,7 @@ Plans:
 **Plans**: 1 plan
 Plans:
 
-- [ ] 63-01-PLAN.md — Rewrite skipped gsd-debugger security test to assert fork hardened framing (untrusted user input / evidence data only) [SFC-01]
+- [x] 63-01-PLAN.md — Rewrite skipped gsd-debugger security test to assert fork hardened framing (untrusted user input / evidence data only) [SFC-01]
 
 ## Progress
 
@@ -715,7 +715,7 @@ Plans:
 | 60. Effort Wiring Coverage | v2.1.0-f | 1/1 | Complete    | 2026-06-07 |
 | 61. Worktree Safety Coverage | v2.1.0-f | 1/1 | Complete    | 2026-06-08 |
 | 62. Rubric Inlining Coverage | v2.1.0-f | 1/1 | Complete    | 2026-06-08 |
-| 63. Security Framing Coverage | v2.1.0-f | 0/TBD | Not started | - |
+| 63. Security Framing Coverage | v2.1.0-f | 1/1 | Complete   | 2026-06-08 |
 
 *v1.41.3 shipped 2026-05-19 — see `.planning/milestones/v1.41.3-ROADMAP.md`*
 *v1.41.5 shipped 2026-05-24 — see `.planning/milestones/v1.41.5-ROADMAP.md`*
