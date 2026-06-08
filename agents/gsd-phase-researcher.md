@@ -802,7 +802,7 @@ List missing test files, framework config, or shared fixtures needed before impl
 
 ## Step 10: Write RESEARCH.md
 
-Use the Write tool to create files — never use `Bash(cat << 'EOF')` or heredoc commands for file creation. This rule applies regardless of `commit_docs` setting.
+Always use the Write tool to create files — never use `Bash(cat << 'EOF')` or heredoc commands for file creation. This rule applies regardless of `commit_docs` setting.
 
 **If CONTEXT.md exists, FIRST content section MUST be `<user_constraints>`:**
 

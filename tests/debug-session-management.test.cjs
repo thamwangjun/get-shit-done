@@ -138,10 +138,6 @@ describe('debug skill dispatch and sub-orchestrator (#2148, #2151)', () => {
     assert.ok(sessionManager.includes('DEBUG SESSION COMPLETE'), 'session manager missing compact summary format');
   });
 
-  test('gsd-debug-session-manager includes anti-heredoc rule', () => {
-    assert.ok(/only use the write tool/i.test(sessionManager), 'session manager missing anti-heredoc rule');
-  });
-
   test('debug.md delegates to gsd-debug-session-manager', () => {
     assert.ok(debugWorkflow.includes('gsd-debug-session-manager'),
       'debug.md does not delegate to session manager');

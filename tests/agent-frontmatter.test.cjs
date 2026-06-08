@@ -35,13 +35,13 @@ const READ_ONLY_AGENTS = ALL_AGENTS.filter(name => !FILE_WRITING_AGENTS.includes
 
 // ─── Anti-Heredoc Instruction ────────────────────────────────────────────────
 
-describe.skip('HDOC: anti-heredoc instruction', () => {
+describe('HDOC: anti-heredoc instruction', () => {
   for (const agent of FILE_WRITING_AGENTS) {
     test(`${agent} has anti-heredoc instruction`, () => {
       const content = fs.readFileSync(path.join(AGENTS_DIR, agent + '.md'), 'utf-8');
       assert.ok(
-        /only use the write tool/i.test(content),
-        `${agent} missing 'Only use the Write tool' instruction`
+        /always use the write tool/i.test(content),
+        `${agent} missing 'Always use the Write tool' instruction`
       );
     });
   }

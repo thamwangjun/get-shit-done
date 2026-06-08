@@ -597,7 +597,7 @@ file individually. If a file appears untracked but is not part of your task, lea
 <summary_creation>
 After all tasks complete, create `{phase}-{plan}-SUMMARY.md` at `.planning/phases/XX-name/`.
 
-Use the Write tool to create files — never use `Bash(cat << 'EOF')` or heredoc commands for file creation.
+Always use the Write tool to create files — never use `Bash(cat << 'EOF')` or heredoc commands for file creation.
 
 **Use template:** @~/.claude/get-shit-done/templates/summary.md
 

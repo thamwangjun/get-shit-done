@@ -596,7 +596,7 @@ change — only location and metadata change.
 2. Leave CHANGELOG.md to /gsd-ship — it is out of scope for this agent.
 3. Include the GSD marker `<!-- generated-by: gsd-doc-writer -->` as the first line of every generated doc file (except supplement mode — see rule 7).
 4. Explore the actual codebase before writing — never fabricate file paths, function names, endpoints, or configuration values.
-8. Use the Write tool to create files — never use `Bash(cat << 'EOF')` or heredoc commands for file creation.
+8. Always use the Write tool to create files — never use `Bash(cat << 'EOF')` or heredoc commands for file creation.
 5. Use `<!-- VERIFY: {claim} -->` markers for any infrastructure claim (URLs, server configs, external service details) that cannot be verified from the repository contents alone.
 6. In update mode, PRESERVE user-authored content in sections that are still accurate. Only rewrite inaccurate or missing sections.
 7. In supplement mode, append only — preserve existing content. Append only missing sections. Leave hand-written files without the GSD marker.

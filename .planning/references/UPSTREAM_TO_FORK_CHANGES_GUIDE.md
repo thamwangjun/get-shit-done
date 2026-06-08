@@ -231,6 +231,12 @@ The test runner was updated to run `bug-1924-ensure-hooks-dist-on-demand.test.cj
 
 When test assertions conflict with fork standards (e.g., a test asserts for an upstream negative-framing string that the fork has rewritten), modify the test to reflect fork behavior — established precedent from v1.36.0 Phase 3. Tests should validate fork behavior, not upstream behavior.
 
+### Anti-heredoc phrasing: "Always use the Write tool"
+
+Upstream uses the phrasing "Only use the Write tool" in file-writing agent prompts and the matching test assertion `/only use the write tool/i` in `agent-frontmatter.test.cjs`. The fork's positive-framing replacement rule rewrites this to "Always use the Write tool".
+
+**Test consequence:** The `HDOC: anti-heredoc instruction` suite in `agent-frontmatter.test.cjs` asserts `/always use the write tool/i` (not the upstream form). Per-agent tests in other test files (e.g. `debug-session-management.test.cjs`) must not duplicate this assertion — `agent-frontmatter.test.cjs` is the single owner. If a per-agent duplicate appears after an upstream merge, remove it rather than update it.
+
 ---
 
 ## Category 10: Planning Artifacts
