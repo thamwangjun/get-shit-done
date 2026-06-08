@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-06-07 after v2.1.0-f milestone start)
 Phase: 62
 Plan: Not started
 Status: Executing Phase 62
-Last activity: 2026-06-08
+Last activity: 2026-06-08 - Completed quick task 260608-fny: Restore null-omit comments on effort= lines in execute-phase.md
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -85,10 +85,11 @@ None. Research is HIGH confidence across all five phases.
 | 260608-on7 | Restore 9 confirmed fidelity losses in execute-phase.md (A-I diff-verified) | 2026-06-08 | 79c4c925 | [260608-on7-restore-fidelity-in-execute-phase-md-aft](./quick/260608-on7-restore-fidelity-in-execute-phase-md-aft/) |
 | 260608-p8h | Restore 10 confirmed fidelity losses in execute-phase.md (diff-verified against 57a000b1) | 2026-06-08 | 901c5ce0 | [260608-p8h-restore-fidelity-losses](./quick/260608-p8h-restore-fidelity-losses/) |
 | 260608-f5j | Restore PHASE COMPLETE marker and cross-AI variable definitions in execute-phase.md | 2026-06-08 | 9ca19401 | [260608-f5j-restore-two-fidelity-losses-in-execute-p](./quick/260608-f5j-restore-two-fidelity-losses-in-execute-p/) |
+| 260608-fny | Restore null-omit comments on effort= lines in execute-phase.md | 2026-06-08 | 0e3bbb2f | [260608-fny-restore-null-omit-comments-on-effort-lin](./quick/260608-fny-restore-null-omit-comments-on-effort-lin/) |
 
 ## Session Continuity
 
-Last activity: 2026-06-08 — Completed quick task 260608-f5j: Restore PHASE COMPLETE marker and cross-AI variable definitions in execute-phase.md
+Last activity: 2026-06-08 — Completed quick task 260608-fny: Restore null-omit comments on effort= lines in execute-phase.md
 Stopped at: context exhaustion at 81% (2026-06-08)
 Resume file: None
 
