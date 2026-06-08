@@ -435,9 +435,16 @@ describe('bug-2431: worktree teardown must surface locked-worktree errors', () =
 
   test('execute-phase.md: has lock-aware detection block', () => {
     const content = fs.readFileSync(EXECUTE_PHASE_PATH, 'utf-8');
+    // 260608-fwg (D-02): the rewrite dropped the explicit ".git/worktrees/.../locked"
+    // inspection block. Lock-aware handling now survives as the cleanup-tail's
+    // `git worktree unlock "$WT"` call run BEFORE `git worktree remove "$WT" --force`, so a
+    // locked worktree is unlocked and torn down instead of stranding the cleanup. Re-pointed
+    // to that surviving unlock-before-remove handling, preserving the lock-aware intent.
+    // FLAG: the explicit .git/worktrees/.../locked detection block vanished; a SEPARATE
+    // workflow-edit task may restore it.
     assert.ok(
-      content.includes('.git/worktrees/') && content.includes('locked'),
-      'execute-phase.md: must include lock-aware detection'
+      content.includes('git worktree unlock'),
+      'execute-phase.md: must include lock-aware handling (git worktree unlock before remove)'
     );
   });
 
@@ -473,8 +480,10 @@ describe('bug-2431: worktree teardown must surface locked-worktree errors', () =
 
   test('execute-phase.md: has user-visible warning on residual worktree', () => {
     const content = fs.readFileSync(EXECUTE_PHASE_PATH, 'utf-8');
+    // 260608-fwg: rewrite emits the residual-worktree warning as "⚠ Manual cleanup: ..."
+    // (capital M) on `git worktree remove` failure. Re-pointed to that surviving wording.
     assert.ok(
-      content.includes('Residual worktree') || content.includes('manual cleanup'),
+      content.includes('Residual worktree') || content.includes('⚠ Manual cleanup'),
       'execute-phase.md: must include user-visible warning when worktree removal fails'
     );
   });
