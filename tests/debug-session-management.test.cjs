@@ -181,7 +181,7 @@ describe('debug skill dispatch and sub-orchestrator (#2148, #2151)', () => {
     assert.ok(content.includes('DEBUG SESSION COMPLETE'), 'session manager missing compact summary format');
   });
 
-  test.skip('gsd-debug-session-manager includes anti-heredoc rule', () => {
+  test('gsd-debug-session-manager includes anti-heredoc rule', () => {
     const content = fs.readFileSync(path.join(process.cwd(), 'agents', 'gsd-debug-session-manager.md'), 'utf8');
     assert.ok(/only use the write tool/i.test(content), 'session manager missing anti-heredoc rule');
   });
