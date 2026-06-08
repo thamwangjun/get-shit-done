@@ -605,7 +605,7 @@ Plans:
 
 **Plans**: 1 planPlans:
 
-- [ ] 61-01-PLAN.md — Append phase-61 submodule exclusion guard describe block to tests/bug-3097-3099-executor-worktree-path-safety.test.cjs [WSC-01]
+- [x] 61-01-PLAN.md — Append phase-61 submodule exclusion guard describe block to tests/bug-3097-3099-executor-worktree-path-safety.test.cjs [WSC-01]
 
 #### Phase 62: Rubric Inlining Coverage
 
@@ -708,7 +708,7 @@ Plans:
 | 58. Regression Coverage | v2.1.0-e | 3/3 | Complete    | 2026-06-06 |
 | 59. Comment Cleanup | v2.1.0-f | 1/1 | Complete    | 2026-06-07 |
 | 60. Effort Wiring Coverage | v2.1.0-f | 1/1 | Complete    | 2026-06-07 |
-| 61. Worktree Safety Coverage | v2.1.0-f | 0/1 | Not started | - |
+| 61. Worktree Safety Coverage | v2.1.0-f | 1/1 | Complete   | 2026-06-08 |
 | 62. Rubric Inlining Coverage | v2.1.0-f | 0/TBD | Not started | - |
 | 63. Security Framing Coverage | v2.1.0-f | 0/TBD | Not started | - |
 
