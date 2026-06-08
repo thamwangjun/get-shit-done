@@ -138,7 +138,14 @@ If cannot answer from context, stop and ask user.
 Parse `--interactive` flag from $ARGUMENTS.
 
 **If present:** Execute plans sequentially inline (no subagent spawning) with user checkpoints between tasks. For each plan:
-1. Present plan summary; user chooses Execute / Review / Skip / Stop
+1. Present plan summary; user chooses Execute / Review first / Skip / Stop
+   ```
+   ## Plan {plan_id}: {plan_name}
+   Objective: {from plan file}
+   Tasks: {task_count}
+   Options: Execute / Review first / Skip / Stop
+   ```
+   If "Review first": display the full plan file, then ask again: Execute / Modify / Skip.
 2. If Execute: read execute-plan.md inline, execute tasks one by one
 3. After each task: pause; user can intervene or continue
 4. After plan: show results, commit, create SUMMARY.md
@@ -464,9 +471,9 @@ AUTO_MODE=$($GSD_SDK query check auto-mode --pick active 2>/dev/null || echo "fa
 ```
 
 When executor returns checkpoint AND `AUTO_MODE=true`:
-- **human-verify** → Auto-spawn continuation with `{user_response}="approved"`. Log auto-approval.
-- **decision** → Auto-spawn continuation with first option. Log selection.
-- **human-action** → Present to user (cannot automate).
+- **human-verify** → Auto-spawn continuation agent with `{user_response}` = `"approved"`. Log `⚡ Auto-approved checkpoint`.
+- **decision** → Auto-spawn continuation agent with `{user_response}` = first option from checkpoint details. Log `⚡ Auto-selected: [option]`.
+- **human-action** → Present to user. Auth gates cannot be automated — these require human credentials or physical interaction.
 
 **Standard flow:** Spawn agent → agent runs until checkpoint → returns structured state (completed tasks, current task, blocker, checkpoint type/details). Present to user. User responds: approved / issue description / decision selection. Spawn continuation agent (fresh, not resume) with explicit state (completed_tasks_table, resume_task_number, resume_task_name, user_response, resume_instructions). Continuation verifies prior commits, continues from resume point. Repeat until plan completes or user stops.
 
@@ -512,6 +519,7 @@ TDD_PLANS=$(grep -rl "^type: tdd" "${PHASE_DIR}"/*-PLAN.md 2>/dev/null | wc -l |
 If `TDD_PLANS > 0`: Verify RED/GREEN/REFACTOR gate sequence for each. RED gate: failing test commit exists. GREEN gate: implementation commit exists. REFACTOR gate: optional cleanup. Flag violations.
 
 Present summary table. **Escalation under MVP+TDD:** When both `MVP_MODE=true` AND `TDD_MODE=true`, violations are **blocking** unless overridden with `--force-mvp-gate`.
+Override: `/gsd execute-phase {phase} --force-mvp-gate` to ship despite violations (escape hatch — not yet implemented as a command; included for documentation and future enforcement). Policy: `MVP_MODE=true` AND `TDD_MODE=true` → violations are blocking; otherwise advisory and surfaced for review only.
 </step>
 
 <step name="handle_partial_wave_execution">
@@ -552,6 +560,8 @@ Discover prior phases' test files from VERIFICATION.md and prior SUMMARY.md. Res
 </step>
 
 <step name="schema_drift_gate">
+Post-execution schema drift detection. Catches false-positive verification where build/types pass because TypeScript types come from config, not the live database.
+
 Run post-execution schema drift detection:
 ```bash
 SCHEMA_DRIFT=$($GSD_SDK query verify.schema-drift "${PHASE_NUMBER}" 2>/dev/null)
@@ -565,7 +575,7 @@ Check override:
 SKIP_SCHEMA=$(echo "${GSD_SKIP_SCHEMA_CHECK:-false}")
 ```
 
-If skip: display warning + continue. Otherwise: BLOCK verification. Display schema files changed and required push commands. User picks: run-push-now / skip-check / abort. If run-push, re-check drift. If skip, continue.
+If skip: display warning + continue. Otherwise: BLOCK verification. Display schema files changed and required push commands. User picks: run-push-now (recommended) / skip-check / abort. If run-push, re-check drift. If skip, continue.
 </step>
 
 <step name="codebase_drift_gate">
@@ -607,7 +617,20 @@ grep "^status:" "$PHASE_DIR"/*-VERIFICATION.md | cut -d: -f2 | tr -d ' '
 
 **If passed:** → update_roadmap.
 
-**If human_needed:** Create `{phase_dir}/{phase_num}-HUMAN-UAT.md` with pending items. Commit. Present to user. If "approved": continue to update_roadmap. If issues: gap closure.
+**If human_needed:**
+
+**Step A — Persist:** Create `{phase_dir}/{phase_num}-HUMAN-UAT.md` with frontmatter: `status: partial`, `phase`, `source`, `started`, `updated` — plus `## Tests` section listing each `human_verification` item as `### N. {description}` with `expected:` and `result: [pending]`, and a `## Summary` block (`total`, `passed`, `issues`, `pending`, `skipped`, `blocked`). These fields are required by `/gsd:progress` and `/gsd:audit-uat`. Commit: `test({phase_num}): persist human verification items as UAT`.
+
+**Step B — Present:**
+```
+## Phase {X}: {Name} — Human Verification Required
+All automated checks passed. {N} items need human testing.
+{items from VERIFICATION.md}
+Items saved to `{phase_num}-HUMAN-UAT.md` — visible in /gsd:progress and /gsd:audit-uat.
+"approved" → continue | Report issues → gap closure
+```
+
+If approved: proceed to `update_roadmap`. HUMAN-UAT.md persists with `status: partial` until the user runs `/gsd:verify-work` on it.
 
 **If gaps_found:** Present gap summary. Offer `/gsd:plan-phase {X} --gaps`. Gap closure cycle: plan-phase creates gap plans → user runs execute-phase --gaps-only → verifier re-runs.
 </step>
@@ -689,13 +712,30 @@ AUTO_MODE=$($GSD_SDK query check auto-mode --pick active 2>/dev/null || echo "fa
 If `--auto` flag present OR `AUTO_MODE=true` (AND verification passed, no gaps):
 Execute transition workflow inline (orchestrator context ~10-15%, transition needs phase data in context). Pass `--auto` flag for propagation to next phase.
 
-**Otherwise:** STOP. Present options (no `/gsd-transition` command — it is internal only). Check if next phase has CONTEXT.md. If not: suggest discuss-phase. If yes: suggest plan-phase.
+**Otherwise:** STOP. Do not auto-advance. Do not suggest `/gsd-transition` — it is internal only and does not exist as a user command.
 
-Commands:
-- `/gsd:progress` — see updated roadmap
-- `/gsd:discuss-phase {next}` — discuss next phase (recommended if no CONTEXT.md)
-- `/gsd:plan-phase {next}` — plan next (CONTEXT.md present)
-- `/gsd:execute-phase {next}` — execute next (skip planning)
+Check whether CONTEXT.md exists for the next phase:
+```bash
+ls .planning/phases/*{next}*/{next}-CONTEXT.md 2>/dev/null || echo "no-context"
+```
+
+**If CONTEXT.md does NOT exist for the next phase:**
+```
+## Phase {X}: {Name} Complete
+/gsd:progress — see updated roadmap
+/gsd:discuss-phase {next} — discuss next phase  ← recommended
+/gsd:plan-phase {next} — plan next phase (skip discuss)
+/gsd:execute-phase {next} — execute next (skip discuss and plan)
+```
+
+**If CONTEXT.md exists for the next phase:**
+```
+## Phase {X}: {Name} Complete
+/gsd:progress — see updated roadmap
+/gsd:plan-phase {next} — plan next phase (CONTEXT.md present)  ← recommended
+/gsd:discuss-phase {next} — re-discuss next phase
+/gsd:execute-phase {next} — execute next (skip planning)
+```
 </step>
 
 </process>
