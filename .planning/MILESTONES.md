@@ -1,5 +1,23 @@
 # Milestones
 
+## v2.1.0-f Testing Coverage Gaps (Shipped: 2026-06-08)
+
+**Phases completed:** 5 phases (59–63), 5 plans, 5 tasks
+**Git range:** 2f6925b9..97d16661 · 2026-06-07 → 2026-06-08
+**Scope:** Test-only milestone — additive test code across four existing test files; no agent or workflow source files changed.
+
+**Key accomplishments:**
+
+- Removed the stale "Phase 48 RED expectation" JSDoc comment from `tests/step-numbering-scan.test.cjs`, establishing a clean baseline with scanner behavior unchanged (Phase 59, DOC-01)
+- Added 8 live Group B effort-wiring regression tests to `tests/phase-56-effort-wiring.test.cjs`, guarding spawn-template wiring in audit-fix, diagnose-issues, code-review, code-review-fix, explore, import, ingest-docs, and discuss-phase-assumptions against silent regression (Phase 60, EWC-01..08)
+- Added a submodule-exclusion regression test scoped to the `<task_commit_protocol>` block of `gsd-executor.md`, locking in the `.git/worktrees/` (guard fires) vs `.git/modules/` (guard skipped) distinction (Phase 61, WSC-01)
+- Added a rubric-inlining coverage test asserting `gsd-user-profiler.md` load_rubric step references the Eta-inlined `user-profiling.md` rubric rather than a bare file read (Phase 62, RIC-01)
+- Activated the previously-skipped `gsd-debugger.md` security test, replacing the stale `DATA_START` assertion with the fork's hardened framing ("untrusted user input", "evidence data only") — one fewer skipped test (Phase 63, SFC-01)
+
+**Verification:** All 11 requirements satisfied across 3 sources; `npm test` 9115 pass / 0 fail / 9 skipped; all 5 phases Nyquist-compliant.
+
+---
+
 ## v2.1.0-e Per-Agent Thinking Effort (Shipped: 2026-06-06)
 
 **Phases completed:** 9 phases (52–58, plus inserted 55.1, 55.2), 28 plans

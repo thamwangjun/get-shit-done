@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v2.1.0-f
 milestone_name: Testing Coverage Gaps
-status: executing
+status: Awaiting next milestone
 stopped_at: Phase 63 context gathered
-last_updated: "2026-06-08T13:25:47.849Z"
-last_activity: 2026-06-08
+last_updated: "2026-06-08T14:47:31.675Z"
+last_activity: 2026-06-08 — Milestone v2.1.0-f completed and archived
 progress:
   total_phases: 13
   completed_phases: 0
@@ -25,12 +25,10 @@ See: .planning/PROJECT.md (updated 2026-06-07 after v2.1.0-f milestone start)
 
 ## Current Position
 
-Phase: 63
-Plan: Not started
-Status: Executing Phase 63
-Last activity: 2026-06-08
-
-Progress: [░░░░░░░░░░] 0%
+Phase: Milestone v2.1.0-f complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-06-08 — Milestone v2.1.0-f completed and archived
 
 ## Performance Metrics
 
@@ -122,3 +120,7 @@ Items acknowledged and deferred at milestone close on 2026-06-06:
 | quick_task | 260604-tev-fix-gsd-quick-losing-summary-md-in-workt | unknown |
 | quick_task | 260606-tbq-fix-3-sdk-effort-resolution-gaps-in-sdk- | unknown |
 | quick_task | 260606-vf5-fix-v2-1-0-e-audit-gaps-expose-03-sdk-co | unknown |
+
+## Operator Next Steps
+
+- Start the next milestone with /gsd-new-milestone
