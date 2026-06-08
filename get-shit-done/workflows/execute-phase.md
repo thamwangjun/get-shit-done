@@ -196,7 +196,11 @@ else
   git fetch --quiet origin "$DEFAULT_BRANCH" || \
     git show-ref --verify --quiet "refs/remotes/origin/$DEFAULT_BRANCH" || \
     { echo "ERROR: Cannot create branch without origin/$DEFAULT_BRANCH (#2916)." >&2; exit 1; }
-  git switch --quiet "$DEFAULT_BRANCH" 2>/dev/null && git merge --ff-only --quiet "origin/$DEFAULT_BRANCH" 2>/dev/null || true
+  if [ -n "$(git status --porcelain)" ]; then
+    echo "WARNING: Uncommitted changes will be carried onto '$BRANCH_NAME' (branched off origin/$DEFAULT_BRANCH, not previous HEAD)."
+  else
+    git switch --quiet "$DEFAULT_BRANCH" 2>/dev/null && git merge --ff-only --quiet "origin/$DEFAULT_BRANCH" 2>/dev/null || true
+  fi
   git checkout -b "$BRANCH_NAME" "origin/$DEFAULT_BRANCH" || \
     { echo "ERROR: Could not create '$BRANCH_NAME' from origin/$DEFAULT_BRANCH (#2916)." >&2; exit 1; }
 fi
@@ -598,12 +602,29 @@ If `WAVE_FILTER` used, re-run discovery after execution. If incomplete plans rem
 CODE_REVIEW_ENABLED=$($GSD_SDK query config-get workflow.code_review 2>/dev/null || echo "true")
 ```
 
-If `false`: skip. Otherwise invoke:
+If `CODE_REVIEW_ENABLED` is `"false"`: display "Code review skipped (workflow.code_review=false)" and proceed to next step.
+
+**Invoke review:**
 ```
 Skill(skill="gsd-code-review", args="${PHASE_NUMBER}")
 ```
 
-Check result status. Non-blocking — review failures must never block. Proceed regardless to next step.
+**Check results using deterministic path:**
+```bash
+PADDED=$(printf "%02d" "${PHASE_NUMBER}")
+REVIEW_FILE="${PHASE_DIR}/${PADDED}-REVIEW.md"
+REVIEW_STATUS=$(sed -n '/^---$/,/^---$/p' "$REVIEW_FILE" | grep "^status:" | head -1 | cut -d: -f2 | tr -d ' ')
+```
+
+If REVIEW_STATUS is not "clean" and not "skipped" and not empty, display:
+```
+Code review found issues. Consider running:
+/gsd:code-review ${PHASE_NUMBER} --fix
+```
+
+**Error handling:** If the Skill invocation fails or throws, catch the error, display "Code review encountered an error (non-blocking): {error}" and proceed to next step. Review failures must never block execution.
+
+Regardless of review result, always proceed to close_parent_artifacts → regression_gate → verify_phase_goal.
 </step>
 
 <step name="close_parent_artifacts">
@@ -620,9 +641,70 @@ Skip if no decimal or no parent UAT found.
 </step>
 
 <step name="regression_gate">
-Skip if first phase or no prior VERIFICATION.md files.
+Run prior phases' test suites to catch cross-phase regressions BEFORE verification.
 
-Discover prior phases' test files from VERIFICATION.md and prior SUMMARY.md. Resolve test command (config > Makefile > language sniff). Run prior tests. Report results. If fail, offer Fix / Continue anyway / Abort.
+**Skip if:** This is the first phase (no prior phases), or no prior VERIFICATION.md files exist.
+
+**Step 1: Discover prior phases' test files**
+```bash
+PRIOR_VERIFICATIONS=$(find .planning/phases/ -name "*-VERIFICATION.md" ! -path "*${PHASE_NUMBER}*" 2>/dev/null)
+```
+
+**Step 2: Extract test file lists from prior verifications**
+
+For each VERIFICATION.md found, look for test file references:
+- Lines containing `test`, `spec`, or `__tests__` paths
+- The "Test Suite" or "Automated Checks" section
+- File patterns from `key-files.created` in corresponding SUMMARY.md files that match `*.test.*` or `*.spec.*`
+
+Collect all unique test file paths into `REGRESSION_FILES`.
+
+**Step 3: Run regression tests (if any found)**
+```bash
+# Resolve test command: project config > Makefile > language sniff
+REG_TEST_CMD=$($GSD_SDK query config-get workflow.test_command --default "" 2>/dev/null || true)
+if [ -z "$REG_TEST_CMD" ]; then
+  if [ -f "Makefile" ] && grep -q "^test:" Makefile; then
+    REG_TEST_CMD="make test"
+  elif [ -f "Justfile" ] || [ -f "justfile" ]; then
+    REG_TEST_CMD="just test"
+  elif [ -f "package.json" ]; then
+    REG_TEST_CMD="npm test"
+  elif [ -f "Cargo.toml" ]; then
+    REG_TEST_CMD="cargo test"
+  elif [ -f "go.mod" ]; then
+    REG_TEST_CMD="go test ./..."
+  elif [ -f "requirements.txt" ] || [ -f "pyproject.toml" ]; then
+    REG_TEST_CMD="python -m pytest ${REGRESSION_FILES} -q --tb=short"
+  else
+    REG_TEST_CMD="true"
+  fi
+fi
+eval "$REG_TEST_CMD" 2>&1
+```
+
+**Step 4: Report results**
+
+If all tests pass:
+```
+✓ Regression gate: {N} prior-phase test files passed — no regressions detected
+```
+
+If any tests fail:
+```
+## ⚠ Cross-Phase Regression Detected
+
+Phase {X} execution may have broken functionality from prior phases.
+
+| Test File | Phase | Status | Detail |
+|-----------|-------|--------|--------|
+| {file} | {origin_phase} | FAILED | {first_failure_line} |
+
+Options:
+1. Fix regressions before verification (recommended)
+2. Continue to verification anyway (regressions will compound)
+3. Abort phase — roll back and re-plan
+```
 </step>
 
 <step name="schema_drift_gate">
@@ -788,20 +870,22 @@ ls .planning/phases/*{next}*/{next}-CONTEXT.md 2>/dev/null || echo "no-context"
 **If CONTEXT.md does NOT exist for the next phase:**
 ```
 ## Phase {X}: {Name} Complete
-/gsd:progress — see updated roadmap
-/gsd:discuss-phase {next} — discuss next phase  ← recommended
-/gsd:plan-phase {next} — plan next phase (skip discuss)
-/gsd:execute-phase {next} — execute next (skip discuss and plan)
+/gsd:progress ${GSD_WS} — see updated roadmap
+/gsd:discuss-phase {next} ${GSD_WS} — discuss next phase  ← recommended
+/gsd:plan-phase {next} ${GSD_WS} — plan next phase (skip discuss)
+/gsd:execute-phase {next} ${GSD_WS} — execute next (skip discuss and plan)
 ```
 
 **If CONTEXT.md exists for the next phase:**
 ```
 ## Phase {X}: {Name} Complete
-/gsd:progress — see updated roadmap
-/gsd:plan-phase {next} — plan next phase (CONTEXT.md present)  ← recommended
-/gsd:discuss-phase {next} — re-discuss next phase
-/gsd:execute-phase {next} — execute next (skip planning)
+/gsd:progress ${GSD_WS} — see updated roadmap
+/gsd:plan-phase {next} ${GSD_WS} — plan next phase (CONTEXT.md present)  ← recommended
+/gsd:discuss-phase {next} ${GSD_WS} — re-discuss next phase
+/gsd:execute-phase {next} ${GSD_WS} — execute next (skip planning)
 ```
+
+Only suggest the commands listed above. Do not invent or hallucinate command names.
 </step>
 
 </process>
