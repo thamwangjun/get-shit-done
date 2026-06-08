@@ -22,18 +22,21 @@ Read STATE.md before operations.
 </required_reading>
 
 <available_agent_types>
-- gsd-executor — Execute tasks, commit, create SUMMARY.md
-- gsd-verifier — Verify phase completion, check gates
-- gsd-planner — Create detailed plans
-- gsd-phase-researcher — Research technical approaches
-- gsd-plan-checker — Review plan quality
-- gsd-debugger — Diagnose and fix issues
-- gsd-codebase-mapper — Map structure and dependencies
-- gsd-integration-checker — Check cross-phase integration
-- gsd-nyquist-auditor — Validate verification coverage
-- gsd-ui-researcher — Research UI/UX approaches
-- gsd-ui-checker — Review UI implementation
-- gsd-ui-auditor — Audit UI vs requirements
+These are the valid GSD subagent types registered in .claude/agents/ (or equivalent for your runtime).
+Always use the exact name from this list — do not fall back to 'general-purpose' or other built-in types:
+
+- gsd-executor — Executes plan tasks, commits, creates SUMMARY.md
+- gsd-verifier — Verifies phase completion, checks quality gates
+- gsd-planner — Creates detailed plans from phase scope
+- gsd-phase-researcher — Researches technical approaches for a phase
+- gsd-plan-checker — Reviews plan quality before execution
+- gsd-debugger — Diagnoses and fixes issues
+- gsd-codebase-mapper — Maps project structure and dependencies
+- gsd-integration-checker — Checks cross-phase integration
+- gsd-nyquist-auditor — Validates verification coverage
+- gsd-ui-researcher — Researches UI/UX approaches
+- gsd-ui-checker — Reviews UI implementation quality
+- gsd-ui-auditor — Audits UI against design requirements
 </available_agent_types>
 
 <process>
@@ -100,7 +103,14 @@ else
   SUBMODULE_PATHS=""
 fi
 ```
-This per-plan intersection avoids blanket worktree disabling that would penalise plans nowhere near a submodule; the decision flows into `execute_waves` step 4 (`USE_WORKTREES_FOR_PLAN`).
+`SUBMODULE_PATHS` is exported to the `execute_waves` step, where the per-plan decision actually happens (see "Per-plan worktree decision" sub-step inside `execute_waves`). The decision is per-plan because different plans in the same wave can touch different files — only plans whose paths intersect a submodule must drop worktree isolation; plans nowhere near a submodule keep parallel isolation.
+
+When `USE_WORKTREES` (project-level) is `false`, all executor agents run without `isolation="worktree"` — they execute sequentially on the main working tree instead of in parallel worktrees. The per-plan decision below has no effect when worktrees are project-disabled.
+
+Cross-phase context files (prior-wave SUMMARY.md, phase CONTEXT.md/RESEARCH.md, REQUIREMENTS.md) are listed in each subagent's files_to_read and read at execution start — they are always provided. Reference files load on demand by need:
+
+- Executors consult `@~/.claude/get-shit-done/references/executor-examples.md` when handling a deviation from the plan or executing a task that carries a checkpoint (the file holds extended deviation-rule and checkpoint examples).
+- Planners consult `@~/.claude/get-shit-done/references/planner-antipatterns.md` when checking a plan for anti-patterns or tightening task specificity (the file holds extended anti-pattern lists and specificity examples).
 
 **Auto-chain sync (REQUIRED):** If user invoked manually (no `--auto`), clear ephemeral chain flag:
 ```bash
@@ -150,16 +160,27 @@ Check for `@gsd-executor` pattern or absence of Agent() API. If Copilot, set `CO
 </step>
 
 <step name="check_blocking_antipatterns" priority="first">
-Look for `.continue-here.md` in phase dir. If found, parse "Critical Anti-Patterns" table for `severity = blocking`.
+**MANDATORY — Check for blocking anti-patterns before any other work.**
 
-**If blocking anti-patterns found:** Before proceeding, answer for each:
-1. What is this anti-pattern?
-2. How did it manifest?
-3. What structural mechanism prevents recurrence?
+Look for a `.continue-here.md` in the current phase directory:
 
-If cannot answer from context, stop and ask user.
+```bash
+ls ${phase_dir}/.continue-here.md 2>/dev/null || true
+```
 
-**If no `.continue-here.md` or no blocking rows:** Proceed to next step.
+If `.continue-here.md` exists, parse its "Critical Anti-Patterns" table for rows with `severity` = `blocking`.
+
+**If one or more `blocking` anti-patterns are found:**
+
+This step cannot be skipped. Before proceeding to `check_interactive_mode` or any other step, the agent must demonstrate understanding of each blocking anti-pattern by answering all three questions for each one:
+
+1. **What is this anti-pattern?** — Describe it in your own words, not by quoting the handoff.
+2. **How did it manifest?** — Explain the specific failure that caused it to be recorded.
+3. **What structural mechanism (not acknowledgment) prevents it?** — Name the concrete step, checklist item, or enforcement mechanism that stops recurrence.
+
+Write these answers inline before continuing. If a blocking anti-pattern cannot be answered from the context in `.continue-here.md`, stop and ask the user for clarification.
+
+**If no `.continue-here.md` exists, or no `blocking` rows are found:** Proceed directly to `check_interactive_mode`.
 </step>
 
 <step name="check_interactive_mode">
@@ -286,7 +307,15 @@ if [ -z "${WAVE_WORKTREE_MANIFEST:-}" ]; then
 fi
 ```
 
-Dispatch one Agent() per message with `run_in_background: true` (sequential dispatch prevents `.git/config.lock` race):
+**Sequential dispatch for parallel execution (waves with 2+ agents):**
+Dispatch each `Agent()` call **one at a time with `run_in_background: true`**. Do NOT
+send all Agent calls in a single message: simultaneous `git worktree add` calls race
+on `.git/config.lock`. Agents still run in parallel once their worktrees are created.
+
+```text
+# CORRECT: one Agent() per message with run_in_background: true
+# WRONG: multiple Agent() calls in one message -> .git/config.lock contention
+```
 
 ```text
 Agent(
@@ -329,8 +358,6 @@ Agent(
     REQUIRED: SUMMARY.md MUST be committed before return. Worktree mode commits SUMMARY.md and REQUIREMENTS.md only. Do NOT skip.
     REQUIRED ORDER: Write SUMMARY.md → commit → narration. No text between Write and commit (truncation risk; #2070 rescue is not primary defense).
     </parallel_execution>
-
-   > **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Agent() above to spawn executor agent(s), stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
 
     <execution_context>
     @~/.claude/get-shit-done/workflows/execute-plan.md
@@ -376,6 +403,8 @@ Agent(
   "
 )
 ```
+
+   > **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Agent() above to spawn executor agent(s), stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
 
 Append `{agent_id, worktree_path, branch, expected_base}` to `WAVE_WORKTREE_MANIFEST` after return. If any field missing, stop and ask for recovery.
 
@@ -485,12 +514,34 @@ Skip if no worktrees used (sequential agents updated themselves).
 
 11. **Handle test failures:** If `WAVE_FAILURE_COUNT > 0`, present failures and offer Fix now / Continue / Abort. If multiple failures, strongly recommend Fix now.
 
-12. **Wave-close heartbeat (#2410):**
-```
-[checkpoint] phase {PHASE_NUMBER} wave {N}/{M} complete, {P}/{Q} plans done ({wave_success}/{wave_plan_count} ok)
-```
+12. **Report completion — spot-check claims first:**
 
-13. **Report completion:** Verify first 2 key-files exist, check git log for commits, check for FAILED marker. Spot-check failures → ask Retry/Continue. If pass, show what was built + deviations.
+   For each SUMMARY.md:
+   - Verify first 2 files from `key-files.created` exist on disk
+   - Check `git log --oneline --all --grep="{phase}-{plan}"` returns ≥1 commit
+   - Check for `## Self-Check: FAILED` marker
+
+   If ANY spot-check fails: report which plan failed, route to failure handler — ask "Retry plan?" or "Continue with remaining waves?"
+
+   **Wave-close heartbeat (#2410):** after spot-checks finish (pass or fail),
+   before the `## Wave {N} Complete` summary, emit as a literal line:
+
+   ```
+   [checkpoint] phase {PHASE_NUMBER} wave {N}/{M} complete, {P}/{Q} plans done ({wave_success}/{wave_plan_count} ok)
+   ```
+
+   If pass:
+   ```
+   ---
+   ## Wave {N} Complete
+
+   **{Plan ID}: {Plan Name}**
+   {What was built — from SUMMARY.md}
+   {Notable deviations, if any}
+
+   {If more waves: what this enables for next wave}
+   ---
+   ```
 
 14. **Handle failures:**
    **Step 7 — classify before branching (#3095):**
@@ -628,16 +679,53 @@ Regardless of review result, always proceed to close_parent_artifacts → regres
 </step>
 
 <step name="close_parent_artifacts">
-**For decimal phases only** (X.Y pattern, e.g., 4.1):
+**For decimal/polish phases only (X.Y pattern):** Close the feedback loop by resolving parent UAT and debug artifacts.
+
+**Skip if** phase number has no decimal (e.g., `3`, `04`) — only applies to gap-closure phases like `4.1`, `03.1`.
+
+**1. Detect decimal phase and derive parent:**
 ```bash
+# Check if phase_number contains a decimal
 if [[ "$PHASE_NUMBER" == *.* ]]; then
   PARENT_PHASE="${PHASE_NUMBER%%.*}"
 fi
 ```
 
-Find parent UAT file. Update gap statuses from `failed` → `resolved`. Update frontmatter `diagnosed` → `resolved`. Resolve referenced debug sessions (move to `resolved/` dir). Commit.
+**2. Find parent UAT file:**
+```bash
+PARENT_INFO=$($GSD_SDK query find-phase "${PARENT_PHASE}" --raw)
+# Extract directory from PARENT_INFO JSON, then find UAT file in that directory
+```
 
-Skip if no decimal or no parent UAT found.
+**If no parent UAT found:** Skip this step (gap-closure may have been triggered by VERIFICATION.md instead).
+
+**3. Update UAT gap statuses:**
+
+Read the parent UAT file's `## Gaps` section. For each gap entry with `status: failed`:
+- Update to `status: resolved`
+
+**4. Update UAT frontmatter:**
+
+If all gaps now have `status: resolved`:
+- Update frontmatter `status: diagnosed` → `status: resolved`
+- Update frontmatter `updated:` timestamp
+
+**5. Resolve referenced debug sessions:**
+
+For each gap that has a `debug_session:` field:
+- Read the debug session file
+- Update frontmatter `status:` → `resolved`
+- Update frontmatter `updated:` timestamp
+- Move to resolved directory:
+```bash
+mkdir -p .planning/debug/resolved
+mv .planning/debug/{slug}.md .planning/debug/resolved/
+```
+
+**6. Commit updated artifacts:**
+```bash
+$GSD_SDK query commit "docs(phase-${PARENT_PHASE}): resolve UAT gaps and debug sessions after ${PHASE_NUMBER} gap closure" --files .planning/phases/*${PARENT_PHASE}*/*-UAT.md .planning/debug/resolved/*.md
+```
 </step>
 
 <step name="regression_gate">
@@ -705,6 +793,8 @@ Options:
 2. Continue to verification anyway (regressions will compound)
 3. Abort phase — roll back and re-plan
 ```
+
+Use AskUserQuestion to present the options.
 </step>
 
 <step name="schema_drift_gate">
@@ -757,6 +847,8 @@ ${VERIFIER_SKILLS}",
   effort={verifier_model_effort_arg}
 )
 ```
+
+> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Agent() above, stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
 
 Read status:
 ```bash
