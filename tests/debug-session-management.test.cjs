@@ -192,3 +192,12 @@ describe('debug skill dispatch and sub-orchestrator (#2148, #2151)', () => {
       'debug.md does not delegate to session manager');
   });
 });
+
+describe('phase-62: rubric inlining coverage', () => {
+  test('gsd-user-profiler load_rubric step references Eta-inlined rubric', () => {
+    const content = fs.readFileSync(path.join(process.cwd(), 'agents', 'gsd-user-profiler.md'), 'utf8');
+    assert.ok(content.includes('<step name="load_rubric">'), 'gsd-user-profiler.md missing load_rubric step');
+    assert.ok(content.includes('user-profiling.md'), 'gsd-user-profiler.md missing rubric filename reference');
+    assert.ok(content.includes('included above in the `<reference>` block'), 'gsd-user-profiler.md load_rubric step missing inlining phrase');
+  });
+});
