@@ -213,7 +213,7 @@ Skip to handle_branching step after all plans complete.
 <step name="handle_branching">
 Check `branching_strategy` from init. **"none":** skip. **"phase" or "milestone":** use `branch_name`.
 
-Fork from origin/HEAD (default branch), not current HEAD (#2916):
+Fork from origin/HEAD, not current HEAD:
 ```bash
 DEFAULT_BRANCH=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's|^origin/||')
 DEFAULT_BRANCH=${DEFAULT_BRANCH:-main}
@@ -223,14 +223,14 @@ if git show-ref --verify --quiet "refs/heads/$BRANCH_NAME"; then
 else
   git fetch --quiet origin "$DEFAULT_BRANCH" || \
     git show-ref --verify --quiet "refs/remotes/origin/$DEFAULT_BRANCH" || \
-    { echo "ERROR: Cannot create branch without origin/$DEFAULT_BRANCH (#2916)." >&2; exit 1; }
+    { echo "ERROR: Cannot create branch without origin/$DEFAULT_BRANCH." >&2; exit 1; }
   if [ -n "$(git status --porcelain)" ]; then
     echo "WARNING: Uncommitted changes will be carried onto '$BRANCH_NAME' (branched off origin/$DEFAULT_BRANCH, not previous HEAD)."
   else
     git switch --quiet "$DEFAULT_BRANCH" 2>/dev/null && git merge --ff-only --quiet "origin/$DEFAULT_BRANCH" 2>/dev/null || true
   fi
   git checkout -b "$BRANCH_NAME" "origin/$DEFAULT_BRANCH" || \
-    { echo "ERROR: Could not create '$BRANCH_NAME' from origin/$DEFAULT_BRANCH (#2916)." >&2; exit 1; }
+    { echo "ERROR: Could not create '$BRANCH_NAME' from origin/$DEFAULT_BRANCH." >&2; exit 1; }
 fi
 ```
 </step>
@@ -296,7 +296,7 @@ Remove successful plans from execute_waves list.
 </step>
 
 <step name="execute_waves">
-**Stream-idle-timeout prevention (#2410):** Emit heartbeat lines `[checkpoint] ...` at wave/plan boundaries (literal text, no tool call).
+**Stream-idle-timeout prevention:** Emit heartbeat lines `[checkpoint] ...` at wave/plan boundaries (literal text, no tool call).
 
 **For each wave:**
 
@@ -305,7 +305,7 @@ Remove successful plans from execute_waves list.
 2. **Emit wave-start heartbeat:**
 
    **First, emit the wave-start checkpoint heartbeat as a literal assistant-text
-   line — no tool call (#2410). Do NOT skip this even for single-plan waves; it
+   line — no tool call. Do NOT skip this even for single-plan waves; it
    is required before any further reasoning or spawning:**
 
    `[checkpoint] phase {PHASE_NUMBER} wave {N}/{M} starting, {wave_plan_count} plan(s), {P}/{Q} plans done`
@@ -358,15 +358,15 @@ Agent(
     </objective>
 
     <worktree_branch_check>
-    FIRST ACTION: HEAD assertion before any reset/checkout. Worktrees use `worktree-agent-<id>` namespace. If HEAD is on protected ref (main/master/develop/trunk/release/*) or detached, HALT — do NOT self-recover via `git update-ref` (#2924).
+    FIRST ACTION: HEAD assertion before any reset/checkout. Worktrees use `worktree-agent-<id>` namespace. If HEAD is on protected ref (main/master/develop/trunk/release/*) or detached, HALT — do NOT self-recover via `git update-ref`.
     ```bash
     HEAD_REF=$(git symbolic-ref --quiet HEAD || echo "DETACHED")
     ACTUAL_BRANCH=$(git rev-parse --abbrev-ref HEAD)
     if [ "$HEAD_REF" = "DETACHED" ] || echo "$ACTUAL_BRANCH" | grep -Eq '^(main|master|develop|trunk|release/.*)$'; then
-      echo "FATAL: worktree HEAD on '$ACTUAL_BRANCH' (expected worktree-agent-*); refusing self-recovery (#2924)." >&2; exit 1
+      echo "FATAL: worktree HEAD on '$ACTUAL_BRANCH' (expected worktree-agent-*); refusing self-recovery." >&2; exit 1
     fi
     if ! echo "$ACTUAL_BRANCH" | grep -Eq '^worktree-agent-[A-Za-z0-9._/-]+$'; then
-      echo "FATAL: worktree HEAD not in worktree-agent-* namespace; refusing to commit (#2924)." >&2; exit 1
+      echo "FATAL: worktree HEAD not in worktree-agent-* namespace; refusing to commit." >&2; exit 1
     fi
     ACTUAL_BASE=$(git merge-base HEAD {EXPECTED_BASE})
     if [ "$ACTUAL_BASE" != "{EXPECTED_BASE}" ]; then
@@ -382,7 +382,7 @@ Agent(
     Run `git commit` normally — hooks run by default. Do NOT pass `--no-verify` unless `workflow.worktree_skip_hooks=true`.
     Do NOT modify STATE.md or ROADMAP.md. execute-plan.md auto-detects worktree mode (`.git` is a file, not a directory) and skips STATE.md/ROADMAP.md updates automatically.
     REQUIRED: SUMMARY.md MUST be committed before return. Worktree mode commits SUMMARY.md and REQUIREMENTS.md only. Do NOT skip.
-    REQUIRED ORDER: Write SUMMARY.md → commit → narration. No text between Write and commit (truncation risk; #2070 rescue is not primary defense).
+    REQUIRED ORDER: Write SUMMARY.md → commit → narration. No text between Write and commit (truncation risk; rescue is not primary defense).
     </parallel_execution>
 
     <execution_context>
@@ -440,7 +440,7 @@ Omit `isolation="worktree"`. Replace `<parallel_execution>` block with:
 ```
 <sequential_execution>
 Sequential executor on main working tree. Use normal commits with hooks.
-REQUIRED ORDER: Write SUMMARY.md → commit → only then any narration. No text between Write and commit (truncation risk; #2070 rescue is not primary defense).
+REQUIRED ORDER: Write SUMMARY.md → commit → only then any narration. No text between Write and commit (truncation risk; rescue is not primary defense).
 </sequential_execution>
 ```
 
@@ -450,7 +450,7 @@ When plan in wave dropped to sequential, execute affected plan(s) one-at-a-time 
 
 6. **Wait for all agents in wave to complete.**
 
-**Plan-complete heartbeat (#2410):**
+**Plan-complete heartbeat:**
 ```
 [checkpoint] phase {PHASE_NUMBER} wave {N}/{M} plan {plan_id} complete ({P}/{Q} plans done)
 [checkpoint] phase {PHASE_NUMBER} wave {N}/{M} plan {plan_id} failed ({P}/{Q} plans done)
@@ -473,7 +473,7 @@ If SUMMARY exists AND commits found → treat as done. If not, check for activit
 SKIP_HOOKS=$($GSD_SDK query config-get workflow.worktree_skip_hooks 2>/dev/null || echo "false")
 if [ "$SKIP_HOOKS" = "true" ]; then
   STASHED=false
-  # Stash uncommitted changes under a named ref so we always pop (bare `git stash` strands them on hook/script failure). #3542: `refs/stash` is shared across worktrees, so this helper runs ONLY in the orchestrator's main checkout after all wave worktrees have been merged + removed; executors are forbidden from running any `git stash` subcommand.
+  # Stash uncommitted changes under a named ref so we always pop (bare `git stash` strands them on hook/script failure). `refs/stash` is shared across worktrees, so this helper runs ONLY in the orchestrator's main checkout after all wave worktrees have been merged + removed; executors are forbidden from running any `git stash` subcommand.
   if (! git diff --quiet || ! git diff --cached --quiet) && git stash push -u -m "gsd-post-wave-hook-$$" >/dev/null 2>&1; then STASHED=true; fi
   git hook run pre-commit 2>&1 || echo "⚠ Pre-commit hooks failed"
   [ "$STASHED" = "true" ] && (git stash pop >/dev/null 2>&1 || echo "⚠ Could not pop stash")
@@ -482,15 +482,15 @@ fi
 
 8. **Worktree cleanup** (when isolation used):
 
-Use manifest as source of truth (#3384). Fail closed:
+Use manifest as source of truth. Fail closed:
 ```bash
-[ -n "${WAVE_WORKTREE_MANIFEST:-}" ] && [ -f "$WAVE_WORKTREE_MANIFEST" ] || { echo "BLOCKED: missing WAVE_WORKTREE_MANIFEST (#3384)." >&2; exit 1; }
+[ -n "${WAVE_WORKTREE_MANIFEST:-}" ] && [ -f "$WAVE_WORKTREE_MANIFEST" ] || { echo "BLOCKED: missing WAVE_WORKTREE_MANIFEST." >&2; exit 1; }
 
 PRIMARY_WT=$(git worktree list --porcelain | awk '/^worktree /{print substr($0,10); exit}')
 [ -z "$PRIMARY_WT" ] && { echo "FATAL: no primary worktree" >&2; exit 1; }
 [ "$(pwd -P 2>/dev/null)" != "$(cd "$PRIMARY_WT" 2>/dev/null && pwd -P)" ] && cd "$PRIMARY_WT" || { echo "FATAL: cannot cd to primary" >&2; exit 1; }
 ORCH_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-[ -z "${EXPECTED_BRANCH:-}" ] || [ "$ORCH_BRANCH" = "$EXPECTED_BRANCH" ] || { echo "FATAL: branch drift before cleanup (#3174)" >&2; exit 1; }
+[ -z "${EXPECTED_BRANCH:-}" ] || [ "$ORCH_BRANCH" = "$EXPECTED_BRANCH" ] || { echo "FATAL: branch drift before cleanup" >&2; exit 1; }
 
 $GSD_SDK query worktree.cleanup-wave --manifest "$WAVE_WORKTREE_MANIFEST" || exit 1
 ```
@@ -500,7 +500,7 @@ $GSD_SDK query worktree.cleanup-wave --manifest "$WAVE_WORKTREE_MANIFEST" || exi
 PRIMARY_WT=$(git worktree list --porcelain | awk '/^worktree /{print substr($0,10); exit}')
 [ -n "$PRIMARY_WT" ] && [ "$(pwd -P 2>/dev/null)" != "$(cd "$PRIMARY_WT" 2>/dev/null && pwd -P)" ] && cd "$PRIMARY_WT" || { echo "FATAL: cannot cd to primary" >&2; exit 1; }
 WT_PATHS_FILE=$(mktemp "${TMPDIR:-/tmp}/gsd-worktree-paths-XXXXXX")
-node -e 'const fs=require("fs");const p=process.env.WAVE_WORKTREE_MANIFEST;try{if(!p)throw new Error("WAVE_WORKTREE_MANIFEST unset");if(!fs.existsSync(p))throw new Error("manifest missing");const s=fs.readFileSync(p,"utf8");if(!s.trim())throw new Error("manifest empty");const j=JSON.parse(s);for(const w of j.worktrees||[])if(w.worktree_path)console.log(w.worktree_path)}catch(e){console.error(`ERROR: cannot read manifest: ${e.message}`);process.exit(1)}' > "$WT_PATHS_FILE" || { echo "BLOCKED: cannot read WAVE_WORKTREE_MANIFEST (#3384)." >&2; exit 1; }
+node -e 'const fs=require("fs");const p=process.env.WAVE_WORKTREE_MANIFEST;try{if(!p)throw new Error("WAVE_WORKTREE_MANIFEST unset");if(!fs.existsSync(p))throw new Error("manifest missing");const s=fs.readFileSync(p,"utf8");if(!s.trim())throw new Error("manifest empty");const j=JSON.parse(s);for(const w of j.worktrees||[])if(w.worktree_path)console.log(w.worktree_path)}catch(e){console.error(`ERROR: cannot read manifest: ${e.message}`);process.exit(1)}' > "$WT_PATHS_FILE" || { echo "BLOCKED: cannot read WAVE_WORKTREE_MANIFEST." >&2; exit 1; }
 while IFS= read -r WT; do
   [ -z "$WT" ] && continue
   WT_BRANCH=$(git -C "$WT" rev-parse --abbrev-ref HEAD 2>/dev/null)
@@ -550,7 +550,7 @@ Skip if no worktrees used (sequential agents updated themselves).
 
    If ANY spot-check fails: report which plan failed, route to failure handler — ask "Retry plan?" or "Continue with remaining waves?"
 
-   **Wave-close heartbeat (#2410):** after spot-checks finish (pass or fail),
+   **Wave-close heartbeat:** after spot-checks finish (pass or fail),
    before the `## Wave {N} Complete` summary, emit as a literal line:
 
    ```
@@ -571,7 +571,7 @@ Skip if no worktrees used (sequential agents updated themselves).
    ```
 
 14. **Handle failures:**
-   **Step 7 — classify before branching (#3095):**
+   **Step 7 — classify before branching:**
    ```bash
    CLASS_JSON=$($GSD_SDK query agent.classify-failure -- "$AGENT_RETURN_BODY")
    CLASS=$(echo "$CLASS_JSON" | jq -r '.class')
@@ -846,7 +846,7 @@ If skip: display warning + continue. Otherwise: BLOCK verification. Display sche
 </step>
 
 <step name="codebase_drift_gate">
-Post-execution structural drift detection (#2003). Non-blocking by contract:
+Post-execution structural drift detection. Non-blocking by contract:
 any internal error here MUST fall through to `verify_phase_goal`. The phase
 is never failed by this gate.
 
@@ -970,7 +970,7 @@ Skip silently if no matching todos.
 </step>
 
 <step name="update_project_md">
-Update PROJECT.md to reflect phase completion (prevents drift — #956). Move validated requirements from Active → Validated. Update "Current State" section. Commit.
+Update PROJECT.md to reflect phase completion. Move validated requirements from Active → Validated. Update "Current State" section. Commit.
 
 Skip if no PROJECT.md exists.
 </step>
@@ -1026,7 +1026,7 @@ For 1M+: pass richer context (code snippets, dependency outputs) directly to exe
 </context_efficiency>
 
 <failure_handling>
-- **Quota / rate-limit (any runtime — #3095):** Agent return body contains a sentinel like `usage limit`, `rate limit`, `429`, `too many requests`, `RESOURCE_EXHAUSTED`, `usage_limit_reached`. Route via `gsd-sdk query agent.classify-failure` → `class: "quota-exceeded"`. Do not offer retry-now; the right action is wait-for-reset and resume.
+- **Quota / rate-limit:** Agent return body contains a sentinel like `usage limit`, `rate limit`, `429`, `too many requests`, `RESOURCE_EXHAUSTED`, `usage_limit_reached`. Route via `gsd-sdk query agent.classify-failure` → `class: "quota-exceeded"`. Do not offer retry-now; the right action is wait-for-reset and resume.
 - **classifyHandoffIfNeeded false:** Claude Code bug, not GSD. Spot-check → if pass, treat as success.
 - **Agent fails mid-plan:** Missing SUMMARY.md → report, ask user how to proceed.
 - **Dependency chain breaks:** Wave 1 fails → Wave 2 dependents likely fail → offer attempt or skip.
