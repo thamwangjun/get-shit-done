@@ -16,6 +16,7 @@ key_files:
     - tests/step-numbering-scan.test.cjs
 decisions:
   - "Deleted stale Phase 48 RED expectation paragraph verbatim — no surrounding logic changed"
+requirements_completed: [DOC-01]
 metrics:
   duration: "5m"
   completed: "2026-06-07"

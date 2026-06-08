@@ -17,6 +17,7 @@ key_files:
 decisions:
   - EWC-04 and EWC-07 each use a single test with four asserts (two resolve-model-effort lines + two arg tokens) per D-12
   - read() call kept inside each individual test() block per plan-time flag to prevent copy-paste errors
+requirements_completed: [EWC-01, EWC-02, EWC-03, EWC-04, EWC-05, EWC-06, EWC-07, EWC-08]
 metrics:
   duration: "~5 minutes"
   completed: "2026-06-07"

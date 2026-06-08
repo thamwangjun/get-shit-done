@@ -11,6 +11,7 @@ requires: []
 provides:
   - phase-62 rubric inlining coverage describe block
 decisions: []
+requirements_completed: [RIC-01]
 metrics:
   tasks_completed: 1
   tasks_total: 1
