@@ -86,10 +86,11 @@ None. Research is HIGH confidence across all five phases.
 | 260608-p8h | Restore 10 confirmed fidelity losses in execute-phase.md (diff-verified against 57a000b1) | 2026-06-08 | 901c5ce0 | [260608-p8h-restore-fidelity-losses](./quick/260608-p8h-restore-fidelity-losses/) |
 | 260608-f5j | Restore PHASE COMPLETE marker and cross-AI variable definitions in execute-phase.md | 2026-06-08 | 9ca19401 | [260608-f5j-restore-two-fidelity-losses-in-execute-p](./quick/260608-f5j-restore-two-fidelity-losses-in-execute-p/) |
 | 260608-fny | Restore null-omit comments on effort= lines in execute-phase.md | 2026-06-08 | 0e3bbb2f | [260608-fny-restore-null-omit-comments-on-effort-lin](./quick/260608-fny-restore-null-omit-comments-on-effort-lin/) |
+| 260608-fwg | Adapt failing content-assertion tests to rewritten execute-phase.md (preserve contracts; re-point expected strings) | 2026-06-08 | e7d03cb6 | [260608-fwg-adapt-failing-content-assertion-tests-to](./quick/260608-fwg-adapt-failing-content-assertion-tests-to/) |
 
 ## Session Continuity
 
-Last activity: 2026-06-08 — Completed quick task 260608-fny: Restore null-omit comments on effort= lines in execute-phase.md
+Last activity: 2026-06-08 — Completed quick task 260608-fwg: Adapt failing content-assertion tests to rewritten execute-phase.md
 Stopped at: context exhaustion at 81% (2026-06-08)
 Resume file: None
 
