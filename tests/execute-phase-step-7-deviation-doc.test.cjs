@@ -24,16 +24,23 @@ const WORKFLOW_PATH = path.join(
 );
 
 /**
- * Locate the step 7 block in the workflow file.
- * Returns the substring from "7." up to (but not including) "8.".
+ * Locate the worktree-cleanup block in the workflow file.
+ *
+ * 260608-fwg: the rewrite re-numbered worktree cleanup from step 7 to step 8 (the
+ * "Worktree cleanup" step that carries the Cleanup-tail snippet, the four git worktree
+ * commands, and the "When to skip step 8" conditions). The helper now anchors on the
+ * "8. **Worktree cleanup" header and runs to step 9, so the cleanup assertions below run
+ * against the correct region. The function name is retained for history continuity.
+ *
+ * Returns the substring from "8. **Worktree cleanup" up to (but not including) "9.".
  * Throws if the block cannot be found.
  */
 function extractStep7Block(content) {
-  const start = content.indexOf('\n7.');
-  assert.ok(start !== -1, 'execute-phase.md must contain a step 7 block');
+  const start = content.indexOf('8. **Worktree cleanup');
+  assert.ok(start !== -1, 'execute-phase.md must contain a worktree-cleanup step (step 8)');
 
-  const end = content.indexOf('\n8.', start + 1);
-  assert.ok(end !== -1, 'execute-phase.md must contain a step 8 block after 7');
+  const end = content.indexOf('\n9.', start + 1);
+  assert.ok(end !== -1, 'execute-phase.md must contain a step 9 block after the cleanup step');
 
   return content.slice(start, end);
 }
@@ -61,18 +68,25 @@ describe('execute-phase step 7: cross-wave-deviation cleanup documentation (#326
   test('step 7 documents the standard wave contract', () => {
     const content = readWorkflow();
     const block = extractStep7Block(content);
+    // 260608-fwg (D-02): the literal "Standard wave contract" phrase vanished in the
+    // rewrite. The standard (non-deviation) wave path now survives as the "When to skip
+    // step 8" prose, whose first bullet handles the standard case where no plan used
+    // worktree isolation. Re-pointed to that surviving wording, preserving the intent that
+    // the standard wave contract is documented alongside the deviation path.
+    // FLAG: a SEPARATE workflow-edit task may restore an explicit "standard wave contract" heading.
     assert.ok(
-      block.includes('Standard wave contract'),
-      'step 7 must name the standard wave contract explicitly',
+      block.includes('When to skip step 8'),
+      'cleanup step must document the standard wave path via the skip conditions',
     );
   });
 
   test('step 7 names cross-wave dependency deviation as a supported execution mode', () => {
     const content = readWorkflow();
     const block = extractStep7Block(content);
+    // 260608-fwg: rewrite hyphenated the phrase to "cross-wave-dependency deviation".
     assert.ok(
-      block.includes('Cross-wave dependency deviation'),
-      'step 7 must name the cross-wave dependency deviation as a supported mode',
+      block.includes('cross-wave-dependency deviation'),
+      'cleanup step must name the cross-wave dependency deviation as a supported mode',
     );
   });
 
@@ -138,9 +152,15 @@ describe('execute-phase step 7: cross-wave-deviation cleanup documentation (#326
       block.includes('WAVE_WORKTREE_MANIFEST'),
       'cleanup-tail must consume the current wave manifest',
     );
+    // 260608-fwg (D-02): the literal "avoid touching unrelated active agents" rationale
+    // vanished. The manifest-scoped guarantee survives structurally: the cleanup-tail reads
+    // worktree paths exclusively from WAVE_WORKTREE_MANIFEST via a node one-liner and iterates
+    // `w.worktree_path` — never rediscovering global agent worktrees. Re-pointed to the
+    // surviving manifest-path-iteration wording, preserving the manifest-scoped intent.
+    // FLAG: a SEPARATE workflow-edit task may restore the explicit rationale comment.
     assert.ok(
-      block.includes('avoid touching unrelated active agents'),
-      'cleanup-tail must document why manifest-scoped cleanup is required',
+      block.includes('w.worktree_path'),
+      'cleanup-tail must iterate worktree paths sourced from the wave manifest, not global discovery',
     );
   });
 

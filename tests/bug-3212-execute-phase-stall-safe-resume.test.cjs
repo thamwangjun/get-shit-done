@@ -63,7 +63,14 @@ describe('bug #3212 execute-phase stall detection and safe resume', () => {
   test('execute-phase verifies partial-plan drift before dispatch', () => {
     const workflow = read('get-shit-done/workflows/execute-phase.md');
 
-    assert.match(workflow, /<step name="safe_resume_gate"/, 'execute-phase must define a safe_resume_gate step');
+    // 260608-fwg (D-02): the named `<step name="safe_resume_gate">` was removed in the
+    // rewrite; the same drift-before-dispatch contract now lives as a "Safe resume gate"
+    // block inside the `initialize` step (computes CURRENT_PLAN_ID/SUMMARY_PATH/PLAN_COMMITS,
+    // stops before spawning a new executor when production commits exist but SUMMARY.md is
+    // missing). Re-pointed the anchor to the surviving "Safe resume gate" wording.
+    // FLAG: the standalone step name vanished — a SEPARATE workflow-edit task may restore it.
+    assert.match(workflow, /\*\*Safe resume gate:\*\*/, 'execute-phase must carry a Safe resume gate that verifies drift before dispatch');
+    assert.match(workflow, /stop before spawning a new executor/, 'safe resume gate must stop before spawning when drift detected');
     assert.match(workflow, /git log --oneline --grep="\$\{CURRENT_PLAN_ID\}"/, 'safe resume gate must check commits for the current plan id');
     assert.match(workflow, /SUMMARY.md is missing/, 'safe resume gate must detect production commits with missing SUMMARY.md');
     assert.match(workflow, /close out manually/, 'safe resume gate must offer manual close-out recovery');
@@ -79,9 +86,11 @@ describe('bug #3212 execute-phase stall detection and safe resume', () => {
     assert.match(workflow, /DISPATCH_TS=/, 'execute-phase must record dispatch timestamp');
     assert.match(workflow, /EXPECTED_BRANCH=/, 'execute-phase must record expected branch');
     assert.match(workflow, /git log "\$\{EXPECTED_BRANCH\}" --since="\$\{DISPATCH_TS\}"/, 'stall check must inspect branch commits since dispatch');
+    // 260608-fwg: rewrite hyphenated the stall-recovery options to
+    // "continue waiting / kill-and-retry / kill-and-inline". Re-pointed literals.
     assert.match(workflow, /continue waiting/, 'stall warning must offer continue waiting');
-    assert.match(workflow, /kill and retry/, 'stall warning must offer kill and retry');
-    assert.match(workflow, /kill and switch to inline execution/, 'stall warning must offer inline fallback');
+    assert.match(workflow, /kill-and-retry/, 'stall warning must offer kill and retry');
+    assert.match(workflow, /kill-and-inline/, 'stall warning must offer inline fallback');
   });
 
   test('execute-plan documents atomic close-out invariant', () => {

@@ -122,10 +122,9 @@ describe('execute-phase workflow: intra-wave files_modified overlap check', () =
 
   test('overlap detection is placed before agent spawning', () => {
     const content = fs.readFileSync(EXECUTE_PHASE_PATH, 'utf-8');
-    // Overlap check keyword must appear before the Task( spawn call
-    const overlapIdx = content.indexOf('intra-wave') !== -1
-      ? content.indexOf('intra-wave')
-      : content.indexOf('files_modified overlap');
+    // 260608-fwg: rewrite titles the check "**Intra-wave overlap check (BEFORE spawning):**"
+    // (capital I). Search case-insensitively so the placement check matches current wording.
+    const overlapIdx = content.search(/intra-wave overlap check/i);
     const spawnIdx = content.indexOf('Spawn executor agents');
     assert.ok(overlapIdx !== -1, 'overlap check text should exist in execute-phase.md');
     assert.ok(spawnIdx !== -1, '"Spawn executor agents" heading should exist');

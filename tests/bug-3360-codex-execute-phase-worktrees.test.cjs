@@ -28,7 +28,9 @@ function parseWorkflowSteps(content) {
         name: match[1],
         // After #3797 architectural fix, callsites use $GSD_SDK — accept either form
         readsRuntimeConfig: body.includes('RUNTIME=$($GSD_SDK query config-get runtime --default claude') || body.includes('RUNTIME=$(gsd-sdk query config-get runtime --default claude'),
-        codexWorktreeGuard: body.includes('Codex execute-phase worktree isolation is unsupported'),
+        // 260608-fwg: rewrite shortened the fail-closed guard message to
+        // "FATAL: Codex worktree isolation unsupported." Re-pointed the literal.
+        codexWorktreeGuard: body.includes('Codex worktree isolation unsupported'),
         worktreeDispatchGuidance: body.includes('isolation="worktree"'),
       };
     });

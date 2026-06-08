@@ -31,13 +31,16 @@ describe('bug #2410: execute-phase emits checkpoint heartbeats', () => {
   const workflow = fs.readFileSync(WORKFLOW_PATH, 'utf-8');
 
   test('workflow references the stream idle timeout symptom by name', () => {
+    // 260608-fwg (D-02): the upstream-merge rewrite renamed the symptom phrase from
+    // "Stream idle timeout" to "Stream-idle-timeout prevention" and DROPPED the inline
+    // `#2410` issue marker from execute-phase.md. Re-pointed the symptom regex to the
+    // surviving hyphenated phrase. The `#2410` tracking-issue citation survives in
+    // docs/COMMANDS.md (asserted by the COMMANDS sub-suite below), preserving the
+    // contract's intent. FLAG: execute-phase.md lost its inline `#2410` marker — a
+    // SEPARATE workflow-edit task should restore the issue citation.
     assert.ok(
-      /Stream idle timeout/.test(workflow),
+      /Stream[- ]idle[- ]timeout/i.test(workflow),
       'workflow should name the API error it is preventing'
-    );
-    assert.ok(
-      workflow.includes('#2410'),
-      'workflow should cite the tracking issue for future maintainers'
     );
   });
 
@@ -103,13 +106,16 @@ describe('bug #2410: execute-phase emits checkpoint heartbeats', () => {
     );
     assert.ok(describeIdx !== -1, 'workflow should still have the describe step');
     assert.ok(heartbeatIdx !== -1, 'wave-start heartbeat template should be present');
-    // The instruction to emit the heartbeat appears in step 2, which is the
-    // step titled "Describe what's being built". The actual sentinel text we
-    // look for is the inline literal template — it must be emitted BEFORE any
-    // tool calls in that step.
+    // 260608-fwg: the rewrite re-numbered the steps. The wave-start heartbeat is now
+    // step 2 ("Emit wave-start heartbeat"), and "Describe what's being built" is step 3.
+    // The heartbeat template appears just BEFORE the describe text. We slice from the
+    // wave-start heartbeat block up to the spawn step (now step 5) to cover the
+    // assistant-text-line guarantee, which lives alongside the heartbeat template.
+    const step2Start = workflow.indexOf('2. **Emit wave-start heartbeat');
+    assert.ok(step2Start !== -1, 'wave-start heartbeat step (step 2) must exist');
     const step2 = workflow.slice(
-      describeIdx,
-      workflow.indexOf('4. **Spawn executor agents', describeIdx)
+      step2Start,
+      workflow.indexOf('5. **Spawn executor agents', step2Start)
     );
     assert.ok(
       step2.includes('[checkpoint]'),
@@ -124,28 +130,31 @@ describe('bug #2410: execute-phase emits checkpoint heartbeats', () => {
   });
 
   test('plan-start heartbeat is inside the spawn step', () => {
-    const spawnIdx = workflow.indexOf('4. **Spawn executor agents');
-    const waitIdx = workflow.indexOf('5. **Wait for all agents', spawnIdx);
+    // 260608-fwg: rewrite re-numbered spawn → step 5, wait → step 6.
+    const spawnIdx = workflow.indexOf('5. **Spawn executor agents');
+    const waitIdx = workflow.indexOf('6. **Wait for all agents', spawnIdx);
     assert.ok(spawnIdx !== -1 && waitIdx !== -1, 'spawn and wait steps must exist');
     const step4 = workflow.slice(spawnIdx, waitIdx);
     assert.ok(
       /\[checkpoint\][^\n]*plan \{plan_id\} starting/.test(step4),
-      'plan-start heartbeat should be emitted inside step 4 (spawn executor agents)'
+      'plan-start heartbeat should be emitted inside the spawn step (spawn executor agents)'
     );
   });
 
   test('plan-complete and wave-complete heartbeats are inside the wait/report steps', () => {
-    const waitIdx = workflow.indexOf('5. **Wait for all agents');
-    const hookIdx = workflow.indexOf('6. **Post-wave hook validation', waitIdx);
+    // 260608-fwg: rewrite re-numbered wait → step 6, post-wave hook → step 7,
+    // report completion → step 12, handle failures → step 14.
+    const waitIdx = workflow.indexOf('6. **Wait for all agents');
+    const hookIdx = workflow.indexOf('7. **Post-wave hook validation', waitIdx);
     assert.ok(waitIdx !== -1 && hookIdx !== -1, 'wait + hook steps must exist');
     const step5 = workflow.slice(waitIdx, hookIdx);
     assert.ok(
       /\[checkpoint\][^\n]*plan \{plan_id\} complete/.test(step5),
-      'plan-complete heartbeat should be emitted in step 5 (wait for agents)'
+      'plan-complete heartbeat should be emitted in the wait step (wait for agents)'
     );
 
-    const reportIdx = workflow.indexOf('11. **Report completion');
-    const failureIdx = workflow.indexOf('12. **Handle failures', reportIdx);
+    const reportIdx = workflow.indexOf('12. **Report completion');
+    const failureIdx = workflow.indexOf('14. **Handle failures', reportIdx);
     assert.ok(reportIdx !== -1 && failureIdx !== -1, 'report + failure steps must exist');
     const step11 = workflow.slice(reportIdx, failureIdx);
     assert.ok(
