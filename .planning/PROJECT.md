@@ -138,7 +138,7 @@ Every file installed by `bin/install.js` is now fully self-contained. Eta v4 is 
 - [ ] GAP-E: Effort wiring tests for 8 Group B workflows added to `phase-56-effort-wiring.test.cjs`
 - [ ] GAP-H: Submodule exclusion path asserted in `bug-3097-3099-executor-worktree-path-safety.test.cjs`
 - [ ] GAP-K: Hardened debugger security paragraph asserted in `debug-session-management.test.cjs`
-- [ ] GAP-L: User-profiler Eta-inlined rubric reference asserted
+- [x] GAP-L: User-profiler Eta-inlined rubric reference asserted — Validated in Phase 62: rubric-inlining-coverage
 - [ ] GAP-M1: Stale Phase 48 RED expectation comment removed from `step-numbering-scan.test.cjs`
 - [ ] GAP-M2: Skipped debugger security test updated to assert fork language
 
@@ -241,4 +241,4 @@ This document evolves at phase transitions and milestone boundaries.
 ---
 ---
 ---
-*Last updated: 2026-06-07 after v2.1.0-f milestone start*
+*Last updated: 2026-06-08 after Phase 62 (rubric-inlining-coverage) complete*
