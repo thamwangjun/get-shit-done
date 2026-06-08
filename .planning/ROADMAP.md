@@ -637,8 +637,8 @@ Plans:
   5. `npm test 2>&1 | tee /tmp/gsd-test-output.txt` passes with 0 new failures; `debug-session-management.test.cjs` reports one fewer skipped test than before this phase
 
 **Plans**: 1 plan
-
 Plans:
+
 - [ ] 63-01-PLAN.md — Rewrite skipped gsd-debugger security test to assert fork hardened framing (untrusted user input / evidence data only) [SFC-01]
 
 ## Progress
