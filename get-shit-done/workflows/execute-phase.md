@@ -270,6 +270,12 @@ Report:
 
 Otherwise: check frontmatter `cross_ai: true` AND config `workflow.cross_ai_execution=true`.
 
+```bash
+CROSS_AI_ENABLED=$($GSD_SDK query config-get workflow.cross_ai_execution 2>/dev/null || echo "false")
+CROSS_AI_CMD=$($GSD_SDK query config-get workflow.cross_ai_command 2>/dev/null || echo "")
+CROSS_AI_TIMEOUT=$($GSD_SDK query config-get workflow.cross_ai_timeout 2>/dev/null || echo "300")
+```
+
 **If no plans marked:** skip to execute_waves.
 
 **If marked but `cross_ai_command` empty:** error — user must set via config.
@@ -978,7 +984,17 @@ Skip if no PROJECT.md exists.
 <step name="offer_next">
 **Exception:** If gaps_found, verify_phase_goal already presents gap-closure path.
 
-**No-transition check:** If `--no-transition` flag present (execute-phase spawned by plan-phase's auto-advance), return completion status to parent and STOP. Do not run transition.
+**No-transition check:** If `--no-transition` flag present (execute-phase spawned by plan-phase's auto-advance), then after verification passes and ROADMAP is updated, return completion status to the parent in this exact format and STOP — auto-advance and transition stay the parent's responsibility:
+
+```
+PHASE COMPLETE
+Phase: ${PHASE_NUMBER} - ${PHASE_NAME}
+Plans: ${completed_count}/${total_count}
+Verification: {Passed | Gaps Found}
+[Include aggregate_results output]
+```
+
+`plan-phase.md` and discuss-phase chain mode grep for the literal `PHASE COMPLETE` marker to detect chain success, so emit it verbatim as the first line.
 
 **Auto-advance detection:**
 ```bash
