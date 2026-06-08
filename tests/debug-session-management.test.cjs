@@ -19,6 +19,7 @@ const debugWorkflow    = fs.readFileSync(path.join(ROOT, 'get-shit-done', 'workf
 const gsdDebugger      = fs.readFileSync(path.join(ROOT, 'agents', 'gsd-debugger.md'), 'utf8');
 const sessionManager   = fs.readFileSync(path.join(ROOT, 'agents', 'gsd-debug-session-manager.md'), 'utf8');
 const debugTemplate    = fs.readFileSync(path.join(ROOT, 'get-shit-done', 'templates', 'DEBUG.md'), 'utf8');
+const userProfiler     = fs.readFileSync(path.join(ROOT, 'agents', 'gsd-user-profiler.md'), 'utf8');
 
 describe('debug session management implementation', () => {
   test('DEBUG.md template contains reasoning_checkpoint field', () => {
@@ -141,5 +142,13 @@ describe('debug skill dispatch and sub-orchestrator (#2148, #2151)', () => {
   test('debug.md delegates to gsd-debug-session-manager', () => {
     assert.ok(debugWorkflow.includes('gsd-debug-session-manager'),
       'debug.md does not delegate to session manager');
+  });
+});
+
+describe('phase-62: rubric inlining coverage', () => {
+  test('gsd-user-profiler load_rubric step references Eta-inlined rubric', () => {
+    assert.ok(userProfiler.includes('<step name="load_rubric">'), 'gsd-user-profiler.md missing load_rubric step');
+    assert.ok(userProfiler.includes('user-profiling.md'), 'gsd-user-profiler.md missing rubric filename reference');
+    assert.ok(userProfiler.includes('included above in the `<reference>` block'), 'gsd-user-profiler.md load_rubric step missing inlining phrase');
   });
 });
