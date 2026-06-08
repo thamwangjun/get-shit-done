@@ -58,17 +58,21 @@ describe('execute-phase workflow: wave filtering', () => {
   test('workflow parses WAVE_FILTER from arguments', () => {
     const content = fs.readFileSync(WORKFLOW_PATH, 'utf-8');
     assert.ok(content.includes('WAVE_FILTER'), 'workflow should reference WAVE_FILTER');
-    assert.ok(content.includes('Optional `--wave N`'), 'workflow should parse --wave N');
+    // 260608-fwg: parse_args now wires the flag as "`--wave N` → `WAVE_FILTER`".
+    assert.ok(content.includes('`--wave N`'), 'workflow should parse --wave N');
   });
 
   test('workflow enforces lower-wave safety', () => {
     const content = fs.readFileSync(WORKFLOW_PATH, 'utf-8');
+    // 260608-fwg: rewrite expresses this as "**Wave safety:** If `WAVE_FILTER` set and
+    // incomplete plans exist in earlier waves, STOP. Do not skip prerequisites." Re-pointed
+    // both literals to this surviving wording, preserving the lower-wave-safety intent.
     assert.ok(
-      content.includes('Wave safety check'),
-      'workflow should contain a wave safety check section'
+      content.includes('**Wave safety:**'),
+      'workflow should contain a wave safety section'
     );
     assert.ok(
-      content.includes('finish earlier waves first'),
+      content.includes('incomplete plans exist in earlier waves, STOP'),
       'workflow should block later-wave execution when lower waves are incomplete'
     );
   });
@@ -79,13 +83,17 @@ describe('execute-phase workflow: wave filtering', () => {
       content.includes('<step name="handle_partial_wave_execution">'),
       'workflow should have a partial wave handling step'
     );
+    // 260608-fwg: rewrite condensed both guarantees into a single
+    // "If incomplete plans remain, STOP — skip phase verification." sentence. The STOP
+    // before verification subsumes "do not mark phase complete" (completion only happens
+    // after verification). Re-pointed both assertions to the surviving wording.
     assert.ok(
-      content.includes('Do NOT run phase verification'),
+      content.includes('STOP — skip phase verification'),
       'partial wave step should skip phase verification'
     );
     assert.ok(
-      content.includes('Do NOT mark the phase complete'),
-      'partial wave step should skip phase completion'
+      content.includes('If incomplete plans remain, STOP'),
+      'partial wave step should stop before phase completion when plans remain'
     );
   });
 });
