@@ -45,6 +45,8 @@ Parse `$ARGUMENTS`:
 - `--gaps-only` → keep current meaning
 - `--cross-ai` → `CROSS_AI_FORCE=true`
 - `--no-cross-ai` → `CROSS_AI_DISABLED=true`
+
+If `--wave` is absent, preserve the current behavior of executing all incomplete waves in the phase.
 </step>
 
 <step name="initialize" priority="first">
@@ -56,14 +58,16 @@ if [ -f "$GSD_TOOLS" ]; then
 elif command -v gsd-sdk >/dev/null 2>&1; then
   GSD_SDK="gsd-sdk"
 else
-  echo "ERROR: gsd-sdk not found" >&2; exit 1
+  echo "ERROR: gsd-sdk not found on PATH and $GSD_TOOLS does not exist." >&2
+  echo "Run: npx -y @opengsd/get-shit-done-redux@latest --claude --local" >&2
+  exit 1
 fi
 INIT=$($GSD_SDK query init.execute-phase "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 AGENT_SKILLS=$($GSD_SDK query agent-skills gsd-executor)
 ```
 
-Parse JSON for: `executor_model`, `executor_effort`, `verifier_model`, `verifier_effort`, `parallelization`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `plans`, `incomplete_plans`, `state_exists`.
+Parse JSON for: `executor_model`, `executor_effort`, `verifier_model`, `verifier_effort`, `commit_docs`, `parallelization`, `branching_strategy`, `branch_name`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `plans`, `incomplete_plans`, `plan_count`, `incomplete_count`, `state_exists`, `roadmap_exists`, `phase_req_ids`, `response_language`.
 
 **Model resolution:** If `executor_model` is `"inherit"`, omit `model=` param — Claude Code inherits orchestrator model. Only set `model=` when explicit (e.g., `"claude-sonnet-4-6"`).
 
@@ -113,9 +117,33 @@ MVP_MODE=$($GSD_SDK query phase.mvp-mode "${PHASE_NUMBER}" $MVP_FLAG_ARG --pick 
 TDD_MODE=$($GSD_SDK query config-get workflow.tdd_mode 2>/dev/null || echo "false")
 ```
 
-**Safe resume gate:** Derive `CURRENT_PLAN_ID` from active incomplete plan, search recent git history. If production commits exist but SUMMARY.md missing, stop and offer recovery (close manually / re-execute / mark-and-skip).
+**Safe resume gate:** Before trusting `STATE.md` or dispatching any executor, derive `CURRENT_PLAN_ID`
+from the active incomplete plan in `INIT`, then search recent history:
+```bash
+CURRENT_PLAN_ID="{phase_number}-{plan_padded}"
+SUMMARY_PATH="{phase_dir}/{plan_padded}-SUMMARY.md"
+PLAN_COMMITS=$(git log --oneline --grep="${CURRENT_PLAN_ID}" -30)
+```
+If production commits exist and `SUMMARY.md` is missing, stop before spawning a new executor — continuing risks duplicate work and stale `STATE.md`/ROADMAP progress. Offer these recovery options:
+- `close out manually` — inspect commits, write SUMMARY.md, then update STATE/ROADMAP.
+- `re-execute from scratch` — revert or supersede partial commits before dispatch.
+- `mark-and-skip` — record the anomaly and move on only with explicit confirmation.
 
-**MVP+TDD gate** runs inside plan execution before implementation steps — same predicate and RED-commit contract.
+**MVP+TDD gate.** Task-scoped enforcement runs inside plan execution (immediately before each implementation step), where `TASK_FILE`, `PLAN_ID`, and `TASK_ID` are defined. Keep the same predicate and RED-commit contract:
+```bash
+if [ "$MVP_MODE" = "true" ] && [ "$TDD_MODE" = "true" ]; then
+  IS_BEHAVIOR_ADDING=$($GSD_SDK query task.is-behavior-adding "$TASK_FILE" --pick is_behavior_adding)
+  if [ "$IS_BEHAVIOR_ADDING" = "true" ]; then
+    RED_COMMIT=$(git log --oneline --grep="^test(${PHASE_NUMBER}-${PLAN_ID}):" -- "**/*.test.*" "**/*.spec.*" "tests/" | head -1)
+    if [ -z "$RED_COMMIT" ]; then
+      $GSD_SDK query state.update last_gate_trip "${PLAN_ID}/${TASK_ID}" || true
+      echo "MVP+TDD GATE TRIPPED: missing RED commit for ${PLAN_ID}/${TASK_ID}"
+      exit 1
+    fi
+  fi
+fi
+```
+Pure doc-only / config-only / test-only tasks return `is_behavior_adding=false` and are exempt. See `execute-mvp-tdd.md` for the halt report format.
 
 **Copilot sequential detection:**
 Check for `@gsd-executor` pattern or absence of Agent() API. If Copilot, set `COPILOT_SEQUENTIAL=true` and skip `execute_waves` for inline execution.
