@@ -137,8 +137,9 @@ function scanQuickTasks(planDir) {
         const fm = extractFrontmatter(content);
         status = (fm.status || 'unknown').toLowerCase();
         // quick SUMMARYs use `completed: YYYY-MM-DD` (not `status: complete`) —
-        // treat any truthy non-empty completed field as finished (#260608-k3p)
-        const completedVal = fm.completed;
+        // accept it at top level or nested under metrics: (#260608-k3p)
+        const completedVal = fm.completed
+          || (fm.metrics && typeof fm.metrics === 'object' ? fm.metrics.completed : undefined);
         if (typeof completedVal === 'string' && completedVal.trim().length > 0) {
           status = 'complete';
         }
