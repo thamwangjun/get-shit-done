@@ -97,12 +97,8 @@ describe('debug session management implementation', () => {
   });
 
   test('gsd-debugger asserts fork hardened security framing', () => {
-    const content = fs.readFileSync(
-      path.join(process.cwd(), 'agents/gsd-debugger.md'),
-      'utf8'
-    );
-    assert.ok(content.includes('untrusted user input'), 'gsd-debugger.md must contain fork hardened framing: untrusted user input');
-    assert.ok(content.includes('evidence data only'), 'gsd-debugger.md must contain fork scope restriction: evidence data only');
+    assert.ok(gsdDebugger.includes('untrusted user input'), 'gsd-debugger.md must contain fork hardened framing: untrusted user input');
+    assert.ok(gsdDebugger.includes('evidence data only'), 'gsd-debugger.md must contain fork scope restriction: evidence data only');
   });
 });
 
