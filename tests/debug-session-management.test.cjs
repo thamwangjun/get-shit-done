@@ -130,12 +130,13 @@ describe('debug session management implementation', () => {
     assert.ok(content.includes('Delta Debugging'), 'gsd-debugger.md must contain Delta Debugging technique');
   });
 
-  test('gsd-debugger contains security note about DATA_START', { skip: 'fork intentionally diverges from upstream contract' }, () => {
+  test('gsd-debugger asserts fork hardened security framing', () => {
     const content = fs.readFileSync(
       path.join(process.cwd(), 'agents/gsd-debugger.md'),
       'utf8'
     );
-    assert.ok(content.includes('DATA_START'), 'gsd-debugger.md must contain DATA_START security reference');
+    assert.ok(content.includes('untrusted user input'), 'gsd-debugger.md must contain fork hardened framing: untrusted user input');
+    assert.ok(content.includes('evidence data only'), 'gsd-debugger.md must contain fork scope restriction: evidence data only');
   });
 });
 
