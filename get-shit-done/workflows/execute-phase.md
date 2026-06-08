@@ -204,6 +204,8 @@ echo "$TASK_PROMPT" | timeout "${CROSS_AI_TIMEOUT}s" ${CROSS_AI_CMD} > "$CANDIDA
 
 **Failure:** Display error. Offer retry / skip-to-fallback / abort.
 
+**After cross-AI failure:** warn the user about uncommitted changes before retry: "Review `git status` and `git diff` before proceeding — the external command may have left partial edits."
+
 Remove successful plans from execute_waves list.
 </step>
 
@@ -278,7 +280,7 @@ Agent(
     <parallel_execution>
     Parallel executor in git worktree. Path safety (cwd-drift, absolute-path guards) in `worktree-path-safety.md` (loaded below).
     Run `git commit` normally — hooks run by default. Do NOT pass `--no-verify` unless `workflow.worktree_skip_hooks=true`.
-    Do NOT modify STATE.md or ROADMAP.md. execute-plan.md auto-detects worktree mode and skips shared file updates.
+    Do NOT modify STATE.md or ROADMAP.md. execute-plan.md auto-detects worktree mode (`.git` is a file, not a directory) and skips STATE.md/ROADMAP.md updates automatically.
     REQUIRED: SUMMARY.md MUST be committed before return. Worktree mode commits SUMMARY.md and REQUIREMENTS.md only. Do NOT skip.
     REQUIRED ORDER: Write SUMMARY.md → commit → narration. No text between Write and commit (truncation risk; #2070 rescue is not primary defense).
     </parallel_execution>
@@ -294,7 +296,10 @@ Agent(
 
     <reference_usage>
     Read `~/.claude/get-shit-done/workflows/execute-plan.md` FIRST — it defines the per-task loop, atomic commit protocol, deviation handling, and worktree auto-detection. Both spawned and inline executors depend on it.
-    Consult `checkpoints.md` when plan tasks carry checkpoints. Consult `summary.md` template for SUMMARY.md structure. Consult `tdd.md` for TDD-flagged tasks. Consult `executor-examples.md` for deviations and checkpoints.
+    Consult `checkpoints.md` when a plan task carries a checkpoint (`human-verify`, `decision`, or `human-action`): it defines how to segment execution around each type and which work returns to MAIN vs. continues in the SUBAGENT.
+    Consult `templates/summary.md` when writing SUMMARY.md: it defines the required structure, frontmatter fields (requires/provides, subsystem, tags, key-files, decisions, metrics), and one-liner rules.
+    Consult `tdd.md` when a plan task is TDD-flagged or behavior-adding: it defines the red-green-refactor cycle and when TDD improves quality vs. when to skip it.
+    Consult `executor-examples.md` when handling a plan deviation or a checkpoint-bearing task — it provides worked deviation-rule and checkpoint examples.
     </reference_usage>
 
     <files_to_read>
@@ -357,7 +362,9 @@ COMMITS_FOUND=$(git log --oneline --all --grep="{phase_number}-{plan_padded}" --
 COMMITS_SINCE_DISPATCH=$(git log "${EXPECTED_BRANCH}" --since="${DISPATCH_TS}" --oneline | head -1)
 ```
 
-If SUMMARY exists AND commits found → treat as done. If not, check for activity. If no activity for threshold, pause and ask: continue waiting / kill-and-retry / kill-and-inline.
+If SUMMARY exists AND commits found → treat as done. If not, check for activity.
+
+**Configurable stall surveillance:** `EXECUTOR_STALL_INTERVAL_MINUTES` controls how often to poll for activity; `EXECUTOR_STALL_THRESHOLD_MINUTES` controls how long with no activity before pausing. Every interval, inspect `git log` for new commits. If no SUMMARY.md and no new commits appear for the threshold duration, pause and offer: continue waiting / kill-and-retry / kill-and-inline.
 
 7. **Post-wave hook validation** (parallel mode, if `workflow.worktree_skip_hooks=true` opted out):
 ```bash
@@ -402,7 +409,10 @@ done < "$WT_PATHS_FILE"
 git worktree prune
 ```
 
-Skip if no worktrees used, or if merged via custom messages.
+**When to skip step 8:**
+- If no plan in this wave used worktree isolation (`WAVE_WORKTREE_PLANS` is empty): all agents ran on the main working tree — skip entirely.
+- If the orchestrator merged via custom messages (cross-wave-dependency deviation): run the cleanup-tail snippet above instead, then continue.
+- If at least one plan used worktrees but others did not: still run cleanup — it iterates actual `git worktree list` output and only removes worktrees that were created.
 
 9. **Post-merge build & test gate:** Execute `get-shit-done/workflows/execute-phase/steps/post-merge-gate.md` after worktree merges. Catches integration issues agents' self-checks miss.
 
@@ -435,7 +445,10 @@ Skip if no worktrees used (sequential agents updated themselves).
 
 13. **Report completion:** Verify first 2 key-files exist, check git log for commits, check for FAILED marker. Spot-check failures → ask Retry/Continue. If pass, show what was built + deviations.
 
-14. **Handle failures:** Classify via `$GSD_SDK query agent.classify-failure`. Route by class: quota-exceeded (spot-check, offer wait/switch-runtime/abort), classifyHandoffIfNeeded (spot-check, pass=success), unknown (ask Continue/Stop).
+14. **Handle failures:** Classify via `$GSD_SDK query agent.classify-failure`. Route by class:
+   - quota-exceeded — run step spot-check first; if SUMMARY.md is missing but commits exist, route to safe-resume (`state.verify-against-disk`) instead of immediate redispatch. Do not offer "retry now". Offer: wait-for-reset / switch-runtime / abort.
+   - classifyHandoffIfNeeded (spot-check, pass=success)
+   - unknown (ask Continue/Stop)
 
 15. **Checkpoint plans between waves** — see `<checkpoint_handling>`.
 
