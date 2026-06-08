@@ -75,9 +75,13 @@ test('execute-phase.md: auto-close never blocks phase completion', () => {
     EXECUTE_PHASE.indexOf('name="close_phase_todos"'),
     EXECUTE_PHASE.indexOf('name="update_project_md"')
   );
+  // 260608-fwg: rewrite dropped the literal "never blocks"/"additive" phrasing. The
+  // non-blocking guarantee now survives as `|| true` on the auto-close commit and the
+  // "Skip silently if no matching todos." instruction — both prove auto-close cannot gate
+  // phase completion. Re-pointed to those surviving tokens, preserving the test's intent.
   assert.ok(
-    closeTodosSection.includes('never blocks') || closeTodosSection.includes('additive'),
-    'close_phase_todos should be non-blocking'
+    closeTodosSection.includes('|| true') && closeTodosSection.includes('Skip silently'),
+    'close_phase_todos should be non-blocking (|| true on commit + skip-silently behavior)'
   );
 });
 
