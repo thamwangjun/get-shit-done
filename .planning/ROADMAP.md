@@ -253,7 +253,7 @@ Full details: `.planning/milestones/v2.1.0-e-ROADMAP.md`
 - [x] **Phase 59: Comment Cleanup** - Remove stale Phase 48 RED expectation comment from step-numbering-scan.test.cjs (completed 2026-06-07)
 - [x] **Phase 60: Effort Wiring Coverage** - Add 8 Group B effort-wiring regression tests to phase-56-effort-wiring.test.cjs (completed 2026-06-07)
 - [x] **Phase 61: Worktree Safety Coverage** - Assert submodule exclusion logic in executor worktree path-safety test (completed 2026-06-08)
-- [ ] **Phase 62: Rubric Inlining Coverage** - Assert gsd-user-profiler.md load_rubric step references Eta-inlined rubric
+- [x] **Phase 62: Rubric Inlining Coverage** - Assert gsd-user-profiler.md load_rubric step references Eta-inlined rubric (completed 2026-06-08)
 - [ ] **Phase 63: Security Framing Coverage** - Rewrite skipped debugger security test to assert fork's hardened language
 
 ## Phase Details
@@ -621,7 +621,7 @@ Plans:
 
 **Plans**: 1 planPlans:
 
-- [ ] 62-01-PLAN.md — Append phase-62 rubric inlining coverage describe block to tests/debug-session-management.test.cjs [RIC-01]
+- [x] 62-01-PLAN.md — Append phase-62 rubric inlining coverage describe block to tests/debug-session-management.test.cjs [RIC-01]
 
 #### Phase 63: Security Framing Coverage
 
@@ -711,7 +711,7 @@ Plans:
 | 59. Comment Cleanup | v2.1.0-f | 1/1 | Complete    | 2026-06-07 |
 | 60. Effort Wiring Coverage | v2.1.0-f | 1/1 | Complete    | 2026-06-07 |
 | 61. Worktree Safety Coverage | v2.1.0-f | 1/1 | Complete    | 2026-06-08 |
-| 62. Rubric Inlining Coverage | v2.1.0-f | 0/1 | Not started | - |
+| 62. Rubric Inlining Coverage | v2.1.0-f | 1/1 | Complete    | 2026-06-08 |
 | 63. Security Framing Coverage | v2.1.0-f | 0/TBD | Not started | - |
 
 *v1.41.3 shipped 2026-05-19 — see `.planning/milestones/v1.41.3-ROADMAP.md`*
