@@ -619,8 +619,7 @@ Plans:
   3. The two assertions are separate `assert.ok()` calls so failure attribution is unambiguous
   4. `npm test 2>&1 | tee /tmp/gsd-test-output.txt` passes with 0 new failures
 
-**Plans**: 1 plan
-Plans:
+**Plans**: 1 planPlans:
 
 - [ ] 62-01-PLAN.md — Append phase-62 rubric inlining coverage describe block to tests/debug-session-management.test.cjs [RIC-01]
 
