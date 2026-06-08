@@ -101,3 +101,24 @@ describe('bug #3099: absolute-path safety guidance in gsd-executor.md', () => {
       'worktree-path-safety.md missing absolute-path guard content');
   });
 });
+
+describe('phase-61: submodule exclusion guard', () => {
+  test('task_commit_protocol distinguishes worktree .git from submodule .git', () => {
+    const protocolIdx = executorSrc.indexOf('<task_commit_protocol>');
+    const protocolEnd = executorSrc.indexOf('</task_commit_protocol>');
+    assert.ok(protocolIdx !== -1 && protocolEnd !== -1, 'task_commit_protocol block not found');
+    const protocol = executorSrc.slice(protocolIdx, protocolEnd);
+    assert.ok(
+      protocol.includes('.git/worktrees/'),
+      'gsd-executor.md task_commit_protocol missing standalone .git/worktrees/ token — worktree-positive condition (WSC-01 SC-1) not provable',
+    );
+    assert.ok(
+      protocol.includes('GIT_CONTENT='),
+      'gsd-executor.md task_commit_protocol missing GIT_CONTENT= reset — submodule skip-branch mechanism (WSC-01 SC-2) not present',
+    );
+    assert.ok(
+      protocol.includes('skip worktree guards'),
+      'gsd-executor.md task_commit_protocol missing skip worktree guards comment — intent-documenting text (WSC-01 SC-2, D-02.2) not present',
+    );
+  });
+});
