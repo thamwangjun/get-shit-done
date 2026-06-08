@@ -87,10 +87,11 @@ None. Research is HIGH confidence across all five phases.
 | 260608-f5j | Restore PHASE COMPLETE marker and cross-AI variable definitions in execute-phase.md | 2026-06-08 | 9ca19401 | [260608-f5j-restore-two-fidelity-losses-in-execute-p](./quick/260608-f5j-restore-two-fidelity-losses-in-execute-p/) |
 | 260608-fny | Restore null-omit comments on effort= lines in execute-phase.md | 2026-06-08 | 0e3bbb2f | [260608-fny-restore-null-omit-comments-on-effort-lin](./quick/260608-fny-restore-null-omit-comments-on-effort-lin/) |
 | 260608-fwg | Adapt failing content-assertion tests to rewritten execute-phase.md (preserve contracts; re-point expected strings) | 2026-06-08 | e7d03cb6 | [260608-fwg-adapt-failing-content-assertion-tests-to](./quick/260608-fwg-adapt-failing-content-assertion-tests-to/) |
+| 260608-j3g | Fix v2.1.0-f milestone tracking metadata to reflect verified completion | 2026-06-08 | 04d98957 | [260608-j3g-fix-v2-1-0-f-milestone-tracking-metadata](./quick/260608-j3g-fix-v2-1-0-f-milestone-tracking-metadata/) |
 
 ## Session Continuity
 
-Last activity: 2026-06-08 — Completed quick task 260608-fwg: Adapt failing content-assertion tests to rewritten execute-phase.md
+Last activity: 2026-06-08 — Completed quick task 260608-j3g: Fix v2.1.0-f milestone tracking metadata
 Stopped at: Phase 63 context gathered
 Resume file: .planning/phases/63-security-framing-coverage/63-CONTEXT.md
 
