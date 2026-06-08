@@ -2,6 +2,32 @@
 
 *A living document updated after each milestone. Lessons feed forward into future planning.*
 
+## Milestone: v2.1.0-f — Testing Coverage Gaps
+
+**Shipped:** 2026-06-08
+**Phases:** 5 (59–63) | **Plans:** 5
+
+### What Was Built
+Test-only milestone closing the v2.1.0-e gap report. Additive test code across four existing test files: 8 Group B effort-wiring regression guards, a submodule-exclusion guard scoped to `gsd-executor.md` `<task_commit_protocol>`, a rubric-inlining guard for `gsd-user-profiler.md`, a reactivated `gsd-debugger.md` hardened-security test, and removal of a stale Phase 48 RED comment. No agent or workflow source files changed.
+
+### What Worked
+Risk-ordered phase sequence (zero-risk comment deletion and pure-append tests first; the only skipped→active test mutation last) meant any failure was attributable to a single phase. Scoping assertions to XML-block slices (not full-file) prevented vacuous passes. All five phases stayed Nyquist-compliant.
+
+### What Was Inefficient
+Milestone tracking metadata drifted during execution (missing 60-VALIDATION.md, unlisted `requirements_completed` frontmatter, stale REQUIREMENTS.md checkboxes), requiring two reconciliation quick tasks (260608-j3g, 260608-k3p) and a re-audit before close. The milestone-close audit also false-flagged completed quick tasks, needing a scanner fix. A large volume of unrelated `execute-phase.md` fidelity-restoration quick tasks landed in the same window, inflating the raw commit/file counts.
+
+### Patterns Established
+Test-only milestones can ship fast when each phase is a single additive `describe` block in an existing file with no inter-phase coupling — the integration signal is simply the aggregate suite running green.
+
+### Key Lessons
+Keep `requirements_completed` frontmatter and REQUIREMENTS.md checkboxes current at phase close, not at milestone close — reconciling 11 requirements retroactively cost two quick tasks and a re-audit.
+
+### Cost Observations
+- Sessions: spanned 2026-06-07 → 2026-06-08
+- Notable: final suite 9115 pass / 0 fail / 9 skipped (one previously-skipped test reactivated)
+
+---
+
 ## Milestone: v2.1.0-e — Per-Agent Thinking Effort
 
 **Shipped:** 2026-06-06
