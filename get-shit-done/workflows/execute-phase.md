@@ -354,7 +354,7 @@ Agent(
   subagent_type="gsd-executor",
   description="Execute plan {plan_number} of phase {phase_number}",
   model="{executor_model}",  # omit when executor_model == "inherit"
-  effort={executor_model_effort_arg}  # omit when null
+  effort={executor_model_effort_arg}  # omit this line when executor_model_effort_arg == null
   isolation="worktree",
   prompt="
     <objective>
@@ -886,7 +886,7 @@ Agent(
 ${VERIFIER_SKILLS}",
   subagent_type="gsd-verifier",
   model="{verifier_model}",
-  effort={verifier_model_effort_arg}
+  effort={verifier_model_effort_arg}  # omit this line when verifier_model_effort_arg == null
 )
 ```
 
