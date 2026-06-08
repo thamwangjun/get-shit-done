@@ -366,7 +366,10 @@ describe('execute-phase.md dispatch wires USE_WORKTREES_FOR_PLAN (#2772)', () =>
     const md = fs.readFileSync(workflowPath, 'utf-8');
     assert.match(
       md,
-      /\*\*Worktree mode\*\*\s*\(`USE_WORKTREES_FOR_PLAN`/,
+      // 260608-fwg: rewrite added an "if " before the gated var in the parenthetical
+      // (e.g. "**Worktree mode** (if `USE_WORKTREES_FOR_PLAN` not false)"). Regex relaxed
+      // to allow the optional "if " while still anchoring on USE_WORKTREES_FOR_PLAN.
+      /\*\*Worktree mode\*\*\s*\((?:if\s+)?`USE_WORKTREES_FOR_PLAN`/,
       'Worktree-mode header must gate on USE_WORKTREES_FOR_PLAN per-plan'
     );
   });
@@ -375,7 +378,8 @@ describe('execute-phase.md dispatch wires USE_WORKTREES_FOR_PLAN (#2772)', () =>
     const md = fs.readFileSync(workflowPath, 'utf-8');
     assert.match(
       md,
-      /\*\*Sequential mode\*\*\s*\(`USE_WORKTREES_FOR_PLAN`/,
+      // 260608-fwg: same "if " relaxation as the worktree-mode header above.
+      /\*\*Sequential mode\*\*\s*\((?:if\s+)?`USE_WORKTREES_FOR_PLAN`/,
       'Sequential-mode header must gate on USE_WORKTREES_FOR_PLAN per-plan'
     );
   });
@@ -384,7 +388,11 @@ describe('execute-phase.md dispatch wires USE_WORKTREES_FOR_PLAN (#2772)', () =>
     const md = fs.readFileSync(workflowPath, 'utf-8');
     assert.match(
       md,
-      /worktrees are disabled for a plan/i,
+      // 260608-fwg (D-02): the literal "worktrees are disabled for a plan" prose vanished
+      // in the rewrite. Re-pointed to the surviving per-plan sequential rule "When plan in
+      // wave dropped to sequential, execute affected plan(s) one-at-a-time ...", which still
+      // expresses the rule PER-PLAN (not project-level) — preserving the test's intent.
+      /When plan in wave dropped to sequential/i,
       'sequential-execution rule must be expressed per-plan'
     );
   });
