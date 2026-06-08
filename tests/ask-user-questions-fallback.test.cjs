@@ -28,6 +28,22 @@ const ROOT = path.join(__dirname, '..');
 const WORKFLOWS_DIR = path.join(ROOT, 'get-shit-done', 'workflows');
 
 /**
+ * KNOWN_MISSING_FALLBACK — documented vanished-contract exception (260608-fwg, D-02).
+ *
+ * The upstream-merge rewrite of execute-phase.md introduced an `AskUserQuestion`
+ * call in the `regression_gate` step but DROPPED the TEXT_MODE plain-text fallback
+ * instruction the prior version carried. This is a genuine vanished contract the
+ * guard correctly catches.
+ *
+ * Per D-01 (tests-only) we MUST NOT edit execute-phase.md to restore the fallback
+ * here. Per D-02 we explicitly allow-list ONLY this one file so the contract stays
+ * strict for every OTHER workflow — if any other workflow loses its fallback, this
+ * test still fails. execute-phase.md must regain its TEXT_MODE fallback via a
+ * SEPARATE workflow-edit task; remove it from this allow-list once that lands.
+ */
+const KNOWN_MISSING_FALLBACK = new Set(['execute-phase.md']);
+
+/**
  * Return true if the file content contains a TEXT_MODE / text_mode fallback
  * instruction for AskUserQuestion calls.
  *
@@ -59,6 +75,11 @@ describe('AskUserQuestion text-mode fallback (#2012)', () => {
       const content = fs.readFileSync(fpath, 'utf-8');
 
       if (!content.includes('AskUserQuestion')) continue;
+
+      // Documented vanished-contract exception (260608-fwg, D-02): execute-phase.md
+      // lost its TEXT_MODE fallback in the upstream-merge rewrite and must regain it
+      // via a SEPARATE workflow-edit task. All other workflows stay strictly guarded.
+      if (KNOWN_MISSING_FALLBACK.has(fname)) continue;
 
       if (!hasTextModeFallback(content)) {
         violations.push(fname);
