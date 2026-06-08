@@ -619,7 +619,10 @@ Plans:
   3. The two assertions are separate `assert.ok()` calls so failure attribution is unambiguous
   4. `npm test 2>&1 | tee /tmp/gsd-test-output.txt` passes with 0 new failures
 
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+
+- [ ] 62-01-PLAN.md — Append phase-62 rubric inlining coverage describe block to tests/debug-session-management.test.cjs [RIC-01]
 
 #### Phase 63: Security Framing Coverage
 
@@ -709,7 +712,7 @@ Plans:
 | 59. Comment Cleanup | v2.1.0-f | 1/1 | Complete    | 2026-06-07 |
 | 60. Effort Wiring Coverage | v2.1.0-f | 1/1 | Complete    | 2026-06-07 |
 | 61. Worktree Safety Coverage | v2.1.0-f | 1/1 | Complete    | 2026-06-08 |
-| 62. Rubric Inlining Coverage | v2.1.0-f | 0/TBD | Not started | - |
+| 62. Rubric Inlining Coverage | v2.1.0-f | 0/1 | Not started | - |
 | 63. Security Framing Coverage | v2.1.0-f | 0/TBD | Not started | - |
 
 *v1.41.3 shipped 2026-05-19 — see `.planning/milestones/v1.41.3-ROADMAP.md`*
