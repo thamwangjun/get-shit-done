@@ -136,6 +136,12 @@ function scanQuickTasks(planDir) {
       } else {
         const fm = extractFrontmatter(content);
         status = (fm.status || 'unknown').toLowerCase();
+        // quick SUMMARYs use `completed: YYYY-MM-DD` (not `status: complete`) —
+        // treat any truthy non-empty completed field as finished (#260608-k3p)
+        const completedVal = fm.completed;
+        if (typeof completedVal === 'string' && completedVal.trim().length > 0) {
+          status = 'complete';
+        }
       }
     }
 
