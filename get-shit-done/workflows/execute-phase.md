@@ -645,12 +645,12 @@ Run prior phases' test suites to catch cross-phase regressions BEFORE verificati
 
 **Skip if:** This is the first phase (no prior phases), or no prior VERIFICATION.md files exist.
 
-**Step 1: Discover prior phases' test files**
+**Discover prior phases' test files:**
 ```bash
 PRIOR_VERIFICATIONS=$(find .planning/phases/ -name "*-VERIFICATION.md" ! -path "*${PHASE_NUMBER}*" 2>/dev/null)
 ```
 
-**Step 2: Extract test file lists from prior verifications**
+**Extract test file lists from prior verifications:**
 
 For each VERIFICATION.md found, look for test file references:
 - Lines containing `test`, `spec`, or `__tests__` paths
@@ -659,7 +659,7 @@ For each VERIFICATION.md found, look for test file references:
 
 Collect all unique test file paths into `REGRESSION_FILES`.
 
-**Step 3: Run regression tests (if any found)**
+**Run regression tests (if any found):**
 ```bash
 # Resolve test command: project config > Makefile > language sniff
 REG_TEST_CMD=$($GSD_SDK query config-get workflow.test_command --default "" 2>/dev/null || true)
@@ -683,7 +683,7 @@ fi
 eval "$REG_TEST_CMD" 2>&1
 ```
 
-**Step 4: Report results**
+**Report results:**
 
 If all tests pass:
 ```
