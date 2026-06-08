@@ -630,13 +630,16 @@ Plans:
 **Requirements**: SFC-01
 **Success Criteria** (what must be TRUE):
 
-  1. The test block at lines 133–139 of `tests/debug-session-management.test.cjs` has no `{ skip: '...' }` option — it executes unconditionally
+  1. The test block at lines 99–101 of `tests/debug-session-management.test.cjs` (D-01 line-number correction; ROADMAP's original "lines 133–139" is stale and points to a different sessionManager test) has no `{ skip: '...' }` option — it executes unconditionally
   2. The test asserts `gsd-debugger.md` content contains `untrusted user input` (fork's affirmative security language)
   3. The test asserts `gsd-debugger.md` content contains `evidence data only` (fork's scope-restriction language)
   4. The stale `DATA_START` assertion is absent — it has been replaced entirely by the two fork-language assertions above
   5. `npm test 2>&1 | tee /tmp/gsd-test-output.txt` passes with 0 new failures; `debug-session-management.test.cjs` reports one fewer skipped test than before this phase
 
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 63-01-PLAN.md — Rewrite skipped gsd-debugger security test to assert fork hardened framing (untrusted user input / evidence data only) [SFC-01]
 
 ## Progress
 
