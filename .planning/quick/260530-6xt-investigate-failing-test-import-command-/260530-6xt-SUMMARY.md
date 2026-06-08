@@ -8,6 +8,7 @@ key-files:
     - tests/ingest-docs.test.cjs
     - commands/gsd/import.md
 decisions: []
+completed: 2026-05-30
 ---
 
 # Quick 260530-6xt: Failing Test — import command loads doc-conflict-engine reference
