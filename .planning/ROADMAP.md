@@ -254,7 +254,7 @@ Full details: `.planning/milestones/v2.1.0-e-ROADMAP.md`
 - [x] **Phase 60: Effort Wiring Coverage** - Add 8 Group B effort-wiring regression tests to phase-56-effort-wiring.test.cjs (completed 2026-06-07)
 - [x] **Phase 61: Worktree Safety Coverage** - Assert submodule exclusion logic in executor worktree path-safety test (completed 2026-06-08)
 - [x] **Phase 62: Rubric Inlining Coverage** - Assert gsd-user-profiler.md load_rubric step references Eta-inlined rubric (completed 2026-06-08)
-- [ ] **Phase 63: Security Framing Coverage** - Rewrite skipped debugger security test to assert fork's hardened language
+- [x] **Phase 63: Security Framing Coverage** - Rewrite skipped debugger security test to assert fork's hardened language (completed 2026-06-08)
 
 ## Phase Details
 
@@ -715,7 +715,7 @@ Plans:
 | 60. Effort Wiring Coverage | v2.1.0-f | 1/1 | Complete    | 2026-06-07 |
 | 61. Worktree Safety Coverage | v2.1.0-f | 1/1 | Complete    | 2026-06-08 |
 | 62. Rubric Inlining Coverage | v2.1.0-f | 1/1 | Complete    | 2026-06-08 |
-| 63. Security Framing Coverage | v2.1.0-f | 1/1 | Complete   | 2026-06-08 |
+| 63. Security Framing Coverage | v2.1.0-f | 1/1 | Complete    | 2026-06-08 |
 
 *v1.41.3 shipped 2026-05-19 — see `.planning/milestones/v1.41.3-ROADMAP.md`*
 *v1.41.5 shipped 2026-05-24 — see `.planning/milestones/v1.41.5-ROADMAP.md`*
