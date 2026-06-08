@@ -250,7 +250,19 @@ Skip plans where `has_summary: true`. If `--gaps-only`: skip non-gap_closure. If
 
 **Wave safety:** If `WAVE_FILTER` set and incomplete plans exist in earlier waves, STOP. Do not skip prerequisites.
 
-Report wave structure with objectives.
+Report:
+```
+## Execution Plan
+
+**Phase {X}: {Name}** — {total_plans} matching plans across {wave_count} wave(s)
+
+{If WAVE_FILTER is set: `Wave filter active: executing only Wave {WAVE_FILTER}`.}
+
+| Wave | Plans | What it builds |
+|------|-------|----------------|
+| 1 | 01-01, 01-02 | {from plan objectives, 3-8 words} |
+| 2 | 01-03 | ... |
+```
 </step>
 
 <step name="cross_ai_delegation">
@@ -261,6 +273,13 @@ Otherwise: check frontmatter `cross_ai: true` AND config `workflow.cross_ai_exec
 **If no plans marked:** skip to execute_waves.
 
 **If marked but `cross_ai_command` empty:** error — user must set via config.
+
+**Check for dirty working tree before each cross-AI execution:**
+```bash
+if ! git diff --quiet HEAD 2>/dev/null; then
+  echo "WARNING: dirty working tree detected — the external AI command may produce uncommitted changes that conflict with existing modifications"
+fi
+```
 
 **For each cross-ai plan:** Extract objective+tasks from PLAN.md. Pipe to external command via stdin (never shell-interpolate). Capture result:
 ```bash
@@ -454,6 +473,7 @@ If SUMMARY exists AND commits found → treat as done. If not, check for activit
 SKIP_HOOKS=$($GSD_SDK query config-get workflow.worktree_skip_hooks 2>/dev/null || echo "false")
 if [ "$SKIP_HOOKS" = "true" ]; then
   STASHED=false
+  # Stash uncommitted changes under a named ref so we always pop (bare `git stash` strands them on hook/script failure). #3542: `refs/stash` is shared across worktrees, so this helper runs ONLY in the orchestrator's main checkout after all wave worktrees have been merged + removed; executors are forbidden from running any `git stash` subcommand.
   if (! git diff --quiet || ! git diff --cached --quiet) && git stash push -u -m "gsd-post-wave-hook-$$" >/dev/null 2>&1; then STASHED=true; fi
   git hook run pre-commit 2>&1 || echo "⚠ Pre-commit hooks failed"
   [ "$STASHED" = "true" ] && (git stash pop >/dev/null 2>&1 || echo "⚠ Could not pop stash")
@@ -1006,7 +1026,7 @@ For 1M+: pass richer context (code snippets, dependency outputs) directly to exe
 </context_efficiency>
 
 <failure_handling>
-- **Quota/rate-limit (#3095):** `gsd-sdk query agent.classify-failure` → `class: quota-exceeded`. Do not retry-now; wait-for-reset and resume.
+- **Quota / rate-limit (any runtime — #3095):** Agent return body contains a sentinel like `usage limit`, `rate limit`, `429`, `too many requests`, `RESOURCE_EXHAUSTED`, `usage_limit_reached`. Route via `gsd-sdk query agent.classify-failure` → `class: "quota-exceeded"`. Do not offer retry-now; the right action is wait-for-reset and resume.
 - **classifyHandoffIfNeeded false:** Claude Code bug, not GSD. Spot-check → if pass, treat as success.
 - **Agent fails mid-plan:** Missing SUMMARY.md → report, ask user how to proceed.
 - **Dependency chain breaks:** Wave 1 fails → Wave 2 dependents likely fail → offer attempt or skip.
