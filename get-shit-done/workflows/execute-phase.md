@@ -251,7 +251,13 @@ Remove successful plans from execute_waves list.
 
 1. **Intra-wave overlap check (BEFORE spawning):** If two plans share files in `files_modified`, flag overlap and force sequential (override `PARALLELIZATION` for this wave). Warn user — planning defect.
 
-2. **Emit wave-start heartbeat:** `[checkpoint] phase {PHASE_NUMBER} wave {N}/{M} starting, {wave_plan_count} plan(s), {P}/{Q} plans done`
+2. **Emit wave-start heartbeat:**
+
+   **First, emit the wave-start checkpoint heartbeat as a literal assistant-text
+   line — no tool call (#2410). Do NOT skip this even for single-plan waves; it
+   is required before any further reasoning or spawning:**
+
+   `[checkpoint] phase {PHASE_NUMBER} wave {N}/{M} starting, {wave_plan_count} plan(s), {P}/{Q} plans done`
 
 3. **Describe what's being built:** Read each plan's `<objective>`. Extract 2-3 sentences per plan explaining what's built and why.
 
@@ -319,6 +325,8 @@ Agent(
     REQUIRED: SUMMARY.md MUST be committed before return. Worktree mode commits SUMMARY.md and REQUIREMENTS.md only. Do NOT skip.
     REQUIRED ORDER: Write SUMMARY.md → commit → narration. No text between Write and commit (truncation risk; #2070 rescue is not primary defense).
     </parallel_execution>
+
+   > **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Agent() above to spawn executor agent(s), stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
 
     <execution_context>
     @~/.claude/get-shit-done/workflows/execute-plan.md
@@ -480,10 +488,40 @@ Skip if no worktrees used (sequential agents updated themselves).
 
 13. **Report completion:** Verify first 2 key-files exist, check git log for commits, check for FAILED marker. Spot-check failures → ask Retry/Continue. If pass, show what was built + deviations.
 
-14. **Handle failures:** Classify via `$GSD_SDK query agent.classify-failure`. Route by class:
-   - quota-exceeded — run step spot-check first; if SUMMARY.md is missing but commits exist, route to safe-resume (`state.verify-against-disk`) instead of immediate redispatch. Do not offer "retry now". Offer: wait-for-reset / switch-runtime / abort.
-   - classifyHandoffIfNeeded (spot-check, pass=success)
-   - unknown (ask Continue/Stop)
+14. **Handle failures:**
+   **Step 7 — classify before branching (#3095):**
+   ```bash
+   CLASS_JSON=$($GSD_SDK query agent.classify-failure -- "$AGENT_RETURN_BODY")
+   CLASS=$(echo "$CLASS_JSON" | jq -r '.class')
+   SENTINEL=$(echo "$CLASS_JSON" | jq -r '.sentinel // empty')
+   RETRY_AFTER=$(echo "$CLASS_JSON" | jq -r '.retryAfterSeconds // empty')
+   if [ -n "$RETRY_AFTER" ]; then RETRY_HINT="  Provider hinted retry-after: ${RETRY_AFTER}s"; else RETRY_HINT=""; fi
+   ```
+   One classifier branch handles sentinels across Claude/Copilot/Codex/Gemini. Reference: `docs/research/provider-rate-limit-signals.md`.
+   **Step 8 — `class == "quota-exceeded"`:**
+   Do not offer "retry now". Run step-5 spot-check first; if SUMMARY.md is missing but commits exist, route to safe-resume (`state.verify-against-disk`) instead of immediate redispatch.
+   ```text
+   ⚠ Plan {plan_id} terminated by provider quota / rate limit
+     Runtime sentinel: {SENTINEL}
+     {RETRY_HINT}
+     Partial commits on worktree branch: {N}
+     SUMMARY.md present: {yes|no}
+     1. Wait for quota reset, then resume (recommended)
+     2. Switch to a different runtime / model and resume
+     3. Abort phase and report partial state
+   ```
+   Re-run `/gsd:execute-phase` after quota reset for Option 1.
+   **Step 9 — `class == "classify-handoff-bug"`:**
+   If error contains `classifyHandoffIfNeeded is not defined`, treat as Claude runtime bug. Run the same step-5 spot-checks; PASS => treat as success, FAIL => fall through.
+   **Step 10 — `class == "unknown-failure"`:**
+   Report failed plan and ask Continue/Stop; continuing may cascade into dependent plan failures.
+
+14b. **Pre-wave dependency check (waves 2+ only):**
+    Before wave N+1, run `gsd-sdk query verify.key-links {phase_dir}/{plan}-PLAN.md` for each upcoming plan.
+    If any PRIOR-wave artifact link fails, present:
+    - `## Cross-Plan Wiring Gap` with plan/link/from/pattern rows
+    - Options: investigate+fix before continue, or continue with cascade risk
+    Skip key-links that reference files in the CURRENT (upcoming) wave.
 
 15. **Checkpoint plans between waves** — see `<checkpoint_handling>`.
 
