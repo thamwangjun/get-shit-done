@@ -20,7 +20,7 @@ Requirements for the Testing Coverage Gaps milestone. Each maps to a roadmap pha
 
 ### Worktree Safety Coverage
 
-- [ ] **WSC-01**: Test suite asserts `gsd-executor.md` `<task_commit_protocol>` block contains submodule-exclusion logic distinguishing `.git/worktrees/` paths (guard fires) from submodule paths (guard skipped)
+- [x] **WSC-01**: Test suite asserts `gsd-executor.md` `<task_commit_protocol>` block contains submodule-exclusion logic distinguishing `.git/worktrees/` paths (guard fires) from submodule paths (guard skipped)
 
 ### Security Framing Coverage
 
@@ -50,7 +50,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | DOC-01 | Phase 59 | Pending |
 | EWC-01 – EWC-08 | Phase 60 | Pending |
-| WSC-01 | Phase 61 | Pending |
+| WSC-01 | Phase 61 | Complete |
 | RIC-01 | Phase 62 | Pending |
 | SFC-01 | Phase 63 | Pending |
 
