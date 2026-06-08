@@ -112,8 +112,15 @@ Cross-phase context files (prior-wave SUMMARY.md, phase CONTEXT.md/RESEARCH.md, 
 - Executors consult `@~/.claude/get-shit-done/references/executor-examples.md` when handling a deviation from the plan or executing a task that carries a checkpoint (the file holds extended deviation-rule and checkpoint examples).
 - Planners consult `@~/.claude/get-shit-done/references/planner-antipatterns.md` when checking a plan for anti-patterns or tightening task specificity (the file holds extended anti-pattern lists and specificity examples).
 
-**Auto-chain sync (REQUIRED):** If user invoked manually (no `--auto`), clear ephemeral chain flag:
+**If `phase_found` is false:** Error — phase directory not found.
+**If `plan_count` is 0:** Error — no plans found in phase.
+**If `state_exists` is false but `.planning/` exists:** Offer reconstruct or continue.
+
+When `parallelization` is false, plans within a wave execute sequentially.
+
+**REQUIRED — Sync chain flag with intent.** If user invoked manually (no `--auto`), clear the ephemeral chain flag from any previous interrupted `--auto` chain. This prevents stale `_auto_chain_active: true` from causing unwanted auto-advance. This does NOT touch `workflow.auto_advance` (the user's persistent settings preference). You MUST execute this bash block before any config reads:
 ```bash
+# REQUIRED: prevents stale auto-chain from previous --auto runs
 if [[ ! "$ARGUMENTS" =~ --auto ]]; then
   $GSD_SDK query config-set workflow._auto_chain_active false || true
 fi
@@ -800,12 +807,14 @@ Use AskUserQuestion to present the options.
 <step name="schema_drift_gate">
 Post-execution schema drift detection. Catches false-positive verification where build/types pass because TypeScript types come from config, not the live database.
 
+**Run after execution completes but BEFORE verification marks success.**
+
 Run post-execution schema drift detection:
 ```bash
 SCHEMA_DRIFT=$($GSD_SDK query verify.schema-drift "${PHASE_NUMBER}" 2>/dev/null)
 ```
 
-Parse for `drift_detected`, `blocking`, `schema_files`, `unpushed_orms`, `message`.
+Parse JSON result for: `drift_detected`, `blocking`, `schema_files`, `orms`, `unpushed_orms`, `message`.
 
 If false: skip. If true AND blocking:
 Check override:
@@ -817,7 +826,14 @@ If skip: display warning + continue. Otherwise: BLOCK verification. Display sche
 </step>
 
 <step name="codebase_drift_gate">
-Post-execution structural drift detection (non-blocking by contract). Load full step spec from `get-shit-done/workflows/execute-phase/steps/codebase-drift-gate.md`.
+Post-execution structural drift detection (#2003). Non-blocking by contract:
+any internal error here MUST fall through to `verify_phase_goal`. The phase
+is never failed by this gate.
+
+Load and follow the full step spec from
+`get-shit-done/workflows/execute-phase/steps/codebase-drift-gate.md` —
+covers the SDK call, JSON contract, `warn` vs `auto-remap` branches, mapper
+spawn template, and the two `workflow.drift_*` config keys.
 </step>
 
 <step name="verify_phase_goal">
@@ -859,7 +875,7 @@ grep "^status:" "$PHASE_DIR"/*-VERIFICATION.md | cut -d: -f2 | tr -d ' '
 
 **If human_needed:**
 
-**Step A — Persist:** Create `{phase_dir}/{phase_num}-HUMAN-UAT.md` with frontmatter: `status: partial`, `phase`, `source`, `started`, `updated` — plus `## Tests` section listing each `human_verification` item as `### N. {description}` with `expected:` and `result: [pending]`, and a `## Summary` block (`total`, `passed`, `issues`, `pending`, `skipped`, `blocked`). These fields are required by `/gsd:progress` and `/gsd:audit-uat`. Commit: `test({phase_num}): persist human verification items as UAT`.
+**Step A — Persist:** Create `{phase_dir}/{phase_num}-HUMAN-UAT.md` with frontmatter: `status: partial`, `phase`, `source`, `started`, `updated` — plus `## Tests` section listing each `human_verification` item as `### N. {description}` with `expected:` and `result: [pending]`, and a `## Summary` block (`total`, `passed`, `issues`, `pending`, `skipped`, `blocked`), and a `## Gaps` section (empty at creation, populated by gap-closure runs). These fields are required by `/gsd:progress` and `/gsd:audit-uat`. Commit: `test({phase_num}): persist human verification items as UAT`.
 
 **Step B — Present:**
 ```
