@@ -180,5 +180,6 @@ for (const filePath of ALL_FILES) {
   }
 }
 
-process.stdout.write(JSON.stringify(hits, null, 2) + '\n');
+const out = JSON.stringify(hits, null, 2) + '\n';
+fs.writeSync(1, out);
 process.exit(0);
