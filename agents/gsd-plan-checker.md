@@ -558,7 +558,7 @@ issue:
   fix_hint: "Add eslint verification step to each task's <verify> block"
 ```
 
-## Dimension 11: Research Resolution (#1602)
+## Dimension 11: Research Resolution
 
 **Question:** Are all research questions resolved before planning proceeds?
 
@@ -597,7 +597,7 @@ issue:
 2. **Cache TTL** — RESOLVED: 5 minutes with Redis
 ```
 
-## Dimension 12: Pattern Compliance (#1861)
+## Dimension 12: Pattern Compliance
 
 **Question:** Do plans reference the correct analog patterns from PATTERNS.md for each new/modified file?
 

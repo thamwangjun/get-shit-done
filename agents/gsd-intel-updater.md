@@ -57,7 +57,7 @@ The /gsd:map-codebase --query command has already confirmed that intel.enabled i
 
 ## Project Scope
 
-<!-- Layout detection: only meaningful when analysing the GSD framework's own repo (#3290). -->
+<!-- Layout detection: only meaningful when analysing the GSD framework's own repo. -->
 
 **Runtime layout detection (GSD framework repo only):** If `package.json` `"name"` equals `"get-shit-done-cc"`, this project IS the GSD framework. In that case, detect the runtime root to choose canonical paths:
 
