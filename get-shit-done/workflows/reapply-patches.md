@@ -267,9 +267,9 @@ After writing each merged file, verify that user modifications survived the merg
 
 Two layered gates. Both must pass before proceeding to cleanup.
 
-### 5a: Deterministic verifier (binding gate, #2969)
+### 5a: Deterministic verifier (binding gate)
 
-Run the deterministic verifier script. Do NOT rely solely on the free-text `verified: yes/no` Hunk Verification Table from Step 4 — bug #2969 traced repeated false-positive `verified: yes` reports to that table being filled in without an actual content-presence check. The script performs the check structurally and exits non-zero on any miss.
+Run the deterministic verifier script. Do NOT rely solely on the free-text `verified: yes/no` Hunk Verification Table from Step 4 — repeated false-positive `verified: yes` reports were traced to that table being filled in without an actual content-presence check. The script performs the check structurally and exits non-zero on any miss.
 
 Run the verifier as a child process (the gsd-tools binary directory is not required — the script ships under `get-shit-done/bin/` in the source repo and is installed to `${GSD_HOME}/get-shit-done/bin/`; it is also exposed via the SDK at `sdk/dist/cli.js verify-reapply` when present):
 
@@ -295,7 +295,7 @@ VERIFY_OUTPUT="$(node "${GSD_HOME}/get-shit-done/bin/verify-reapply-patches.cjs"
 VERIFY_STATUS=$?
 ```
 
-**drift check** — even when `VERIFY_STATUS` is 0, the report may signal that one or more files were skipped due to pristine-snapshot drift (Bug #3657). Parse the JSON and check:
+**drift check** — even when `VERIFY_STATUS` is 0, the report may signal that one or more files were skipped due to pristine-snapshot drift. Parse the JSON and check:
 
 ```bash
 DRIFTED_COUNT="$(echo "$VERIFY_OUTPUT" | node -e "const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));process.stdout.write(String(d.drifted||0))")"
@@ -334,7 +334,7 @@ exit 1
 **If `VERIFY_STATUS` is non-zero**, STOP and report to the user, parsing the JSON output:
 
 ```text
-ERROR: {failures} file(s) failed deterministic post-merge verification (#2969 gate).
+ERROR: {failures} file(s) failed deterministic post-merge verification.
 
 The verifier compared user-added lines (computed from the diff between
 the backup and the pristine baseline) against the merged installed file.
@@ -356,7 +356,7 @@ The verifier must exit 0 before proceeding to cleanup.
 
 **Only when `VERIFY_STATUS` is 0** (or when all files had zero significant user-added lines, which the verifier reports as `Failures: 0`) may execution continue to gate 5b.
 
-### 5b: Hunk Verification Table review (advisory gate, #1999)
+### 5b: Hunk Verification Table review (advisory gate)
 
 The Hunk Verification Table produced in Step 4 must also be reviewed before proceeding. This is advisory after the script gate but is preserved as a defense-in-depth check — if the script ever has a bug or the pristine baseline is unavailable, the table-based gate still catches obvious regressions.
 

@@ -39,10 +39,10 @@ Read all files referenced by the invoking prompt's execution_context before star
 <process>
 
 <step name="ensure_and_load_config">
-Ensure config exists and resolve the active config path (flat vs workstream, #2282):
+Ensure config exists and resolve the active config path (flat vs workstream):
 
 ```bash
-# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk (#3668)
+# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk
 GSD_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/get-shit-done/bin/gsd-tools.cjs"
 if [ -f "$GSD_TOOLS" ]; then
   GSD_SDK="node $GSD_TOOLS"

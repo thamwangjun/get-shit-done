@@ -57,7 +57,7 @@ The document should describe what you want to build.
 **MANDATORY FIRST STEP — Execute these checks before ANY user interaction:**
 
 ```bash
-# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk (#3668)
+# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk
 GSD_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/get-shit-done/bin/gsd-tools.cjs"
 if [ -f "$GSD_TOOLS" ]; then
   GSD_SDK="node $GSD_TOOLS"
@@ -134,7 +134,7 @@ All subsequent references to the project instruction file use `$INSTRUCTION_FILE
 
 **If `project_exists` is true:** Error — project already initialized. Use `/gsd:progress`.
 
-**Git init (#3491 — never nest `.git` inside an existing worktree):**
+**Git init (never nest `.git` inside an existing worktree):**
 
 - If `has_git` true and `in_nested_subdir` true: skip `git init`; warn `⚠ Initializing inside existing worktree (${git_worktree_root}); planning files will track to outer repo.`
 - If `has_git` true and `in_nested_subdir` false: skip `git init` (already at worktree root).

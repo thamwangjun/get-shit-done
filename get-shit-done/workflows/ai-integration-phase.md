@@ -20,7 +20,7 @@ This prevents the two most common AI development failures: choosing the wrong fr
 ## 1. Initialize
 
 ```bash
-# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk (#3668)
+# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk
 GSD_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/get-shit-done/bin/gsd-tools.cjs"
 if [ -f "$GSD_TOOLS" ]; then
   GSD_SDK="node $GSD_TOOLS"
@@ -150,7 +150,7 @@ Fill in header fields:
 
 ## 7. Spawn gsd-ai-researcher
 
-> **Ordering note (prevents tool-level last-writer-wins race):** Steps 7 and 8 write disjoint sections of AI-SPEC.md but MUST run sequentially — wait for Step 7 to complete before spawning Step 8. Both agents use the `Edit` tool exclusively (never `Write`) when modifying AI-SPEC.md. A `Write` on a shared file replaces the entire file, silently overwriting the other agent's work; `Edit` targets only the relevant lines. See #3096 for a confirmed 40%-incidence race on parallel dispatch.
+> **Ordering note (prevents tool-level last-writer-wins race):** Steps 7 and 8 write disjoint sections of AI-SPEC.md but MUST run sequentially — wait for Step 7 to complete before spawning Step 8. Both agents use the `Edit` tool exclusively (never `Write`) when modifying AI-SPEC.md. A `Write` on a shared file replaces the entire file, silently overwriting the other agent's work; `Edit` targets only the relevant lines. A confirmed 40%-incidence race on parallel dispatch makes sequential ordering mandatory here.
 
 Display:
 ```

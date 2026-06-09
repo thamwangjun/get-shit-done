@@ -52,7 +52,7 @@ If `PATH_NOT_FOUND` or `MANIFEST_NOT_FOUND`: display error and exit.
 Run the init query:
 
 ```bash
-# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk (#3668)
+# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk
 GSD_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/get-shit-done/bin/gsd-tools.cjs"
 if [ -f "$GSD_TOOLS" ]; then
   GSD_SDK="node $GSD_TOOLS"
@@ -79,7 +79,7 @@ Parse `project_exists`, `planning_exists`, `has_git`, `git_worktree_root`, `in_n
 
 If user passed `--mode new` but `.planning/` already exists: display warning and require explicit confirm via `AskUserQuestion` (approve-revise-abort from `references/gate-prompts.md`) before overwriting.
 
-Git initialisation (Bug #3491 — never create a nested `.git` inside an existing worktree):
+Git initialisation (never create a nested `.git` inside an existing worktree):
 
 - If `has_git: true` and `in_nested_subdir: true`: do NOT run `git init`. Surface a warning that planning files will be tracked by the outer repo at `git_worktree_root`.
 - If `has_git: true` and `in_nested_subdir: false`: already at a worktree root, skip `git init`.

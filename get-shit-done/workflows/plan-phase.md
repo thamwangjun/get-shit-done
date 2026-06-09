@@ -31,7 +31,7 @@ Valid GSD subagent types (use exact names — do not fall back to 'general-purpo
 Load all context in one call (paths only to minimize orchestrator context):
 
 ```bash
-# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk (#3668)
+# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk
 GSD_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/get-shit-done/bin/gsd-tools.cjs"
 if [ -f "$GSD_TOOLS" ]; then
   GSD_SDK="node $GSD_TOOLS"
@@ -56,7 +56,7 @@ When `TDD_MODE` is `true`, the planner agent is instructed to apply `type: tdd` 
 
 When `CONTEXT_WINDOW >= 500000`, the planner prompt includes the 3 most recent prior phase CONTEXT.md and SUMMARY.md files PLUS any phases explicitly listed in the current phase's `Depends on:` field in ROADMAP.md. Explicit dependencies always load regardless of recency (e.g., Phase 7 declaring `Depends on: Phase 2` always sees Phase 2's context). Bounded recency keeps the planner's context budget focused on recent work.
 
-Parse JSON for: `researcher_model`, `researcher_effort`, `planner_model`, `planner_effort`, `checker_model`, `checker_effort`, `research_enabled`, `plan_checker_enabled`, `nyquist_validation_enabled`, `commit_docs`, `text_mode`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`, `has_research`, `has_context`, `has_reviews`, `has_plans`, `plan_count`, `phase_status` (#3569), `planning_exists`, `roadmap_exists`, `phase_req_ids`, `response_language`. Then derive the effort args with the concrete shell block below — each renders `effort="<value>"` when the field is non-null, else `""`:
+Parse JSON for: `researcher_model`, `researcher_effort`, `planner_model`, `planner_effort`, `checker_model`, `checker_effort`, `research_enabled`, `plan_checker_enabled`, `nyquist_validation_enabled`, `commit_docs`, `text_mode`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`, `has_research`, `has_context`, `has_reviews`, `has_plans`, `plan_count`, `phase_status`, `planning_exists`, `roadmap_exists`, `phase_req_ids`, `response_language`. Then derive the effort args with the concrete shell block below — each renders `effort="<value>"` when the field is non-null, else `""`:
 
 ```bash
 researcher_model_effort_arg=$([ -n "$researcher_effort" ] && [ "$researcher_effort" != "null" ] && echo "effort=\"$researcher_effort\"" || echo "")
@@ -70,7 +70,7 @@ checker_model_effort_arg=$([ -n "$checker_effort" ] && [ "$checker_effort" != "n
 
 **If `planning_exists` is false:** Error — run `/gsd:new-project` first.
 
-## 1.5. Closed-Phase Gate (#3569)
+## 1.5. Closed-Phase Gate
 
 The init JSON includes `phase_status` — one of `Pending | Planned | In Progress | Executed | Complete | Needs Review`. `Complete` means the phase has all summaries AND a `VERIFICATION.md` with `status: passed`. Replanning a closed phase silently rewrites plan docs that no longer match the shipped code, so the workflow must hard-stop here unless the operator explicitly overrides.
 
@@ -117,7 +117,7 @@ The gate fires only on `Complete`. `Executed` and `Needs Review` are not gated �
 
 Extract from $ARGUMENTS: phase number (integer or decimal like `2.1`), flags (`--research`, `--skip-research`, `--research-phase <N>`, `--gaps`, `--skip-verify`, `--skip-ui`, `--prd <filepath>`, `--ingest <path-or-glob>`, `--ingest-format <auto|nygard|madr|narrative>`, `--reviews`, `--text`, `--bounce`, `--skip-bounce`, `--chunked`, `--mvp`, `--force` (override closed-phase gate, see §1.5)).
 
-**`--research-phase <N>` — research-only mode (#3042 + #3044).** When this flag is present, parse `<N>` as the phase number (overrides any positional phase argument), set `RESEARCH_ONLY=true`, and treat the rest of this workflow as a research-dispatch only — the planner spawn (step 8), plan-checker, verification, gaps, bounce, and post-planning-gaps blocks all skip on `RESEARCH_ONLY`. Use this for cross-phase research, doc review before committing to a planning approach, and correction-without-replanning loops. Replaces the deleted `/gsd-research-phase` command.
+**`--research-phase <N>` — research-only mode.** When this flag is present, parse `<N>` as the phase number (overrides any positional phase argument), set `RESEARCH_ONLY=true`, and treat the rest of this workflow as a research-dispatch only — the planner spawn (step 8), plan-checker, verification, gaps, bounce, and post-planning-gaps blocks all skip on `RESEARCH_ONLY`. Use this for cross-phase research, doc review before committing to a planning approach, and correction-without-replanning loops. Replaces the deleted `/gsd-research-phase` command.
 
 In research-only mode, two modifiers control behavior when `RESEARCH.md` already exists:
 
@@ -380,7 +380,7 @@ Otherwise use AskUserQuestion:
 If "Continue without context": Proceed to step 5.
 If "Run discuss-phase first":
   **IMPORTANT:** Do NOT invoke discuss-phase as a nested Skill/Task call — AskUserQuestion
-  does not work correctly in nested subcontexts (#1009). Instead, display the command
+  does not work correctly in nested subcontexts. Instead, display the command
   and exit so the user runs it as a top-level command:
   ```
   Run this command first, then re-run /gsd:plan-phase {X} ${GSD_WS}:
@@ -441,7 +441,7 @@ Three branches in research-only mode (`--research-phase <N>`):
 
 1. **`--view`** (or user picks "View" in the prompt below): print `RESEARCH.md` to stdout, no spawn, exit. If `RESEARCH.md` is missing, error with: `--view requires an existing RESEARCH.md; drop --view to spawn the researcher.`
 2. **`--research`** (force-refresh): re-spawn researcher unconditionally — fall through to "Spawn gsd-phase-researcher" below.
-3. **Neither flag AND `has_research=true`:** emit `RESEARCH.md already exists for Phase ${PHASE}.` and prompt the user with three choices: `1. Update — re-spawn researcher and refresh RESEARCH.md`, `2. View — print existing RESEARCH.md and exit (no spawn)`, `3. Skip — exit without spawning or printing`. Map "Update" → fall through to spawn, "View" → set `VIEW_ONLY=true` and emit RESEARCH.md as in (1), "Skip" → exit cleanly. Mirrors the deleted `/gsd-research-phase` standalone's existing-artifact menu (#3042 parity).
+3. **Neither flag AND `has_research=true`:** emit `RESEARCH.md already exists for Phase ${PHASE}.` and prompt the user with three choices: `1. Update — re-spawn researcher and refresh RESEARCH.md`, `2. View — print existing RESEARCH.md and exit (no spawn)`, `3. Skip — exit without spawning or printing`. Map "Update" → fall through to spawn, "View" → set `VIEW_ONLY=true` and emit RESEARCH.md as in (1), "Skip" → exit cleanly. Mirrors the deleted `/gsd-research-phase` standalone's existing-artifact menu.
 
 ```bash
 if [[ "$VIEW_ONLY" == "true" ]]; then
@@ -452,7 +452,7 @@ fi
 
 ### 5.1. Standard Research Decision
 
-**Skip if** `RESEARCH_ONLY=true` (the research-only mode in 5.0 already determined the path: spawn or exit). Without this guard, an LLM following the workflow could fall through into "use existing, skip to step 6" → planner spawn, violating the research-only contract. **CR #3045 finding: this gate makes the early-exit unreachable from any non-research-only branch.**
+**Skip if** `RESEARCH_ONLY=true` (the research-only mode in 5.0 already determined the path: spawn or exit). Without this guard, an LLM following the workflow could fall through into "use existing, skip to step 6" → planner spawn, violating the research-only contract. This gate makes the early-exit unreachable from any non-research-only branch.
 
 **If `has_research` is true (from init) AND no `--research` flag:** Use existing, skip to step 6.
 
@@ -558,7 +558,7 @@ Agent(
 **If `RESEARCH_ONLY=true`:** the user invoked `/gsd:plan-phase --research-phase <N>` for research-only mode. Do **not** continue to Section 5.5+ (validation strategy, planner, plan-checker, verification, gaps, bounce, post-planning-gaps). Print the research-complete summary and exit cleanly:
 
 ```text
-✓ Research-only mode complete (#3042)
+✓ Research-only mode complete
 
   Phase:       ${PHASE}
   RESEARCH.md: ${research_path}
@@ -640,7 +640,7 @@ Check if phase has frontend indicators:
 
 ```bash
 PHASE_SECTION=$($GSD_SDK query roadmap.get-phase "${PHASE}" 2>/dev/null)
-# Shell-free word-boundary gate (#3718): Node.js helper — no locale env-var dependency.
+# Shell-free word-boundary gate: Node.js helper — no locale env-var dependency.
 # Reads via stdin to avoid OS ARG_MAX limits on large phase text.
 # Path anchored to repo root; falls back to CWD if git is unavailable
 # Exit codes mirror grep: 0 = UI tokens found, 1 = not found.
@@ -1521,9 +1521,9 @@ If `TEXT_MODE` is true, present as a plain-text numbered list (options already s
 
 After the requirements coverage gate passes, verify that every trackable
 decision captured by discuss-phase in CONTEXT.md `<decisions>` is referenced
-by at least one plan. This is the **translation gate** from issue #2492 —
-its job is to refuse to mark a phase planned when a discuss-phase decision
-silently dropped on the way into the plans.
+by at least one plan. This is the **translation gate** — its job is to refuse
+to mark a phase planned when a discuss-phase decision silently dropped on the
+way into the plans.
 
 **Skip if** `workflow.context_coverage_gate` is explicitly set to `false`
 (absent key = enabled). Also skip if no CONTEXT.md exists for this phase
@@ -1774,7 +1774,7 @@ Verification: {Passed | Passed with override | Skipped}
 
 <windows_troubleshooting>
 **Windows users:** If plan-phase freezes during agent spawning (common on Windows due to
-stdio deadlocks with MCP servers — see Claude Code issue anthropics/claude-code#28126):
+stdio deadlocks with MCP servers):
 
 1. **Force-kill:** Close the terminal (Ctrl+C may not work)
 2. **Clean up orphaned processes:**

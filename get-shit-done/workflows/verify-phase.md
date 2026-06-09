@@ -29,7 +29,7 @@ Then verify each level against the actual codebase.
 Load phase operation context:
 
 ```bash
-# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk (#3668)
+# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk
 GSD_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/get-shit-done/bin/gsd-tools.cjs"
 if [ -f "$GSD_TOOLS" ]; then
   GSD_SDK="node $GSD_TOOLS"
@@ -195,7 +195,7 @@ For each requirement: parse description → identify supporting truths/artifacts
 </step>
 
 <step name="verify_decisions">
-**Decision coverage validation gate (issue #2492).**
+**Decision coverage validation gate.**
 
 After requirements coverage, also check that each trackable CONTEXT.md
 `<decisions>` entry shows up somewhere in the shipped artifacts (plans,
@@ -542,7 +542,7 @@ Orchestrator routes: `passed` → update_roadmap | `gaps_found` → create/execu
 - [ ] All artifacts checked at all three levels
 - [ ] All key links verified
 - [ ] Requirements coverage assessed (if applicable)
-- [ ] CONTEXT.md decisions checked against shipped artifacts (#2492 — non-blocking)
+- [ ] CONTEXT.md decisions checked against shipped artifacts (non-blocking)
 - [ ] Anti-patterns scanned and categorized
 - [ ] Test quality audited (disabled tests, circular patterns, assertion strength, provenance)
 - [ ] Human verification items identified

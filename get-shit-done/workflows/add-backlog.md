@@ -19,7 +19,7 @@ cat .planning/ROADMAP.md
 ## Step 2: Find next backlog number
 
 ```bash
-# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk (#3668)
+# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk
 GSD_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/get-shit-done/bin/gsd-tools.cjs"
 if [ -f "$GSD_TOOLS" ]; then
   GSD_SDK="node $GSD_TOOLS"
@@ -40,7 +40,7 @@ is fine (e.g. 999.1, 999.3) — always use `phase.next-decimal`, never guess.
 
 **Write the ROADMAP entry BEFORE creating the directory.** Directory existence is a
 reliable indicator that the phase is already registered, which prevents false duplicate
-detection in any hook that checks for existing 999.x directories (#2280).
+detection in any hook that checks for existing 999.x directories.
 
 Add under a `## Backlog` section. If the section doesn't exist, create it at the end
 of ROADMAP.md:

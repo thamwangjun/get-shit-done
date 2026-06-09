@@ -181,7 +181,7 @@ blockers, todos) is preserved across the switch — symmetric with
 `milestone.complete`.
 
 ```bash
-# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk (#3668)
+# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk
 GSD_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/get-shit-done/bin/gsd-tools.cjs"
 if [ -f "$GSD_TOOLS" ]; then
   GSD_SDK="node $GSD_TOOLS"
@@ -206,11 +206,11 @@ Status: Defining requirements
 Last activity: [today] — Milestone v[X.Y] started
 ```
 
-Bug #2630: a prior version of this workflow rewrote the Current Position body
-manually but left the frontmatter pointing at the previous milestone, so every
-downstream reader (`state.json`, `getMilestoneInfo`, progress bars) reported the
-stale milestone until the first phase advance forced a resync. Always use the
-SDK handler above — do not hand-edit STATE.md here.
+A prior version of this workflow rewrote the Current Position body manually but left
+the frontmatter pointing at the previous milestone, so every downstream reader
+(`state.json`, `getMilestoneInfo`, progress bars) reported the stale milestone until
+the first phase advance forced a resync. Always use the SDK handler above — do not
+hand-edit STATE.md here.
 
 ## 6. Cleanup and Commit
 

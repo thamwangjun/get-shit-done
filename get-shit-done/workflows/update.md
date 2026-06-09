@@ -38,7 +38,7 @@ expand_home() {
 # Runtime candidates: "<runtime>:<config-dir>" stored as an array.
 # Using an array instead of a space-separated string ensures correct
 # iteration in both bash and zsh (zsh does not word-split unquoted
-# variables by default). Fixes #1173.
+# variables by default).
 RUNTIME_DIRS=( "claude:.claude" "opencode:.config/opencode" "opencode:.opencode" "antigravity:.gemini/antigravity-ide" "antigravity:.gemini/antigravity-cli" "antigravity:.gemini/antigravity" "gemini:.gemini" "kilo:.config/kilo" "kilo:.kilo" "codex:.codex" )
 ENV_RUNTIME_DIRS=()
 
@@ -118,7 +118,7 @@ if [ -n "$PREFERRED_CONFIG_DIR" ] && { [ -f "$PREFERRED_CONFIG_DIR/get-shit-done
   echo "$INSTALLED_VERSION"
   echo "$INSTALL_SCOPE"
   echo "${PREFERRED_RUNTIME:-claude}"
-  # 4-line output contract (#2993 CR): early-return path must also emit
+  # 4-line output contract: early-return path must also emit
   # GSD_DIR or downstream check_latest_version misreads the install as
   # UNKNOWN. PREFERRED_CONFIG_DIR is the resolved config dir we just
   # validated above (line 95-96); it is the right GSD_DIR value for
@@ -290,11 +290,11 @@ Proceed to install step (treat as version 0.0.0 for comparison).
 </step>
 
 <step name="check_latest_version">
-Check the latest commit SHA via the deterministic script. **Do NOT run `npm view` or query GitHub directly** — the API endpoint is hardcoded in the script, not a free choice at execution time. (#2992: moving the endpoint into a script constant closes the gap where LLM-driven package-name prescriptions produced wrong-package queries.)
+Check the latest commit SHA via the deterministic script. **Do NOT run `npm view` or query GitHub directly** — the API endpoint is hardcoded in the script, not a free choice at execution time. Moving the endpoint into a script constant closes the gap where LLM-driven package-name prescriptions produced wrong-package queries.
 
 The `GSD_DIR` value emitted by `get_installed_version` (line 4) resolves to the runtime-specific config dir (`~/.claude/`, `~/.gemini/`, `~/.codex/`, etc.), so the script invocation works for every runtime — not just Claude. If `GSD_DIR` is empty (scope `UNKNOWN`), skip this step and go directly to install.
 
-`LATEST_RESULT` is a JSON document with the documented shape `{ ok: bool, sha: string, reason: string, detail?: string }`. Parse via `jq` ONLY when the script actually ran. When `GSD_DIR` is empty (scope `UNKNOWN`), skip the check entirely and seed the parsed fields with their no-op values so downstream logic does not mistake an unset `LATEST_RESULT` for a failed network check (#2993 CR feedback):
+`LATEST_RESULT` is a JSON document with the documented shape `{ ok: bool, sha: string, reason: string, detail?: string }`. Parse via `jq` ONLY when the script actually ran. When `GSD_DIR` is empty (scope `UNKNOWN`), skip the check entirely and seed the parsed fields with their no-op values so downstream logic does not mistake an unset `LATEST_RESULT` for a failed network check:
 
 ```bash
 if [ -z "$GSD_DIR" ]; then
@@ -307,7 +307,7 @@ if [ -z "$GSD_DIR" ]; then
 else
   LATEST_RESULT="$(node "$GSD_DIR/get-shit-done/bin/check-latest-version.cjs" --json 2>/dev/null)"
   LATEST_STATUS=$?
-  # #2993 CR: when node is missing or the script doesn't exist, LATEST_RESULT
+  # When node is missing or the script doesn't exist, LATEST_RESULT
   # is empty and piping it to `jq` produces a parse error on stderr while
   # leaving LATEST_OK / LATEST_REASON as empty strings. Fail the check with a
   # meaningful reason instead of a blank diagnostic.
@@ -403,7 +403,7 @@ installer does not know about and will delete during the wipe.
 **Do not use bash path-stripping (`${filepath#$RUNTIME_DIR/}`) or `node -e require()`
 inline** — those patterns fail when `$RUNTIME_DIR` is unset and the stripped
 relative path may not match manifest key format, which causes CUSTOM_COUNT=0
-even when custom files exist (bug #1997). Use `gsd-sdk query detect-custom-files`
+even when custom files exist. Use `gsd-sdk query detect-custom-files`
 when `gsd-sdk` is on `PATH`, or the bundled `gsd-tools.cjs detect-custom-files`
 otherwise — both resolve paths reliably with Node.js `path.relative()`.
 
@@ -560,7 +560,7 @@ for dir in .claude .config/opencode .opencode .gemini/antigravity-ide .gemini/an
   rm -f "$HOME/$dir/cache/gsd-update-check.json"
 done
 
-# Clear the shared tool-agnostic cache written by gsd-check-update.js hook (#2784).
+# Clear the shared tool-agnostic cache written by gsd-check-update.js hook.
 # The hook uses ~/.cache/gsd/gsd-update-check.json regardless of runtime; clear it
 # so the statusline stops showing the stale "⬆ /gsd:update" indicator after update.
 rm -f "$HOME/.cache/gsd/gsd-update-check.json"

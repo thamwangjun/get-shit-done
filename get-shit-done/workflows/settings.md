@@ -12,7 +12,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 Ensure config exists and load current state:
 
 ```bash
-# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk (#3668)
+# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk
 GSD_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/get-shit-done/bin/gsd-tools.cjs"
 if [ -f "$GSD_TOOLS" ]; then
   GSD_SDK="node $GSD_TOOLS"
@@ -26,7 +26,7 @@ fi
 $GSD_SDK query config-ensure-section
 INIT=$($GSD_SDK query state.load)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-# `state.load` returns STATE frontmatter JSON from the SDK — it does not include `config_path`. Orchestrators may set `GSD_CONFIG_PATH` from init phase-op JSON; otherwise resolve the same path gsd-tools uses for flat vs active workstream (#2282).
+# `state.load` returns STATE frontmatter JSON from the SDK — it does not include `config_path`. Orchestrators may set `GSD_CONFIG_PATH` from init phase-op JSON; otherwise resolve the same path gsd-tools uses for flat vs active workstream.
 if [[ -z "${GSD_CONFIG_PATH:-}" ]]; then
   if [[ -f .planning/active-workstream ]]; then
     WS=$(tr -d '\n\r' < .planning/active-workstream)
@@ -38,7 +38,7 @@ fi
 ```
 
 Creates `config.json` (at the resolved path) with defaults if missing. `INIT` still holds `state.load` output for any step that needs STATE fields.
-Store `$GSD_CONFIG_PATH` — all subsequent reads and writes use this path, not a hardcoded `.planning/config.json`, so active-workstream installs target the correct file (#2282).
+Store `$GSD_CONFIG_PATH` — all subsequent reads and writes use this path, not a hardcoded `.planning/config.json`, so active-workstream installs target the correct file.
 </step>
 
 <step name="read_current">
@@ -62,7 +62,7 @@ Parse current values (default to `true` if not present):
 - `commit_docs` — whether `.planning/` files are committed to git (default: true if absent)
 - `intel.enabled` — enable queryable codebase intelligence (/gsd:map-codebase --query) (default: false if absent)
 - `graphify.enabled` — enable project knowledge graph (/gsd:graphify) (default: false if absent)
-- `graphify.auto_update` — opt-in: auto-rebuild graph after main HEAD advances (#3347) (default: `false`)
+- `graphify.auto_update` — opt-in: auto-rebuild graph after main HEAD advances (default: `false`)
 - `model_profile` — which model each agent uses (default: `balanced`)
 - `git.branching_strategy` — branching approach (default: `"none"`)
 - `workflow.use_worktrees` — whether parallel executor agents run in worktree isolation (default: `true`)
@@ -118,7 +118,7 @@ Context Warnings, Research Qs
 // Model profile is selected via a two-question split because AskUserQuestion enforces a
 // hard 4-option cap and there are 5 valid profiles (quality, balanced, budget, adaptive,
 // inherit). Q1 routes between adaptive/standard-tier/inherit; Q2 (shown only when the
-// user chose "Standard tier" in Q1) picks among the three standard profiles. (#3784)
+// user chose "Standard tier" in Q1) picks among the three standard profiles.
 AskUserQuestion([
   {
     question: "Which model profile for agents?",
@@ -365,7 +365,7 @@ AskUserQuestion([
     ]
   },
   {
-    question: "Auto-rebuild graph after main HEAD advances? (only effective if Graphify is enabled — #3347)",
+    question: "Auto-rebuild graph after main HEAD advances? (only effective if Graphify is enabled)",
     header: "Graph auto-update",
     multiSelect: false,
     options: [
@@ -538,7 +538,7 @@ Quick commands:
 
 <success_criteria>
 - [ ] Current config read
-- [ ] User presented with 23 settings (profile + workflow toggles + features + git branching + git tagging + ctx warnings), grouped into six sections: Planning, Execution, Docs & Output, Features, Model & Pipeline, Misc. `code_review_depth` is conditional on `code_review=on`. Model profile uses a two-question split (Q1: Adaptive / Standard tier / Inherit; Q2: Quality / Balanced / Budget — only when Standard tier chosen) to stay within the 4-option AskUserQuestion cap while exposing all 5 valid profiles (#3784).
+- [ ] User presented with 23 settings (profile + workflow toggles + features + git branching + git tagging + ctx warnings), grouped into six sections: Planning, Execution, Docs & Output, Features, Model & Pipeline, Misc. `code_review_depth` is conditional on `code_review=on`. Model profile uses a two-question split (Q1: Adaptive / Standard tier / Inherit; Q2: Quality / Balanced / Budget — only when Standard tier chosen) to stay within the 4-option AskUserQuestion cap while exposing all 5 valid profiles.
 - [ ] Config updated with model_profile, workflow, and git sections
 - [ ] User offered to save as global defaults (~/.gsd/defaults.json)
 - [ ] Changes confirmed to user

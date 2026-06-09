@@ -135,7 +135,7 @@ If `$VALIDATE_MODE` only:
 **Step 2: Initialize**
 
 ```bash
-# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk (#3668)
+# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk
 GSD_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/get-shit-done/bin/gsd-tools.cjs"
 if [ -f "$GSD_TOOLS" ]; then
   GSD_SDK="node $GSD_TOOLS"
@@ -164,7 +164,7 @@ verifier_model_effort_arg=$([ -n "$verifier_effort" ] && [ "$verifier_effort" !=
 USE_WORKTREES=$($GSD_SDK query config-get workflow.use_worktrees 2>/dev/null || echo "true")
 ```
 
-If `USE_WORKTREES` is not `"false"`, run a startup orphan sweep before spawning any executors. This reaps locked worktrees whose lock-owner process is dead, whose branch is merged into the default branch, and whose lock file mtime is older than 5 minutes. Running it at startup prevents accumulation of orphaned worktrees from prior sessions that exited without cleanup (#3707).
+If `USE_WORKTREES` is not `"false"`, run a startup orphan sweep before spawning any executors. This reaps locked worktrees whose lock-owner process is dead, whose branch is merged into the default branch, and whose lock file mtime is older than 5 minutes. Running it at startup prevents accumulation of orphaned worktrees from prior sessions that exited without cleanup.
 
 ```bash
 if [ "$USE_WORKTREES" != "false" ]; then
@@ -204,7 +204,7 @@ Quick tasks can run mid-phase - validation only checks ROADMAP.md exists, not ph
 
 The new branch must fork off the project's default branch (`origin/HEAD`), not
 off whatever HEAD happens to be checked out — otherwise consecutive quick tasks
-compound on top of each other and stay unpushed (#2916). If `$branch_name`
+compound on top of each other and stay unpushed. If `$branch_name`
 already exists locally, reuse it as-is so resumed work is not rebased.
 
 ```bash
@@ -218,10 +218,10 @@ else
   # Fetch the default branch so origin/$DEFAULT_BRANCH is current. If the fetch
   # fails (offline, no remote, auth failure) AND we have no local copy of
   # origin/$DEFAULT_BRANCH to fall back on, abort — creating the branch off
-  # arbitrary HEAD is exactly the bug #2916 fixed.
+  # arbitrary HEAD is exactly the branching bug this guard fixes.
   if ! git fetch --quiet origin "$DEFAULT_BRANCH"; then
     if ! git show-ref --verify --quiet "refs/remotes/origin/$DEFAULT_BRANCH"; then
-      echo "ERROR: Could not fetch origin/$DEFAULT_BRANCH and no local copy exists. Refusing to create '$branch_name' off the current HEAD (#2916). Resolve the remote/network issue and retry." >&2
+      echo "ERROR: Could not fetch origin/$DEFAULT_BRANCH and no local copy exists. Refusing to create '$branch_name' off the current HEAD. Resolve the remote/network issue and retry." >&2
       exit 1
     fi
     echo "WARNING: git fetch origin $DEFAULT_BRANCH failed; using the local copy of origin/$DEFAULT_BRANCH as base." >&2
@@ -239,12 +239,12 @@ else
   fi
 
   # Pin the new branch to origin/$DEFAULT_BRANCH so the start point is
-  # deterministic regardless of which branch we are currently on (#2916).
+  # deterministic regardless of which branch we are currently on.
   # On success HEAD is exactly at origin/$DEFAULT_BRANCH, so a post-creation
   # merge-base / "ahead-of" guard would be unreachable — the explicit base
-  # argument here is the single source of correctness for #2916.
+  # argument here is the single source of correctness for this guard.
   git checkout -b "$branch_name" "origin/$DEFAULT_BRANCH" \
-    || { echo "ERROR: Could not create '$branch_name' from origin/$DEFAULT_BRANCH (#2916)." >&2; exit 1; }
+    || { echo "ERROR: Could not create '$branch_name' from origin/$DEFAULT_BRANCH." >&2; exit 1; }
 fi
 ```
 
@@ -652,7 +652,7 @@ Offer: 1) Force proceed, 2) Abort
 
 **Step 10: Pre-dispatch plan commit (worktree mode only)**
 
-When `USE_WORKTREES !== "false"`, commit PLAN.md to the current branch **before** spawning the executor. This ensures the worktree inherits PLAN.md at its branch HEAD so the executor can read it via a worktree-rooted path — avoiding the main-repo path priming that triggers CC #36182 path-resolution drift.
+When `USE_WORKTREES !== "false"`, commit PLAN.md to the current branch **before** spawning the executor. This ensures the worktree inherits PLAN.md at its branch HEAD so the executor can read it via a worktree-rooted path — avoiding path-resolution drift caused by main-repo path priming.
 
 Skip this step entirely if `USE_WORKTREES === "false"` (non-worktree mode: PLAN.md is committed in Step 15 as usual).
 
@@ -800,14 +800,14 @@ After executor returns:
    ```bash
    QUICK_WORKTREE_MANIFEST=${QUICK_WORKTREE_MANIFEST:-$WAVE_WORKTREE_MANIFEST}
    [ -n "${QUICK_WORKTREE_MANIFEST:-}" ] && [ -f "$QUICK_WORKTREE_MANIFEST" ] || {
-     echo "BLOCKED: missing QUICK_WORKTREE_MANIFEST; refusing broad worktree cleanup (#3384)." >&2
+     echo "BLOCKED: missing QUICK_WORKTREE_MANIFEST; refusing broad worktree cleanup." >&2
      exit 1
    }
 
    # Prefer the bounded cleanup helper. It verifies branch identity, expected
    # base, deletion diffs, merge result, and worktree removal before branch
    # deletion. If it blocks, resolve the reported manifest entry and rerun.
-   # Fail closed: SDK refusal (safety guard #3174/#3384) must surface — do not swallow exit 1.
+   # Fail closed: SDK refusal (safety guard) must surface — do not swallow exit 1.
    $GSD_SDK query worktree.cleanup-wave --manifest "$QUICK_WORKTREE_MANIFEST" || exit 1
    ```
    If `workflow.use_worktrees` is `false`, skip this step.
@@ -996,7 +996,7 @@ Build file list:
 ```bash
 # Explicitly stage all artifacts before commit — PLAN.md may be untracked
 # if the executor ran without worktree isolation and committed docs early
-# Filter .planning/ files from staging if commit_docs is disabled (#1783)
+# Filter .planning/ files from staging if commit_docs is disabled
 COMMIT_DOCS=$($GSD_SDK query config-get commit_docs 2>/dev/null || echo "true")
 if [ "$COMMIT_DOCS" = "false" ]; then
   file_list_filtered=$(echo "${file_list}" | tr ' ' '\n' | grep -v '^\.planning/' | tr '\n' ' ')
