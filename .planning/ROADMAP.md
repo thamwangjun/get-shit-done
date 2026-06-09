@@ -19,6 +19,7 @@
 - ✅ **v2.1.0-d Whole-Integer Step Numbering** — Phases 48–51 (shipped 2026-05-31)
 - ✅ **v2.1.0-e Per-Agent Thinking Effort** — Phases 52–58 (shipped 2026-06-06)
 - ✅ **v2.1.0-f Testing Coverage Gaps** — Phases 59–63 (shipped 2026-06-08)
+- 🚧 **v2.1.0-g Citation Cleanup** — Phases 64–67 (in progress)
 
 ## Phases
 
@@ -260,6 +261,15 @@ Full details: `.planning/milestones/v2.1.0-e-ROADMAP.md`
 Full details: `.planning/milestones/v2.1.0-f-ROADMAP.md`
 
 </details>
+
+### 🚧 v2.1.0-g Citation Cleanup (In Progress)
+
+**Milestone Goal:** Remove all issue/PR-number citations from prompt content `.md` files in the 5 scoped dirs and add a permanent regression guard that blocks reintroduction.
+
+- [ ] **Phase 64: Citation Pattern Exploration** - Identify all citation formats beyond `#NNN` in the 5 scoped dirs
+- [ ] **Phase 65: Guard Test (RED)** - Permanent guard test exists, covers all patterns, and fails RED enumerating real violations
+- [ ] **Phase 66: Citation Cleanup** - All citations removed; sentences read naturally; frontmatter preserved
+- [ ] **Phase 67: Full Verification** - npm test 0 failures; guard test GREEN; all content tests unaffected
 
 ## Phase Details
 
@@ -649,6 +659,63 @@ Plans:
 
 </details>
 
+### v2.1.0-g Phase Details (Phases 64–67)
+
+#### Phase 64: Citation Pattern Exploration
+
+**Goal**: All citation formats present in the 5 scoped prompt-content dirs beyond the known `#NNN` pattern are identified and documented so the guard test detector is scoped correctly
+**Depends on**: Phase 63 (previous milestone complete)
+**Requirements**: CITE-01, CITE-02
+**Success Criteria** (what must be TRUE):
+
+  1. A scan of `commands/`, `get-shit-done/workflows/`, `agents/`, `get-shit-done/references/`, and `get-shit-done/templates/` is complete and documents every citation format found — at minimum: word-form ("issue 3668"), hyphen-form ("feat-3347"), `#NNN` inline, and any other variant present
+  2. Findings are recorded with file:line, matched text, and pattern category — the guard test author can derive detector regexes directly from this document without re-scanning
+  3. The count of `#NNN` hits in the scoped dirs is confirmed (establishes the cleanup target for Phase 66)
+  4. Any citation formats that overlap with allowlisted tokens (hex colors, heading markers, illustrative placeholders) are called out explicitly so the guard test allowlist in Phase 65 is pre-scoped
+
+**Plans**: TBD
+
+#### Phase 65: Guard Test (RED)
+
+**Goal**: A permanent test `tests/no-issue-citations.test.cjs` exists, runs under `npm test`, covers all citation patterns found in Phase 64, and fails RED before any cleanup — enumerating each offending file:line
+**Depends on**: Phase 64
+**Requirements**: CITE-03, CITE-04, CITE-05
+**Success Criteria** (what must be TRUE):
+
+  1. `tests/no-issue-citations.test.cjs` exists and is included in the `npm test` run without manual intervention
+  2. Before any cleanup edits, the test fails RED and its failure output enumerates each offending file, line number, and matched text — not just a count
+  3. The allowlist correctly exempts hex color codes (including `color:` frontmatter fields such as `color: '#e8c170'`), illustrative placeholders (`#123`, `#45`), and markdown heading markers (`## Heading`) — none of these produce a test failure
+  4. Agent YAML frontmatter blocks are not flagged — the scanner skips or exempts frontmatter sections
+
+**Plans**: TBD
+
+#### Phase 66: Citation Cleanup
+
+**Goal**: All citations are removed from the 5 scoped dirs, cleaned sentences read naturally, and agent frontmatter is preserved exactly
+**Depends on**: Phase 65
+**Requirements**: CITE-06, CITE-07, CITE-08, CITE-09
+**Success Criteria** (what must be TRUE):
+
+  1. `grep -rEn '#[0-9]+' commands/ get-shit-done/workflows/ agents/ get-shit-done/references/ get-shit-done/templates/` returns only hits that match the Phase 65 allowlist (hex colors, illustrative placeholders, heading markers) — no bare issue/PR number citations remain
+  2. All additional citation forms found in Phase 64 (word-form, hyphen-form, etc.) are removed from the same scoped dirs
+  3. Every cleaned sentence reads naturally — no double spaces, space-before-punctuation, empty parentheses, or dangling connectors (`—`, `,`, `see`, `by`, `in`, `from`) at sentence boundaries
+  4. `agent-frontmatter.test.cjs` passes with the same count as before Phase 66 — no YAML frontmatter blocks were modified during cleanup
+
+**Plans**: TBD
+
+#### Phase 67: Full Verification
+
+**Goal**: The full test suite passes with zero failures; the guard test is GREEN; all pre-existing content tests are unaffected
+**Depends on**: Phase 66
+**Requirements**: CITE-10, CITE-11, CITE-12
+**Success Criteria** (what must be TRUE):
+
+  1. `tests/no-issue-citations.test.cjs` passes GREEN — zero citations detected in the scoped dirs after cleanup
+  2. `npm test 2>&1 | tee /tmp/gsd-test-output.txt` reports 0 failures — agent-frontmatter, negative-framing-scan, step-numbering-scan, cross-file-step-refs, and all other suite members pass
+  3. The negative-framing scanner result is unchanged from the v2.1.0-f baseline (99/99 subtests passing)
+
+**Plans**: TBD
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -724,6 +791,10 @@ Plans:
 | 61. Worktree Safety Coverage | v2.1.0-f | 1/1 | Complete    | 2026-06-08 |
 | 62. Rubric Inlining Coverage | v2.1.0-f | 1/1 | Complete    | 2026-06-08 |
 | 63. Security Framing Coverage | v2.1.0-f | 1/1 | Complete    | 2026-06-08 |
+| 64. Citation Pattern Exploration | v2.1.0-g | 0/TBD | Not started | - |
+| 65. Guard Test (RED) | v2.1.0-g | 0/TBD | Not started | - |
+| 66. Citation Cleanup | v2.1.0-g | 0/TBD | Not started | - |
+| 67. Full Verification | v2.1.0-g | 0/TBD | Not started | - |
 
 *v1.41.3 shipped 2026-05-19 — see `.planning/milestones/v1.41.3-ROADMAP.md`*
 *v1.41.5 shipped 2026-05-24 — see `.planning/milestones/v1.41.5-ROADMAP.md`*
