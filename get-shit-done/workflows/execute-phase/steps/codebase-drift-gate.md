@@ -1,6 +1,6 @@
 # Step: codebase_drift_gate
 
-Post-execution structural drift detection (#2003). Runs after the last wave
+Post-execution structural drift detection. Runs after the last wave
 commits, before verification. **Non-blocking by contract:** any internal
 error here MUST fall through and continue to `verify_phase_goal`. The phase
 is never failed by this gate.

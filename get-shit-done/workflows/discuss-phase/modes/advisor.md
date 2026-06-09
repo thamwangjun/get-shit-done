@@ -3,8 +3,8 @@
 > **Lazy-loaded and gated.** The parent `workflows/discuss-phase.md` Reads
 > this file ONLY when `ADVISOR_MODE` is true (i.e., when
 > `$HOME/.claude/get-shit-done/USER-PROFILE.md` exists). Skip the Read
-> entirely when no profile is present — that's the inverse of the
-> `--advisor` flag from #2174 (don't pay the cost when unused).
+> entirely when no profile is present — that avoids paying the cost when
+> the advisor flow is unused.
 
 ## Activation
 
