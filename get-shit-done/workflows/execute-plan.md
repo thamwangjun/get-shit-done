@@ -32,7 +32,7 @@ Valid GSD subagent types (use exact names — do not fall back to 'general-purpo
 Load execution context (paths only to minimize orchestrator context):
 
 ```bash
-# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk (#3668)
+# SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk
 GSD_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/get-shit-done/bin/gsd-tools.cjs"
 if [ -f "$GSD_TOOLS" ]; then
   GSD_SDK="node $GSD_TOOLS"
@@ -94,7 +94,7 @@ INLINE_THRESHOLD=$($GSD_SDK query config-get workflow.inline_plan_threshold 2>/d
 grep -n "type=\"checkpoint" .planning/phases/XX-name/{phase}-{plan}-PLAN.md
 ```
 
-**Primary routing: task count threshold (#1979)**
+**Primary routing: task count threshold**
 
 If `INLINE_THRESHOLD > 0` AND `TASK_COUNT <= INLINE_THRESHOLD`: Use Pattern C (inline) regardless of checkpoint type. Small plans execute faster inline — avoids ~14K token subagent spawn overhead and preserves prompt cache. Configure threshold via `workflow.inline_plan_threshold` (default: 2, set to `0` to always spawn subagents).
 
@@ -108,7 +108,7 @@ Otherwise: Apply checkpoint-based routing below.
 | Verify-only | B (segmented) | Segments between checkpoints. After none/human-verify → SUBAGENT. After decision/human-action → MAIN |
 | Decision | C (main) | Execute entirely in main context |
 
-**Pattern A:** init_agent_tracking → capture `EXPECTED_BASE=$(git rev-parse HEAD)` → spawn Agent(subagent_type="gsd-executor", model=executor_model, effort={executor_model_effort_arg}) with prompt: execute plan at [path], autonomous, all tasks + SUMMARY + commit, follow deviation/auth rules, report: plan name, tasks, SUMMARY path, commit hash → track agent_id → wait → update tracking → report. **Include `isolation="worktree"` only if `workflow.use_worktrees` is not `false`** (read via `config-get workflow.use_worktrees`). **When using `isolation="worktree"`, include a `<worktree_branch_check>` block in the prompt** instructing the executor to: (1) FIRST assert `git symbolic-ref HEAD` resolves to a per-agent branch (NOT a protected ref like `main`/`master`/`develop`/`trunk`/`release/*`) and HALT with a blocker if not — never self-recover via `git update-ref refs/heads/<protected>` (#2924); (2) only after that assertion passes, run `git merge-base HEAD {EXPECTED_BASE}` and, if the result differs from `{EXPECTED_BASE}`, hard-reset the branch with `git reset --hard {EXPECTED_BASE}` before starting work, then verify with `[ "$(git rev-parse HEAD)" != "{EXPECTED_BASE}" ] && exit 1`. The HEAD assertion (Step 1) MUST run before any reset/checkout. This corrects a known issue where `EnterWorktree` creates branches from `main` instead of the feature branch HEAD (affects all platforms — #2015) and prevents the destructive HEAD-on-master self-recovery path (#2924).
+**Pattern A:** init_agent_tracking → capture `EXPECTED_BASE=$(git rev-parse HEAD)` → spawn Agent(subagent_type="gsd-executor", model=executor_model, effort={executor_model_effort_arg}) with prompt: execute plan at [path], autonomous, all tasks + SUMMARY + commit, follow deviation/auth rules, report: plan name, tasks, SUMMARY path, commit hash → track agent_id → wait → update tracking → report. **Include `isolation="worktree"` only if `workflow.use_worktrees` is not `false`** (read via `config-get workflow.use_worktrees`). **When using `isolation="worktree"`, include a `<worktree_branch_check>` block in the prompt** instructing the executor to: (1) FIRST assert `git symbolic-ref HEAD` resolves to a per-agent branch (NOT a protected ref like `main`/`master`/`develop`/`trunk`/`release/*`) and HALT with a blocker if not — never self-recover via `git update-ref refs/heads/<protected>`; (2) only after that assertion passes, run `git merge-base HEAD {EXPECTED_BASE}` and, if the result differs from `{EXPECTED_BASE}`, hard-reset the branch with `git reset --hard {EXPECTED_BASE}` before starting work, then verify with `[ "$(git rev-parse HEAD)" != "{EXPECTED_BASE}" ] && exit 1`. The HEAD assertion (Step 1) MUST run before any reset/checkout. This corrects a known issue where `EnterWorktree` creates branches from `main` instead of the feature branch HEAD (affects all platforms) and prevents the destructive HEAD-on-master self-recovery path.
 
 **Pattern B:** Execute segment-by-segment. Autonomous segments: spawn subagent for assigned tasks only (no SUMMARY/commit). Checkpoints: main context. After all segments: aggregate, create SUMMARY, commit. See segment_execution.
 
@@ -145,7 +145,7 @@ Pattern B only (verify-only checkpoints). Skip for A/C.
    - Main route: execute tasks using standard flow (step name="execute")
 3. **Critical ordering — write and commit SUMMARY.md as one atomic block.** Do NOT
    emit narrative output between the Write tool call and the commit tool call.
-   Truncation at this boundary is a known failure mode (see #2070 rescue logic in
+   Truncation at this boundary is a known failure mode (see rescue logic in
    execute-phase.md step 7).
 
    After ALL segments: aggregate files/deviations/decisions → create SUMMARY.md → self-check:
@@ -272,8 +272,8 @@ See `~/.claude/get-shit-done/references/tdd.md` for structure.
 Your commits may trigger pre-commit hooks. Auto-fix hooks handle themselves transparently — files get fixed and re-staged automatically.
 
 **If running as a parallel executor agent (spawned by execute-phase):**
-Run commits normally — let pre-commit hooks run. Do NOT use `--no-verify` by default
-(#2924). Hooks should run so issues surface at the introducing commit, and silent
+Run commits normally — let pre-commit hooks run. Do NOT use `--no-verify` by default.
+Hooks should run so issues surface at the introducing commit, and silent
 bypass violates project CLAUDE.md guidance. If a project explicitly opts out via
 `workflow.worktree_skip_hooks=true`, the orchestrator will surface that flag in the
 prompt; absent that signal, hooks run normally. If a hook fails, follow the
@@ -371,7 +371,7 @@ If user_setup exists: create `{phase}-USER-SETUP.md` using template `~/.claude/g
 <step name="create_summary">
 **Critical ordering — write and commit SUMMARY.md as one atomic block.** Do NOT
 emit narrative output between the Write tool call and the commit tool call.
-Truncation at this boundary is a known failure mode (see #2070 rescue logic in
+Truncation at this boundary is a known failure mode (see rescue logic in
 execute-phase.md step 7).
 
 Create `{phase}-{plan}-SUMMARY.md` at `.planning/phases/XX-name/`. Use `~/.claude/get-shit-done/templates/summary.md`.
@@ -446,10 +446,9 @@ If SUMMARY "Issues Encountered" ≠ "None": yolo → log and continue. Interacti
 
 <step name="update_roadmap">
 Run this step only when NOT executing inside a git worktree (i.e.
-`use_worktrees: false`, the bug #2661 reproducer). In worktree mode each
-worktree has its own ROADMAP.md, so per-plan writes here would diverge
-across siblings; the orchestrator owns the post-merge sync centrally
-(see execute-phase.md §5.7, single-writer contract from #1486 / dcb50396).
+`use_worktrees: false`). In worktree mode each worktree has its own ROADMAP.md,
+so per-plan writes here would diverge across siblings; the orchestrator owns
+the post-merge sync centrally (see execute-phase.md §5.7, single-writer contract).
 
 ```bash
 # Auto-detect worktree mode: .git is a file in worktrees, a directory in main repo.
@@ -457,7 +456,7 @@ across siblings; the orchestrator owns the post-merge sync centrally
 IS_WORKTREE=$([ -f .git ] && echo "true" || echo "false")
 
 if [ "$IS_WORKTREE" != "true" ]; then
-  # use_worktrees: false → this handler is the sole post-plan sync point (#2661)
+  # use_worktrees: false → this handler is the sole post-plan sync point
   $GSD_SDK query roadmap.update-plan-progress "${PHASE}"
 fi
 ```
@@ -477,7 +476,7 @@ Extract requirement IDs from the plan's frontmatter (e.g., `requirements: [AUTH-
 <step name="git_commit_metadata">
 **Critical ordering — write and commit SUMMARY.md as one atomic block.** Do NOT
 emit narrative output between the Write tool call and the commit tool call.
-Truncation at this boundary is a known failure mode (see #2070 rescue logic in
+Truncation at this boundary is a known failure mode (see rescue logic in
 execute-phase.md step 7).
 
 Task code already committed per-task. Commit plan metadata:
