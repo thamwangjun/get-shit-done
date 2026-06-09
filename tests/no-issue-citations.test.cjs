@@ -17,16 +17,19 @@
  *   feat-form     — feat-NNNN with 3+ digit tracker ID
  *
  * Allowlist policy:
- *   - PLACEHOLDER_DIGITS: exact-value Set of known illustrative placeholder numbers
- *     (#1, #2, #45, #123) — inline/parenthetical hits with these parsed integers are exempted.
+ *   - PLACEHOLDER_DIGITS: exact-value Set of allowlisted integers. Includes:
+ *     - Illustrative placeholder numbers (#1, #2, #45, #123) — used as examples in
+ *       prompt content and must not be flagged as real issue/PR citations.
+ *     - Functional cross-references validated by other test files:
+ *       #2924 — worktree HEAD attachment safety ref required by worktree-cleanup.test.cjs
+ *       #1729 — explore-integration deferral ref required by thinking-partner.test.cjs
  *   - Frontmatter blocks: YAML frontmatter (lines between opening/closing `---` when
  *     frontmatter starts on line 1) are excluded from scanning (per D-09).
  *   - Fenced code blocks: triple-backtick fences are excluded from scanning (per D-10).
  *   - Hex color lookbehind: `(?<![0-9a-fA-F#])` prevents matching hex color tails
  *     (e.g., the `#70` suffix of `#e8c170`) as inline citations (per D-11).
  *
- * This test is RED until Phase 66 citation cleanup is complete.
- * After Phase 66, every corpus subtest should pass GREEN.
+ * This test is GREEN after Phase 66 citation cleanup and allowlist finalization.
  */
 
 const { describe, test } = require('node:test');
@@ -49,7 +52,12 @@ const SCAN_DIRS = [
 // #45 is included defensively (no real corpus hit) per D-05.
 // These values (#1, #2, #45, #123) are used as illustrative examples in prompt content
 // and must not be flagged as real issue/PR citations.
-const PLACEHOLDER_DIGITS = new Set([1, 2, 45, 123]);
+// Illustrative placeholder numbers used as examples in prompt content (#1, #2, #45, #123).
+// Also includes functional cross-references that other test files validate and require:
+//   #1729 — explore-integration deferral decision (thinking-partner.test.cjs validates its presence)
+//   #2439 — gsd-sdk pre-flight guard contract (bug-2439-set-profile-gsd-sdk-preflight.test.cjs)
+//   #2924 — worktree HEAD attachment safety ref (worktree-cleanup.test.cjs validates its presence)
+const PLACEHOLDER_DIGITS = new Set([1, 2, 45, 123, 1729, 2439, 2924]);
 
 // inline / parenthetical: #NNN where N is one or more digits.
 // The lookbehind (?<![0-9a-fA-F#]) prevents matching hex color tails (e.g., the `#70`
@@ -179,10 +187,10 @@ function scanContent(content) {
 // ─── Unit tests: scanContent() — inline citation detection ───────────────────
 
 describe('scanContent() — inline citation detection', () => {
-  test('INLINE_RE positive: #2924 produces one inline hit', () => {
-    const hits = scanContent('Fix applied in #2924 worktree guard');
+  test('INLINE_RE positive: #3097 produces one inline hit', () => {
+    const hits = scanContent('Fix applied in #3097 worktree guard');
     assert.equal(hits.length, 1, 'should detect one hit');
-    assert.equal(hits[0].text, '#2924', 'text should be #2924');
+    assert.equal(hits[0].text, '#3097', 'text should be #3097');
     assert.equal(hits[0].category, 'inline', 'category should be inline');
   });
 
@@ -225,17 +233,17 @@ describe('scanContent() — exclusion state machines', () => {
     assert.equal(hits.length, 0, 'frontmatter color value must not be flagged');
   });
 
-  test('code fence exclusion (D-10): #2924 inside fence produces zero hits', () => {
-    const content = '```\n#2924 inside fence\n```\n';
+  test('code fence exclusion (D-10): #3456 inside fence produces zero hits', () => {
+    const content = '```\n#3456 inside fence\n```\n';
     const hits = scanContent(content);
     assert.equal(hits.length, 0, 'citation inside code fence must not be flagged');
   });
 
-  test('non-line-1 --- is not frontmatter: #2924 after thematic break produces one hit', () => {
-    const content = 'body line\n---\n#2924 after thematic break';
+  test('non-line-1 --- is not frontmatter: #3456 after thematic break produces one hit', () => {
+    const content = 'body line\n---\n#3456 after thematic break';
     const hits = scanContent(content);
     assert.equal(hits.length, 1, 'citation after a non-frontmatter --- must be detected');
-    assert.equal(hits[0].text, '#2924', 'text should be #2924');
+    assert.equal(hits[0].text, '#3456', 'text should be #3456');
   });
 });
 
