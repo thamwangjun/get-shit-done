@@ -690,7 +690,15 @@ Plans:
   3. The allowlist correctly exempts hex color codes (including `color:` frontmatter fields such as `color: '#e8c170'`), illustrative placeholders (`#123`, `#45`), and markdown heading markers (`## Heading`) — none of these produce a test failure
   4. Agent YAML frontmatter blocks are not flagged — the scanner skips or exempts frontmatter sections
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+**Wave 1**
+
+- [ ] 65-01-PLAN.md — Create tests/no-issue-citations.test.cjs with inline detection, allowlist, exclusion state machines, and corpus subtests (RED) [CITE-03, CITE-04, CITE-05]
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 65-02-PLAN.md — Delete scripts/scan-citations.cjs and tests/citation-scan.test.cjs (D-02, D-03); re-verify guard test independence [CITE-03]
 
 #### Phase 66: Citation Cleanup
 
@@ -795,7 +803,7 @@ Plans:
 | 62. Rubric Inlining Coverage | v2.1.0-f | 1/1 | Complete    | 2026-06-08 |
 | 63. Security Framing Coverage | v2.1.0-f | 1/1 | Complete    | 2026-06-08 |
 | 64. Citation Pattern Exploration | v2.1.0-g | 1/1 | Complete    | 2026-06-09 |
-| 65. Guard Test (RED) | v2.1.0-g | 0/TBD | Not started | - |
+| 65. Guard Test (RED) | v2.1.0-g | 0/2 | Not started | - |
 | 66. Citation Cleanup | v2.1.0-g | 0/TBD | Not started | - |
 | 67. Full Verification | v2.1.0-g | 0/TBD | Not started | - |
 
