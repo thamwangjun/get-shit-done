@@ -29,6 +29,7 @@ const path = require('path');
 // ─── Argument validation ──────────────────────────────────────────────────────
 
 for (const arg of process.argv.slice(2)) {
+  if (arg === '--') continue; // allow shell/npm-injected separator
   process.stderr.write(`Unknown flag: ${arg}\nUsage: node scripts/scan-citations.cjs\n`);
   process.exit(1);
 }
