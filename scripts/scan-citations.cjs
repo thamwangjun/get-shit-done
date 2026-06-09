@@ -168,6 +168,13 @@ for (const filePath of ALL_FILES) {
       hits.push({ file: relPath, line: lineNumber, text: m[0], category: 'feat-form' });
     }
   }
+
+  // Warn if a code fence was opened but never closed — citations after the
+  // open fence were silently skipped, which is a correctness failure for an
+  // audit/discovery script.
+  if (inCodeBlock) {
+    process.stderr.write(`Warning: unclosed code fence in ${relPath} — citations after open fence may be missed\n`);
+  }
 }
 
 process.stdout.write(JSON.stringify(hits, null, 2) + '\n');
