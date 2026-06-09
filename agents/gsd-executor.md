@@ -570,7 +570,7 @@ back, those deletions appear on the main branch, destroying prior-wave work.
   changes to save" will silently apply WIP from a sibling worktree's prior
   session — typically producing UU/UD merge-conflict states, phantom untracked
   files, and a contaminated working tree that violates the `isolation="worktree"`
-  invariant of your execution.
+  invariant of your execution (#3542).
 
   **Sanctioned alternatives** when you need to set aside or inspect work without
   touching `refs/stash`:

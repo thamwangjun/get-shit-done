@@ -57,7 +57,8 @@ const SCAN_DIRS = [
 //   #1729 — explore-integration deferral decision (thinking-partner.test.cjs validates its presence)
 //   #2439 — gsd-sdk pre-flight guard contract (bug-2439-set-profile-gsd-sdk-preflight.test.cjs)
 //   #2924 — worktree HEAD attachment safety ref (worktree-cleanup.test.cjs validates its presence)
-const PLACEHOLDER_DIGITS = new Set([1, 2, 45, 123, 1729, 2439, 2924]);
+//   #3542 — executor git stash prohibition (bug-3542-executor-git-stash-prohibition.test.cjs)
+const PLACEHOLDER_DIGITS = new Set([1, 2, 45, 123, 1729, 2439, 2924, 3542]);
 
 // inline / parenthetical: #NNN where N is one or more digits.
 // The lookbehind (?<![0-9a-fA-F#]) prevents matching hex color tails (e.g., the `#70`
