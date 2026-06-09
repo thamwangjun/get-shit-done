@@ -15,9 +15,9 @@ Requirements for this milestone. Each maps to a roadmap phase.
 
 ### Guard Test
 
-- [ ] **CITE-03**: A new permanent test `tests/no-issue-citations.test.cjs` exists, runs under `npm test`, and covers all citation patterns found in CITE-01
-- [ ] **CITE-04**: Guard test fails RED before cleanup, enumerating each offending file:line and matched text
-- [ ] **CITE-05**: Guard test allowlist correctly exempts hex color codes (incl. frontmatter `color:` fields), illustrative placeholders (`#123`, `#45`), and markdown heading markers
+- [x] **CITE-03**: A new permanent test `tests/no-issue-citations.test.cjs` exists, runs under `npm test`, and covers all citation patterns found in CITE-01
+- [x] **CITE-04**: Guard test fails RED before cleanup, enumerating each offending file:line and matched text
+- [x] **CITE-05**: Guard test allowlist correctly exempts hex color codes (incl. frontmatter `color:` fields), illustrative placeholders (`#123`, `#45`), and markdown heading markers
 
 ### Cleanup
 
@@ -52,9 +52,9 @@ None identified — this is a contained mechanical cleanup milestone.
 |-------------|-------|--------|
 | CITE-01 | Phase 64 | Complete |
 | CITE-02 | Phase 64 | Complete |
-| CITE-03 | Phase 65 | Pending |
-| CITE-04 | Phase 65 | Pending |
-| CITE-05 | Phase 65 | Pending |
+| CITE-03 | Phase 65 | Complete |
+| CITE-04 | Phase 65 | Complete |
+| CITE-05 | Phase 65 | Complete |
 | CITE-06 | Phase 66 | Pending |
 | CITE-07 | Phase 66 | Pending |
 | CITE-08 | Phase 66 | Pending |

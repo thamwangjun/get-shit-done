@@ -267,7 +267,7 @@ Full details: `.planning/milestones/v2.1.0-f-ROADMAP.md`
 **Milestone Goal:** Remove all issue/PR-number citations from prompt content `.md` files in the 5 scoped dirs and add a permanent regression guard that blocks reintroduction.
 
 - [x] **Phase 64: Citation Pattern Exploration** - Identify all citation formats beyond `#NNN` in the 5 scoped dirs (completed 2026-06-09)
-- [ ] **Phase 65: Guard Test (RED)** - Permanent guard test exists, covers all patterns, and fails RED enumerating real violations
+- [x] **Phase 65: Guard Test (RED)** - Permanent guard test exists, covers all patterns, and fails RED enumerating real violations (completed 2026-06-09)
 - [ ] **Phase 66: Citation Cleanup** - All citations removed; sentences read naturally; frontmatter preserved
 - [ ] **Phase 67: Full Verification** - npm test 0 failures; guard test GREEN; all content tests unaffected
 
@@ -694,11 +694,11 @@ Plans:
 
 **Wave 1**
 
-- [ ] 65-01-PLAN.md — Create tests/no-issue-citations.test.cjs with inline detection, allowlist, exclusion state machines, and corpus subtests (RED) [CITE-03, CITE-04, CITE-05]
+- [x] 65-01-PLAN.md — Create tests/no-issue-citations.test.cjs with inline detection, allowlist, exclusion state machines, and corpus subtests (RED) [CITE-03, CITE-04, CITE-05]
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 65-02-PLAN.md — Delete scripts/scan-citations.cjs and tests/citation-scan.test.cjs (D-02, D-03); re-verify guard test independence [CITE-03]
+- [x] 65-02-PLAN.md — Delete scripts/scan-citations.cjs and tests/citation-scan.test.cjs (D-02, D-03); re-verify guard test independence [CITE-03]
 
 #### Phase 66: Citation Cleanup
 
@@ -803,7 +803,7 @@ Plans:
 | 62. Rubric Inlining Coverage | v2.1.0-f | 1/1 | Complete    | 2026-06-08 |
 | 63. Security Framing Coverage | v2.1.0-f | 1/1 | Complete    | 2026-06-08 |
 | 64. Citation Pattern Exploration | v2.1.0-g | 1/1 | Complete    | 2026-06-09 |
-| 65. Guard Test (RED) | v2.1.0-g | 0/2 | Not started | - |
+| 65. Guard Test (RED) | v2.1.0-g | 2/2 | Complete    | 2026-06-09 |
 | 66. Citation Cleanup | v2.1.0-g | 0/TBD | Not started | - |
 | 67. Full Verification | v2.1.0-g | 0/TBD | Not started | - |
 
