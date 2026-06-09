@@ -85,6 +85,12 @@ for (const dir of SCAN_DIRS) {
 // inline / parenthetical: #NNN where N is one or more digits.
 // The lookbehind (?<![0-9a-fA-F#]) prevents matching hex color tails (e.g.
 // the tail of #e8c170) and ## heading markers.
+// Known false-positive: 3-digit all-numeric CSS hex colors (#123, #456, #999)
+// pass the lookbehind because no hex character precedes the '#' at a word
+// boundary. In practice these are rare in prompt markdown files, but any
+// purely-numeric 3-digit color value will be reported as an 'inline' citation.
+// If project citation numbers are known to always be 4+ digits, a stricter
+// regex (e.g. #(\d{4,})) can eliminate this class of false positives.
 const INLINE_RE = /(?<![0-9a-fA-F#])#(\d+)\b/g;
 
 // word-form: "issue NNN", "PR NNN", "pull request NNN" with 2+ digits
