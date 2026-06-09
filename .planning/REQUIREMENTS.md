@@ -10,8 +10,8 @@ Requirements for this milestone. Each maps to a roadmap phase.
 
 ### Exploration
 
-- [ ] **CITE-01**: Codebase scan identifies all citation formats present in the 5 scoped prompt-content dirs beyond the known `#NNN` pattern (word-form "issue 3668", hyphen-form "feat-3347", code-fence-embedded, etc.)
-- [ ] **CITE-02**: Exploration findings are documented (file:line, pattern, count) so the guard test detector is scoped correctly
+- [x] **CITE-01**: Codebase scan identifies all citation formats present in the 5 scoped prompt-content dirs beyond the known `#NNN` pattern (word-form "issue 3668", hyphen-form "feat-3347", code-fence-embedded, etc.)
+- [x] **CITE-02**: Exploration findings are documented (file:line, pattern, count) so the guard test detector is scoped correctly
 
 ### Guard Test
 
@@ -50,8 +50,8 @@ None identified — this is a contained mechanical cleanup milestone.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CITE-01 | Phase 64 | Pending |
-| CITE-02 | Phase 64 | Pending |
+| CITE-01 | Phase 64 | Complete |
+| CITE-02 | Phase 64 | Complete |
 | CITE-03 | Phase 65 | Pending |
 | CITE-04 | Phase 65 | Pending |
 | CITE-05 | Phase 65 | Pending |

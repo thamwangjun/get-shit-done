@@ -266,7 +266,7 @@ Full details: `.planning/milestones/v2.1.0-f-ROADMAP.md`
 
 **Milestone Goal:** Remove all issue/PR-number citations from prompt content `.md` files in the 5 scoped dirs and add a permanent regression guard that blocks reintroduction.
 
-- [ ] **Phase 64: Citation Pattern Exploration** - Identify all citation formats beyond `#NNN` in the 5 scoped dirs
+- [x] **Phase 64: Citation Pattern Exploration** - Identify all citation formats beyond `#NNN` in the 5 scoped dirs (completed 2026-06-09)
 - [ ] **Phase 65: Guard Test (RED)** - Permanent guard test exists, covers all patterns, and fails RED enumerating real violations
 - [ ] **Phase 66: Citation Cleanup** - All citations removed; sentences read naturally; frontmatter preserved
 - [ ] **Phase 67: Full Verification** - npm test 0 failures; guard test GREEN; all content tests unaffected
@@ -676,7 +676,7 @@ Plans:
 **Plans**: 1 plan
 Plans:
 
-- [ ] 64-01-PLAN.md — Build scripts/scan-citations.cjs scanner and write 64-FINDINGS.md [CITE-01, CITE-02]
+- [x] 64-01-PLAN.md — Build scripts/scan-citations.cjs scanner and write 64-FINDINGS.md [CITE-01, CITE-02]
 
 #### Phase 65: Guard Test (RED)
 
@@ -794,7 +794,7 @@ Plans:
 | 61. Worktree Safety Coverage | v2.1.0-f | 1/1 | Complete    | 2026-06-08 |
 | 62. Rubric Inlining Coverage | v2.1.0-f | 1/1 | Complete    | 2026-06-08 |
 | 63. Security Framing Coverage | v2.1.0-f | 1/1 | Complete    | 2026-06-08 |
-| 64. Citation Pattern Exploration | v2.1.0-g | 0/1 | In Progress | - |
+| 64. Citation Pattern Exploration | v2.1.0-g | 1/1 | Complete    | 2026-06-09 |
 | 65. Guard Test (RED) | v2.1.0-g | 0/TBD | Not started | - |
 | 66. Citation Cleanup | v2.1.0-g | 0/TBD | Not started | - |
 | 67. Full Verification | v2.1.0-g | 0/TBD | Not started | - |
