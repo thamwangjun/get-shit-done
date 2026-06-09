@@ -24,9 +24,15 @@ Every file installed by `bin/install.js` is now fully self-contained. Eta v4 is 
 
 Closed all behavioral and documentation testing gaps from the v2.1.0-e gap report. Test-only milestone — 5 phases (59–63), 5 plans, additive test code across four existing test files with no agent/workflow source changes: 8 Group B effort-wiring guards (`phase-56-effort-wiring.test.cjs`), submodule-exclusion guard scoped to `gsd-executor.md` `<task_commit_protocol>` (`bug-3097-3099-...test.cjs`), rubric-inlining guard for `gsd-user-profiler.md` and reactivated `gsd-debugger.md` hardened-security test (`debug-session-management.test.cjs`), and stale-comment removal (`step-numbering-scan.test.cjs`). `npm test` 9115 pass / 0 fail / 9 skipped. Full details: `.planning/milestones/v2.1.0-f-ROADMAP.md`.
 
-## Next Milestone
+## Current Milestone: v2.1.0-g Citation Cleanup
 
-Planning next milestone — run `/gsd-new-milestone`.
+**Goal:** Remove all issue/PR-number citations from prompt content .md files and add a permanent regression guard that blocks reintroduction.
+
+**Target features:**
+- Broader-pattern exploration audit within the 5 scoped dirs to find any citation formats beyond `#NNN`
+- Permanent guard test (`tests/no-issue-citations.test.cjs`) covering all discovered citation patterns; test-first (RED before cleanup, GREEN after)
+- Citation removal across `commands/`, `get-shit-done/workflows/`, `agents/`, `get-shit-done/references/`, `get-shit-done/templates/`
+- Sentence cleanup (orphaned punctuation, double spaces, dangling connectors)
 
 ## Requirements
 
@@ -137,7 +143,12 @@ Planning next milestone — run `/gsd-new-milestone`.
 
 ### Active
 
-- (none — planning next milestone)
+- [ ] CITE-01: Exploration audit finds all citation formats (beyond `#NNN`) in the 5 scoped prompt-content dirs
+- [ ] CITE-02: Permanent guard test `tests/no-issue-citations.test.cjs` runs under `npm test` and blocks citation reintroduction
+- [ ] CITE-03: All `#NNN`-form citations removed from `commands/`, `get-shit-done/workflows/`, `agents/`, `get-shit-done/references/`, `get-shit-done/templates/`
+- [ ] CITE-04: All additional citation forms (if any found by CITE-01) removed from scoped dirs
+- [ ] CITE-05: Cleaned sentences read naturally — no orphaned punctuation, double spaces, or dangling connectors
+- [ ] CITE-06: Full `npm test` passes with guard green; agent-frontmatter and all content tests unaffected
 
 ### Out of Scope
 
@@ -238,4 +249,4 @@ This document evolves at phase transitions and milestone boundaries.
 ---
 ---
 ---
-*Last updated: 2026-06-08 after v2.1.0-f milestone*
+*Last updated: 2026-06-09 after v2.1.0-g milestone start*
