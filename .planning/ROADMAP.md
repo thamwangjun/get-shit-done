@@ -673,7 +673,10 @@ Plans:
   3. The count of `#NNN` hits in the scoped dirs is confirmed (establishes the cleanup target for Phase 66)
   4. Any citation formats that overlap with allowlisted tokens (hex colors, heading markers, illustrative placeholders) are called out explicitly so the guard test allowlist in Phase 65 is pre-scoped
 
-**Plans**: TBD
+**Plans**: 1 plan
+Plans:
+
+- [ ] 64-01-PLAN.md — Build scripts/scan-citations.cjs scanner and write 64-FINDINGS.md [CITE-01, CITE-02]
 
 #### Phase 65: Guard Test (RED)
 
@@ -791,7 +794,7 @@ Plans:
 | 61. Worktree Safety Coverage | v2.1.0-f | 1/1 | Complete    | 2026-06-08 |
 | 62. Rubric Inlining Coverage | v2.1.0-f | 1/1 | Complete    | 2026-06-08 |
 | 63. Security Framing Coverage | v2.1.0-f | 1/1 | Complete    | 2026-06-08 |
-| 64. Citation Pattern Exploration | v2.1.0-g | 0/TBD | Not started | - |
+| 64. Citation Pattern Exploration | v2.1.0-g | 0/1 | In Progress | - |
 | 65. Guard Test (RED) | v2.1.0-g | 0/TBD | Not started | - |
 | 66. Citation Cleanup | v2.1.0-g | 0/TBD | Not started | - |
 | 67. Full Verification | v2.1.0-g | 0/TBD | Not started | - |
