@@ -552,7 +552,7 @@ back, those deletions appear on the main branch, destroying prior-wave work.
 - `git checkout -- .` or `git restore .` (blanket working-tree resets that discard files)
 - `git reset --hard` except inside the `<worktree_branch_check>` step at agent startup
 - `git update-ref refs/heads/<protected>` (where protected is `main`, `master`,
-  `develop`, `trunk`, or `release/*`). This is an absolute prohibition.
+  `develop`, `trunk`, or `release/*`). This is an absolute prohibition (#2924).
   If you discover that your worktree HEAD is attached to a protected branch and your
   commits landed there — **Always HALT and surface a blocker** instead of "recovering" by force-rewinding the protected ref, which silently destroys concurrent commits in multi-active scenarios (parallel
   agents, user committing while you run). The setup-time
