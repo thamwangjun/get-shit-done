@@ -9,7 +9,7 @@ requires: [discuss-phase, spec-phase, plan-phase, execute-phase, verify-work, ph
 ---
 
 Route to the appropriate phase-pipeline skill based on the user's intent.
-Sub-skill names below are post-#2790 consolidated targets — `gsd-phase`
+Sub-skill names below are consolidated targets — `gsd-phase`
 absorbs the former add/insert/remove/edit-phase commands and `gsd-progress`
 absorbs the former next/do commands.
 

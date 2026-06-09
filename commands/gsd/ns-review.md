@@ -9,7 +9,7 @@ requires: [code-review, audit-uat, secure-phase, eval-review, ui-review, validat
 ---
 
 Route to the appropriate quality / review skill based on the user's intent.
-`gsd-code-review-fix` was absorbed by `gsd-code-review --fix` in #2790.
+`gsd-code-review-fix` was absorbed by `gsd-code-review --fix`.
 
 | User wants | Invoke |
 |---|---|
