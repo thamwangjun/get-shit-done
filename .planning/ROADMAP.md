@@ -268,7 +268,7 @@ Full details: `.planning/milestones/v2.1.0-f-ROADMAP.md`
 
 - [x] **Phase 64: Citation Pattern Exploration** - Identify all citation formats beyond `#NNN` in the 5 scoped dirs (completed 2026-06-09)
 - [x] **Phase 65: Guard Test (RED)** - Permanent guard test exists, covers all patterns, and fails RED enumerating real violations (completed 2026-06-09)
-- [ ] **Phase 66: Citation Cleanup** - All citations removed; sentences read naturally; frontmatter preserved
+- [x] **Phase 66: Citation Cleanup** - All citations removed; sentences read naturally; frontmatter preserved (completed 2026-06-09)
 - [ ] **Phase 67: Full Verification** - npm test 0 failures; guard test GREEN; all content tests unaffected
 
 ## Phase Details
@@ -716,10 +716,10 @@ Plans:
 
 **Wave 1** *(all 4 plans parallel — no file overlap; templates/ already clean per guard test)*
 
-- [ ] 66-01-PLAN.md — Clean citations from 9 commands/gsd/ files (config, graphify, ns-context, ns-ideate, ns-manage, ns-project, ns-review, ns-workflow, plan-phase) [CITE-06, CITE-07, CITE-08, CITE-09]
-- [ ] 66-02-PLAN.md — Clean citations from 20 get-shit-done/workflows/ files including execute-plan.md line-111 dense paragraph [CITE-06, CITE-07, CITE-08, CITE-09]
-- [ ] 66-03-PLAN.md — Clean citations from 6 agents/ files with baseline/after agent-frontmatter test-count gate [CITE-06, CITE-07, CITE-08, CITE-09]
-- [ ] 66-04-PLAN.md — Clean citations from 10 get-shit-done/references/ files [CITE-06, CITE-07, CITE-08, CITE-09]
+- [x] 66-01-PLAN.md — Clean citations from 9 commands/gsd/ files (config, graphify, ns-context, ns-ideate, ns-manage, ns-project, ns-review, ns-workflow, plan-phase) [CITE-06, CITE-07, CITE-08, CITE-09]
+- [x] 66-02-PLAN.md — Clean citations from 20 get-shit-done/workflows/ files including execute-plan.md line-111 dense paragraph [CITE-06, CITE-07, CITE-08, CITE-09]
+- [x] 66-03-PLAN.md — Clean citations from 6 agents/ files with baseline/after agent-frontmatter test-count gate [CITE-06, CITE-07, CITE-08, CITE-09]
+- [x] 66-04-PLAN.md — Clean citations from 10 get-shit-done/references/ files [CITE-06, CITE-07, CITE-08, CITE-09]
 
 
 #### Phase 67: Full Verification
@@ -812,7 +812,7 @@ Plans:
 | 63. Security Framing Coverage | v2.1.0-f | 1/1 | Complete    | 2026-06-08 |
 | 64. Citation Pattern Exploration | v2.1.0-g | 1/1 | Complete    | 2026-06-09 |
 | 65. Guard Test (RED) | v2.1.0-g | 2/2 | Complete    | 2026-06-09 |
-| 66. Citation Cleanup | v2.1.0-g | 0/4 | Planned    |  |
+| 66. Citation Cleanup | v2.1.0-g | 4/4 | Complete    | 2026-06-09 |
 | 67. Full Verification | v2.1.0-g | 0/TBD | Not started | - |
 
 *v1.41.3 shipped 2026-05-19 — see `.planning/milestones/v1.41.3-ROADMAP.md`*

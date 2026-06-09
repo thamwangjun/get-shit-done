@@ -21,10 +21,10 @@ Requirements for this milestone. Each maps to a roadmap phase.
 
 ### Cleanup
 
-- [ ] **CITE-06**: All `#NNN`-form citations removed from `commands/`, `get-shit-done/workflows/`, `agents/`, `get-shit-done/references/`, `get-shit-done/templates/`
-- [ ] **CITE-07**: All additional citation forms found by CITE-01 (if any) removed from the same scoped dirs
-- [ ] **CITE-08**: Cleaned sentences read naturally — no double spaces, space-before-punctuation, empty `()`, or dangling connectors (`—`, `,`, `see`, `by`, `in`, `from`)
-- [ ] **CITE-09**: Agent frontmatter (`name`, `description`, `tools`, `color`, `hooks`) is preserved exactly — no changes to YAML frontmatter blocks
+- [x] **CITE-06**: All `#NNN`-form citations removed from `commands/`, `get-shit-done/workflows/`, `agents/`, `get-shit-done/references/`, `get-shit-done/templates/`
+- [x] **CITE-07**: All additional citation forms found by CITE-01 (if any) removed from the same scoped dirs
+- [x] **CITE-08**: Cleaned sentences read naturally — no double spaces, space-before-punctuation, empty `()`, or dangling connectors (`—`, `,`, `see`, `by`, `in`, `from`)
+- [x] **CITE-09**: Agent frontmatter (`name`, `description`, `tools`, `color`, `hooks`) is preserved exactly — no changes to YAML frontmatter blocks
 
 ### Verification
 
@@ -55,10 +55,10 @@ None identified — this is a contained mechanical cleanup milestone.
 | CITE-03 | Phase 65 | Complete |
 | CITE-04 | Phase 65 | Complete |
 | CITE-05 | Phase 65 | Complete |
-| CITE-06 | Phase 66 | Pending |
-| CITE-07 | Phase 66 | Pending |
-| CITE-08 | Phase 66 | Pending |
-| CITE-09 | Phase 66 | Pending |
+| CITE-06 | Phase 66 | Complete |
+| CITE-07 | Phase 66 | Complete |
+| CITE-08 | Phase 66 | Complete |
+| CITE-09 | Phase 66 | Complete |
 | CITE-10 | Phase 67 | Pending |
 | CITE-11 | Phase 67 | Pending |
 | CITE-12 | Phase 67 | Pending |
