@@ -407,7 +407,7 @@ The verb owns the canonical predicate (tdd="true" frontmatter AND `<behavior>` b
 <task_commit_protocol>
 After each task completes (verification passed, done criteria met), commit immediately.
 
-**0a. cwd-drift assertion (worktree mode only, MANDATORY before staging — #3097):**
+**0a. cwd-drift assertion (worktree mode only, MANDATORY before staging):**
 A prior Bash call may have `cd`'d out of the worktree into the main repo. When that happens
 `[ -f .git ]` is false (main repo's `.git` is a directory), silently skipping all worktree guards.
 Capture the spawn-time toplevel via a sentinel on first commit, then verify on every subsequent commit:
@@ -430,7 +430,7 @@ case "$WT_GIT_DIR" in
 esac
 ```
 
-**0b. absolute-path safety (worktree mode only, MANDATORY before Edit/Write — #3099):**
+**0b. absolute-path safety (worktree mode only, MANDATORY before Edit/Write):**
 Before any Edit or Write call that uses an absolute path, verify the path resolves inside the
 current worktree. Absolute paths constructed from prior `pwd` output (orchestrator's cwd) will
 resolve to the **main repo**, not the worktree — silently writing files to the wrong location.
@@ -448,7 +448,7 @@ Prefer **relative paths** for all Edit/Write operations inside a worktree. When 
 is unavoidable, always derive it from `git rev-parse --show-toplevel` run inside the worktree,
 not from a `pwd` captured in the orchestrator context.
 
-**0. Pre-commit HEAD safety assertion (worktree mode only, MANDATORY before every commit — #2924):**
+**0. Pre-commit HEAD safety assertion (worktree mode only, MANDATORY before every commit):**
 When running inside a Claude Code worktree (`.git` is a file, not a directory), assert HEAD is on a per-agent branch BEFORE staging or committing. If HEAD has drifted onto a protected ref, HALT — never self-recover via `git update-ref refs/heads/<protected>`:
 ```bash
 if [ -f .git ]; then
@@ -544,7 +544,7 @@ When running as a parallel executor inside a git worktree, `git clean` treats fi
 on the feature branch as "untracked" — because the worktree branch was just created and has
 not yet seen those commits in its own history. Running `git clean -fd` or `git clean -fdx`
 will delete those files from the worktree filesystem. When the worktree branch is later merged
-back, those deletions appear on the main branch, destroying prior-wave work (#2075, commit c6f4753).
+back, those deletions appear on the main branch, destroying prior-wave work.
 
 **Restricted commands in worktree context — use targeted alternatives instead:**
 - `git clean` (any flags — `-f`, `-fd`, `-fdx`, `-n`, etc.)
@@ -552,7 +552,7 @@ back, those deletions appear on the main branch, destroying prior-wave work (#20
 - `git checkout -- .` or `git restore .` (blanket working-tree resets that discard files)
 - `git reset --hard` except inside the `<worktree_branch_check>` step at agent startup
 - `git update-ref refs/heads/<protected>` (where protected is `main`, `master`,
-  `develop`, `trunk`, or `release/*`). This is an absolute prohibition (#2924).
+  `develop`, `trunk`, or `release/*`). This is an absolute prohibition.
   If you discover that your worktree HEAD is attached to a protected branch and your
   commits landed there — **Always HALT and surface a blocker** instead of "recovering" by force-rewinding the protected ref, which silently destroys concurrent commits in multi-active scenarios (parallel
   agents, user committing while you run). The setup-time
@@ -570,7 +570,7 @@ back, those deletions appear on the main branch, destroying prior-wave work (#20
   changes to save" will silently apply WIP from a sibling worktree's prior
   session — typically producing UU/UD merge-conflict states, phantom untracked
   files, and a contaminated working tree that violates the `isolation="worktree"`
-  invariant of your execution (#3542).
+  invariant of your execution.
 
   **Sanctioned alternatives** when you need to set aside or inspect work without
   touching `refs/stash`:
@@ -726,7 +726,7 @@ gsd-sdk query commit "docs({phase}-{plan}): complete [plan-name] plan" --files \
 
 Separate from per-task commits — captures execution results only.
 
-**Handling the SDK return envelope (#3678):** `gsd-sdk query commit` returns
+**Handling the SDK return envelope:** `gsd-sdk query commit` returns
 one of three shapes:
 
 - `{committed: true, hash, reason: 'committed'}` — commit succeeded; record
@@ -741,7 +741,7 @@ one of three shapes:
 - `{committed: false, reason: 'nothing_to_commit' | 'commit_failed', ...}` —
   no-op / genuine failure; surface in the completion notes.
 
-**When the SDK returns `skipped: true`, accept the skip and move on.** The SDK's skip is the user's deliberate choice to keep `.planning/` files out of git history. Always use the SDK commit path — force-staging gitignored content via `git add -f .planning/...` causes the exact regression #3678 reported, where the agent leaks `.planning/` artifacts into the user's project history.
+**When the SDK returns `skipped: true`, accept the skip and move on.** The SDK's skip is the user's deliberate choice to keep `.planning/` files out of git history. Always use the SDK commit path — force-staging gitignored content via `git add -f .planning/...` leaks `.planning/` artifacts into the user's project history.
 </final_commit>
 
 <completion_format>
