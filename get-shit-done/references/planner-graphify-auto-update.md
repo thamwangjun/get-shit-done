@@ -1,6 +1,6 @@
 # Graphify Auto-Update — Status Surfacing
 
-> Documents how `gsd-planner` and `gsd-phase-researcher` surface the opt-in graphify auto-update state (issue #3347). The status surface lives inside `graphifyStatus()` in `get-shit-done/bin/lib/graphify.cjs`; no planner-side prompt changes are required.
+> Documents how `gsd-planner` and `gsd-phase-researcher` surface the opt-in graphify auto-update state. The status surface lives inside `graphifyStatus()` in `get-shit-done/bin/lib/graphify.cjs`; no planner-side prompt changes are required.
 
 ## Why this exists
 
@@ -59,9 +59,9 @@ The file-missing case is silent (the operator either has not opted in or has not
 ## Why this design
 
 - **No planner-side prompt changes.** Folding into `stale: true` reuses the existing rule, which means no new content in `agents/gsd-planner.md` (which is already at the `< 48K` decomposition limit per `DEFECT.AGENT-FILE-SIZE-CAP-BREACH`).
-- **Tests catch regressions on the seam.** `tests/feat-3347-graphify-auto-update-config.test.cjs` pins `graphifyStatus` behavior for status=`failed` / `running` / `ok` / file-missing.
+- **Tests catch regressions on the seam.** `tests/graphify-auto-update.test.cjs` pins `graphifyStatus` behavior for status=`failed` / `running` / `ok` / file-missing.
 - **Backwards compatible.** Callers that don't read `last_build_auto_update` see the same shape as before, with `stale` reflecting both mtime AND auto-build state. No consumer breakage.
 
 ## Opt-in reminder
 
-The auto-update mechanism is opt-in (`graphify.auto_update: false` by default per issue #3347). Users who haven't opted in will never produce this file. `graphifyStatus()` returns `last_build_auto_update: null` and falls back to the mtime-only `stale` rule.
+The auto-update mechanism is opt-in (`graphify.auto_update: false` by default). Users who haven't opted in will never produce this file. `graphifyStatus()` returns `last_build_auto_update: null` and falls back to the mtime-only `stale` rule.

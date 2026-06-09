@@ -1,10 +1,10 @@
 # Planner — Human Verification Mode
 
-> Loaded by `gsd-planner` when deciding whether to emit `<task type="checkpoint:human-verify">` tasks. Read `workflow.human_verify_mode` from `.planning/config.json` (default `end-of-phase` since #3309).
+> Loaded by `gsd-planner` when deciding whether to emit `<task type="checkpoint:human-verify">` tasks. Read `workflow.human_verify_mode` from `.planning/config.json` (default `end-of-phase`).
 
 ## The two modes
 
-### `end-of-phase` (default — issue #3309)
+### `end-of-phase` (default)
 
 Do **not** emit any `<task type="checkpoint:human-verify">` tasks. Every mid-flight halt costs a full executor cold-start (CLAUDE.md, MEMORY.md, STATE.md, plan re-read on respawn) because subagent context is discarded across the pause; a plan with N human-verify checkpoints pays the cold-start cost N+1 times — measured at "tens of thousands of tokens" per round-trip on real projects. This is the default for that reason.
 
@@ -29,7 +29,7 @@ Instead, fold each would-be verification step into the relevant `auto` task usin
 
 The verifier (Step 8) harvests every `<verify><human-check>` block at end-of-phase and consolidates them into the existing `human_needed` → HUMAN-UAT.md path in `workflows/execute-phase.md`. The user reviews everything in one batch instead of paying a cold-start cost per item.
 
-### `mid-flight` (opt-back-in — pre-#3309 behavior)
+### `mid-flight` (opt-back-in)
 
 Set `gsd config-set workflow.human_verify_mode mid-flight` to restore the canonical mid-flight pattern: emit `<task type="checkpoint:human-verify">` tasks at the points where human confirmation is required, and the executor halts at each one to ask the user.
 

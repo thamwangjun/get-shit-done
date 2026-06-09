@@ -11,8 +11,8 @@ FIRST ACTION: HEAD assertion MUST run before any reset/checkout. Worktrees
 spawned by Claude Code's `isolation="worktree"` use the `worktree-agent-<id>`
 namespace. If HEAD is on a protected ref (main/master/develop/trunk/release/*)
 or detached, HALT — do NOT self-recover by force-rewinding via `git update-ref`,
-that destroys concurrent commits in multi-active scenarios (#2924). Only after
-this passes is `git reset --hard` safe (#2015 — affects all platforms).
+that destroys concurrent commits in multi-active scenarios. Only after
+this passes is `git reset --hard` safe.
 
 ```bash
 HEAD_REF=$(git symbolic-ref --quiet HEAD || echo "DETACHED")
@@ -36,7 +36,7 @@ Per-commit HEAD assertion: `agents/gsd-executor.md` `<task_commit_protocol>` ste
 
 ---
 
-## cwd-drift sentinel — step 0a (#3097)
+## cwd-drift sentinel — step 0a
 
 A prior Bash call may have `cd`'d out of the worktree into the main repo. When
 that happens `[ -f .git ]` is false (main repo's `.git` is a directory), silently
@@ -66,7 +66,7 @@ fi
 
 ---
 
-## Absolute-path guard — step 0b (#3099)
+## Absolute-path guard — step 0b
 
 Edit/Write calls using absolute paths constructed from the **orchestrator's** `pwd`
 (main repo root) will resolve to the main repo, not the worktree. Writes land in

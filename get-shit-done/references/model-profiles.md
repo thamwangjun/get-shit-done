@@ -19,7 +19,7 @@ Model profiles control which Claude model each GSD agent uses. This allows balan
 | gsd-integration-checker | sonnet | sonnet | haiku | haiku | inherit |
 | gsd-nyquist-auditor | sonnet | sonnet | haiku | haiku | inherit |
 
-## Per-Phase-Type Model Map (#3023)
+## Per-Phase-Type Model Map
 
 `.planning/config.json` accepts a coarse per-**phase-type** map under the `models` key. Use this when you want tuning at the phase level ("Opus for planning and execution, Sonnet for the rest") without learning the agent taxonomy.
 
@@ -133,7 +133,7 @@ If you're using Claude Code with OpenRouter, a local model, or any non-Anthropic
 
 Without `inherit`, GSD's default `balanced` profile spawns specific Anthropic models (`opus`, `sonnet`, `haiku`) for each agent type, which can result in additional API costs through your non-Anthropic provider.
 
-## Dynamic Routing with Failure-Tier Escalation (#3024)
+## Dynamic Routing with Failure-Tier Escalation
 
 When `dynamic_routing.enabled = true` in `.planning/config.json`, the resolver picks a model from a tier-mapped table based on the agent's *default tier* (light / standard / heavy) and escalates to the next tier up on orchestrator-detected soft failure.
 
@@ -171,7 +171,7 @@ When `dynamic_routing.enabled = true` in `.planning/config.json`, the resolver p
 
 1. `model_overrides[<agent>]` — full ID, always wins
 2. `dynamic_routing.tier_models[escalated_tier]` — when `enabled: true`
-3. `models[<phase_type>]` — coarse phase-level (#3023)
+3. `models[<phase_type>]` — coarse phase-level
 4. `model_profile` — global tier strategy
 
 When `dynamic_routing.enabled = false` (default), behavior is identical to today.

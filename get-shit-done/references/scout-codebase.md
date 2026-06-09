@@ -1,8 +1,7 @@
 # Codebase scout — map selection table
 
 > Lazy-loaded reference for the `scout_codebase` step in
-> `workflows/discuss-phase.md` (extracted via #2551 progressive-disclosure
-> refactor). Read this only when prior `.planning/codebase/*.md` maps exist
+> `workflows/discuss-phase.md`. Read this only when prior `.planning/codebase/*.md` maps exist
 > and the workflow needs to pick which 2–3 to load.
 
 ## Phase-type → recommended maps
