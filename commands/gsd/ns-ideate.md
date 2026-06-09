@@ -10,8 +10,8 @@ requires: [capture, explore, sketch, spike, spec-phase]
 
 Route to the appropriate exploration / capture skill based on the user's intent.
 `gsd-note`, `gsd-add-todo`, `gsd-add-backlog`, and `gsd-plant-seed` were folded
-into `gsd-capture` (with `--note`, default, `--backlog`, `--seed` modes) by
-#2790. The capture target lists pending todos via `--list`.
+into `gsd-capture` (with `--note`, default, `--backlog`, `--seed` modes).
+The capture target lists pending todos via `--list`.
 
 | User wants | Invoke |
 |---|---|

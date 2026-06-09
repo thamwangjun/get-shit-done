@@ -192,7 +192,7 @@ When the phase mode is null/absent, render with the standard color and label —
 
 ## Anti-Patterns
 
-1. DO NOT spawn an agent for any operation -- build, query, status, and diff all run inline. Sub-agent isolation terminates background bash when the agent exits, which previously truncated graphify builds mid-write and left only the cache populated (#3166).
+1. DO NOT spawn an agent for any operation -- build, query, status, and diff all run inline. Sub-agent isolation terminates background bash when the agent exits, which previously truncated graphify builds mid-write and left only the cache populated.
 2. DO NOT pass `run_in_background: true` for the build chain -- the operation is fast and must complete in the foreground.
 3. DO NOT modify graph files directly -- always go through `graphify update .` and the snapshot CLI.
 4. DO NOT skip the config gate check.
