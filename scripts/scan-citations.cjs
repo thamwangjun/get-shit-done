@@ -118,17 +118,19 @@ for (const filePath of ALL_FILES) {
     const lineNumber = i + 1;
 
     // ── Frontmatter toggle (D-10) ────────────────────────────────────────────
-    // Only active before frontmatterDone; a --- line flips the inFrontmatter flag.
+    // Only active before frontmatterDone; YAML frontmatter must begin on line 1
+    // by specification — a --- on any later line is a thematic break, not frontmatter.
     // Both the opening and closing --- lines are skipped (continue after toggle).
     if (!frontmatterDone && trimmed === '---') {
-      if (!inFrontmatter) {
+      if (!inFrontmatter && lineNumber === 1) {
         inFrontmatter = true;
         continue;
-      } else {
+      } else if (inFrontmatter) {
         inFrontmatter = false;
         frontmatterDone = true;
         continue;
       }
+      // else: a '---' thematic break with no frontmatter open — treat as normal content line
     }
     if (inFrontmatter) continue;
 
