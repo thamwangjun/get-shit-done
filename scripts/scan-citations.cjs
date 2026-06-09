@@ -102,7 +102,10 @@ for (const filePath of ALL_FILES) {
   try {
     content = fs.readFileSync(filePath, 'utf-8');
   } catch (err) {
-    continue; // skip unreadable files silently
+    if (err.code === 'ENOENT') continue; // file disappeared between collect and read — benign
+    const errRelPath = path.relative(PROJECT_ROOT, filePath).split(path.sep).join('/');
+    process.stderr.write(`Warning: could not read ${errRelPath}: ${err.message}\n`);
+    continue;
   }
 
   const relPath = path.relative(PROJECT_ROOT, filePath).split(path.sep).join('/');
