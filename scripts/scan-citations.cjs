@@ -75,11 +75,6 @@ function collectMarkdownFiles(dir) {
   return results;
 }
 
-const ALL_FILES = [];
-for (const dir of SCAN_DIRS) {
-  ALL_FILES.push(...collectMarkdownFiles(path.join(PROJECT_ROOT, dir)));
-}
-
 // ─── Citation detector regexes (D-04, D-05, D-10) ────────────────────────────
 
 // inline / parenthetical: #NNN where N is one or more digits.
@@ -101,91 +96,113 @@ const FEAT_FORM_RE = /\bfeat-(\d{3,})\b/g;
 
 // ─── Main driver ──────────────────────────────────────────────────────────────
 
-const hits = [];
-
-for (const filePath of ALL_FILES) {
-  let content;
-  try {
-    content = fs.readFileSync(filePath, 'utf-8');
-  } catch (err) {
-    if (err.code === 'ENOENT') continue; // file disappeared between collect and read — benign
-    const errRelPath = path.relative(PROJECT_ROOT, filePath).split(path.sep).join('/');
-    process.stderr.write(`Warning: could not read ${errRelPath}: ${err.message}\n`);
-    continue;
+/**
+ * Collect all .md files from SCAN_DIRS and scan them for citation patterns.
+ * Returns an array of { file, line, text, category } hit objects.
+ *
+ * @param {string} projectRoot  Root directory to resolve SCAN_DIRS against
+ * @param {string[]} scanDirs   Relative subdirectories to scan
+ * @returns {{ file: string, line: number, text: string, category: string }[]}
+ */
+function main(projectRoot, scanDirs) {
+  const allFiles = [];
+  for (const dir of scanDirs) {
+    allFiles.push(...collectMarkdownFiles(path.join(projectRoot, dir)));
   }
 
-  const relPath = path.relative(PROJECT_ROOT, filePath).split(path.sep).join('/');
-  const lines = content.split('\n');
+  const hits = [];
 
-  let inCodeBlock    = false;
-  let inFrontmatter  = false;
-  let frontmatterDone = false;
-
-  for (let i = 0; i < lines.length; i++) {
-    const line    = lines[i];
-    const trimmed = line.trim();
-    const lineNumber = i + 1;
-
-    // ── Frontmatter toggle (D-10) ────────────────────────────────────────────
-    // Only active before frontmatterDone; YAML frontmatter must begin on line 1
-    // by specification — a --- on any later line is a thematic break, not frontmatter.
-    // Both the opening and closing --- lines are skipped (continue after toggle).
-    if (!frontmatterDone && trimmed === '---') {
-      if (!inFrontmatter && lineNumber === 1) {
-        inFrontmatter = true;
-        continue;
-      } else if (inFrontmatter) {
-        inFrontmatter = false;
-        frontmatterDone = true;
-        continue;
-      }
-      // else: a '---' thematic break with no frontmatter open — treat as normal content line
-    }
-    if (inFrontmatter) continue;
-
-    // ── Code-fence toggle (symmetric skip, D-10) ─────────────────────────────
-    if (/^```/.test(trimmed)) {
-      inCodeBlock = !inCodeBlock;
+  for (const filePath of allFiles) {
+    let content;
+    try {
+      content = fs.readFileSync(filePath, 'utf-8');
+    } catch (err) {
+      if (err.code === 'ENOENT') continue; // file disappeared between collect and read — benign
+      const errRelPath = path.relative(projectRoot, filePath).split(path.sep).join('/');
+      process.stderr.write(`Warning: could not read ${errRelPath}: ${err.message}\n`);
       continue;
     }
-    if (inCodeBlock) continue;
 
-    // ── Inline / parenthetical detection ─────────────────────────────────────
-    INLINE_RE.lastIndex = 0;
-    let m;
-    while ((m = INLINE_RE.exec(line)) !== null) {
-      const matchStart = m.index;
-      const matchEnd   = matchStart + m[0].length;
+    const relPath = path.relative(projectRoot, filePath).split(path.sep).join('/');
+    const lines = content.split('\n');
 
-      // Parenthetical: immediately preceded by '(' and followed by ')'
-      const charBefore = matchStart > 0 ? line[matchStart - 1] : '';
-      const charAfter  = matchEnd < line.length ? line[matchEnd] : '';
-      const category   = (charBefore === '(' && charAfter === ')') ? 'parenthetical' : 'inline';
+    let inCodeBlock    = false;
+    let inFrontmatter  = false;
+    let frontmatterDone = false;
 
-      hits.push({ file: relPath, line: lineNumber, text: m[0], category });
+    for (let i = 0; i < lines.length; i++) {
+      const line    = lines[i];
+      const trimmed = line.trim();
+      const lineNumber = i + 1;
+
+      // ── Frontmatter toggle (D-10) ──────────────────────────────────────────
+      // Only active before frontmatterDone; YAML frontmatter must begin on line 1
+      // by specification — a --- on any later line is a thematic break, not frontmatter.
+      // Both the opening and closing --- lines are skipped (continue after toggle).
+      if (!frontmatterDone && trimmed === '---') {
+        if (!inFrontmatter && lineNumber === 1) {
+          inFrontmatter = true;
+          continue;
+        } else if (inFrontmatter) {
+          inFrontmatter = false;
+          frontmatterDone = true;
+          continue;
+        }
+        // else: a '---' thematic break with no frontmatter open — treat as normal content line
+      }
+      if (inFrontmatter) continue;
+
+      // ── Code-fence toggle (symmetric skip, D-10) ───────────────────────────
+      if (/^```/.test(trimmed)) {
+        inCodeBlock = !inCodeBlock;
+        continue;
+      }
+      if (inCodeBlock) continue;
+
+      // ── Inline / parenthetical detection ───────────────────────────────────
+      INLINE_RE.lastIndex = 0;
+      let m;
+      while ((m = INLINE_RE.exec(line)) !== null) {
+        const matchStart = m.index;
+        const matchEnd   = matchStart + m[0].length;
+
+        // Parenthetical: immediately preceded by '(' and followed by ')'
+        const charBefore = matchStart > 0 ? line[matchStart - 1] : '';
+        const charAfter  = matchEnd < line.length ? line[matchEnd] : '';
+        const category   = (charBefore === '(' && charAfter === ')') ? 'parenthetical' : 'inline';
+
+        hits.push({ file: relPath, line: lineNumber, text: m[0], category });
+      }
+
+      // ── Word-form detection ─────────────────────────────────────────────────
+      WORD_FORM_RE.lastIndex = 0;
+      while ((m = WORD_FORM_RE.exec(line)) !== null) {
+        hits.push({ file: relPath, line: lineNumber, text: m[0], category: 'word-form' });
+      }
+
+      // ── Feat-form detection ─────────────────────────────────────────────────
+      FEAT_FORM_RE.lastIndex = 0;
+      while ((m = FEAT_FORM_RE.exec(line)) !== null) {
+        hits.push({ file: relPath, line: lineNumber, text: m[0], category: 'feat-form' });
+      }
     }
 
-    // ── Word-form detection ───────────────────────────────────────────────────
-    WORD_FORM_RE.lastIndex = 0;
-    while ((m = WORD_FORM_RE.exec(line)) !== null) {
-      hits.push({ file: relPath, line: lineNumber, text: m[0], category: 'word-form' });
-    }
-
-    // ── Feat-form detection ───────────────────────────────────────────────────
-    FEAT_FORM_RE.lastIndex = 0;
-    while ((m = FEAT_FORM_RE.exec(line)) !== null) {
-      hits.push({ file: relPath, line: lineNumber, text: m[0], category: 'feat-form' });
+    // Warn if a code fence was opened but never closed — citations after the
+    // open fence were silently skipped, which is a correctness failure for an
+    // audit/discovery script.
+    if (inCodeBlock) {
+      process.stderr.write(`Warning: unclosed code fence in ${relPath} — citations after open fence may be missed\n`);
     }
   }
 
-  // Warn if a code fence was opened but never closed — citations after the
-  // open fence were silently skipped, which is a correctness failure for an
-  // audit/discovery script.
-  if (inCodeBlock) {
-    process.stderr.write(`Warning: unclosed code fence in ${relPath} — citations after open fence may be missed\n`);
-  }
+  return hits;
 }
 
-const out = JSON.stringify(hits, null, 2) + '\n';
-fs.writeSync(1, out);
-process.exit(0);
+if (require.main === module) {
+  const hits = main(PROJECT_ROOT, SCAN_DIRS);
+  const out = JSON.stringify(hits, null, 2) + '\n';
+  fs.writeSync(1, out);
+  process.exit(0);
+}
+
+module.exports = { collectMarkdownFiles, main };
