@@ -2,11 +2,11 @@
 gsd_state_version: 1.0
 milestone: v2.1.0-g
 milestone_name: Citation Cleanup
-status: planning
-last_updated: "2026-06-09T03:34:27.507Z"
-last_activity: 2026-06-09
+status: Defining requirements
+last_updated: "2026-06-09T03:54:32.481Z"
+last_activity: 2026-06-09 — Milestone v2.1.0-g started
 progress:
-  total_phases: 0
+  total_phases: 22
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -90,8 +90,8 @@ None. Research is HIGH confidence across all five phases.
 ## Session Continuity
 
 Last activity: 2026-06-08 — Completed quick task 260608-k3p: Fix milestone-close audit false-flagging
-Stopped at: Phase 63 context gathered
-Resume file: .planning/phases/63-security-framing-coverage/63-CONTEXT.md
+Stopped at: Phase 64 context gathered
+Resume file: .planning/phases/64-citation-pattern-exploration/64-CONTEXT.md
 
 ## Deferred Items
 
