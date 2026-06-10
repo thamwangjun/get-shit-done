@@ -65,7 +65,7 @@ All hits from `command grep -rEn '#[0-9]+'` over `commands/`, `get-shit-done/wor
 
 | File | Hit(s) | Category |
 |------|--------|----------|
-| commands/gsd/config.md:47 | `#2439` | code-fence (bash comment in shell block) |
+| commands/gsd/config.md:47 | `#2439` | FILE_ALLOWLIST prose — `(#2439)` is in plain prose (`**Pre-flight check (#2439):**`), not in a code fence; it survives because it is explicitly listed in `PLACEHOLDER_DIGITS` / `FILE_ALLOWLIST`. |
 | commands/gsd/graphify.md:184 | `#22c55e` | hex color |
 | get-shit-done/workflows/discuss-phase-power.md:156 | `#22c55e` | hex color |
 | get-shit-done/workflows/inbox.md:258-259 | `#45` | illustrative placeholder (example problem description) |
