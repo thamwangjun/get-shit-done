@@ -195,6 +195,13 @@ describe('scanContent() — inline citation detection', () => {
     assert.equal(hits[0].category, 'inline', 'category should be inline');
   });
 
+  test('github-style citation: owner/repo#NNN is detected', () => {
+    const hits = scanContent('upstream bug anthropics/claude-code#13898 strips MCP tools');
+    assert.equal(hits.length, 1, 'should detect one hit');
+    assert.equal(hits[0].text, '#13898', 'text should be #13898');
+    assert.equal(hits[0].category, 'inline', 'category should be inline');
+  });
+
   test('parenthetical category: (#3097) produces one parenthetical hit', () => {
     const hits = scanContent('See the fix (#3097) for details');
     assert.equal(hits.length, 1, 'should detect one hit');
