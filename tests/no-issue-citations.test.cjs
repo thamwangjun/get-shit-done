@@ -51,7 +51,7 @@ const SCAN_DIRS = [
 
 // Tier 1: global allowlist of illustrative placeholder digits used as examples
 // in prompt content. Functional cross-refs live in FILE_ALLOWLIST below.
-const PLACEHOLDER_DIGITS = new Set([1, 2, 45, 123]);
+const PLACEHOLDER_DIGITS = new Set([1, 2, 123]);
 
 // Per-file functional cross-reference allowlist. These digits are exempt ONLY in the
 // specific files listed — they remain flagged anywhere else in the corpus. Each entry
@@ -232,8 +232,8 @@ describe('scanContent() — inline citation detection', () => {
     assert.equal(hits.length, 0, 'hex color tail must not be flagged');
   });
 
-  test('PLACEHOLDER_DIGITS exemption (D-04): #1, #2, #45, #123 produce zero hits', () => {
-    const hits = scanContent('Examples: step #1, step #2, item #45, issue #123 are placeholders');
+  test('PLACEHOLDER_DIGITS exemption (D-04): #1, #2, #123 produce zero hits', () => {
+    const hits = scanContent('Examples: step #1, step #2, issue #123 are placeholders');
     assert.equal(hits.length, 0, 'illustrative placeholder digits must not be flagged');
   });
 });

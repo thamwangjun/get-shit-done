@@ -63,9 +63,26 @@ All plan verification checks pass:
 - All three FILE_ALLOWLIST entries present with correct keys and digit Sets
 - `npm test`: 9019 pass, 0 fail, 10 skipped (exit code 0)
 
+## Post-Task Work
+
+After the two-tier refactor landed, a follow-up investigation checked whether any global
+`PLACEHOLDER_DIGITS` entries were already covered by D-10 (code-fence exclusion) and
+therefore redundant.
+
+**`#45` (inbox.md):** Grep confirmed `#45` appears at `get-shit-done/workflows/inbox.md:258-259`
+inside a triple-backtick fence (opened at line 240). D-10 already excludes it — the allowlist
+entry was dead weight. `45` was dropped from `PLACEHOLDER_DIGITS` and the D-04 unit test
+updated to match. Guard test: 327 pass, 0 fail.
+
+**`#123`:** Appears in plain prose (not fenced) in three files:
+`get-shit-done/workflows/verify-phase.md:343`, `agents/gsd-verifier.md:442`,
+`get-shit-done/templates/codebase/conventions.md:232`. All use `#123` as a debt-marker
+example (not a real issue citation) — retained in global `PLACEHOLDER_DIGITS` as correctly
+scoped for documentation examples spanning multiple files.
+
 ## Deviations from Plan
 
-None — plan executed exactly as written.
+None — plan executed exactly as written. Post-task analysis added (see above).
 
 ## Known Stubs
 
