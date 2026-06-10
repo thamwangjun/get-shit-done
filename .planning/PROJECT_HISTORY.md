@@ -5,6 +5,41 @@
 > and Key Decisions that have been fully settled and no longer guide future work.
 > For active project state, see `.planning/PROJECT.md`.
 
+## Shipped Milestone: v2.1.0-g Citation Cleanup ✓
+
+**Shipped:** 2026-06-10
+**Goal:** Remove all issue/PR-number citations from prompt content `.md` files across 5 scoped dirs; add permanent regression guard.
+
+All issue/PR-number citations removed from prompt content `.md` files across 5 scoped dirs. Permanent regression guard `tests/no-issue-citations.test.cjs` added — covers `#NNN` inline, parenthetical, and feat-form patterns with two-tier allowlist (PLACEHOLDER_DIGITS + FILE_ALLOWLIST). TDD red→green: guard written RED (98 violations), corpus cleaned, guard GREEN (327/327). Post-milestone tightening via quick tasks 260610-gku (regex tightened, 7 agent files cleaned) and 260610-heg (two-tier allowlist refactor). `npm test` 9808 total / 9799 pass / 0 fail / 9 skipped. Full details: `.planning/milestones/v2.1.0-g-ROADMAP.md`.
+
+## Shipped Milestone: v2.1.0-f Testing Coverage Gaps ✓
+
+**Shipped:** 2026-06-08
+**Goal:** Close all behavioral and documentation testing gaps from the v2.1.0-e gap report.
+
+Test-only milestone — 5 phases (59–63), 5 plans, additive test code across four existing test files with no agent/workflow source changes: 8 Group B effort-wiring guards (`phase-56-effort-wiring.test.cjs`), submodule-exclusion guard scoped to `gsd-executor.md` `<task_commit_protocol>` (`bug-3097-3099-...test.cjs`), rubric-inlining guard for `gsd-user-profiler.md` and reactivated `gsd-debugger.md` hardened-security test (`debug-session-management.test.cjs`), and stale-comment removal (`step-numbering-scan.test.cjs`). `npm test` 9115 pass / 0 fail / 9 skipped. Full details: `.planning/milestones/v2.1.0-f-ROADMAP.md`.
+
+## Shipped Milestone: v2.1.0-e Per-Agent Thinking Effort ✓
+
+**Shipped:** 2026-06-06
+**Goal:** Unified, Claude-first thinking-effort dimension encoded as `model;effort` labels (semicolon delimiter).
+
+28 plans across 9 phases (plus 2 inserted triage phases). Core deliverables: `parseModelEffort` parser, unified `{claude, codex}` resolver with D-08 medium floor, 20 `*_effort` init siblings, catalog schema widened + 31 agents hand-assigned, spawn templates wired across all Group A/B workflows, install.js Codex emit boundary, 330-row golden snapshot + 365-test regression suite. npm test 8,243/8,255 pass. Full details: `.planning/milestones/v2.1.0-e-ROADMAP.md`.
+
+## Shipped Milestone: v2.1.0-d Whole-Integer Step Numbering ✓
+
+**Shipped:** 2026-05-31
+**Goal:** Every step label across all prompt content files is a whole integer.
+
+Three new enforcement layers: `tests/step-numbering-scan.test.cjs` (decimal + letter-suffix + out-of-order detection, 632/632), `scripts/normalize-step-numbers.cjs` (cross-file-aware idempotent CLI with `--dry-run`), and `tests/cross-file-step-refs.test.cjs` (stale cross-file ref detector, 219/219). Quality gate: `npm test` 11,728 pass / 3 fail, negative-framing 99/99.
+
+## Shipped Milestone: v2.1.0-c Install-Time Content Materialization ✓
+
+**Shipped:** 2026-05-29
+**Goal:** Every file installed by `bin/install.js` is fully self-contained.
+
+Eta v4 is wired as the install-time template engine in both copy loops; all 82 source files converted from bare-line `@~/` static refs to `<%~ include() %>` tags. Zero unresolved references in any installed runtime — verified by `tests/install-eta-regression.test.cjs` (6/6) and full Claude install walk (TEST-01 with 27-entry `ALLOWED_INLINE_REFS`).
+
 ## Abandoned Milestone: v1.37.1c Tag Hierarchy Completion ✗
 
 **Archived:** 2026-04-29 (abandoned — 1/5 phases complete)
@@ -99,6 +134,115 @@
 - ✓ **TEST-GATE-01**: Full suite gate at 4304 pass, 2 pre-existing fails, 0 new failures — v1.37.1b Phase 18
 - ✓ **CONVERT-01**: All 79 `commands/gsd/*.md` files pass `fork-intent-tag.test.cjs`; all `<objective>` tags converted to `<intent>` — v1.37.1b Phase 19
 - ✓ **AUDIT-01**: Baseline audit complete — all 270 in-scope files across 5 levels inventoried against `upstream/v1.37.1`; 146 anomalies documented in JSON + Markdown artifacts before any conversion began — v1.37.1c Phase 20
+
+### Validated (v1.37.2 – v2.1.0-g)
+
+- ✓ SCAN-01: Scanner detects bare `avoid [verb]` directives — v1.37.2
+- ✓ SCAN-02: Scanner detects bare `don't [verb]` directives via `isFactualDont()` helper — v1.37.2
+- ✓ SCAN-03: Scanner detects `<anti_patterns>` tag usage (deduped to 1 violation per block) — v1.37.2
+- ✓ SCAN-04: New hard-failure subtests verified RED against unmodified upstream before any file edits — v1.37.2
+- ✓ SCAN-05: Scanner detects bare `must not` / `MUST NOT` directives — v1.37.2
+- ✓ SCAN-06: Scanner detects bare `should not` / `should NOT` directives — v1.37.2
+- ✓ SCAN-07: Scanner detects `cannot` directives (warn-only) — v1.37.2
+- ✓ SCAN-08: Scanner detects `won't` directives (warn-only) — v1.37.2
+- ✓ SCAN-09: Scanner detects `will not` directives (warn-only) — v1.37.2
+- ✓ FIX-01: All `agents/*.md` files pass expanded scanner with 0 violations and 0 warnings — v1.37.2
+- ✓ FIX-02: All `commands/gsd/*.md` files pass expanded scanner with 0 violations and 0 warnings — v1.37.2
+- ✓ FIX-03: All `get-shit-done/workflows/*.md` files pass expanded scanner with 0 violations and 0 warnings — v1.37.2
+- ✓ FIX-04: Every negative directive replaced with affirmative instruction specifying correct behavior — v1.37.2
+- ✓ GATE-01: Full `npm test` suite passes after all fixes with 0 regressions (4183/4184 pass, 1 intentional skip) — v1.37.2
+- ✓ AUDIT-01: All `agents/`, `commands/gsd/`, and `get-shit-done/workflows/` files read line-by-line for negative framing violations — v1.38.6
+- ✓ AUDIT-02: Audit inventory produced with file, line, violation text, and violation category for every finding (182 violations across 67 files) — v1.38.6
+- ✓ SCAN-10: Scanner expanded with new detection branches (`prohibited`, `forbidden`) for patterns found in audit not yet covered — v1.38.6
+- ✓ SCAN-11: All new scanner subtests verified RED against unmodified corpus before any fixes applied (4 corpus subtests failing) — v1.38.6
+- ✓ FIX-05: All `agents/` files pass expanded scanner at 0 violations and 0 warnings — v1.38.6
+- ✓ FIX-06: All `commands/gsd/` files pass expanded scanner at 0 violations and 0 warnings — v1.38.6
+- ✓ FIX-07: All `get-shit-done/workflows/` files pass expanded scanner at 0 violations and 0 warnings — v1.38.6
+- ✓ FIX-08: Every negative directive replaced with affirmative instruction specifying correct behavior — v1.38.6
+- ✓ AUDIT-03: Post-fix test run examined-and-found-none — zero upstream test assertions conflicting with fork framing strings — v1.38.6
+- ✓ TEST-01: No `.skip` modifications required — zero conflicting assertions found — v1.38.6
+- ✓ GATE-02: Full `npm test` suite passes after all fixes (5705/5706 pass, 0 fail, 1 intentional HDOC skip) — v1.38.6
+- ✓ HOOKS-01: `gsd-update-banner.js` added to MANAGED_HOOKS in `hooks/gsd-check-update-worker.js` — v1.41.3
+- ✓ TEST-02: Windows npm spawn tests skipped with `describe.skip` in `gsd-check-update-worker-platform-gate.test.cjs` — v1.41.3
+- ✓ PATH-01: `phase-30-affirmative-replacements.test.cjs` references correct `extract-learnings.md` path (hyphen) — v1.41.3
+- ✓ FRAME-01: `get-shit-done/workflows/debug.md` passes negative-framing scanner at 0 violations, 0 warnings — v1.41.3
+- ✓ FRAME-02: `get-shit-done/workflows/reapply-patches.md` passes negative-framing scanner at 0 violations, 0 warnings — v1.41.3
+- ✓ SCAN-12: Negative-framing scanner run across all upstream v1.41.2 changed files; 0 unaddressed violations — v1.41.3
+- ✓ GATE-03: Full `npm test` suite passes at 8306 pass, 0 fail, 1 intentional HDOC skip — v1.41.3
+- ✓ MERGE-01: `thamw-main` fast-forwarded to `thamw-v1.41.3` after GATE-03 — v1.41.3
+- ✓ GITOPS-01: Local branch backup and physical directory backup created before history refactor — v1.41.5
+- ✓ GITOPS-02: Soft reset HEAD to `v1.41.2` with all modifications preserved unstaged — v1.41.5
+- ✓ STAGE-01: Batch 1 committed — rules and configuration files — v1.41.5
+- ✓ STAGE-02: Batch 2 committed — scanner logic and audit scripts — v1.41.5
+- ✓ STAGE-03: Batch 3 committed — workflows, agents, commands, templates — v1.41.5
+- ✓ STAGE-04: Batch 4 committed — core tests and SDK validation — v1.41.5
+- ✓ STAGE-05: Batch 5 committed — maintenance, logs, state files — v1.41.5
+- ✓ VALID-01: Zero-diff parity confirmed (10 allowlisted files, zero unexpected divergence) — v1.41.5
+- ✓ VALID-02: npm test 8392 pass, 2 pre-existing failures (zero regression vs backup branch) — v1.41.5
+- ✓ HOOK-01: `gsd-check-update-worker.js` SHA `isNewer()` with `latest.slice(0,7) !== installed` — v2.1.0-a
+- ✓ HOOK-02: Worker fetches latest SHA via GitHub Commits API (not npmjs.com) — v2.1.0-a
+- ✓ HOOK-03: Worker `function writeResult()` calls `isNewer()` and writes result cache — v2.1.0-a
+- ✓ HOOK-04: `{{GSD_REPO}}` and `{{GSD_BRANCH}}` template placeholders in worker source — v2.1.0-a
+- ✓ HOOK-05: Worker has no npmjs.com or npm package name references — v2.1.0-a
+- ✓ INST-01: `bin/install.js` writes 7-char SHA via `git rev-parse --short=7 HEAD` — v2.1.0-a
+- ✓ INST-02: `'no-network'` sentinel fallback when git unavailable — v2.1.0-a
+- ✓ INST-03: `{{GSD_REPO}}`/`{{GSD_BRANCH}}` template replacements in hook files at install time — v2.1.0-a
+- ✓ INST-04: `{{GSD_VERSION}}` in hook headers populated with SHA (not `pkg.version`) — v2.1.0-a
+- ✓ STAT-01: `gsd-statusline.js` `parseV()` semver dev-install block removed — v2.1.0-a
+- ✓ STAT-02: Stale hooks → simplified SHA mismatch display only — v2.1.0-a
+- ✓ UPD-01: `check-latest-version.cjs` fetches GitHub Commits API SHA — v2.1.0-a
+- ✓ UPD-02: `update.md` SHA comparison + simplified changelog (GitHub link) — v2.1.0-a
+- ✓ TEST-01: `semver-compare.test.cjs` 17/17 pass — v2.1.0-a
+- ✓ TEST-02: `version-detection.test.cjs` 4/4 pass — v2.1.0-a
+- ✓ TEST-03: `bug-2992-check-latest-version.test.cjs` SHA-based assertions 9/9 pass — v2.1.0-a
+- ✓ GATE-01: Full `npm test` 0 regressions beyond 2 pre-existing ai-evals failures — v2.1.0-a
+- ✓ INTG-01: Eta v4 wired as install-time engine with default `<%`/`%>` delimiters, `autoEscape: false`, `useWith: true`, `views` = repo root — v2.1.0-c
+- ✓ INTG-02: All 82 source files converted from bare-line `@~/` static refs to `<%~ include() %>` Eta tags; post-conversion grep returns 0 survivors — v2.1.0-c
+- ✓ INTG-03: Runtime `.planning/` bare-line refs in agents layer converted to `` !`cat .planning/X` `` form — v2.1.0-c
+- ✓ INTG-04: Eta renderer wired into `copyWithPathReplacement()` and `wrappedConverter` (skills path); all 11 skills-based runtimes render `<%~ include()` at install time — v2.1.0-c
+- ✓ INTG-05: Eta renderer wired into agent install loop as first transform step — v2.1.0-c
+- ✓ INTG-06: Skills path (`applyRuntimeContentRewritesInPlace`) confirmed as not requiring renderer — `SKILL.md` files contain 0 install-time include refs — v2.1.0-c
+- ✓ TEST-01: Full Claude install walk with 27-entry `ALLOWED_INLINE_REFS`; TEST-01 also detects `<%~` survivors in installed output — v2.1.0-c
+- ✓ TEST-02: Conditional `@~` expression in `execute-phase.md` preserved verbatim in installed output — v2.1.0-c
+- ✓ TEST-04: Circular include detection verified by regression test — v2.1.0-c
+- ✓ TEST-05: Missing-file handling verified by regression test — v2.1.0-c
+- ✓ GATE-01: Full `npm test` 7459/49 (better than pre-milestone baseline 7458/50) — v2.1.0-c
+- ✓ GATE-02: Negative-framing scanner passes at 99/99 after all edits — v2.1.0-c
+- ✓ GATE-03: Zero unresolved `@~/.claude/` refs in fresh install across all runtimes; skills path `<%~` gap closed by Phase 47.1 — v2.1.0-c
+- ✓ SCAN-01: `tests/step-numbering-scan.test.cjs` detects decimal step labels in agents, commands, and workflows — v2.1.0-d
+- ✓ SCAN-02: Scanner detects out-of-order step numbering — v2.1.0-d
+- ✓ MAP-01: Pre-normalization cross-file step reference index produced before renaming — v2.1.0-d
+- ✓ NORM-01: All violating files renumbered to sequential whole integers; cross-refs co-updated — v2.1.0-d
+- ✓ NORM-02: `scripts/normalize-step-numbers.cjs` cross-file-aware idempotent CLI with `--dry-run` — v2.1.0-d
+- ✓ XREF-01: `tests/cross-file-step-refs.test.cjs` detects stale cross-file step references — v2.1.0-d
+- ✓ GATE-01: `npm test` 11,728 pass / 3 fail, negative-framing 99/99 — v2.1.0-d
+- ✓ PARSE-01: `parseModelEffort` semicolon-delimiter parser with 5-token allowlist and one-time typo warning — v2.1.0-e
+- ✓ PARSE-02: Bare model strings return `effort: null` (backward-compatible) — v2.1.0-e
+- ✓ PARSE-03: Shared `_resolveAgentSlot` helper eliminates model/effort divergence class — v2.1.0-e
+- ✓ PARSE-04: `parseModelEffort` mirrored in SDK with shared parity fixture — v2.1.0-e
+- ✓ RESOLVE-01: Static `{claude, codex}` allowlist lifts Claude gate (replaces data-derived expression) — v2.1.0-e
+- ✓ RESOLVE-02: Effort precedence chain: override → slot → D-08 medium floor — v2.1.0-e
+- ✓ RESOLVE-03: Profile-slot effort overrides Codex per-tier; per-tier is fallback — v2.1.0-e
+- ✓ RESOLVE-04: `max`→`xhigh` on Codex; never `xhigh` for haiku tier — v2.1.0-e
+- ✓ RESOLVE-05: Non-`{claude, codex}` runtimes always omit effort — v2.1.0-e
+- ✓ RESOLVE-06: `inherit` profile and bare adaptive entries omit effort — v2.1.0-e
+- ✓ CONFIG-01/02/03/04: `model;effort` accepted in all 3 config override sites with malformed-token warning — v2.1.0-e
+- ✓ CATALOG-01/02/03: Catalog schema widened; 31 capable agents hand-assigned; SDK mirror widened — v2.1.0-e
+- ✓ EXPOSE-01/02/03: 20 `*_effort` init siblings, `cmdResolveModel` canonical effort, SDK/CLI parity — v2.1.0-e
+- ✓ SPAWN-01/02/03: Spawn templates wired (17 Group A + 8 Group B + debug-session-manager + 8 additional); D-08 floor; fork quality gates preserved — v2.1.0-e
+- ✓ INSTALL-01/02: install.js Codex emit seam redirected; per-runtime effort materialization correct — v2.1.0-e
+- ✓ TEST-01/02/03/04/05: 330-row golden snapshot, 14-case parser fixture, 365-test regression suite; npm test 8,243/8,255 — v2.1.0-e
+- ✓ DOC-01: Stale "Phase 48 RED expectation" comment removed from `step-numbering-scan.test.cjs` — v2.1.0-f
+- ✓ EWC-01..08: Effort-wiring regression tests for 8 Group B workflows added to `phase-56-effort-wiring.test.cjs` — v2.1.0-f
+- ✓ WSC-01: Submodule-exclusion path asserted in `bug-3097-3099-executor-worktree-path-safety.test.cjs` — v2.1.0-f
+- ✓ RIC-01: User-profiler Eta-inlined rubric reference asserted in `debug-session-management.test.cjs` — v2.1.0-f
+- ✓ SFC-01: Reactivated `gsd-debugger.md` hardened-security test ("untrusted user input" / "evidence data only") — v2.1.0-f
+- ✓ CITE-01: Exploration audit identified all citation formats (`#NNN`, `feat-NNNN`, parenthetical) in the 5 scoped dirs — v2.1.0-g
+- ✓ CITE-02: Permanent guard test `tests/no-issue-citations.test.cjs` runs under `npm test` with two-tier allowlist — v2.1.0-g
+- ✓ CITE-03: All `#NNN`-form citations removed from all 5 scoped dirs — v2.1.0-g
+- ✓ CITE-04: All feat-form citations removed; word-form "issue NNNN" not present in corpus — v2.1.0-g
+- ✓ CITE-05: Cleaned sentences read naturally; no orphaned punctuation, double spaces, or dangling connectors — v2.1.0-g
+- ✓ CITE-06: `npm test` 9808 total / 9799 pass / 0 fail; guard GREEN 327/327; all content tests unaffected — v2.1.0-g
 
 ## Historical Key Decisions
 
