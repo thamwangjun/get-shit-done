@@ -26,8 +26,9 @@
  *   - Frontmatter blocks: YAML frontmatter (lines between opening/closing `---` when
  *     frontmatter starts on line 1) are excluded from scanning (per D-09).
  *   - Fenced code blocks: triple-backtick fences are excluded from scanning (per D-10).
- *   - Hex color lookbehind: `(?<![0-9a-fA-F#])` prevents matching hex color tails
- *     (e.g., the `#70` suffix of `#e8c170`) as inline citations (per D-11).
+ *   - Hex colors: protected by frontmatter (D-09) and code-fence (D-10) exclusions.
+ *     Hex colors in plain prose are accepted as false positives — false negatives
+ *     (e.g., owner/repo#NNN slipping through) are worse than false positives.
  *
  * This test is GREEN after Phase 66 citation cleanup and allowlist finalization.
  */
@@ -61,10 +62,13 @@ const SCAN_DIRS = [
 const PLACEHOLDER_DIGITS = new Set([1, 2, 45, 123, 1729, 2439, 2924, 3542]);
 
 // inline / parenthetical: #NNN where N is one or more digits.
-// The lookbehind (?<![0-9a-fA-F#]) prevents matching hex color tails (e.g., the `#70`
-// suffix of `#e8c170`) and ## heading markers (per D-11).
-// Regex source: Phase 64 citation scanner (inline detection, hex lookbehind).
-const INLINE_RE = /(?<![0-9a-fA-F#])#(\d+)\b/g;
+// Matches any #NNN in non-frontmatter, non-code-fence prose.
+// Hex colors in prose are accepted as false positives by design — false negatives (missed
+// citations like owner/repo#NNN) are worse than false positives (user preference supersedes D-11).
+// Hex colors in frontmatter are protected by the frontmatter exclusion (D-09);
+// hex colors in code fences are protected by the code-fence exclusion (D-10).
+// Regex source: Phase 64 citation scanner (inline detection); lookbehind removed (260610-gku).
+const INLINE_RE = /#(\d+)\b/g;
 
 // feat-form: feat-NNNN with 3+ digit tracker IDs.
 // feat-3347 is the confirmed canonical hit (Phase 64 FINDINGS).
@@ -114,7 +118,7 @@ for (const dir of SCAN_DIRS) {
 /**
  * Scan content for inline, parenthetical, and feat-form citation patterns.
  * Applies frontmatter exclusion (D-09), code-fence exclusion (D-10),
- * hex lookbehind (D-11), and PLACEHOLDER_DIGITS allowlist (D-04).
+ * and PLACEHOLDER_DIGITS allowlist (D-04).
  *
  * @param {string} content - Full file content
  * @returns {Array<{ lineNumber: number, text: string, category: string, contextLine: string }>}
@@ -267,7 +271,7 @@ describe('corpus scan — no issue citations', () => {
         .map(h => `  ${relPath}:${h.lineNumber} ${h.text} (${h.category})\n      ${h.contextLine}`)
         .join('\n');
       assert.deepStrictEqual(hits, [],
-        `Citations in ${relPath}. Remove issue/PR number citations from prompt content.\n${enumerated}\nTo add an allowlist exemption: add the digit to PLACEHOLDER_DIGITS`
+        `Citations in ${relPath}. If this is a hex color, move it to a code fence or add it to PLACEHOLDER_DIGITS with a comment explaining why. If it is an issue or PR citation, remove it.\n${enumerated}\nTo add an allowlist exemption: add the digit to PLACEHOLDER_DIGITS`
       );
     });
   }
