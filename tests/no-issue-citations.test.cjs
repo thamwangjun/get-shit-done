@@ -17,12 +17,12 @@
  *   feat-form     — feat-NNNN with 3+ digit tracker ID
  *
  * Allowlist policy:
- *   - PLACEHOLDER_DIGITS: exact-value Set of allowlisted integers. Includes:
- *     - Illustrative placeholder numbers (#1, #2, #45, #123) — used as examples in
- *       prompt content and must not be flagged as real issue/PR citations.
- *     - Functional cross-references validated by other test files:
- *       #2924 — worktree HEAD attachment safety ref required by worktree-cleanup.test.cjs
- *       #1729 — explore-integration deferral ref required by thinking-partner.test.cjs
+ *   - PLACEHOLDER_DIGITS: global Set of illustrative placeholder integers (#1, #2, #45, #123)
+ *     used as examples in prompt content. Exempt everywhere in the corpus.
+ *   - FILE_ALLOWLIST: per-file map of relPath → Set of functional cross-reference digits.
+ *     Each entry is validated by another test file that requires the citation's continued
+ *     presence; the digit is exempt only in the listed file(s) and remains a violation
+ *     anywhere else.
  *   - Frontmatter blocks: YAML frontmatter (lines between opening/closing `---` when
  *     frontmatter starts on line 1) are excluded from scanning (per D-09).
  *   - Fenced code blocks: triple-backtick fences are excluded from scanning (per D-10).
@@ -49,17 +49,23 @@ const SCAN_DIRS = [
   'get-shit-done/templates',
 ];
 
-// Allowlist of illustrative placeholder digits per Phase 64 FINDINGS Allowlist Candidates table.
-// #45 is included defensively (no real corpus hit) per D-05.
-// These values (#1, #2, #45, #123) are used as illustrative examples in prompt content
-// and must not be flagged as real issue/PR citations.
-// Illustrative placeholder numbers used as examples in prompt content (#1, #2, #45, #123).
-// Also includes functional cross-references that other test files validate and require:
-//   #1729 — explore-integration deferral decision (thinking-partner.test.cjs validates its presence)
-//   #2439 — gsd-sdk pre-flight guard contract (bug-2439-set-profile-gsd-sdk-preflight.test.cjs)
-//   #2924 — worktree HEAD attachment safety ref (worktree-cleanup.test.cjs validates its presence)
-//   #3542 — executor git stash prohibition (bug-3542-executor-git-stash-prohibition.test.cjs)
-const PLACEHOLDER_DIGITS = new Set([1, 2, 45, 123, 1729, 2439, 2924, 3542]);
+// Tier 1: global allowlist of illustrative placeholder digits used as examples
+// in prompt content. Functional cross-refs live in FILE_ALLOWLIST below.
+const PLACEHOLDER_DIGITS = new Set([1, 2, 45, 123]);
+
+// Per-file functional cross-reference allowlist. These digits are exempt ONLY in the
+// specific files listed — they remain flagged anywhere else in the corpus. Each entry
+// is a functional cross-reference validated by another test file; the comment names
+// the test that guarantees the citation's continued presence.
+const FILE_ALLOWLIST = {
+  // #2439 — gsd-sdk pre-flight guard contract (bug-2439-set-profile-gsd-sdk-preflight.test.cjs)
+  'commands/gsd/config.md':                           new Set([2439]),
+  // #1729 — explore-integration deferral decision (thinking-partner.test.cjs)
+  'get-shit-done/references/thinking-partner.md':     new Set([1729]),
+  // #2924 — worktree HEAD attachment safety ref (worktree-cleanup.test.cjs)
+  // #3542 — executor git stash prohibition (bug-3542-executor-git-stash-prohibition.test.cjs)
+  'agents/gsd-executor.md':                           new Set([2924, 3542]),
+};
 
 // inline / parenthetical: #NNN where N is one or more digits.
 // Matches any #NNN in non-frontmatter, non-code-fence prose.
@@ -121,9 +127,10 @@ for (const dir of SCAN_DIRS) {
  * and PLACEHOLDER_DIGITS allowlist (D-04).
  *
  * @param {string} content - Full file content
+ * @param {string} [relPath] - File path relative to PROJECT_ROOT (used to look up file-scoped allowlist; optional for unit tests scanning string literals)
  * @returns {Array<{ lineNumber: number, text: string, category: string, contextLine: string }>}
  */
-function scanContent(content) {
+function scanContent(content, relPath) {
   const lines = content.split('\n');
   const hits = [];
 
@@ -165,8 +172,8 @@ function scanContent(content) {
     let m;
     while ((m = INLINE_RE.exec(line)) !== null) {
       const digit = parseInt(m[1], 10);
-      // Skip PLACEHOLDER_DIGITS allowlist (D-04)
-      if (PLACEHOLDER_DIGITS.has(digit)) continue;
+      // Skip PLACEHOLDER_DIGITS allowlist (D-04) or file-scoped allowlist (FILE_ALLOWLIST)
+      if (PLACEHOLDER_DIGITS.has(digit) || FILE_ALLOWLIST[relPath]?.has(digit)) continue;
 
       const matchStart = m.index;
       const matchEnd = matchStart + m[0].length;
@@ -266,7 +273,7 @@ describe('corpus scan — no issue citations', () => {
     const relPath = path.relative(PROJECT_ROOT, file).split(path.sep).join('/');
     test(`no citations in ${relPath}`, () => {
       const content = fs.readFileSync(file, 'utf-8');
-      const hits = scanContent(content);
+      const hits = scanContent(content, relPath);
       const enumerated = hits
         .map(h => `  ${relPath}:${h.lineNumber} ${h.text} (${h.category})\n      ${h.contextLine}`)
         .join('\n');
