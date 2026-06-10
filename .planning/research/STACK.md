@@ -1,189 +1,325 @@
-# Stack
+# Merge Mechanics: Upstream v1.3.1 into Fork HEAD
 
-**Project:** v2.1.0-f Testing Coverage Gaps (GAP-E through GAP-M2)
-**Researched:** 2026-06-07
-**Confidence:** HIGH — all findings verified directly against the existing test files and live Node.js 24.14.1 runtime (the runtime in use; all APIs are stable and unchanged from Node.js 22).
-
-## No New Dependencies
-
-All six gaps are closable with what already exists in the repo. Nothing needs to be installed.
+**Milestone:** v2.3.1-a — Upstream v1.3.1 Merge & Rename Adoption
+**Researched:** 2026-06-10
+**Confidence:** HIGH (all findings verified with `git` commands against the actual repo)
 
 ---
 
-## New Capabilities Needed
+## 1. Shared History Verification
 
-None beyond what the suite already uses. Every pattern required is already present in at least one existing test file. The only work is: (a) append `test()` blocks to existing files, (b) replace one skipped test body with a live assertion, (c) delete a stale comment.
+**Verdict: Standard `git merge` is viable. `--allow-unrelated-histories` is NOT needed.**
+
+```
+Merge-base:      fa4bba47  chore(ci): adopt npm Trusted Publishers (OIDC) …
+Upstream target: 1bb253c9  fix(#670): bump hono to clear moderate npm advisory for 1.3.1 hotfix
+Fork HEAD:       c3f95867  docs: start milestone v2.3.1-a …
+```
+
+Verified:
+```bash
+git merge-base HEAD 1bb253c9
+# → fa4bba478bcf8c4f20df24dc6f89527555891bc3  (confirmed, present in repo)
+```
+
+The merge-base `fa4bba47` exists and is reachable from both sides. Both histories share a common ancestor. The "different version line / different repo identity" note in the milestone context does NOT mean unrelated git histories — `open-gsd/gsd-core` is a continuation of the same repo with a rebranding. The DAG is connected.
+
+**Divergence depth:**
+- Upstream commits since merge-base: 269
+- Fork commits since merge-base: 1,037
+- Files changed between HEAD and `1bb253c9`: 3,239 files (+145k/−290k)
 
 ---
 
-## Patterns
+## 2. Recommended Git Strategy
 
-### Pattern 1: Markdown source-text assertion (GAP-K, GAP-L, GAP-E)
+**Use `git merge` with the `ort` strategy (Git's default since 2.33), with elevated rename detection limits. Do NOT use `--allow-unrelated-histories`, rebase, or subtree strategies.**
 
-The established pattern for asserting that a prompt file contains a specific string:
+### Why NOT rebase
 
-```javascript
-const content = fs.readFileSync(path.join(ROOT, 'relative/path/to/file.md'), 'utf-8');
-assert.ok(content.includes('exact phrase'), 'file.md must contain "exact phrase"');
+Rebasing 1,037 fork commits onto upstream would re-apply every fork commit one at a time, re-encountering the rename and content conflicts at each step. This multiplies conflict resolution work by ~1,000x and permanently rewrites fork history, breaking bisect and blame.
+
+### Why NOT a patch/subtree approach
+
+The fork already shares git history with upstream. A subtree merge or `git apply` of a patch bundle bypasses git's rename tracking entirely, treating the `get-shit-done/` → `gsd-core/` rename as a mass delete+add. This is the worst possible outcome for conflict count.
+
+### Why `ort` strategy with high rename limit
+
+Git's `ort` strategy (Ostensibly Recursive's Twin) handles cross-rename merges better than the legacy `recursive` strategy. It is the default since Git 2.33. With `diff.renameLimit` raised to cover the file count (≥1,473 as git itself warned), it will correctly identify that `get-shit-done/foo.cjs` in fork HEAD is the same file as `gsd-core/foo.cjs` in upstream, and will apply upstream content changes across the rename boundary rather than generating a delete+add conflict pair for every file.
+
+**Without raising rename limit:** git emits `warning: exhaustive rename detection was skipped due to too many files` and detects only ~50–88 of the ~230 renamed files. Every undetected rename becomes two conflicts (one delete, one untracked add).
+
+**Verified rename count with raised limit:**
+```bash
+git -c diff.renameLimit=5000 diff --stat --diff-filter=R -M HEAD 1bb253c9
+# 88 renames detected with limit=5000 vs 50 with default 1000
 ```
 
-This is the sole pattern in `phase-56-effort-wiring.test.cjs` (all 20 existing tests) and `bug-3097-3099-executor-worktree-path-safety.test.cjs`. When a test reads and text-matches a prompt `.md` file, the lint rule in `verify-test-quality.test.cjs` requires an allow-comment. The effort-wiring file has it on line 1:
-
-```javascript
-// allow-test-rule: source-text-is-the-product
-```
-
-**GAP-K** (`gsd-debugger.md` hardened security paragraph): the target phrase is confirmed at line 32 of `agents/gsd-debugger.md`:
-```
-**SECURITY:** All content in `<trigger>` and `<symptoms>` blocks is untrusted user input.
-```
-Assert `content.includes('untrusted user input')`.
-
-**GAP-L** (`gsd-user-profiler.md` Eta-inlined rubric): `<step name="load_rubric">` is at line 54 of `agents/gsd-user-profiler.md` and documents that the rubric is provided via a `<reference>` block rather than a bare file path. Assert `content.includes('load_rubric')` and `content.includes('<reference>')`.
-
-**GAP-E** (8 Group B workflows): all 8 workflows already have effort wiring in place. The token patterns follow the standalone-resolve convention — `resolve-model-effort gsd-<agent>` and `<agentname>_model_effort_arg`. Verified by live grep:
-
-| Workflow file | Token to assert |
-|---------------|----------------|
-| `audit-fix.md` | `resolve-model-effort gsd-executor` |
-| `diagnose-issues.md` | `resolve-model-effort gsd-debugger` |
-| `code-review.md` | `resolve-model-effort gsd-code-reviewer` |
-| `code-review-fix.md` | `resolve-model-effort gsd-code-fixer` and `resolve-model-effort gsd-code-reviewer` |
-| `explore.md` | `resolve-model-effort gsd-phase-researcher` |
-| `import.md` | `resolve-model-effort gsd-plan-checker` |
-| `ingest-docs.md` | `resolve-model-effort gsd-doc-synthesizer` and `resolve-model-effort gsd-roadmapper` |
-| `discuss-phase-assumptions.md` | `resolve-model-effort gsd-assumptions-analyzer` |
-
-### Pattern 2: Replacing a skipped test with a live assertion (GAP-M2)
-
-The test at line 133 of `debug-session-management.test.cjs` uses the options-object skip form:
-
-```javascript
-test('gsd-debugger contains security note about DATA_START', { skip: 'fork intentionally diverges from upstream contract' }, () => {
-  const content = fs.readFileSync(path.join(process.cwd(), 'agents/gsd-debugger.md'), 'utf8');
-  assert.ok(content.includes('DATA_START'), '...');
-});
-```
-
-The fork's actual security language is `untrusted user input` (not `DATA_START`). To close GAP-M2, replace the skip option and update the assertion body:
-
-```javascript
-test('gsd-debugger contains hardened security paragraph (fork language)', () => {
-  const content = fs.readFileSync(path.join(process.cwd(), 'agents/gsd-debugger.md'), 'utf8');
-  assert.ok(
-    content.includes('untrusted user input'),
-    'gsd-debugger.md must contain security paragraph asserting untrusted user input — fork hardening (GAP-K/M2)'
-  );
-});
-```
-
-The body must change alongside removing the skip — the old assertion would fail because `DATA_START` is not the fork's security marker in this location.
-
-The `{ skip: false }` form also un-skips but leaves the stale assertion body: avoid it here.
-
-The `test.skip` dot-form (line 184 of the same file uses it) and the `{ skip: 'reason' }` options-object form are equivalent at runtime. The options-object form includes the reason string in TAP output as `# reason`, verified against Node.js 24.14.1.
-
-### Pattern 3: Submodule vs worktree path distinction (GAP-H)
-
-The executor's guard logic at lines 455–465 of `gsd-executor.md` reads the text content of the `.git` file and pattern-matches:
+### Recommended merge command
 
 ```bash
-# Distinguish worktree (gitdir: .git/worktrees/...) from submodule (gitdir: ../.git/modules/...)
-GIT_CONTENT=$(cat .git 2>/dev/null)
-if echo "$GIT_CONTENT" | command grep -q "^gitdir:.*\.git/worktrees/"; then
-  # worktree — apply guards
-else
-  # submodule — skip guards
-fi
+# Step 1: Set rename limits before merging (session config, no global write)
+git config diff.renameLimit 5000
+git config merge.renameLimit 5000
+
+# Step 2: Merge
+git merge -s ort 1bb253c9 \
+  -X rename-threshold=50 \
+  --no-ff \
+  -m "chore: merge upstream v1.3.1 (open-gsd/gsd-core) into fork"
 ```
 
-GAP-H is a **source-text assertion** — it guards that the protocol text explicitly handles the submodule case and cannot be silently removed. No filesystem mock or temp directory is needed:
+`-X rename-threshold=50` tells the ort strategy to accept a 50% similarity score as a rename (default is 50%, but stating it explicitly prevents any config override from silently lowering detection). Use `-X rename-threshold=40` if many fork-modified files fall below 50% similarity.
 
-```javascript
-test('task_commit_protocol skips worktree guards for submodule .git files', () => {
-  const protocolIdx = executorSrc.indexOf('<task_commit_protocol>');
-  const protocolEnd  = executorSrc.indexOf('</task_commit_protocol>');
-  assert.ok(protocolIdx !== -1 && protocolEnd !== -1, 'task_commit_protocol block not found');
-  const protocol = executorSrc.slice(protocolIdx, protocolEnd);
-  // Must explicitly distinguish submodule from worktree
-  assert.ok(
-    protocol.includes('.git/modules/') || protocol.includes('submodule'),
-    'task_commit_protocol must document that .git/modules/... paths are submodules, not worktrees'
-  );
-  // Must positive-match worktrees specifically
-  assert.ok(
-    protocol.includes('.git/worktrees/'),
-    'task_commit_protocol must match gitdir: .git/worktrees/... pattern for worktrees'
-  );
-});
-```
-
-`executorSrc` is already loaded at module scope in `bug-3097-3099-executor-worktree-path-safety.test.cjs` (lines 23–25) — no duplication needed.
-
-### Pattern 4: Extending an existing describe block (all gaps)
-
-New `test()` calls appended inside an existing `describe()` block run independently. The Node.js runner imposes no order dependency between tests in a suite.
-
-Three target files, three file-read conventions:
-- `phase-56-effort-wiring.test.cjs`: reads via local `read(rel)` helper (wraps `fs.readFileSync` with a better error message). New GAP-E tests use `read()`.
-- `bug-3097-3099-executor-worktree-path-safety.test.cjs`: reads `executorSrc` and `executePhaseSrc` at module scope; individual test blocks slice into those strings. New GAP-H test reads from `executorSrc` — no new `readFileSync` call needed.
-- `debug-session-management.test.cjs`: reads per-test via `fs.readFileSync(path.join(process.cwd(), '...'), 'utf8')`. New GAP-K/M2 tests follow the same inline-read style.
-
-### Pattern 5: Removing a stale comment (GAP-M1)
-
-Lines 18–26 of `step-numbering-scan.test.cjs` document "Phase 48 RED expectation" — a pre-fix TDD record of which files were failing when the test was first written. Those 7 files have since been fixed. The comment is purely documentary and its removal requires an Edit operation only — no API changes, no new tests.
+`--no-ff` prevents a fast-forward (there will be no fast-forward anyway given 1,037 fork commits, but explicit is better).
 
 ---
 
-## Key APIs
+## 3. Directory Rename Handling (`get-shit-done/` → `gsd-core/`)
 
-All APIs below are already imported in the files being extended. No new imports are required in any of the target files.
+**This is the single most important mechanical decision. Handle it correctly and conflict volume is manageable. Handle it wrong and you get ~230 spurious add/delete pairs.**
 
-### `node:test` — `describe`, `test`, `test.skip`
+### How the rename happened in upstream
 
-```javascript
-const { describe, test } = require('node:test');
+The rename occurred in **a single commit** in upstream:
+
+```
+463cffd8  chore(#604): rename get-shit-done/ runtime directory to gsd-core/ (#615)
+  — 59 files renamed: {get-shit-done => gsd-core}/...
+  — Date: 2026-06-02
 ```
 
-| Form | Use case in v2.1.0-f |
-|------|---------------------|
-| `test(name, fn)` | All new test cases (GAP-E, GAP-H, GAP-K, GAP-L) |
-| `test(name, { skip: 'reason' }, fn)` | What GAP-M2's current test uses — remove the options object and replace assertion body |
-| `test.skip(name, fn)` | Dot-form; used at line 184 of `debug-session-management.test.cjs`; not needed for any new test |
-| `describe(name, fn)` | Suite grouping; append inside existing `describe` blocks |
-| `describe.skip(name, fn)` | Skips entire suite; present in other test files but not needed for any gap |
-| `test.todo(name)` | Placeholder with no body; not suitable for any gap — all gaps need live assertions |
-
-Node.js 24.14.1 is the runtime. All primitives above are stable and unchanged from Node.js 22.
-
-### `node:assert/strict` — `assert.ok`
-
-```javascript
-const assert = require('node:assert/strict');
+Preceded by:
+```
+79002a00  chore(#518): rename npm package + bin to @opengsd/gsd-core (#519)
+  — package.json name/bin fields renamed
+  — Date: 2026-05-30
 ```
 
-`assert.ok(value, message)` is the sole assertion form required across all 6 gaps. All content-presence checks are boolean (`content.includes(...)`) and map directly to `assert.ok`.
+Since the rename is a single atomic commit in upstream history, git's merge machinery (with adequate rename limit) will see the `get-shit-done/` files on the fork side and `gsd-core/` files on the upstream side as renames of the same content, not new files. This is the correct behavior.
 
-### `node:fs` — `fs.readFileSync`
+### What NOT to do before merging
 
-```javascript
-const fs = require('node:fs');   // or require('fs') — identical resolution
+**Do NOT pre-rename `get-shit-done/` to `gsd-core/` in the fork before running the merge.**
+
+If you manually rename the directory in the fork as a separate commit before merging, git will see:
+- Fork side: `gsd-core/foo.cjs` (just renamed by you)
+- Upstream side: `gsd-core/foo.cjs` (content-modified by upstream)
+- Merge-base: `get-shit-done/foo.cjs`
+
+This generates "both sides added" conflicts for every file, which is worse than letting the merge handle it. **Let the merge carry the rename.**
+
+### Post-merge validation for rename
+
+After merge, verify the rename landed:
+```bash
+ls gsd-core/        # should exist with all content
+ls get-shit-done/ 2>&1   # should NOT exist
+git diff HEAD --name-only | grep get-shit-done  # should be empty
 ```
-
-`fs.readFileSync(absolutePath, 'utf-8')` is the synchronous read form used by all target files. For `phase-56-effort-wiring.test.cjs`, prefer the existing `read(rel)` wrapper over calling `fs.readFileSync` directly.
-
-### `node:path` — `path.join`
-
-Used to build absolute paths. Match the file's existing style:
-- `phase-56` and `bug-3097-3099` use `ROOT = path.join(__dirname, '..')`.
-- `debug-session-management` uses `process.cwd()`.
 
 ---
 
-## What NOT to Use
+## 4. npm Package / bin Rename Interaction
 
-- **No new helpers in `tests/helpers.cjs`** — the helpers there (`createTempDir`, `createTempGitProject`, etc.) support CLI integration tests that need a real filesystem. Content-assertion tests against prompt files do not use temp directories.
-- **No `test.todo`** — marks a placeholder with no assertion body. All 6 gaps need live assertions.
-- **No subtests (`t.test()` inside a test callback)** — none of the target files use them; the flat `describe` + `test` structure is the established convention.
-- **No new `describe` blocks for individual gaps** — append `test()` calls inside the closest existing `describe` block that covers the same file or concept.
-- **No filesystem mock libraries** — GAP-H is a source-text assertion (checking what the protocol text says), not a runtime execution test. No need to mock `.git` file contents on disk.
+**The package rename (`get-shit-done-cc` → `@opengsd/gsd-core`) and bin rename (`get-shit-done-redux` → `gsd-core`) are entirely within `package.json` and `bin/install.js`. They will conflict but are straightforward to resolve.**
+
+### What changed in upstream
+
+```json
+// upstream 1bb253c9: package.json
+{
+  "name": "@opengsd/gsd-core",
+  "bin": {
+    "gsd-core": "bin/install.js",
+    "gsd-tools": "gsd-core/bin/gsd-tools.cjs"
+  }
+}
+
+// fork HEAD: package.json
+{
+  "name": "get-shit-done-cc",
+  "bin": {
+    "get-shit-done-redux": "bin/install.js",
+    "gsd-sdk": "bin/gsd-sdk.js",
+    "gsd-tools": "bin/gsd-sdk.js"
+  }
+}
+```
+
+The fork has additional bin entries (`gsd-sdk`) that upstream does not. The merge will generate a conflict in `package.json`. Resolution: take upstream's `name` and `gsd-core` bin entry, keep fork's additional `gsd-sdk` bin entries if they remain valid.
+
+### `bin/install.js` path assumptions
+
+Fork's `bin/install.js` currently hard-codes `'../get-shit-done/'` in multiple `require()` calls and path strings. Upstream has already updated all of these to `'../gsd-core/'`.
+
+The merge will conflict on these lines. **Resolution rule: accept upstream's `gsd-core/` paths.** After the merge, verify no old paths remain:
+
+```bash
+grep -n "get-shit-done/" bin/install.js
+# Any remaining occurrences should be only in user-facing migration messages, not require() paths
+```
+
+**Exception:** The fork's `bin/install.js` contains a `gsd-sdk` uninstall path handler (line ~6990 area references `get-shit-done`). After adopting the rename, this handler path should reference `gsd-core`, but any migration/cleanup logic for users upgrading from old installations that had `get-shit-done/` installed may need to remain.
+
+---
+
+## 5. Incremental Execution Sequence
+
+**Principle: every checkpoint leaves the repo in a committable state. Never resolve conflicts speculatively — commit after each logical group.**
+
+### Pre-merge setup
+
+```bash
+# 1. Ensure clean working tree
+git status
+# Must show: nothing to commit, working tree clean
+
+# 2. Create a backup branch — this is your recovery anchor
+git branch pre-merge-v1.3.1-backup
+
+# 3. Fetch upstream (ensure ref is current)
+git fetch upstream
+git fetch upstream --tags
+
+# 4. Confirm target commit is available
+git log --oneline -1 1bb253c9
+# Expected: fix(#670): bump hono to clear moderate npm advisory for 1.3.1 hotfix
+
+# 5. Raise rename limits
+git config diff.renameLimit 5000
+git config merge.renameLimit 5000
+```
+
+### Execute the merge
+
+```bash
+# 6. Run the merge — expect conflicts
+git merge -s ort 1bb253c9 \
+  -X rename-threshold=50 \
+  --no-ff \
+  -m "chore: merge upstream v1.3.1 (open-gsd/gsd-core) into fork"
+```
+
+The merge will halt at conflicts. This is expected.
+
+### Conflict triage order
+
+Resolve conflicts in this order to minimize cascading confusion:
+
+**Group A — Structural files (resolve first)**
+- `package.json` — name, version, bin fields
+- `bin/install.js` — path references (`get-shit-done/` → `gsd-core/`)
+- Root config files (`.gitignore`, `eslint.config.mjs`, etc.)
+
+```bash
+# After resolving Group A:
+git add package.json bin/install.js
+git commit -m "merge(v1.3.1): Group A — package.json and install.js rename adoption"
+```
+
+**Group B — Fork-owned files (take `--ours`)**
+
+The fork's `.planning/` directory is entirely local — upstream has no `.planning/` dir, so no conflicts expected there. If any appear (unlikely), take ours:
+```bash
+git checkout --ours .planning/
+git add .planning/
+```
+
+**Group C — Prompt content files (agents, commands, workflows)**
+
+These are the most numerous conflicts and require per-file judgment. The fork has modified these for positive framing; upstream has continued developing them.
+
+Strategy for each conflicted agent/command/workflow:
+- Take upstream's structural additions (new sections, new instructions, new parameters)
+- Preserve fork's positive-framing rewrites of existing sentences
+- Do NOT batch-accept `--theirs` on these files
+
+Work in batches of 10–20 files, committing after each batch:
+```bash
+git add agents/gsd-foo.md agents/gsd-bar.md
+git commit -m "merge(v1.3.1): Group C batch 1 — agents a-f"
+```
+
+**Group D — lib/*.cjs and test files**
+
+For `gsd-core/bin/lib/*.cjs` files (they will appear under the new path after merge), upstream has done substantial refactoring. Take upstream's version as base, then reapply any fork-specific patches:
+```bash
+git checkout --theirs gsd-core/bin/lib/some-file.cjs
+# inspect for fork-specific additions and manually splice them back in
+git add gsd-core/bin/lib/some-file.cjs
+```
+
+**Group E — New upstream files (no action needed)**
+
+Files in `.changeset/`, `docs/`, `eslint-rules/`, `.plans/` that don't exist in the fork will be added automatically with no conflicts.
+
+### Complete the merge
+
+```bash
+# After all conflict groups are resolved and staged:
+git merge --continue
+# This creates the final merge commit
+```
+
+### Post-merge validation
+
+```bash
+# Verify directory rename
+ls gsd-core/bin/gsd-tools.cjs   # must exist
+ls get-shit-done/ 2>&1          # must NOT exist
+
+# Verify package identity
+node -e "const p=require('./package.json'); console.log(p.name, p.version)"
+
+# Verify install.js path references
+grep -c "require.*get-shit-done" bin/install.js  # should be 0
+
+# Verify gsd-tools CLI still works
+node gsd-core/bin/gsd-tools.cjs help
+
+# Run tests — expect some failures; that is acceptable per milestone scope
+npm test 2>&1 | tee /tmp/post-merge-test.txt
+```
+
+### Recovery at any point
+
+```bash
+# Before merge --continue (merge still in progress):
+git merge --abort
+# Returns working tree to pre-merge-v1.3.1-backup state
+
+# After a bad merge commit (before pushing):
+git reset --hard pre-merge-v1.3.1-backup
+```
+
+---
+
+## 6. What NOT to Do
+
+| Action | Why it is wrong |
+|--------|----------------|
+| `--allow-unrelated-histories` | Not needed — shared ancestor confirmed at `fa4bba47` |
+| Pre-renaming `get-shit-done/` before the merge | Creates "both sides added" conflicts for every file in the directory |
+| `git rebase` of fork onto upstream | Re-applies 1,037 commits one-by-one; multiplies conflict work ~1000x |
+| `git merge -X theirs` (blanket) | Obliterates all fork prompt-engineering improvements |
+| `git merge -X ours` (blanket) | Brings in no upstream content |
+| Skipping rename limit increase | Git silently misses ~140 renames, generating ~280 spurious conflicts |
+| Resolving all conflicts in a single commit | No incremental recovery checkpoints |
+| Using `--squash` | Loses upstream commit attribution; hides merged-in range for future merges |
+
+---
+
+## Sources
+
+All findings empirically verified with git commands against `/home/thamw/development/remote-dev/get-shit-done`:
+
+- `git merge-base HEAD 1bb253c9` → confirmed `fa4bba47` (shared ancestor, no `--allow-unrelated-histories` needed)
+- `git rev-list fa4bba47..1bb253c9 --count` → 269 upstream commits
+- `git rev-list fa4bba47..HEAD --count` → 1,037 fork commits
+- `git log --oneline fa4bba47..1bb253c9 | grep -E "rename|brand"` → identified `463cffd8` (dir rename) and `79002a00` (pkg rename)
+- `git show --stat 463cffd8` → confirmed single-commit directory rename (59 files, `{get-shit-done => gsd-core}/...`)
+- `git -c diff.renameLimit=5000 diff --stat --diff-filter=R -M HEAD 1bb253c9` → 88 renames with limit=5000 vs 50 with default 1000; git warned limit should be ≥1,473
+- `git ls-tree -r 1bb253c9 --name-only | grep "\.planning"` → confirmed upstream has no `.planning/` directory
+- `git show 1bb253c9:package.json` + `git show HEAD:package.json` → confirmed bin/name field differences
+- `git show 1bb253c9:bin/install.js | grep gsd-core` → confirmed upstream already uses `gsd-core/` paths throughout
