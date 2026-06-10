@@ -30,7 +30,7 @@ key-files:
 
 key-decisions:
   - "D-01: Detection logic inlined in test file — no require() of scripts/scan-citations.cjs"
-  - "D-04/D-05: PLACEHOLDER_DIGITS = new Set([1, 2, 45, 123]) as exact-value allowlist"
+  - "D-04/D-05: PLACEHOLDER_DIGITS = new Set([1, 2, 123]) as exact-value allowlist (45 removed post-phase by quick task 260610-heg as redundant — the sole #45 in corpus is inside a code fence in inbox.md, already excluded by D-10)"
   - "D-09: Frontmatter exclusion only when --- appears on line 1; later --- treated as thematic break"
   - "D-11: Hex lookbehind (?<![0-9a-fA-F#]) prevents matching 6-char hex color tails"
   - "Provenance comments for INLINE_RE and FEAT_FORM_RE rephrase from 'scripts/scan-citations' to 'Phase 64 citation scanner' to satisfy D-01 no-import grep check"
@@ -77,7 +77,7 @@ completed: 2026-06-09
 ## Decisions Made
 
 - Inlined detection logic (D-01): No `require()` of `scripts/scan-citations.cjs` — the test is entirely self-contained, following the `step-numbering-scan.test.cjs` pattern
-- PLACEHOLDER_DIGITS exact-value Set `[1, 2, 45, 123]` per D-04; `#45` included defensively per D-05 (no corpus hit confirmed)
+- PLACEHOLDER_DIGITS exact-value Set `[1, 2, 123]` per D-04; `45` was originally included defensively per D-05 but was removed post-phase by quick task 260610-heg as redundant (the sole `#45` in corpus is inside a code fence in `inbox.md`, already excluded by D-10)
 - Provenance comments for `INLINE_RE` and `FEAT_FORM_RE` reference "Phase 64 citation scanner" instead of the script path to satisfy the D-01 no-import grep check in acceptance criteria
 
 ## Deviations from Plan
