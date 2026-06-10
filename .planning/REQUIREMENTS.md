@@ -70,29 +70,29 @@ Which phases cover which requirements. Populated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| MERGE-01 | TBD | Pending |
-| MERGE-02 | TBD | Pending |
-| MERGE-03 | TBD | Pending |
-| MERGE-04 | TBD | Pending |
-| RENAME-01 | TBD | Pending |
-| RENAME-02 | TBD | Pending |
-| RENAME-03 | TBD | Pending |
-| PATCH-01 | TBD | Pending |
-| PATCH-02 | TBD | Pending |
-| PATCH-03 | TBD | Pending |
-| PATCH-04 | TBD | Pending |
-| GUARD-01 | TBD | Pending |
-| GUARD-02 | TBD | Pending |
-| SDK-01 | TBD | Pending |
-| SDK-02 | TBD | Pending |
-| VERIFY-01 | TBD | Pending |
-| VERIFY-02 | TBD | Pending |
+| MERGE-01 | Phase 68 | Pending |
+| MERGE-02 | Phase 69 | Pending |
+| MERGE-03 | Phase 69 | Pending |
+| MERGE-04 | Phase 69 | Pending |
+| RENAME-01 | Phase 71 | Pending |
+| RENAME-02 | Phase 71 | Pending |
+| RENAME-03 | Phase 70 | Pending |
+| PATCH-01 | Phase 70 | Pending |
+| PATCH-02 | Phase 70 | Pending |
+| PATCH-03 | Phase 69 | Pending |
+| PATCH-04 | Phase 70 | Pending |
+| GUARD-01 | Phase 70 | Pending |
+| GUARD-02 | Phase 70 | Pending |
+| SDK-01 | Phase 68 | Pending |
+| SDK-02 | Phase 69 | Pending |
+| VERIFY-01 | Phase 71 | Pending |
+| VERIFY-02 | Phase 71 | Pending |
 
 **Coverage:**
 - v2.3.1-a requirements: 17 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 17 ⚠️
+- Mapped to phases: 17 ✓ (Phases 68–71)
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-06-10*
-*Last updated: 2026-06-10 after initial definition*
+*Last updated: 2026-06-10 — traceability mapped to Phases 68–71 during roadmap creation*

@@ -20,6 +20,7 @@
 - ✅ **v2.1.0-e Per-Agent Thinking Effort** — Phases 52–58 (shipped 2026-06-06)
 - ✅ **v2.1.0-f Testing Coverage Gaps** — Phases 59–63 (shipped 2026-06-08)
 - ✅ **v2.1.0-g Citation Cleanup** — Phases 64–67 (shipped 2026-06-10)
+- ⏳ **v2.3.1-a Upstream v1.3.1 Merge & Rename Adoption** — Phases 68–71 (in progress)
 
 ## Phases
 
@@ -276,7 +277,90 @@ Full details: `.planning/milestones/v2.1.0-g-ROADMAP.md`
 
 </details>
 
+<details open>
+<summary>⏳ v2.3.1-a Upstream v1.3.1 Merge & Rename Adoption (Phases 68–71) — IN PROGRESS</summary>
+
+**Milestone Goal:** Land the `git merge` of upstream tag `v1.3.1` (`open-gsd/gsd-core`, `1bb253c9`) into the fork, resolve every conflict preserving critical fork patches, and adopt the `get-shit-done/` → `gsd-core/` directory + npm package/bin rename. A green test suite is **not** a completion gate — residual failing tests are documented as deferred backlog (VERIFY-02). Two architecture decisions are pre-made: KEEP the fork's SHA-based update-check worker (PATCH-02); ACCEPT upstream's `sdk/` deletion after first documenting the fork's `sdk/` capability (SDK-01 before SDK-02).
+
+- [ ] **Phase 68: Pre-Merge Inventory, Backup & SDK Capture** - Recovery branch, fork-edit inventory, architecture decisions recorded, and the fork's sdk/ capability fully documented before the merge deletes it
+- [ ] **Phase 69: Merge Execution & Ordered Conflict Resolution** - Upstream v1.3.1 merged via `git merge -s ort`; conflicts resolved in documented triage order with incremental commits; fork-only files restored; sdk/ deletion accepted
+- [ ] **Phase 70: Fork-Patch Restoration & TypeScript Port** - install.js/worker fork patches re-applied; bin/lib additions ported to src/*.cts; guard tests + agent-frontmatter list + test require paths repaired with non-empty-corpus assertions
+- [ ] **Phase 71: Rename Sweep & Post-Merge Verification** - Stale get-shit-done/ literals eliminated; c8 globs / CI / package identity repointed; structural verification checklist passes; residual failing tests enumerated as deferred backlog
+
+Full details below in Phase Details.
+
+</details>
+
 ## Phase Details
+
+<details open>
+<summary>⏳ v2.3.1-a Phase Details (Phases 68–71) — IN PROGRESS</summary>
+
+**Milestone Goal:** Land upstream tag `v1.3.1` (`open-gsd/gsd-core`, `1bb253c9`) into the fork via `git merge`, resolve all conflicts preserving critical fork patches, and adopt the `get-shit-done/` → `gsd-core/` directory + npm package/bin rename. Verification is **structural/grep-based**, never "all tests pass" — residual failing tests are an expected, documented backlog (VERIFY-02), not a blocker. Pre-made architecture decisions: KEEP the fork's SHA-based update-check worker over upstream's semver/npm approach (PATCH-02); ACCEPT upstream's `sdk/` deletion, but only after the fork's `sdk/` capability is fully documented for a future restoration milestone (SDK-01 gates SDK-02).
+
+### Phase 68: Pre-Merge Inventory, Backup & SDK Capture
+
+**Goal**: Every recovery anchor, fork-edit baseline, architecture decision, and the fork's `sdk/` capability documentation exists on disk before any destructive merge operation runs
+**Depends on**: Phase 67 (previous milestone complete)
+**Requirements**: MERGE-01, SDK-01
+**Success Criteria** (what must be TRUE):
+
+  1. `git branch --list pre-merge-v1.3.1-backup` returns the branch — a recovery anchor exists pointing at pre-merge HEAD
+  2. A fork-edit inventory file (from `git diff fa4bba47..HEAD` over fork-owned paths: `agents/`, `commands/gsd/`, `get-shit-done/workflows/`, `get-shit-done/references/`, `bin/install.js`, `hooks/`) exists and is non-empty
+  3. The fork's `sdk/` capability (`session-runner.ts`, `config.ts`, `model-catalog.ts`, `ws-transport.ts`, supporting modules) is documented in `.planning/` — purpose, public surface, behavior, and integration points captured in enough detail for a future milestone to restore it; a grep of the doc confirms each named module appears
+  4. Both pre-made architecture decisions are recorded in `.planning/` (KEEP fork SHA-based update-check worker; ACCEPT upstream `sdk/` deletion after SDK-01), and `git config diff.renameLimit` / `merge.renameLimit` both read `5000`
+
+**Plans**: TBD
+**UI hint**: no
+
+### Phase 69: Merge Execution & Ordered Conflict Resolution
+
+**Goal**: Upstream `v1.3.1` is merged into the fork with every conflict resolved in documented triage order, fork-only files restored rather than silently dropped, and the `sdk/` deletion accepted
+**Depends on**: Phase 68
+**Requirements**: MERGE-02, MERGE-03, MERGE-04, PATCH-03, SDK-02
+**Success Criteria** (what must be TRUE):
+
+  1. `git log --merges -1 --format=%H` shows a merge commit whose second parent is upstream `1bb253c9` (merged via `git merge -s ort`, shared history — no `--allow-unrelated-histories`, no pre-renamed directory); `git status` reports no unresolved conflict markers
+  2. The merge landed as multiple incremental commits in triage order (`.planning/`+`CLAUDE.md` ours → infrastructure → fork-critical → prompt content per-file → tests → new upstream additions) — `git log` over the merge range shows more than one resolution commit, not a single mega-commit
+  3. Fork-only files upstream deletes are present in the working tree: `ls CLAUDE.md`, `ls CATALOGUE.json`, and `ls .planning/` all succeed with populated content
+  4. `package.json` and `package-lock.json` are reconciled (upstream base with fork-specific values preserved) and the lockfile regenerated cleanly (`npm install` exits 0, no lockfile churn on a second run)
+  5. Upstream's `sdk/` deletion is accepted — `ls sdk/` returns "No such file or directory" — with the delete/modify conflicts resolved in upstream's favor (SDK-01 documentation already captured in Phase 68)
+
+**Plans**: TBD
+**UI hint**: no
+
+### Phase 70: Fork-Patch Restoration & TypeScript Port
+
+**Goal**: Every fork patch that could not survive a three-way merge is re-applied or ported, and the guard/test infrastructure is repaired with non-empty-corpus assertions so it cannot pass vacuously
+**Depends on**: Phase 69
+**Requirements**: PATCH-01, PATCH-02, PATCH-04, GUARD-01, GUARD-02, RENAME-03
+**Success Criteria** (what must be TRUE):
+
+  1. `grep ensureHooksDist bin/install.js` is non-empty, `grep -c GSD_REPO bin/install.js` returns ≥6, and the lib-dir constant is present — the install.js fork patches survived
+  2. `grep -i isNewer hooks/gsd-check-update-worker.js` is non-empty and `grep -i isSemverNewer hooks/gsd-check-update-worker.js` is empty — the fork's SHA-based GitHub Commits API worker is re-applied and upstream's semver/npm approach is absent (PATCH-02 decision encoded)
+  3. The fork `bin/lib` additions (`parseModelEffort`, `resolveReasoningEffortInternal`, `EFFORT_SET`, `*_effort` init fields) appear in the corresponding `src/*.cts` TypeScript sources — confirmed by grep of each symbol in `src/`
+  4. The four fork guard tests (`negative-framing-scan`, `step-numbering-scan`, `no-issue-citations`, `cross-file-step-refs`) have `SCAN_DIRS` repointed to `gsd-core/` AND a non-empty-corpus assertion (`assert.ok(allFiles.length > 0, ...)`); each scanner reports a non-zero file count when run
+  5. `tests/helpers.cjs` and `tests/helpers/cli-negative.cjs` `TOOLS_PATH` point at `gsd-core/bin/gsd-tools.cjs`, test `require()` paths are repointed to `gsd-core/`, the `agent-frontmatter.test.cjs` valid-agent list is reconciled with upstream's agents, and `hooks/dist/` is rebuilt (`npm run build:hooks` exits 0)
+
+**Plans**: TBD
+**UI hint**: no
+
+### Phase 71: Rename Sweep & Post-Merge Verification
+
+**Goal**: The `get-shit-done/` → `gsd-core/` rename is fully adopted across fork-owned files, package identity is reconciled, and the structural post-merge verification checklist passes with residual failures documented as deferred backlog
+**Depends on**: Phase 70
+**Requirements**: RENAME-01, RENAME-02, VERIFY-01, VERIFY-02
+**Success Criteria** (what must be TRUE):
+
+  1. `ls gsd-core/` exists and contains `bin/`, `workflows/`, `references/`, `templates/`; `ls get-shit-done/` returns "No such file or directory"; a `grep -rn get-shit-done/` over fork-owned files returns only intentional migration-message strings
+  2. `grep '"name"' package.json` shows the reconciled fork identity (not `get-shit-done-cc`) and the bin entry reflects the chosen `gsd-core` name (RENAME-02); c8 coverage globs and CI workflow path triggers reference `gsd-core/`
+  3. `node -e "require('./gsd-core/bin/gsd-tools.cjs')"` loads without error; `npm test 2>&1 | grep MODULE_NOT_FOUND` returns empty; `npm run test:coverage 2>&1 | grep Lines` reports a real non-zero percentage (no vacuous coverage)
+  4. Residual failing tests are enumerated and documented in `.planning/` as a deferred conformance-pass backlog (VERIFY-02) — their presence does not block milestone completion
+
+**Plans**: TBD
+**UI hint**: no
+
+</details>
 
 <details>
 <summary>✅ v2.1.0-d Phase Details (Phases 48–51) — SHIPPED 2026-05-31</summary>
@@ -821,6 +905,10 @@ Plans:
 | 65. Guard Test (RED) | v2.1.0-g | 2/2 | Complete    | 2026-06-09 |
 | 66. Citation Cleanup | v2.1.0-g | 4/4 | Complete    | 2026-06-09 |
 | 67. Full Verification | v2.1.0-g | 1/1 | Complete    | 2026-06-10 |
+| 68. Pre-Merge Inventory, Backup & SDK Capture | v2.3.1-a | 0/0 | Not started | - |
+| 69. Merge Execution & Ordered Conflict Resolution | v2.3.1-a | 0/0 | Not started | - |
+| 70. Fork-Patch Restoration & TypeScript Port | v2.3.1-a | 0/0 | Not started | - |
+| 71. Rename Sweep & Post-Merge Verification | v2.3.1-a | 0/0 | Not started | - |
 
 *v1.41.3 shipped 2026-05-19 — see `.planning/milestones/v1.41.3-ROADMAP.md`*
 *v1.41.5 shipped 2026-05-24 — see `.planning/milestones/v1.41.5-ROADMAP.md`*

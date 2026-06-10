@@ -2,11 +2,11 @@
 gsd_state_version: 1.0
 milestone: v2.3.1-a
 milestone_name: Upstream v1.3.1 Merge & Rename Adoption
-status: planning
+status: roadmapped
 last_updated: "2026-06-10T12:51:53.156Z"
 last_activity: 2026-06-10
 progress:
-  total_phases: 0
+  total_phases: 4
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-07 after v2.1.0-f milestone start)
 
 **Core value:** Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships
-**Current focus:** Planning next milestone
+**Current focus:** v2.3.1-a Upstream v1.3.1 merge & rename — Phase 68 (pre-merge inventory + SDK capture)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 68 — Pre-Merge Inventory, Backup & SDK Capture (not started)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-06-10 — Milestone v2.3.1-a started
+Status: Roadmapped — ready for /gsd-plan-phase 68
+Last activity: 2026-06-10 — Roadmap created for v2.3.1-a (Phases 68–71)
 
 ## Performance Metrics
 
@@ -41,6 +41,12 @@ Last activity: 2026-06-10 — Milestone v2.3.1-a started
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table.
+
+- [v2.3.1-a roadmap]: 4-phase brownfield merge sequence (Phases 68–71) continuing from Phase 67 — no number reset. Phase 68 pre-merge (inventory + backup + decisions + SDK-01 capture) → Phase 69 merge execution + ordered conflict resolution → Phase 70 fork-patch restoration + src/*.cts port + guard/test repair → Phase 71 rename sweep + structural verification.
+- [v2.3.1-a roadmap]: SDK-01 (document fork sdk/ capability) is placed in Phase 68 BEFORE the merge — the merge in Phase 69 deletes sdk/ (SDK-02), so the documentation must be captured first. SDK-01 gates SDK-02.
+- [v2.3.1-a roadmap]: Two architecture decisions are pre-made and encoded as success criteria, not re-opened: KEEP fork SHA-based update-check worker over upstream semver/npm (PATCH-02, Phase 70 criterion 2 via isNewer present / isSemverNewer absent grep); ACCEPT upstream sdk/ deletion after SDK-01 (Phase 69 criterion 5).
+- [v2.3.1-a roadmap]: A green test suite is NOT a completion gate. All verification criteria are structural/grep-based (gsd-core/ exists, get-shit-done/ gone, require() loads, non-zero coverage, ensureHooksDist/GSD_REPO grep, non-empty SCAN_DIRS corpus). Residual failures are enumerated as deferred backlog (VERIFY-02, Phase 71).
+- [v2.3.1-a roadmap]: Dependency ordering enforced — SDK-01 doc before merge; merge (Phase 69) before TS port (Phase 70, src/*.cts only exists post-merge); helper/guard repair (Phase 70) before meaningful rename-sweep verification (Phase 71).
 
 - [v2.1.0-f roadmap]: 5-phase risk-ordered sequence: comment deletion → effort wiring (pure append) → submodule exclusion → rubric inlining → security test rewrite. Front-loads zero-risk changes; SFC-01 goes last because it is the only mutation that changes an existing test from skipped to active.
 - [v2.1.0-f roadmap]: EWC-04 (code-review-fix.md) and EWC-07 (ingest-docs.md) each need assertions for TWO agents — four tokens each, not two.
@@ -59,7 +65,7 @@ SFC-01 (Phase 63) is the only edit that changes test status from skipped to acti
 
 ### Coverage
 
-All 11 v2.1.0-f requirements mapped to Phases 59–63; each maps to exactly one phase. No orphans, no duplicates.
+All 17 v2.3.1-a requirements (MERGE-01..04, RENAME-01..03, PATCH-01..04, GUARD-01..02, SDK-01..02, VERIFY-01..02) mapped to Phases 68–71; each maps to exactly one phase. No orphans, no duplicates. Phase 68: MERGE-01, SDK-01. Phase 69: MERGE-02/03/04, PATCH-03, SDK-02. Phase 70: PATCH-01/02/04, GUARD-01/02, RENAME-03. Phase 71: RENAME-01/02, VERIFY-01/02.
 
 ### Pending Todos
 
@@ -94,9 +100,9 @@ None. Research is HIGH confidence across all five phases.
 
 ## Session Continuity
 
-Last activity: 2026-06-10 — Completed quick task 260610-h41: Condense PROJECT.md; move information to PROJECT_HISTORY.md
-Stopped at: Quick task 260610-h41 complete
-Resume file: .planning/phases/67-full-verification/67-CONTEXT.md
+Last activity: 2026-06-10 — Created v2.3.1-a roadmap (Phases 68–71); 17/17 requirements mapped
+Stopped at: Roadmap created; ready to plan Phase 68
+Resume file: .planning/ROADMAP.md (v2.3.1-a Phase Details)
 
 ## Deferred Items
 
@@ -135,4 +141,4 @@ Items acknowledged and deferred at milestone close on 2026-06-10:
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- Plan the first phase with /gsd-plan-phase 68
