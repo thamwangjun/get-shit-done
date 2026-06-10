@@ -91,11 +91,12 @@ None. Research is HIGH confidence across all five phases.
 | 260610-heg | Refactor no-issue-citations.test.cjs to two-tier allowlist (PLACEHOLDER_DIGITS + FILE_ALLOWLIST per-file map) | 2026-06-10 | 23089feb | [260610-heg-refactor-no-issue-citations-test-cjs-all](./quick/260610-heg-refactor-no-issue-citations-test-cjs-all/) |
 | 260610-d6m | Archive two resolved debug sessions into .planning/debug/resolved/ | 2026-06-10 | c931aaf8 | [260610-d6m-archive-resolved-debug-sessions](./quick/260610-d6m-archive-resolved-debug-sessions/) |
 | 260610-ita | Address milestone v2.1.0-g documentation tech debt | 2026-06-10 | e3bf3419 | [260610-ita-address-milestone-v2-1-0-g-documentation](./quick/260610-ita-address-milestone-v2-1-0-g-documentation/) |
+| 260610-h41 | Condense PROJECT.md; move information to PROJECT_HISTORY.md | 2026-06-10 | 87f62ebe | [260610-h41-condense-project-md-move-information-to-](./quick/260610-h41-condense-project-md-move-information-to-/) |
 
 ## Session Continuity
 
-Last activity: 2026-06-10 — Completed quick task 260610-ita: Address milestone v2.1.0-g documentation tech debt
-Stopped at: Quick task 260610-ita complete
+Last activity: 2026-06-10 — Completed quick task 260610-h41: Condense PROJECT.md; move information to PROJECT_HISTORY.md
+Stopped at: Quick task 260610-h41 complete
 Resume file: .planning/phases/67-full-verification/67-CONTEXT.md
 
 ## Deferred Items
