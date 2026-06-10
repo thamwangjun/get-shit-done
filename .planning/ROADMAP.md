@@ -269,7 +269,7 @@ Full details: `.planning/milestones/v2.1.0-f-ROADMAP.md`
 - [x] **Phase 64: Citation Pattern Exploration** - Identify all citation formats beyond `#NNN` in the 5 scoped dirs (completed 2026-06-09)
 - [x] **Phase 65: Guard Test (RED)** - Permanent guard test exists, covers all patterns, and fails RED enumerating real violations (completed 2026-06-09)
 - [x] **Phase 66: Citation Cleanup** - All citations removed; sentences read naturally; frontmatter preserved (completed 2026-06-09)
-- [ ] **Phase 67: Full Verification** - npm test 0 failures; guard test GREEN; all content tests unaffected
+- [x] **Phase 67: Full Verification** - npm test 0 failures; guard test GREEN; all content tests unaffected (completed 2026-06-10)
 
 ## Phase Details
 
@@ -735,7 +735,7 @@ Plans:
 **Plans**: 1 plan
 Plans:
 
-- [ ] 67-01-PLAN.md — Confirm guard test GREEN, reconcile CITE-11 grep, and run the full npm test suite to zero failures
+- [x] 67-01-PLAN.md — Confirm guard test GREEN, reconcile CITE-11 grep, and run the full npm test suite to zero failures
 
 ## Progress
 
@@ -815,7 +815,7 @@ Plans:
 | 64. Citation Pattern Exploration | v2.1.0-g | 1/1 | Complete    | 2026-06-09 |
 | 65. Guard Test (RED) | v2.1.0-g | 2/2 | Complete    | 2026-06-09 |
 | 66. Citation Cleanup | v2.1.0-g | 4/4 | Complete    | 2026-06-09 |
-| 67. Full Verification | v2.1.0-g | 0/TBD | Not started | - |
+| 67. Full Verification | v2.1.0-g | 1/1 | Complete    | 2026-06-10 |
 
 *v1.41.3 shipped 2026-05-19 — see `.planning/milestones/v1.41.3-ROADMAP.md`*
 *v1.41.5 shipped 2026-05-24 — see `.planning/milestones/v1.41.5-ROADMAP.md`*

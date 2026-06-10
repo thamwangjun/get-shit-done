@@ -64,6 +64,7 @@ None identified — this is a contained mechanical cleanup milestone.
 | CITE-12 | Phase 67 | Pending |
 
 **Coverage:**
+
 - v2.1.0-g requirements: 12 total
 - Mapped to phases: 12
 - Unmapped: 0 ✓
