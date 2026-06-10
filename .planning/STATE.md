@@ -1,13 +1,12 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.1.0-g
-milestone_name: Citation Cleanup
-status: complete
-stopped_at: Milestone complete — archived 2026-06-10
-last_updated: "2026-06-10T00:00:00.000Z"
+milestone: v2.3.1-a
+milestone_name: Upstream v1.3.1 Merge & Rename Adoption
+status: planning
+last_updated: "2026-06-10T12:51:53.156Z"
 last_activity: 2026-06-10
 progress:
-  total_phases: 18
+  total_phases: 0
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -25,10 +24,10 @@ See: .planning/PROJECT.md (updated 2026-06-07 after v2.1.0-f milestone start)
 
 ## Current Position
 
-Phase: 67
-Plan: Not started
-Status: Executing Phase 67
-Last activity: 2026-06-10
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-06-10 — Milestone v2.3.1-a started
 
 ## Performance Metrics
 

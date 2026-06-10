@@ -18,9 +18,18 @@ Every agent, command, and workflow file on `main` meets the fork's prompt engine
 
 Full milestone summaries are archived in `.planning/PROJECT_HISTORY.md` (Shipped Milestone section).
 
-## Current Milestone: Planning Next
+## Current Milestone: v2.3.1-a Upstream v1.3.1 Merge & Rename Adoption
 
-**Next:** Run `/gsd-new-milestone` to start next milestone cycle (questioning → research → requirements → roadmap).
+**Goal:** Land the upstream merge to tag `v1.3.1` (`open-gsd/gsd-core`), resolve every conflict preserving critical fork patches, and adopt the `get-shit-done/` → `gsd-core/` directory + npm package/bin rename.
+
+**Target outcomes:**
+- Upstream `v1.3.1` merged into the fork; all conflicts resolved with fork patches intact
+- Directory rename `get-shit-done/` → `gsd-core/` and package/bin rename adopted across the fork
+- Clean, committed merged tree at `v1.3.1`
+
+**Out of scope (this milestone):** prompt-quality conformance pass (positive framing, no `skills:`, citation cleanup) on new/changed files is deferred; a green test suite is NOT a completion gate — failing tests are acceptable.
+
+**Key context:** Massive divergence (~3,239 files, +145k/−290k; merge-base `fa4bba47`). Upstream repo identity changed from `thamwangjun/get-shit-done` (~v1.41.x) to `open-gsd/gsd-core` (`v1.x.x` semver). Fork playbooks (`.planning/fork_plans/`) and `UPSTREAM_TO_FORK_CHANGES_GUIDE.md` were deleted; merge guidance will be rebuilt via research. The prompt-engineering reference is now `PROMPT_ENGINEERING_GUIDE_V10.md` (this doc's Context still cites the removed V09).
 
 ## Requirements
 
