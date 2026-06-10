@@ -88,11 +88,12 @@ None. Research is HIGH confidence across all five phases.
 | 260608-j3g | Fix v2.1.0-f milestone tracking metadata to reflect verified completion | 2026-06-08 | 04d98957 | [260608-j3g-fix-v2-1-0-f-milestone-tracking-metadata](./quick/260608-j3g-fix-v2-1-0-f-milestone-tracking-metadata/) |
 | 260608-k3p | Fix milestone-close audit false-flagging completed quick tasks; document analysis-only quick task | 2026-06-08 | 728520d8 | [260608-k3p-fix-milestone-close-audit-false-flagging](./quick/260608-k3p-fix-milestone-close-audit-false-flagging/) |
 | 260610-gku | Fix guard test false negative: remove INLINE_RE hex lookbehind, add owner/repo#NNN unit test, remove citations from 7 agent files | 2026-06-10 | 33acac36 | [260610-gku-fix-guard-test-false-negative-tighten-in](./quick/260610-gku-fix-guard-test-false-negative-tighten-in/) |
+| 260610-heg | Refactor no-issue-citations.test.cjs to two-tier allowlist (PLACEHOLDER_DIGITS + FILE_ALLOWLIST per-file map) | 2026-06-10 | 23089feb | [260610-heg-refactor-no-issue-citations-test-cjs-all](./quick/260610-heg-refactor-no-issue-citations-test-cjs-all/) |
 
 ## Session Continuity
 
-Last activity: 2026-06-10 — Completed quick task 260610-gku: Fix guard test false negative (INLINE_RE lookbehind removed, 7 agent citation files cleaned)
-Stopped at: Phase 67 context gathered
+Last activity: 2026-06-10 — Completed quick task 260610-heg: Refactor no-issue-citations allowlist to two-tier structure
+Stopped at: Quick task 260610-heg complete
 Resume file: .planning/phases/67-full-verification/67-CONTEXT.md
 
 ## Deferred Items
