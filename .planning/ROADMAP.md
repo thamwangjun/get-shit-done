@@ -721,7 +721,6 @@ Plans:
 - [x] 66-03-PLAN.md — Clean citations from 6 agents/ files with baseline/after agent-frontmatter test-count gate [CITE-06, CITE-07, CITE-08, CITE-09]
 - [x] 66-04-PLAN.md — Clean citations from 10 get-shit-done/references/ files [CITE-06, CITE-07, CITE-08, CITE-09]
 
-
 #### Phase 67: Full Verification
 
 **Goal**: The full test suite passes with zero failures; the guard test is GREEN; all pre-existing content tests are unaffected
@@ -734,8 +733,8 @@ Plans:
   3. The negative-framing scanner result is unchanged from the v2.1.0-f baseline (99/99 subtests passing)
 
 **Plans**: 1 plan
-
 Plans:
+
 - [ ] 67-01-PLAN.md — Confirm guard test GREEN, reconcile CITE-11 grep, and run the full npm test suite to zero failures
 
 ## Progress
