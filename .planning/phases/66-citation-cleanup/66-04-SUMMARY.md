@@ -26,6 +26,7 @@ key_files:
 decisions:
   - "Stale test filename feat-3347-graphify-auto-update-config.test.cjs updated to the actual file graphify-auto-update.test.cjs, removing the feat-3347 citation naturally"
   - "Code-fence content in worktree-path-safety.md (bash echo strings with #2924, #3097) left untouched per D-09; guard test correctly skips them"
+requirements-completed: [CITE-06, CITE-07, CITE-08, CITE-09]
 metrics:
   duration_minutes: 12
   completed_date: "2026-06-09"
@@ -86,6 +87,10 @@ CLEAN: references/
 ### Notes
 
 Code-fence content preserved per D-09: `worktree-path-safety.md` contains `(#2924)` and `(#3097)` inside bash `echo` strings within triple-backtick fences. These were not modified. The guard test's code-fence exclusion logic correctly skips them; the raw `grep` check in the acceptance criteria still shows 4 matches, all of which are inside code fences.
+
+## Templates/ Dir Coverage
+
+No 66-05 templates-cleanup plan was needed: the sole `templates/` hit, `get-shit-done/templates/codebase/conventions.md:232 #123`, is covered by `PLACEHOLDER_DIGITS` (illustrative placeholder) and was never a guard test violation.
 
 ## Known Stubs
 
