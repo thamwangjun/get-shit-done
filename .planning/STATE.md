@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v2.1.0-g
 milestone_name: Citation Cleanup
-status: executing
-stopped_at: Phase 67 context gathered
-last_updated: "2026-06-10T03:00:00.000Z"
+status: complete
+stopped_at: Milestone complete — archived 2026-06-10
+last_updated: "2026-06-10T00:00:00.000Z"
 last_activity: 2026-06-10
 progress:
   total_phases: 18
@@ -21,7 +21,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-07 after v2.1.0-f milestone start)
 
 **Core value:** Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships
-**Current focus:** Phase 67 — full-verification
+**Current focus:** Planning next milestone
 
 ## Current Position
 
@@ -124,6 +124,14 @@ Items acknowledged and deferred at milestone close on 2026-06-06:
 | quick_task | 260604-tev-fix-gsd-quick-losing-summary-md-in-workt | unknown |
 | quick_task | 260606-tbq-fix-3-sdk-effort-resolution-gaps-in-sdk- | unknown |
 | quick_task | 260606-vf5-fix-v2-1-0-e-audit-gaps-expose-03-sdk-co | unknown |
+
+Items acknowledged and deferred at milestone close on 2026-06-10:
+
+| Category | Item | Status |
+|----------|------|--------|
+| quick_task | 260609-43f-remove-issue-pr-number-citations-from-pr | abandoned |
+| quick_task | 260610-heg-refactor-no-issue-citations-test-cjs-all | completed (tracking state stale) |
+| quick_task | 260610-ita-address-milestone-v2-1-0-g-documentation | completed (tracking state stale) |
 
 ## Operator Next Steps
 

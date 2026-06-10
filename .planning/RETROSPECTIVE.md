@@ -2,6 +2,37 @@
 
 *A living document updated after each milestone. Lessons feed forward into future planning.*
 
+## Milestone: v2.1.0-g — Citation Cleanup
+
+**Shipped:** 2026-06-10
+**Phases:** 4 (64–67) | **Plans:** 8 | **Timeline:** 2026-06-09 → 2026-06-10 (2 days) | **Commits:** 78
+
+### What Was Built
+
+TDD-driven citation removal: guard test written RED (98 violations across 45 files), corpus cleaned (35 files across 4 scoped dirs — commands, workflows, agents, references), guard confirmed GREEN. Two post-milestone quick tasks tightened the guard regex (`260610-gku`) and refactored to a two-tier allowlist (`260610-heg`). Final state: guard 327/327, npm test 9799 pass / 0 fail.
+
+### What Worked
+
+**TDD red-gate first**: Writing the guard test RED before any cleanup (Phase 65 before 66) gave a precise baseline — 98 violations, exact file:line enumeration — and made the cleanup target unambiguous. When the first post-milestone quick task found a false negative, the guard itself was the debug harness. **Parallel cleanup waves**: The 4 Phase 66 plans ran in parallel (commands, workflows, agents, references) with no file overlap — wall-clock time was effectively 1 plan's duration, not 4.
+
+### What Was Inefficient
+
+Two post-milestone quick tasks were needed to tighten the guard after initial cleanup — the INLINE_RE hex lookbehind excluded `owner/repo#NNN` patterns, and the allowlist design needed a two-tier refactor after `#45` was added then removed. Better pre-design of the allowlist (PLACEHOLDER_DIGITS as separate set from FILE_ALLOWLIST) before Phase 65 would have avoided the 260610-heg refactor.
+
+### Patterns Established
+
+**Two-tier allowlist pattern**: For corpus guards with context-dependent exemptions, separate global allowlist (PLACEHOLDER_DIGITS — token values allowlisted everywhere) from per-file map (FILE_ALLOWLIST — specific file:line combinations for known legitimate uses). Avoids allowlisting a token globally when only one file actually needs the exemption.
+
+### Key Lessons
+
+Pre-design the allowlist tiers before writing the guard test — the cost of a two-tier refactor post-milestone (260610-heg) was higher than the cost of designing it correctly the first time. The two-tier pattern was discovered during post-milestone tightening, not during the initial guard design.
+
+### Cost Observations
+- Sessions: spanned 2026-06-09 → 2026-06-10
+- Notable: 2-day delivery for a contained mechanical cleanup; parallel Phase 66 waves were the velocity driver
+
+---
+
 ## Milestone: v2.1.0-f — Testing Coverage Gaps
 
 **Shipped:** 2026-06-08

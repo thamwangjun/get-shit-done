@@ -1,5 +1,24 @@
 # Milestones
 
+## v2.1.0-g Citation Cleanup (Shipped: 2026-06-10)
+
+**Phases completed:** 4 phases (64–67), 8 plans
+**Git range:** 16e5a94a..d8548ebd · 2026-06-09 → 2026-06-10
+**Timeline:** 2 days
+**Files changed:** 102 files, +6,857 / -188 lines
+**Known deferred items at close:** 3 (see STATE.md Deferred Items — all complete or abandoned)
+
+**Key accomplishments:**
+
+- Built `scripts/scan-citations.cjs` scanner identifying all citation formats in the 5 scoped dirs: `#NNN` inline, parenthetical `(#NNN)`, and feat-form `feat-NNNN`; produced `64-FINDINGS.md` with 103 hits across 45 files (Phase 64, CITE-01/02)
+- Created permanent corpus guard `tests/no-issue-citations.test.cjs` with inline two-pass state-machine detection, two-tier allowlist (`PLACEHOLDER_DIGITS` + `FILE_ALLOWLIST`), and 4 unit tests for each pattern; confirmed RED at 98 violations before cleanup (Phase 65, CITE-03/04/05)
+- Cleaned all issue/PR citations from 35 files across 4 scoped dirs in 4 parallel plans: 9 commands, 20 workflows, 6 agents, 10 references — all sentences read naturally, agent frontmatter preserved exactly (Phase 66, CITE-06/07/08/09)
+- Confirmed guard GREEN (326/326), full npm test suite 9808 total / 9799 pass / 0 fail / 9 skipped, negative-framing scanner 99/99, all content tests unaffected (Phase 67, CITE-10/11/12)
+
+**Verification:** All 12 requirements satisfied across 3 sources (VERIFICATION.md × SUMMARY frontmatter × REQUIREMENTS.md). All 4 phases Nyquist-compliant. Milestone goal: ACHIEVED.
+
+---
+
 ## v2.1.0-f Testing Coverage Gaps (Shipped: 2026-06-08)
 
 **Phases completed:** 5 phases (59–63), 5 plans, 5 tasks

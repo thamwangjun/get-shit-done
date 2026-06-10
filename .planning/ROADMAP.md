@@ -19,7 +19,7 @@
 - ✅ **v2.1.0-d Whole-Integer Step Numbering** — Phases 48–51 (shipped 2026-05-31)
 - ✅ **v2.1.0-e Per-Agent Thinking Effort** — Phases 52–58 (shipped 2026-06-06)
 - ✅ **v2.1.0-f Testing Coverage Gaps** — Phases 59–63 (shipped 2026-06-08)
-- 🚧 **v2.1.0-g Citation Cleanup** — Phases 64–67 (in progress)
+- ✅ **v2.1.0-g Citation Cleanup** — Phases 64–67 (shipped 2026-06-10)
 
 ## Phases
 
@@ -262,7 +262,8 @@ Full details: `.planning/milestones/v2.1.0-f-ROADMAP.md`
 
 </details>
 
-### 🚧 v2.1.0-g Citation Cleanup (In Progress)
+<details>
+<summary>✅ v2.1.0-g Citation Cleanup (Phases 64–67) — SHIPPED 2026-06-10</summary>
 
 **Milestone Goal:** Remove all issue/PR-number citations from prompt content `.md` files in the 5 scoped dirs and add a permanent regression guard that blocks reintroduction.
 
@@ -270,6 +271,10 @@ Full details: `.planning/milestones/v2.1.0-f-ROADMAP.md`
 - [x] **Phase 65: Guard Test (RED)** - Permanent guard test exists, covers all patterns, and fails RED enumerating real violations (completed 2026-06-09)
 - [x] **Phase 66: Citation Cleanup** - All citations removed; sentences read naturally; frontmatter preserved (completed 2026-06-09)
 - [x] **Phase 67: Full Verification** - npm test 0 failures; guard test GREEN; all content tests unaffected (completed 2026-06-10)
+
+Full details: `.planning/milestones/v2.1.0-g-ROADMAP.md`
+
+</details>
 
 ## Phase Details
 
@@ -824,3 +829,4 @@ Plans:
 *v2.1.0-d shipped 2026-05-31 — see `.planning/milestones/v2.1.0-d-ROADMAP.md`*
 *v2.1.0-e shipped 2026-06-06 — see `.planning/milestones/v2.1.0-e-ROADMAP.md`*
 *v2.1.0-f shipped 2026-06-08 — see `.planning/milestones/v2.1.0-f-ROADMAP.md`*
+*v2.1.0-g shipped 2026-06-10 — see `.planning/milestones/v2.1.0-g-ROADMAP.md`*

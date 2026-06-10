@@ -20,19 +20,17 @@ Every step label across all prompt content files is a whole integer. Three new e
 
 Every file installed by `bin/install.js` is now fully self-contained. Eta v4 is wired as the install-time template engine in both copy loops; all 82 source files converted from bare-line `@~/` static refs to `<%~ include() %>` tags. Zero unresolved references in any installed runtime — verified by `tests/install-eta-regression.test.cjs` (6/6) and full Claude install walk (TEST-01 with 27-entry `ALLOWED_INLINE_REFS`).
 
+## Shipped: v2.1.0-g Citation Cleanup (2026-06-10)
+
+All issue/PR-number citations removed from prompt content `.md` files across 5 scoped dirs. Permanent regression guard `tests/no-issue-citations.test.cjs` added — covers `#NNN` inline, parenthetical, and feat-form patterns with two-tier allowlist (PLACEHOLDER_DIGITS + FILE_ALLOWLIST). TDD red→green: guard written RED (98 violations), corpus cleaned, guard GREEN (327/327). Post-milestone tightening via quick tasks 260610-gku (regex tightened, 7 agent files cleaned) and 260610-heg (two-tier allowlist refactor). `npm test` 9808 total / 9799 pass / 0 fail / 9 skipped. Full details: `.planning/milestones/v2.1.0-g-ROADMAP.md`.
+
 ## Shipped: v2.1.0-f Testing Coverage Gaps (2026-06-08)
 
 Closed all behavioral and documentation testing gaps from the v2.1.0-e gap report. Test-only milestone — 5 phases (59–63), 5 plans, additive test code across four existing test files with no agent/workflow source changes: 8 Group B effort-wiring guards (`phase-56-effort-wiring.test.cjs`), submodule-exclusion guard scoped to `gsd-executor.md` `<task_commit_protocol>` (`bug-3097-3099-...test.cjs`), rubric-inlining guard for `gsd-user-profiler.md` and reactivated `gsd-debugger.md` hardened-security test (`debug-session-management.test.cjs`), and stale-comment removal (`step-numbering-scan.test.cjs`). `npm test` 9115 pass / 0 fail / 9 skipped. Full details: `.planning/milestones/v2.1.0-f-ROADMAP.md`.
 
-## Current Milestone: v2.1.0-g Citation Cleanup
+## Current Milestone: Planning Next
 
-**Goal:** Remove all issue/PR-number citations from prompt content .md files and add a permanent regression guard that blocks reintroduction.
-
-**Target features:**
-- Broader-pattern exploration audit within the 5 scoped dirs to find any citation formats beyond `#NNN`
-- Permanent guard test (`tests/no-issue-citations.test.cjs`) covering all discovered citation patterns; test-first (RED before cleanup, GREEN after)
-- Citation removal across `commands/`, `get-shit-done/workflows/`, `agents/`, `get-shit-done/references/`, `get-shit-done/templates/`
-- Sentence cleanup (orphaned punctuation, double spaces, dangling connectors)
+**Next:** Run `/gsd-new-milestone` to start next milestone cycle (questioning → research → requirements → roadmap).
 
 ## Requirements
 
@@ -140,15 +138,16 @@ Closed all behavioral and documentation testing gaps from the v2.1.0-e gap repor
 - ✓ WSC-01: Submodule-exclusion path asserted in `bug-3097-3099-executor-worktree-path-safety.test.cjs` — v2.1.0-f
 - ✓ RIC-01: User-profiler Eta-inlined rubric reference asserted in `debug-session-management.test.cjs` — v2.1.0-f
 - ✓ SFC-01: Reactivated `gsd-debugger.md` hardened-security test ("untrusted user input" / "evidence data only") — v2.1.0-f
+- ✓ CITE-01: Exploration audit identified all citation formats (`#NNN`, `feat-NNNN`, parenthetical) in the 5 scoped dirs — v2.1.0-g
+- ✓ CITE-02: Permanent guard test `tests/no-issue-citations.test.cjs` runs under `npm test` with two-tier allowlist — v2.1.0-g
+- ✓ CITE-03: All `#NNN`-form citations removed from all 5 scoped dirs — v2.1.0-g
+- ✓ CITE-04: All feat-form citations removed; word-form "issue NNNN" not present in corpus — v2.1.0-g
+- ✓ CITE-05: Cleaned sentences read naturally; no orphaned punctuation, double spaces, or dangling connectors — v2.1.0-g
+- ✓ CITE-06: `npm test` 9808 total / 9799 pass / 0 fail; guard GREEN 327/327; all content tests unaffected — v2.1.0-g
 
 ### Active
 
-- [ ] CITE-01: Exploration audit finds all citation formats (beyond `#NNN`) in the 5 scoped prompt-content dirs
-- [ ] CITE-02: Permanent guard test `tests/no-issue-citations.test.cjs` runs under `npm test` and blocks citation reintroduction
-- [ ] CITE-03: All `#NNN`-form citations removed from `commands/`, `get-shit-done/workflows/`, `agents/`, `get-shit-done/references/`, `get-shit-done/templates/`
-- [ ] CITE-04: All additional citation forms (if any found by CITE-01) removed from scoped dirs
-- [ ] CITE-05: Cleaned sentences read naturally — no orphaned punctuation, double spaces, or dangling connectors
-- [ ] CITE-06: Full `npm test` passes with guard green; agent-frontmatter and all content tests unaffected
+(None — ready for next milestone)
 
 ### Out of Scope
 
@@ -249,4 +248,4 @@ This document evolves at phase transitions and milestone boundaries.
 ---
 ---
 ---
-*Last updated: 2026-06-09 after v2.1.0-g milestone start*
+*Last updated: 2026-06-10 after v2.1.0-g milestone complete*
