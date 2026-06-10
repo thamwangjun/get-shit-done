@@ -733,7 +733,10 @@ Plans:
   2. `npm test 2>&1 | tee /tmp/gsd-test-output.txt` reports 0 failures — agent-frontmatter, negative-framing-scan, step-numbering-scan, cross-file-step-refs, and all other suite members pass
   3. The negative-framing scanner result is unchanged from the v2.1.0-f baseline (99/99 subtests passing)
 
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 67-01-PLAN.md — Confirm guard test GREEN, reconcile CITE-11 grep, and run the full npm test suite to zero failures
 
 ## Progress
 
