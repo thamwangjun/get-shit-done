@@ -345,7 +345,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 69-03-PLAN.md — Tier 3: restore fork get-shit-done/bin/lib modules (rename not adopted); accept sdk/ deletion
+- [x] 69-03-PLAN.md — Tier 3: restore fork get-shit-done/bin/lib modules (rename not adopted); accept sdk/ deletion
 
 **Wave 7** *(blocked on Wave 3 completion)*
 
@@ -939,7 +939,7 @@ Plans:
 | 66. Citation Cleanup | v2.1.0-g | 4/4 | Complete    | 2026-06-09 |
 | 67. Full Verification | v2.1.0-g | 1/1 | Complete    | 2026-06-10 |
 | 68. Pre-Merge Inventory, Backup & SDK Capture | v2.3.1-a | 2/2 | Complete   | 2026-06-11 |
-| 69. Merge Execution & Ordered Conflict Resolution | v2.3.1-a | 2/8 | In Progress|  |
+| 69. Merge Execution & Ordered Conflict Resolution | v2.3.1-a | 3/8 | In Progress|  |
 | 70. Fork-Patch Restoration & TypeScript Port | v2.3.1-a | 0/0 | Not started | - |
 | 71. Rename Sweep & Post-Merge Verification | v2.3.1-a | 0/0 | Not started | - |
 
