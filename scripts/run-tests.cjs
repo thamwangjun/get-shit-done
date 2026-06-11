@@ -11,6 +11,8 @@
 //   node scripts/run-tests.cjs --suite integration # *.integration.test.cjs
 //   node scripts/run-tests.cjs --suite install     # *.install.test.cjs
 //   node scripts/run-tests.cjs --suite slow        # *.slow.test.cjs
+//   node scripts/run-tests.cjs --files "a.test.cjs b.test.cjs"
+//   node scripts/run-tests.cjs --files-from /tmp/selected-tests.txt
 //
 // Suite grouping convention: filename suffix marker before `.test.cjs`.
 // A file named `foo.security.test.cjs` belongs to the `security` suite.
@@ -18,17 +20,39 @@
 // See docs/TESTING-SUITES.md for full grouping policy.
 'use strict';
 
-const os = require('os');
-const { readdirSync } = require('fs');
+const { readdirSync, existsSync } = require('fs');
 const { join } = require('path');
 const { execFileSync } = require('child_process');
 
 const SUITES = ['all', 'unit', 'integration', 'install', 'security', 'slow'];
+
+// ADR-457 build-at-publish: gsd-core/bin/lib/*.cjs is generated from
+// src/*.cts and gitignored, so on a clean checkout (fresh CI, before any build)
+// the artifact is absent — yet test files require it. This is the universal
+// chokepoint every test path funnels through (test:unit, --files-from, direct
+// invocation), so build the artifact here if missing. It is a no-op once built
+// (dev, pretest, a prior run in the same job), which keeps the harness test's
+// spawned invocations side-effect-free. Paths resolve from __dirname (not cwd),
+// so it works regardless of GSD_TEST_DIR / temp-dir cwd. NOTE: the sentinel is
+// the pilot module; revisit (or switch to an unconditional quiet build) as more
+// modules migrate into src/.
+function ensureBuiltArtifacts() {
+  const root = join(__dirname, '..');
+  const sentinel = join(root, 'gsd-core', 'bin', 'lib', 'semver-compare.cjs');
+  if (existsSync(sentinel)) return;
+  const tscBin = require.resolve('typescript/bin/tsc');
+  execFileSync(process.execPath, [tscBin, '-p', join(root, 'tsconfig.build.json')], {
+    cwd: root,
+    stdio: 'inherit',
+  });
+}
 const MARKED_SUITES = ['integration', 'install', 'security', 'slow'];
 
 function parseArgs(argv) {
   let suite = null;
   let seen = false;
+  let files = null;
+  let filesFrom = null;
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--suite') {
@@ -51,11 +75,50 @@ function parseArgs(argv) {
       if (!suite) {
         return { error: '--suite requires a value' };
       }
+    } else if (a === '--files') {
+      if (files !== null) {
+        return { error: 'duplicate --files flag' };
+      }
+      const v = argv[i + 1];
+      if (!v || v.startsWith('--')) {
+        return { error: '--files requires a value' };
+      }
+      files = v;
+      i++;
+    } else if (a.startsWith('--files=')) {
+      if (files !== null) {
+        return { error: 'duplicate --files flag' };
+      }
+      files = a.slice('--files='.length);
+      if (!files) {
+        return { error: '--files requires a value' };
+      }
+    } else if (a === '--files-from') {
+      if (filesFrom !== null) {
+        return { error: 'duplicate --files-from flag' };
+      }
+      const v = argv[i + 1];
+      if (!v || v.startsWith('--')) {
+        return { error: '--files-from requires a value' };
+      }
+      filesFrom = v;
+      i++;
+    } else if (a.startsWith('--files-from=')) {
+      if (filesFrom !== null) {
+        return { error: 'duplicate --files-from flag' };
+      }
+      filesFrom = a.slice('--files-from='.length);
+      if (!filesFrom) {
+        return { error: '--files-from requires a value' };
+      }
     } else {
       return { error: `unknown argument: ${a}` };
     }
   }
-  return { suite };
+  if (files !== null && filesFrom !== null) {
+    return { error: '--files and --files-from cannot be combined' };
+  }
+  return { suite, files, filesFrom };
 }
 
 // Return the marked suite name embedded in a filename, or null if it's unmarked.
@@ -78,6 +141,46 @@ function selectFiles(allFiles, suite) {
     return allFiles.filter(f => suiteOf(f) === null);
   }
   return allFiles.filter(f => suiteOf(f) === suite);
+}
+
+function splitFileList(value) {
+  if (!value) return [];
+  return value
+    .split(/[,\s]+/)
+    .map(v => v.trim())
+    .filter(Boolean)
+    .map(v => v.replace(/^tests[\\/]/, ''));
+}
+
+function selectExplicitFiles(allFiles, filesValue, filesFrom) {
+  const fs = require('fs');
+  const requested = filesFrom
+    ? splitFileList(fs.readFileSync(filesFrom, 'utf8'))
+    : splitFileList(filesValue);
+  const available = new Set(allFiles);
+  const selected = [];
+  const missing = [];
+  for (const file of requested) {
+    // If the token is a bare suite name (e.g. "unit" written by ci-test-scope
+    // as the #408 fallback sentinel), delegate to the existing suite resolver
+    // rather than treating it as a filename. This prevents the
+    // "requested test file(s) not found: unit" crash (#641).
+    if (SUITES.includes(file)) {
+      for (const f of selectFiles(allFiles, file)) {
+        selected.push(f);
+      }
+    } else if (available.has(file)) {
+      selected.push(file);
+    } else {
+      missing.push(file);
+    }
+  }
+  if (missing.length > 0) {
+    return {
+      error: `requested test file(s) not found: ${missing.join(', ')}`,
+    };
+  }
+  return { files: [...new Set(selected)] };
 }
 
 function main() {
@@ -108,7 +211,18 @@ function main() {
     process.exit(1);
   }
 
-  const selected = selectFiles(allFiles, suite).map(f => join(testDir, f));
+  let selectedNames;
+  if (parsed.files !== null || parsed.filesFrom !== null) {
+    const explicit = selectExplicitFiles(allFiles, parsed.files, parsed.filesFrom);
+    if (explicit.error) {
+      console.error(`run-tests: ${explicit.error}`);
+      process.exit(2);
+    }
+    selectedNames = explicit.files;
+  } else {
+    selectedNames = selectFiles(allFiles, suite);
+  }
+  const selected = selectedNames.map(f => join(testDir, f));
 
   if (selected.length === 0) {
     // Empty suite: report and exit 0 so empty lanes (e.g. `security` before
@@ -117,6 +231,9 @@ function main() {
     console.error(`run-tests: no tests in suite "${suite || 'all'}"`);
     process.exit(0);
   }
+
+  // Build the gitignored bin/lib artifact if absent, before any test requires it.
+  ensureBuiltArtifacts();
 
   // Log selected files to stderr for CI / harness-test visibility.
   // node:test default reporter doesn't echo filenames, so this gives
@@ -140,7 +257,7 @@ function main() {
   //     they could flush. Reducing to 2 halves the peak concurrent worker count.
   //
   // Operator override via TEST_CONCURRENCY env var for local debugging.
-  const defaultConcurrency = process.platform === 'win32' ? 2 : os.availableParallelism();
+  const defaultConcurrency = process.platform === 'win32' ? 2 : 4;
   const concurrency = process.env.TEST_CONCURRENCY
     ? `--test-concurrency=${process.env.TEST_CONCURRENCY}`
     : `--test-concurrency=${defaultConcurrency}`;
@@ -190,4 +307,8 @@ function main() {
   if (firstFailureExit !== 0) process.exit(firstFailureExit);
 }
 
-main();
+if (require.main === module) {
+  main();
+}
+
+module.exports = { suiteOf };
