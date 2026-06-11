@@ -37,6 +37,7 @@ Map to calibration tier:
 
 Resolve advisor model:
 ```bash
+_GSD_SHIM_NAME="gsd-tools.cjs"; _GSD_RUNTIME_ROOT="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"; GSD_TOOLS="${_GSD_RUNTIME_ROOT}/get-shit-done/bin/${_GSD_SHIM_NAME}"; if [ -f "$GSD_TOOLS" ]; then $GSD_SDK() { node "$GSD_TOOLS" "$@"; }; elif [ -f "${_GSD_RUNTIME_ROOT}/.claude/get-shit-done/bin/${_GSD_SHIM_NAME}" ]; then GSD_TOOLS="${_GSD_RUNTIME_ROOT}/.claude/get-shit-done/bin/${_GSD_SHIM_NAME}"; $GSD_SDK() { node "$GSD_TOOLS" "$@"; }; elif command -v gsd-tools >/dev/null 2>&1; then GSD_TOOLS="$(command -v gsd-tools)"; $GSD_SDK() { "$GSD_TOOLS" "$@"; }; elif [ -f "$HOME/.claude/get-shit-done/bin/${_GSD_SHIM_NAME}" ]; then GSD_TOOLS="$HOME/.claude/get-shit-done/bin/${_GSD_SHIM_NAME}"; $GSD_SDK() { node "$GSD_TOOLS" "$@"; }; else echo "ERROR: gsd-tools.cjs not found at $GSD_TOOLS and gsd-tools is not on PATH. Run: npx -y @opengsd/get-shit-done-redux@latest --claude --local" >&2; exit 1; fi
 ADVISOR_MODEL=$($GSD_SDK query resolve-model gsd-advisor-researcher --raw)
 ADVISOR_MODEL_effort_arg=$($GSD_SDK query resolve-model-effort gsd-advisor-researcher --raw 2>/dev/null || echo "")
 ```
@@ -86,7 +87,7 @@ This reframing applies to:
 After the user selects gray areas in `present_gray_areas`, spawn parallel
 research agents.
 
-1. Display brief status: `Researching {N} areas...`
+1. Display brief status: `Researching {N} areas...` (each runs in a subagent — no output until they return, ~1–5 min; expected, not a freeze)
 
 2. For EACH user-selected gray area, spawn a `Agent()` in parallel:
 
