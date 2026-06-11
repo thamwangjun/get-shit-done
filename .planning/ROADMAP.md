@@ -282,7 +282,7 @@ Full details: `.planning/milestones/v2.1.0-g-ROADMAP.md`
 
 **Milestone Goal:** Produce a complete, reimplementation-ready specification of every unique fork feature in `.planning/spec/`, so the fork's value can be rebuilt on a heavily-refactored future upstream where a direct merge is infeasible. One Markdown `SPEC.md` per feature, plus an `INDEX.md` manifest and `00-CONVENTIONS.md` meta-spec; RFC 2119 + EARS invariants with test traceability.
 
-- [ ] **Phase 68: Spec Scaffold** - INDEX.md manifest, 00-CONVENTIONS.md meta-spec, and explicit exclusion list (must come first)
+- [x] **Phase 68: Spec Scaffold** - INDEX.md manifest, 00-CONVENTIONS.md meta-spec, and explicit exclusion list (must come first) (completed 2026-06-11)
 - [ ] **Phase 69: spec-01 Positive Framing** - Spec the affirmative-framing standard and negative-framing scanner (Wave 1)
 - [ ] **Phase 70: spec-02 SHA Versioning** - Spec the SHA-based versioning system across install.js, worker, statusline (Wave 1)
 - [ ] **Phase 71: spec-04 Eta Materialization** - Spec Eta v4 install-time content materialization, all copy paths (Wave 1)
@@ -988,7 +988,7 @@ Plans:
 | 65. Guard Test (RED) | v2.1.0-g | 2/2 | Complete    | 2026-06-09 |
 | 66. Citation Cleanup | v2.1.0-g | 4/4 | Complete    | 2026-06-09 |
 | 67. Full Verification | v2.1.0-g | 1/1 | Complete    | 2026-06-10 |
-| 68. Spec Scaffold | v2.1.0-h | 2/2 | Complete   | 2026-06-11 |
+| 68. Spec Scaffold | v2.1.0-h | 2/2 | Complete    | 2026-06-11 |
 | 69. spec-01 Positive Framing | v2.1.0-h | 0/TBD | Not started | - |
 | 70. spec-02 SHA Versioning | v2.1.0-h | 0/TBD | Not started | - |
 | 71. spec-04 Eta Materialization | v2.1.0-h | 0/TBD | Not started | - |
