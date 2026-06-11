@@ -416,7 +416,7 @@ Display banner:
  GSD ► RESEARCHING QUICK TASK
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-◆ Investigating approaches for: ${DESCRIPTION}
+◆ Investigating approaches for: ${DESCRIPTION} (runs in a subagent — no output until it returns, ~1–5 min; expected, not a freeze)
 ```
 
 Spawn a single focused researcher (not 4 parallel researchers like full phases — quick tasks need targeted research, not broad domain surveys):
@@ -479,6 +479,8 @@ If research file not found, warn but continue: "Research agent did not produce o
 **If `$VALIDATE_MODE`:** Use `quick-full` mode with stricter constraints.
 
 **If NOT `$VALIDATE_MODE`:** Use standard `quick` mode.
+
+Display: `◆ Spawning planner... (runs in a subagent — no output until it returns, ~1–5 min; expected, not a freeze)`
 
 ```
 Agent(
@@ -544,7 +546,7 @@ Display banner:
  GSD ► CHECKING PLAN
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-◆ Spawning plan checker...
+◆ Spawning plan checker... (runs in a subagent — no output until it returns, ~1–5 min; expected, not a freeze)
 ```
 
 Checker prompt:
@@ -703,31 +705,7 @@ Execute quick task ${quick_id}.
 
 ${USE_WORKTREES !== "false" ? `
 <worktree_branch_check>
-FIRST ACTION before any other work: verify this worktree's HEAD is bound to a per-agent
-branch and that the branch is based on the correct commit.
-
-Step 1 — HEAD attachment assertion (MANDATORY, runs before any reset/commit):
-  HEAD_REF=$(git symbolic-ref --quiet HEAD || echo "DETACHED")
-  ACTUAL_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-  if [ "$HEAD_REF" = "DETACHED" ] || echo "$ACTUAL_BRANCH" | grep -Eq '^(main|master|develop|trunk|release/.*)$'; then
-    echo "FATAL: worktree HEAD is on '$ACTUAL_BRANCH' (expected per-agent branch like worktree-agent-*)." >&2
-    echo "Refusing to commit/reset on a protected ref. DO NOT self-recover via 'git update-ref refs/heads/$ACTUAL_BRANCH' — that destroys concurrent work (#2924)." >&2
-    echo "Aborting before any commits. Surface as a blocker for human review." >&2
-    exit 1
-  fi
-  if ! echo "$ACTUAL_BRANCH" | grep -Eq '^worktree-agent-[A-Za-z0-9._/-]+$'; then
-    echo "FATAL: worktree HEAD '$ACTUAL_BRANCH' is not in the worktree-agent-* namespace (Claude Code's per-agent worktree branch namespace)." >&2
-    echo "Refusing to commit; surface as blocker (#2924)." >&2
-    exit 1
-  fi
-
-Step 2 — Base correctness (only after Step 1 passes):
-  Run: git merge-base HEAD ${EXPECTED_BASE}
-  If the result differs from ${EXPECTED_BASE}, hard-reset to the correct base (safe — Step 1 confirmed HEAD is on a per-agent branch and the worktree is fresh):
-    git reset --hard ${EXPECTED_BASE}
-  Then verify: if [ "$(git rev-parse HEAD)" != "${EXPECTED_BASE}" ]; then echo "ERROR: Could not correct worktree base"; exit 1; fi
-
-This corrects a known issue where EnterWorktree creates branches from main instead of the feature branch HEAD (#2015) and prevents the destructive HEAD-on-master self-recovery path (#2924).
+ORCHESTRATOR build-time embed (NOT a sub-agent runtime step): before this dispatch, read \`get-shit-done/references/worktree-branch-check.md\`, substitute \`{EXPECTED_BASE}\` with the base SHA captured above (${EXPECTED_BASE}), and replace this note with that fragment's \`<worktree_branch_check>\` block so the dispatched prompt carries the runnable guard verbatim — do not pass this instruction through in its place.
 </worktree_branch_check>
 ` : ''}
 
@@ -885,7 +863,7 @@ Display banner:
  GSD ► VERIFYING RESULTS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-◆ Spawning verifier...
+◆ Spawning verifier... (runs in a subagent — no output until it returns, ~1–5 min; expected, not a freeze)
 ```
 
 ```
@@ -982,7 +960,7 @@ Use Edit tool to make these changes atomically
 
 **Step 15: Final commit and completion**
 
-Stage and commit quick task artifacts. This step MUST always run — even if the executor already committed some files (e.g. when running without worktree isolation). The `gsd-sdk query commit` command (or legacy `gsd-tools.cjs` commit) handles already-committed files gracefully.
+Stage and commit quick task artifacts. This step MUST always run — even if the executor already committed some files (e.g. when running without worktree isolation). The `gsd-tools.cjs query commit` command (or legacy `gsd-tools.cjs` commit) handles already-committed files gracefully.
 
 Build file list:
 - `${QUICK_DIR}/${quick_id}-PLAN.md`
