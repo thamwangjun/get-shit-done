@@ -1,12 +1,13 @@
 ---
 gsd_state_version: 1.0
 milestone: v2.1.0-h
-milestone_name: Fork Feature Specification
-status: planning
-last_updated: "2026-06-11T12:54:52.458Z"
-last_activity: 2026-06-11
+milestone_name: milestone
+status: Ready to plan
+stopped_at: roadmap created (2026-06-11)
+last_updated: "2026-06-11T13:30:00.000Z"
+last_activity: 2026-06-11 — Roadmap created for v2.1.0-h (Phases 68–77)
 progress:
-  total_phases: 0
+  total_phases: 10
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -20,14 +21,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-07 after v2.1.0-f milestone start)
 
 **Core value:** Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships
-**Current focus:** Planning next milestone
+**Current focus:** Phase 68 — Spec Scaffold (v2.1.0-h Fork Feature Specification)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-06-11 — Milestone v2.1.0-h started
+Phase: 68 of 77 (Spec Scaffold) — first phase of v2.1.0-h
+Plan: — (not yet planned)
+Status: Ready to plan
+Last activity: 2026-06-11 — Roadmap created for v2.1.0-h (Phases 68–77)
+
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
@@ -42,24 +45,21 @@ Last activity: 2026-06-11 — Milestone v2.1.0-h started
 
 Decisions are logged in PROJECT.md Key Decisions table.
 
-- [v2.1.0-f roadmap]: 5-phase risk-ordered sequence: comment deletion → effort wiring (pure append) → submodule exclusion → rubric inlining → security test rewrite. Front-loads zero-risk changes; SFC-01 goes last because it is the only mutation that changes an existing test from skipped to active.
-- [v2.1.0-f roadmap]: EWC-04 (code-review-fix.md) and EWC-07 (ingest-docs.md) each need assertions for TWO agents — four tokens each, not two.
-- [v2.1.0-f roadmap]: WSC-01 assertions must be scoped within the `<task_commit_protocol>` XML block slice (not full file) to prevent vacuous passes from documentation text.
-- [v2.1.0-f roadmap]: GAP-K and GAP-M2 are one physical location (lines 133–139 of debug-session-management.test.cjs) — treated as one phase (SFC-01, Phase 63).
+- [v2.1.0-h roadmap]: Scaffold phase (68) precedes all spec phases; the exclusion list + dependency matrix must exist before any feature is specced so authors do not pick up abandoned features (XML tags, resolveIncludes, parseV semver).
+- [v2.1.0-h roadmap]: QUAL-01–05 are cross-cutting acceptance criteria folded into every feature-spec phase (69–76), not a standalone phase — each spec must independently satisfy all five.
+- [v2.1.0-h roadmap]: Despite `coarse` granularity, the 8 feature specs are kept as distinct phases — one directory per feature maps to GSD's wave-parallel model; combining them would defeat parallel execution and produce monolithic specs synthesized from fragments.
+- [v2.1.0-h roadmap]: Wave 1 = Phases 69/70/71/72 (no deps, parallel). Wave 2 = Phases 73/74/75/76 (73→70, 74/75/76→72). Review (77) follows all 8.
 
-### Plan-Time Verification Flags
+### Wave Structure (for execution)
 
-- **Phase 60 (EWC-04/EWC-07):** Keep `read()` call inside each individual `test()` block to prevent copy-paste errors where the wrong agent name is asserted for the wrong file.
-- **Phase 61 (WSC-01):** Slice from `executorSrc.indexOf('<task_commit_protocol>')` to `executorSrc.indexOf('</task_commit_protocol>')` before asserting — do not search the full file.
-- **Phase 63 (SFC-01):** Replace both the `{ skip: '...' }` option and the `DATA_START` assertion body in one edit; removing the skip alone while keeping the stale assertion produces an immediate hard FAIL.
-
-### Key Risk
-
-SFC-01 (Phase 63) is the only edit that changes test status from skipped to active. If any earlier phase introduces a failure, it is attributable to that phase alone — not Phase 63 — because the sequence is strictly ordered.
+- **Wave 1 (parallel):** 69 spec-01, 70 spec-02, 71 spec-04, 72 spec-08 — no cross-deps
+- **Wave 2 (parallel after Wave 1):** 73 spec-03 (dep 70), 74 spec-05 (dep 72), 75 spec-06 (dep 72), 76 spec-07 (dep 72)
+- **Review:** 77 (dep 69–76)
+- Encode these via `depends_on` in PLAN frontmatter at plan time.
 
 ### Coverage
 
-All 11 v2.1.0-f requirements mapped to Phases 59–63; each maps to exactly one phase. No orphans, no duplicates.
+All 17 v2.1.0-h requirements mapped: 12 single-phase (SCAF-01/02/03→68, SPEC-01..08 each to one phase, REV-01→77) + 5 QUAL criteria applied across Phases 69–76. No orphans, no duplicates.
 
 ### Pending Todos
 
@@ -93,9 +93,9 @@ None. Research is HIGH confidence across all five phases.
 
 ## Session Continuity
 
-Last activity: 2026-06-10 — Completed quick task 260610-ita: Address milestone v2.1.0-g documentation tech debt
-Stopped at: Quick task 260610-ita complete
-Resume file: .planning/phases/67-full-verification/67-CONTEXT.md
+Last activity: 2026-06-11 — Roadmap created for v2.1.0-h (Phases 68–77); REQUIREMENTS traceability filled
+Stopped at: roadmap created; ready to plan Phase 68 (Spec Scaffold)
+Resume file: None
 
 ## Deferred Items
 
@@ -134,4 +134,4 @@ Items acknowledged and deferred at milestone close on 2026-06-10:
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- Plan the first phase with /gsd-plan-phase 68

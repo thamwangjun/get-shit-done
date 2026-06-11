@@ -56,4 +56,26 @@
 
 ## Traceability
 
-(Filled by roadmap — maps each REQ-ID to its phase.)
+Maps each REQ-ID to its phase. Every requirement maps to exactly one phase; QUAL-01–QUAL-05 are cross-cutting acceptance criteria applied to every feature-spec phase (69–76) rather than owned by one.
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| SCAF-01 | Phase 68 | Pending |
+| SCAF-02 | Phase 68 | Pending |
+| SCAF-03 | Phase 68 | Pending |
+| SPEC-01 | Phase 69 | Pending |
+| SPEC-02 | Phase 70 | Pending |
+| SPEC-04 | Phase 71 | Pending |
+| SPEC-08 | Phase 72 | Pending |
+| SPEC-03 | Phase 73 | Pending |
+| SPEC-05 | Phase 74 | Pending |
+| SPEC-06 | Phase 75 | Pending |
+| SPEC-07 | Phase 76 | Pending |
+| REV-01 | Phase 77 | Pending |
+| QUAL-01 | Phases 69–76 (shared) | Pending |
+| QUAL-02 | Phases 69–76 (shared) | Pending |
+| QUAL-03 | Phases 69–76 (shared) | Pending |
+| QUAL-04 | Phases 69–76 (shared) | Pending |
+| QUAL-05 | Phases 69–76 (shared) | Pending |
+
+**Coverage:** 17/17 requirements mapped (12 feature/scaffold/review requirements each to exactly one phase + 5 QUAL criteria applied across all 8 feature-spec phases). No orphans, no duplicates.

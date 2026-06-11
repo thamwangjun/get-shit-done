@@ -20,6 +20,7 @@
 - ✅ **v2.1.0-e Per-Agent Thinking Effort** — Phases 52–58 (shipped 2026-06-06)
 - ✅ **v2.1.0-f Testing Coverage Gaps** — Phases 59–63 (shipped 2026-06-08)
 - ✅ **v2.1.0-g Citation Cleanup** — Phases 64–67 (shipped 2026-06-10)
+- 🚧 **v2.1.0-h Fork Feature Specification** — Phases 68–77 (in progress)
 
 ## Phases
 
@@ -273,6 +274,24 @@ Full details: `.planning/milestones/v2.1.0-f-ROADMAP.md`
 - [x] **Phase 67: Full Verification** - npm test 0 failures; guard test GREEN; all content tests unaffected (completed 2026-06-10)
 
 Full details: `.planning/milestones/v2.1.0-g-ROADMAP.md`
+
+</details>
+
+<details open>
+<summary>🚧 v2.1.0-h Fork Feature Specification (Phases 68–77) — IN PROGRESS</summary>
+
+**Milestone Goal:** Produce a complete, reimplementation-ready specification of every unique fork feature in `.planning/spec/`, so the fork's value can be rebuilt on a heavily-refactored future upstream where a direct merge is infeasible. One Markdown `SPEC.md` per feature, plus an `INDEX.md` manifest and `00-CONVENTIONS.md` meta-spec; RFC 2119 + EARS invariants with test traceability.
+
+- [ ] **Phase 68: Spec Scaffold** - INDEX.md manifest, 00-CONVENTIONS.md meta-spec, and explicit exclusion list (must come first)
+- [ ] **Phase 69: spec-01 Positive Framing** - Spec the affirmative-framing standard and negative-framing scanner (Wave 1)
+- [ ] **Phase 70: spec-02 SHA Versioning** - Spec the SHA-based versioning system across install.js, worker, statusline (Wave 1)
+- [ ] **Phase 71: spec-04 Eta Materialization** - Spec Eta v4 install-time content materialization, all copy paths (Wave 1)
+- [ ] **Phase 72: spec-08 Test Infrastructure** - Spec scanner-precedence rule, serial isolation, fork test-suite layout (Wave 1)
+- [ ] **Phase 73: spec-03 Hooks Build** - Spec on-demand `ensureHooksDist` build (Wave 2, depends on Phase 70)
+- [ ] **Phase 74: spec-05 Step Numbering** - Spec whole-integer step numbering scanner + normalizer + cross-ref scanner (Wave 2, depends on Phase 72)
+- [ ] **Phase 75: spec-06 Thinking Effort** - Spec per-agent thinking effort parser/resolver/catalog/wiring (Wave 2, depends on Phase 72)
+- [ ] **Phase 76: spec-07 Citation Guard** - Spec the citation-cleanup guard and two-tier allowlist (Wave 2, depends on Phase 72)
+- [ ] **Phase 77: Cross-Spec Consistency Review** - Reconcile INDEX dependency graph, traceability tables, exclusion list (depends on Phases 69–76)
 
 </details>
 
@@ -742,6 +761,117 @@ Plans:
 
 - [x] 67-01-PLAN.md — Confirm guard test GREEN, reconcile CITE-11 grep, and run the full npm test suite to zero failures
 
+### v2.1.0-h Phase Details (Phases 68–77)
+
+**Shared acceptance criteria (QUAL-01–QUAL-05) — apply to every feature-spec phase (69–76):**
+  - QUAL-01: Behavioral invariants are numbered, falsifiable EARS statements with RFC 2119 strength (≥2 per spec); the normative contract is behavior, not implementation
+  - QUAL-02: An Acceptance-Tests traceability table maps each MUST-level invariant to a test file + subtest name; untested invariants are flagged `[MISSING — write test first]`
+  - QUAL-03: The normative contract is separated from advisory implementation notes; every current file path/symbol is marked `<!-- advisory -->` and survives a file move
+  - QUAL-04: At least one tier-1 (test) or tier-2 (source) artifact is cited; reference guides appear only as background
+  - QUAL-05: A Key Decisions section records settled decisions with rationale, marked "settled — do not reopen", with the consequence of reopening stated inline
+
+#### Phase 68: Spec Scaffold
+**Goal**: The spec set has a manifest, a meta-spec defining conventions, and an explicit exclusion list — so every downstream feature-spec phase has the template, ID scheme, dependency order, and scope guardrails in place before any feature is specced
+**Depends on**: Phase 67 (previous milestone complete)
+**Requirements**: SCAF-01, SCAF-02, SCAF-03
+**Success Criteria** (what must be TRUE):
+  1. `.planning/spec/INDEX.md` exists with a feature-status table (ID, feature, spec link, status, depends-on), a dependency graph, and a Wave 1 / Wave 2 build order [SCAF-01]
+  2. `.planning/spec/00-CONVENTIONS.md` exists and defines the per-feature spec template, the REQ-ID/SPEC-ID scheme, the status vocabulary (Draft/Ready/Implemented/Verified), and the source-of-truth hierarchy [SCAF-02]
+  3. `INDEX.md` contains an explicit "Excluded from scope" section listing superseded/abandoned work the reimplementer must not carry forward — at minimum XML tag hierarchy (`<persona>`/`<intent>`/`<objective>`), the `resolveIncludes()` stepping stone, the `parseV()` semver block, and every PROJECT.md Out-of-Scope item [SCAF-03]
+  4. Eight numbered feature subdirectories (`01-positive-framing/` through `08-test-infrastructure/`) each contain a `SPEC.md` stub with populated frontmatter, matching the INDEX manifest order
+**Plans**: TBD
+
+#### Phase 69: spec-01 Positive Framing
+**Goal**: `01-positive-framing/SPEC.md` fully specifies the affirmative-framing standard and the negative-framing corpus scanner as a behavioral contract a reimplementer can rebuild on a refactored upstream
+**Depends on**: Phase 68
+**Requirements**: SPEC-01 (+ shared QUAL-01–05)
+**Success Criteria** (what must be TRUE):
+  1. `01-positive-framing/SPEC.md` enumerates all 12+ scanner detection branches (doNot, never, dont, antiPatterns, mustNot, shouldNot, cannot, wont, willNot, prohibited, forbidden, warn-only variants), the affirmative-rewrite replacement rule, the paired-pattern exception, and the four scan directories [SPEC-01]
+  2. Invariants are numbered EARS statements (≥2) citing `tests/negative-framing-scan.test.cjs` as the tier-1 source; the traceability table maps each MUST to a subtest [QUAL-01, QUAL-02, QUAL-04]
+  3. Current file paths/symbols are advisory-marked and the spec survives a file move; a Key Decisions section records settled framing decisions "do not reopen" [QUAL-03, QUAL-05]
+**Plans**: TBD
+
+#### Phase 70: spec-02 SHA Versioning
+**Goal**: `02-sha-versioning/SPEC.md` fully specifies the SHA-based versioning system and its coordination topology across the five files that implement it
+**Depends on**: Phase 68
+**Requirements**: SPEC-02 (+ shared QUAL-01–05)
+**Success Criteria** (what must be TRUE):
+  1. `02-sha-versioning/SPEC.md` specifies install.js git-SHA emit, `no-network` sentinel semantics (signals an invalid install, not an empty string), the update worker via the GitHub Commits API with `isNewer` SHA-equality, statusline display, the `check-latest-version.cjs` injectable seam, and the `{{GSD_REPO}}`/`{{GSD_BRANCH}}` template-placeholder boundary [SPEC-02]
+  2. The "GitHub Commits API, not npmjs.com" and "SHA equality, not semver ordering" decisions are recorded as settled in Key Decisions with the consequence of reopening stated [QUAL-05]
+  3. Invariants are EARS statements citing the version/semver/SHA test files as tier-1 sources; traceability table is complete [QUAL-01, QUAL-02, QUAL-04]; current paths advisory-marked [QUAL-03]
+**Plans**: TBD
+
+#### Phase 71: spec-04 Eta Materialization
+**Goal**: `04-eta-materialization/SPEC.md` fully specifies Eta v4 install-time content materialization, including the skills-path `wrappedConverter` coverage that was found only via post-milestone audit
+**Depends on**: Phase 68
+**Requirements**: SPEC-04 (+ shared QUAL-01–05)
+**Success Criteria** (what must be TRUE):
+  1. `04-eta-materialization/SPEC.md` specifies the engine configuration (default delimiters, `autoEscape: false`, `<%~` raw output), the `<%~ include() %>` conversion from `@~/` refs, the `ALLOWED_INLINE_REFS` exception list, and coverage of every copy path — including the skills `wrappedConverter` — stated as an explicit invariant [SPEC-04]
+  2. Invariants are EARS statements (≥2) citing `tests/install-eta-regression.test.cjs` as tier-1; traceability table maps each MUST to a subtest [QUAL-01, QUAL-02, QUAL-04]
+  3. Current paths/symbols advisory-marked; Key Decisions records the Eta-v4-over-custom-resolver and default-delimiter decisions as settled [QUAL-03, QUAL-05]
+**Plans**: TBD
+
+#### Phase 72: spec-08 Test Infrastructure
+**Goal**: `08-test-infrastructure/SPEC.md` fully specifies the fork test infrastructure as standing policy — the prerequisite governing how the Wave 2 scanner/guard specs write their acceptance tests
+**Depends on**: Phase 68
+**Requirements**: SPEC-08 (+ shared QUAL-01–05)
+**Success Criteria** (what must be TRUE):
+  1. `08-test-infrastructure/SPEC.md` specifies the scanner-precedence rule (the fork standard wins when a test conflicts) as a standing policy, the serial test-isolation mechanism (`SERIAL_FILES`, `describe({ concurrency: false })`) with rationale, and the fork-owned test-suite layout/conventions [SPEC-08]
+  2. Invariants are EARS statements (≥2) citing a tier-1 test file or tier-2 source; scanner-precedence is stated as a policy invariant, not a one-time decision [QUAL-01, QUAL-04]
+  3. Traceability table complete; current paths advisory-marked; Key Decisions records scanner-precedence as settled with the consequence of reopening [QUAL-02, QUAL-03, QUAL-05]
+**Plans**: TBD
+
+#### Phase 73: spec-03 Hooks Build
+**Goal**: `03-hooks-build/SPEC.md` fully specifies the on-demand hooks build and its install-ordering dependency on SHA versioning
+**Depends on**: Phase 70 (spec-02 SHA versioning READY — hooks build is a prerequisite for SHA-versioning hooks being installable)
+**Requirements**: SPEC-03 (+ shared QUAL-01–05)
+**Success Criteria** (what must be TRUE):
+  1. `03-hooks-build/SPEC.md` specifies the `ensureHooksDist` trigger condition (absent `hooks/dist/`), the `spawnSync` vs `execSync` decision with rationale, the console notice, and the abort-on-failure behavior [SPEC-03]
+  2. The spec states the build-order constraint relative to SHA-versioning hooks (ensureHooksDist must run before hooks are installed) in its Dependencies section, consistent with INDEX.md [SPEC-03]
+  3. Invariants are EARS statements (≥2) citing `tests/bug-1924-ensure-hooks-dist-on-demand.test.cjs` as tier-1; traceability table complete; paths advisory-marked; Key Decisions settled [QUAL-01–05]
+**Plans**: TBD
+
+#### Phase 74: spec-05 Step Numbering
+**Goal**: `05-step-numbering/SPEC.md` fully specifies whole-integer step numbering as a three-layer contract (scanner → normalizer → cross-file-ref scanner) with the Pattern C exclusion preserved as intentional
+**Depends on**: Phase 72 (spec-08 Test Infrastructure READY — scanner-precedence and serial-isolation policies govern this spec's tests)
+**Requirements**: SPEC-05 (+ shared QUAL-01–05)
+**Success Criteria** (what must be TRUE):
+  1. `05-step-numbering/SPEC.md` specifies the scanner (decimal + letter-suffix + out-of-order detection), the `normalize-step-numbers.cjs` cross-file-aware idempotent CLI, the cross-file-step-refs scanner, and the explicit Pattern C exclusion (`## N.N.` section headings in plan files) as an intended exclusion — not an oversight [SPEC-05]
+  2. The scanner → normalizer → cross-file-ref-scanner internal ordering is stated explicitly within the spec [SPEC-05]
+  3. Invariants are EARS statements (≥2) citing the step-numbering and cross-file-step-refs test files as tier-1; corpus counts recorded "current as of" with the shape (not the count) normative; traceability table complete; paths advisory-marked; Key Decisions settled [QUAL-01–05]
+**Plans**: TBD
+
+#### Phase 75: spec-06 Thinking Effort
+**Goal**: `06-thinking-effort/SPEC.md` fully specifies per-agent thinking effort — the most complex spec surface — with the D-08 floor and the rawSlotForRuntime Codex fix captured as correctness linchpins
+**Depends on**: Phase 72 (spec-08 Test Infrastructure READY)
+**Requirements**: SPEC-06 (+ shared QUAL-01–05)
+**Success Criteria** (what must be TRUE):
+  1. `06-thinking-effort/SPEC.md` specifies the `parseModelEffort` semicolon parser (input/output/error modes), the unified `{claude, codex}` resolver precedence chain (override → slot → D-08 medium floor), the static runtime allowlist, the per-runtime behavior matrix, the catalog schema, the 20 `*_effort` init siblings, spawn-template wiring, the install.js Codex emit seam, the `rawSlotForRuntime` Codex fix, and the CATALOG-02 user-handover boundary [SPEC-06]
+  2. The D-08 medium floor is stated as a MUST-level invariant (not optional) with the consequence of omission; the rawSlotForRuntime fix is named as the correctness linchpin [SPEC-06, QUAL-01]
+  3. Invariants cite the effort-resolution regression test (330-row golden snapshot) and `init.cjs` as tier-1/tier-2 sources; the snapshot's structure is described, not just its existence; traceability table complete; paths advisory-marked; Key Decisions settled [QUAL-02–05]
+**Plans**: TBD
+
+#### Phase 76: spec-07 Citation Guard
+**Goal**: `07-citation-guard/SPEC.md` fully specifies the citation-cleanup guard with its non-obvious two-tier allowlist semantics
+**Depends on**: Phase 72 (spec-08 Test Infrastructure READY)
+**Requirements**: SPEC-07 (+ shared QUAL-01–05)
+**Success Criteria** (what must be TRUE):
+  1. `07-citation-guard/SPEC.md` specifies the `no-issue-citations.test.cjs` detection (inline / parenthetical / feat-form), the two-tier allowlist (`PLACEHOLDER_DIGITS` vs `FILE_ALLOWLIST`) with distinct per-tier semantics, and the 5-directory detection scope [SPEC-07]
+  2. Invariants are EARS statements (≥2) citing `tests/no-issue-citations.test.cjs` as the tier-1 source; the two allowlist tiers are distinguished as separate invariants; traceability table complete [QUAL-01, QUAL-02, QUAL-04]
+  3. Current paths advisory-marked; Key Decisions records the two-tier-allowlist refactor as settled [QUAL-03, QUAL-05]
+**Plans**: TBD
+
+#### Phase 77: Cross-Spec Consistency Review
+**Goal**: All eight feature specs reach READY status and the spec set is internally consistent — the manifest, the per-spec dependency declarations, the traceability tables, and the exclusion list all agree
+**Depends on**: Phases 69, 70, 71, 72, 73, 74, 75, 76 (all feature specs)
+**Requirements**: REV-01
+**Success Criteria** (what must be TRUE):
+  1. The `INDEX.md` dependency graph is reconciled against every `SPEC.md`'s Dependencies section — no mismatch between declared and manifested dependencies [REV-01]
+  2. Every traceability table is complete: no `[MISSING]` rows remain unflagged, and each flagged row is acknowledged in INDEX.md status [REV-01]
+  3. The `INDEX.md` "Excluded from scope" section covers all known abandoned features (validated against PROJECT.md Out of Scope); `00-CONVENTIONS.md` matches the actual structure every spec follows [REV-01]
+  4. All eight feature specs carry status READY in the INDEX manifest
+**Plans**: TBD
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -821,6 +951,16 @@ Plans:
 | 65. Guard Test (RED) | v2.1.0-g | 2/2 | Complete    | 2026-06-09 |
 | 66. Citation Cleanup | v2.1.0-g | 4/4 | Complete    | 2026-06-09 |
 | 67. Full Verification | v2.1.0-g | 1/1 | Complete    | 2026-06-10 |
+| 68. Spec Scaffold | v2.1.0-h | 0/TBD | Not started | - |
+| 69. spec-01 Positive Framing | v2.1.0-h | 0/TBD | Not started | - |
+| 70. spec-02 SHA Versioning | v2.1.0-h | 0/TBD | Not started | - |
+| 71. spec-04 Eta Materialization | v2.1.0-h | 0/TBD | Not started | - |
+| 72. spec-08 Test Infrastructure | v2.1.0-h | 0/TBD | Not started | - |
+| 73. spec-03 Hooks Build | v2.1.0-h | 0/TBD | Not started | - |
+| 74. spec-05 Step Numbering | v2.1.0-h | 0/TBD | Not started | - |
+| 75. spec-06 Thinking Effort | v2.1.0-h | 0/TBD | Not started | - |
+| 76. spec-07 Citation Guard | v2.1.0-h | 0/TBD | Not started | - |
+| 77. Cross-Spec Consistency Review | v2.1.0-h | 0/TBD | Not started | - |
 
 *v1.41.3 shipped 2026-05-19 — see `.planning/milestones/v1.41.3-ROADMAP.md`*
 *v1.41.5 shipped 2026-05-24 — see `.planning/milestones/v1.41.5-ROADMAP.md`*
