@@ -303,7 +303,7 @@ AskUserQuestion: "Research the domain ecosystem for new features before defining
  GSD ► RESEARCHING
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-◆ Spawning 4 researchers in parallel...
+◆ Spawning 4 researchers in parallel... (each runs in a subagent — no output until they return, ~1–5 min; expected, not a freeze)
   → Stack, Features, Architecture, Pitfalls
 ```
 
@@ -471,7 +471,7 @@ $GSD_SDK query commit "docs: define milestone v[X.Y] requirements" --files .plan
  GSD ► CREATING ROADMAP
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-◆ Spawning roadmapper...
+◆ Spawning roadmapper... (runs in a subagent — no output until it returns, ~1–5 min; expected, not a freeze)
 ```
 
 **Starting phase number:**
