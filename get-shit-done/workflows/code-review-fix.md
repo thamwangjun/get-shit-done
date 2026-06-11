@@ -17,6 +17,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 Parse arguments and load project state:
 
 ```bash
+_GSD_SHIM_NAME="gsd-tools.cjs"; _GSD_RUNTIME_ROOT="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"; GSD_TOOLS="${_GSD_RUNTIME_ROOT}/get-shit-done/bin/${_GSD_SHIM_NAME}"; if [ -f "$GSD_TOOLS" ]; then $GSD_SDK() { node "$GSD_TOOLS" "$@"; }; elif [ -f "${_GSD_RUNTIME_ROOT}/.claude/get-shit-done/bin/${_GSD_SHIM_NAME}" ]; then GSD_TOOLS="${_GSD_RUNTIME_ROOT}/.claude/get-shit-done/bin/${_GSD_SHIM_NAME}"; $GSD_SDK() { node "$GSD_TOOLS" "$@"; }; elif command -v gsd-tools >/dev/null 2>&1; then GSD_TOOLS="$(command -v gsd-tools)"; $GSD_SDK() { "$GSD_TOOLS" "$@"; }; elif [ -f "$HOME/.claude/get-shit-done/bin/${_GSD_SHIM_NAME}" ]; then GSD_TOOLS="$HOME/.claude/get-shit-done/bin/${_GSD_SHIM_NAME}"; $GSD_SDK() { node "$GSD_TOOLS" "$@"; }; else echo "ERROR: gsd-tools.cjs not found at $GSD_TOOLS and gsd-tools is not on PATH. Run: npx -y @opengsd/get-shit-done-redux@latest --claude --local" >&2; exit 1; fi
 PHASE_ARG="${1}"
 # SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk (#3668)
 GSD_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/get-shit-done/bin/gsd-tools.cjs"
@@ -193,7 +194,7 @@ If REVIEW.md contains a `files_reviewed_list` frontmatter field, use that as the
 </step>
 
 <step name="spawn_fixer">
-Spawn the gsd-code-fixer agent with config:
+Spawn the gsd-code-fixer agent with config (runs in a subagent — no output until it returns, ~1–5 min; expected, not a freeze):
 
 ```bash
 # Build config for agent
@@ -285,7 +286,7 @@ if [ "$AUTO_MODE" = "true" ]; then
       done
     fi
     
-    # Spawn gsd-code-reviewer agent to re-review
+    # Spawn gsd-code-reviewer agent to re-review (runs in a subagent — no output until it returns, ~1–5 min; expected, not a freeze)
     # (This overwrites REVIEW_PATH with latest review state)
     Agent(subagent_type="gsd-code-reviewer", model="{code_reviewer_model}", effort={code_reviewer_model_effort_arg} prompt="
 <config>
@@ -318,7 +319,7 @@ Do NOT commit the output — the orchestrator handles that.
       break
     fi
     
-    # Still has issues — spawn fixer again
+    # Still has issues — spawn fixer again (runs in a subagent — no output until it returns, ~1–5 min; expected, not a freeze)
     echo "Issues remain. Applying fixes for iteration ${ITERATION}..."
     
     Agent(subagent_type="gsd-code-fixer", model="{code_fixer_model}", effort={code_fixer_model_effort_arg} prompt="
