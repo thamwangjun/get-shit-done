@@ -27,7 +27,7 @@ Mode routing:
 | (none) | Interactive 5-question common-case config prompt | settings |
 | --advanced | Power-user knobs: planning, execution, discussion, cross-AI, git, runtime | settings-advanced |
 | --integrations | API keys (Brave/Firecrawl/Exa), review CLI routing, agent skills | settings-integrations |
-| --profile &lt;name&gt; | Switch model profile without interactive prompt | gsd-sdk config-set-model-profile |
+| --profile &lt;name&gt; | Switch model profile without interactive prompt | gsd-sdk query config-set-model-profile |
 
 </routing>
 
