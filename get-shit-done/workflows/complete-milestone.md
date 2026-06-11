@@ -68,7 +68,7 @@ These items are open. Choose an action:
 ```
 
 If user chooses [A] (Acknowledge):
-1. Re-run `gsd-sdk query audit-open --json` to get structured data
+1. Re-run `gsd-tools.cjs query audit-open --json` to get structured data
 2. Write acknowledged items to STATE.md under `## Deferred Items` section:
    ```markdown
    ## Deferred Items
@@ -229,7 +229,7 @@ Key accomplishments for this milestone:
 
 <step name="create_milestone_entry">
 
-**Note:** MILESTONES.md entry is now created automatically by `gsd-sdk query milestone.complete` in the archive_milestone step. The entry includes version, date, phase/plan/task counts, and accomplishments extracted from SUMMARY.md files.
+**Note:** MILESTONES.md entry is now created automatically by `gsd-tools.cjs query milestone.complete` in the archive_milestone step. The entry includes version, date, phase/plan/task counts, and accomplishments extracted from SUMMARY.md files.
 
 If additional details are needed (e.g., user-provided "Delivered" summary, git range, LOC stats), add them manually after the CLI creates the base entry.
 
@@ -420,7 +420,7 @@ Update `.planning/ROADMAP.md` — group completed milestone phases:
 
 <step name="archive_milestone">
 
-**Delegate archival to `gsd-sdk query milestone.complete`:**
+**Delegate archival to `gsd-tools.cjs query milestone.complete`:**
 
 ```bash
 ARCHIVE=$($GSD_SDK query milestone.complete "v[X.Y]" --name "[Milestone Name]")
@@ -736,7 +736,7 @@ fi
 <step name="git_tag">
 
 <config-check>
-Read `git.create_tag` via `gsd-sdk query config-get git.create_tag 2>/dev/null || echo "true"`.
+Read `git.create_tag` via `gsd-tools.cjs query config-get git.create_tag 2>/dev/null || echo "true"`.
 If the result is `false` → skip this step entirely and proceed to `git_commit_milestone`.
 </config-check>
 
