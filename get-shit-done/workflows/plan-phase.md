@@ -115,7 +115,7 @@ The gate fires only on `Complete`. `Executed` and `Needs Review` are not gated �
 
 ## 2. Parse and Normalize Arguments
 
-Extract from $ARGUMENTS: phase number (integer or decimal like `2.1`), flags (`--research`, `--skip-research`, `--research-phase <N>`, `--gaps`, `--skip-verify`, `--skip-ui`, `--prd <filepath>`, `--ingest <path-or-glob>`, `--ingest-format <auto|nygard|madr|narrative>`, `--reviews`, `--text`, `--bounce`, `--skip-bounce`, `--chunked`, `--mvp`, `--force` (override closed-phase gate, see §1.5)).
+Extract from $ARGUMENTS: phase number (integer or decimal like `2.1`), flags (`--research`, `--skip-research`, `--research-phase <N>`, `--gaps`, `--skip-verify`, `--skip-ui`, `--prd <filepath>`, `--ingest <path-or-glob>`, `--ingest-format <auto|nygard|madr|narrative>`, `--reviews`, `--text`, `--bounce`, `--skip-bounce`, `--chunked`, `--mvp`, `--tdd`, `--force` (override closed-phase gate, see §1.5)).
 
 **`--research-phase <N>` — research-only mode.** When this flag is present, parse `<N>` as the phase number (overrides any positional phase argument), set `RESEARCH_ONLY=true`, and treat the rest of this workflow as a research-dispatch only — the planner spawn (step 8), plan-checker, verification, gaps, bounce, and post-planning-gaps blocks all skip on `RESEARCH_ONLY`. Use this for cross-phase research, doc review before committing to a planning approach, and correction-without-replanning loops. Replaces the deleted `/gsd-research-phase` command.
 
@@ -143,10 +143,10 @@ Set `TEXT_MODE=true` if `--text` is present in $ARGUMENTS OR `text_mode` from in
 ```bash
 MVP_FLAG_ARG=""
 if [[ "$ARGUMENTS" =~ (^|[[:space:]])--mvp([[:space:]]|$) ]]; then MVP_FLAG_ARG="--cli-flag"; fi
+if [[ "$ARGUMENTS" =~ (^|[[:space:]])--tdd([[:space:]]|$) ]]; then TDD_MODE=true; fi
 ```
 
-Defer the `phase.mvp-mode` query until `PHASE` is finalized (after explicit argument parsing/fallback phase detection + validation).
-The verb returns `true|false`. Full result also exposes `source` (`cli_flag` | `roadmap` | `config` | `none`) for diagnostics. The mode is **all-or-nothing per phase** (PRD decision Q1) — never selective per task.
+Defer the `phase.mvp-mode` query until `PHASE` is finalized (after explicit argument parsing/fallback phase detection + validation). The verb returns `true|false`; full result also exposes `source` (`cli_flag` | `roadmap` | `config` | `none`) for diagnostics. Mode is **all-or-nothing per phase** (PRD decision Q1).
 
 **Walking Skeleton gate.** When `MVP_MODE=true` AND `phase_number == "01"` AND there are zero prior phase summaries (new project), the planner runs in **Walking Skeleton mode** (per PRD decision Q2 — new projects only). Detect with:
 
@@ -335,7 +335,7 @@ $GSD_SDK query commit "docs(${padded_phase}): generate context from PRD" --files
 3. Status gate: reject `superseded`/`rejected`/`deprecated`; warn on `proposed`; missing status defaults to `accepted`.
 4. Empty-decisions fallback: if all parsed ADRs have zero `decisions[]`, emit `ADR ingest produced no locked decisions; fall back to discuss-phase for this phase.` and exit with `/gsd:discuss-phase {N}` guidance.
 5. Generate CONTEXT.md using `<domain>`, `<decisions>`, `<canonical_refs>`, `<specifics>`, `<deferred>`, `<scope_fence>`, map `consequences_positive[]` to Success Criteria and `consequences_negative[]` to Risk Summary, and include `**Source:** ADR Ingest Express Path ({INGEST_PATH})`.
-6. Commit with `gsd-sdk query commit "docs(${padded_phase}): generate context from ADR ingest" --files "${phase_dir}/${padded_phase}-CONTEXT.md"` and set `context_content`; continue to step 5.
+6. Commit with `gsd-tools.cjs query commit "docs(${padded_phase}): generate context from ADR ingest" --files "${phase_dir}/${padded_phase}-CONTEXT.md"` and set `context_content`; continue to step 5.
 
 **Effect:** This bypasses step 4 (Load CONTEXT.md) since CONTEXT.md was synthesized from ADR input.
 
@@ -496,7 +496,7 @@ Display banner:
  GSD ► RESEARCHING PHASE {X}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-◆ Spawning researcher...
+◆ Spawning researcher... (runs in a subagent — no output until it returns, ~1–5 min; expected, not a freeze)
 ```
 
 ### Spawn gsd-phase-researcher
@@ -642,11 +642,11 @@ Check if phase has frontend indicators:
 PHASE_SECTION=$($GSD_SDK query roadmap.get-phase "${PHASE}" 2>/dev/null)
 # Shell-free word-boundary gate: Node.js helper — no locale env-var dependency.
 # Reads via stdin to avoid OS ARG_MAX limits on large phase text.
-# Path anchored to repo root; falls back to CWD if git is unavailable
-# Exit codes mirror grep: 0 = UI tokens found, 1 = not found.
-GSD_REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || echo ".")
-printf '%s' "$PHASE_SECTION" | node "${GSD_REPO_ROOT}/bin/lib/ui-safety-gate.cjs" > /dev/null 2>&1
-HAS_UI=$?
+# Resolve the helper against the GSD install dir via RUNTIME_DIR (#448) — NOT the consuming
+# project's git root — falling back to git toplevel / $HOME/.claude. Exit codes mirror grep (0=UI,1=none).
+_GSD_RT="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
+UI_GATE_JS=$(for _c in "$_GSD_RT/get-shit-done/bin/lib/ui-safety-gate.cjs" "$_GSD_RT/bin/lib/ui-safety-gate.cjs" "$_GSD_RT/.claude/bin/lib/ui-safety-gate.cjs" "$HOME/.claude/get-shit-done/bin/lib/ui-safety-gate.cjs" "$HOME/.claude/bin/lib/ui-safety-gate.cjs"; do [ -f "$_c" ] && { echo "$_c"; break; }; done)
+if [ -n "$UI_GATE_JS" ]; then printf '%s' "$PHASE_SECTION" | node "$UI_GATE_JS" >/dev/null 2>&1; HAS_UI=$?; else echo "WARN: ui-safety-gate.cjs not found via RUNTIME_DIR/\$HOME (#448) — assuming UI present" >&2; HAS_UI=0; fi
 ```
 
 **If `HAS_UI` is 0 (frontend indicators found):**
@@ -808,7 +808,7 @@ VALIDATION_EXISTS=$(ls "${PHASE_DIR}"/*-VALIDATION.md 2>/dev/null | head -1)
 If missing and Nyquist is still enabled/applicable — ask user:
 1. Re-run: `/gsd:plan-phase {PHASE} --research ${GSD_WS}`
 2. Disable Nyquist with the exact command:
-   `gsd-sdk query config-set workflow.nyquist_validation false`
+   `gsd-tools.cjs query config-set workflow.nyquist_validation false`
 3. Continue anyway (plans fail Dimension 8)
 
 Proceed to Step 7.8 (or Step 8 if pattern mapper is disabled) only if user selects 2 or 3.
@@ -832,7 +832,7 @@ Display banner:
  GSD ► PATTERN MAPPING PHASE {X}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-◆ Spawning pattern mapper...
+◆ Spawning pattern mapper... (runs in a subagent — no output until it returns, ~1–5 min; expected, not a freeze)
 ```
 
 Pattern mapper prompt:
@@ -875,6 +875,18 @@ After pattern mapper completes, update the path variable:
 PATTERNS_PATH="${PHASE_DIR}/${PADDED_PHASE}-PATTERNS.md"
 ```
 
+## 7.9. Regenerate API-SURFACE.md (intel gate)
+
+```bash
+INTEL_CFG=$($GSD_SDK query config-get intel.enabled 2>/dev/null || echo "false")
+# false (absent = false) → API_SURFACE_PATH stays empty; step-8 planner entry omitted
+if [ "$INTEL_CFG" = "true" ]; then
+  $GSD_SDK intel api-surface
+  API_SURFACE_PATH=".planning/intel/API-SURFACE.md"
+  echo "✓ API surface regenerated: ${API_SURFACE_PATH}"  # injected into step 8 as HINT
+fi
+```
+
 ## 8. Spawn gsd-planner Agent
 
 Display banner:
@@ -883,7 +895,7 @@ Display banner:
  GSD ► PLANNING PHASE {X}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-◆ Spawning planner...
+◆ Spawning planner... (runs in a subagent — no output until it returns, ~1–5 min; expected, not a freeze)
 ```
 
 Planner prompt:
@@ -906,6 +918,7 @@ Planner prompt:
 - {UI_SPEC_PATH} (UI Design Contract — visual/interaction specs, if exists)
 - {SPIKE_FINDINGS_PATH} (Spike Findings — validated patterns, constraints, landmines from experiments, if exists)
 - {SKETCH_FINDINGS_PATH} (Sketch Findings — validated design decisions, CSS patterns, visual direction, if exists)
+- {API_SURFACE_PATH} (API Surface — HINT ONLY, if intel.enabled; see <intel_surface_hint> below)
 ${CONTEXT_WINDOW >= 500000 ? `
 **Cross-phase context (1M model enrichment):**
 - CONTEXT.md files from the 3 most recent completed phases (locked decisions — maintain consistency)
@@ -915,7 +928,11 @@ ${CONTEXT_WINDOW >= 500000 ? `
 - Skip all other prior phases to stay within context budget
 ` : ''}
 </files_to_read>
-
+${API_SURFACE_PATH ? `
+<intel_surface_hint>
+**API Surface (HINT — may be incomplete):** When \`intel.enabled\` is true, \`.planning/intel/API-SURFACE.md\` lists symbols extracted from the codebase by regex/JS analysis. Prefer symbols listed there when referencing existing code. This surface is regex/JS-derived and MAY BE INCOMPLETE — a symbol's absence means *unknown*, not *nonexistent*. Never treat the surface as exhaustive. If you reference a symbol that is not in the surface and this phase creates it, list it under "Artifacts this phase produces".
+</intel_surface_hint>
+` : ''}
 ${AGENT_SKILLS_PLANNER}
 
 **Phase requirement IDs (every ID MUST appear in a plan's `requirements` field):** {phase_req_ids}
@@ -950,6 +967,7 @@ Output consumed by /gsd:execute-phase. Plans need:
 - Tasks in XML format with read_first and acceptance_criteria fields (MANDATORY on every task)
 - Verification criteria
 - must_haves for goal-backward verification
+- **"Artifacts this phase produces" section (MANDATORY)** — list every symbol this phase creates: decorators, classes, functions, CLI flags, struct/dataclass fields, new file paths. The plan-review-convergence source-grounding pass reads this section to exclude newly-created symbols from drift verification; omitting it causes new symbols to be flagged for acknowledgement.
 </downstream_consumer>
 
 <deep_work_rules>
@@ -993,6 +1011,7 @@ Every task MUST include these fields — they are NOT optional:
 - [ ] Dependencies correctly identified
 - [ ] Waves assigned for parallel execution
 - [ ] must_haves derived from phase goal
+- [ ] Every PLAN.md includes an "Artifacts this phase produces" section listing symbols created by this phase (decorators, classes, functions, CLI flags, struct/dataclass fields, new file paths)
 </quality_gate>
 ```
 
@@ -1040,7 +1059,7 @@ fi
 
 Display:
 ```text
-◆ Chunked mode: spawning outline planner...
+◆ Chunked mode: spawning outline planner... (runs in a subagent — no output until it returns, ~1–5 min; expected, not a freeze)
 ```
 
 Spawn the planner in **outline-only** mode — it must write only the outline manifest, not any
@@ -1088,7 +1107,7 @@ For each plan entry extracted from `PLAN-OUTLINE.md`:
 
 2. Display:
    ```text
-   ◆ Chunked mode: planning {plan_id} ({k}/{N})...
+   ◆ Chunked mode: planning {plan_id} ({k}/{N})... (runs in a subagent — no output until it returns, ~1–5 min; expected, not a freeze)
    ```
 
 3. Spawn the planner in **single-plan** mode — it must write exactly one PLAN.md file:
@@ -1227,7 +1246,7 @@ Display banner:
  GSD ► VERIFYING PLANS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-◆ Spawning plan checker...
+◆ Spawning plan checker... (runs in a subagent — no output until it returns, ~1–5 min; expected, not a freeze)
 ```
 
 Checker prompt:
@@ -1537,8 +1556,8 @@ if [ "$GATE_CFG" != "false" ]; then
   # `passed: true` covers both real-pass and skipped cases (gate disabled / no CONTEXT.md /
   # no trackable decisions). Verify-phase counterpart deliberately omits this exit-1 — that
   # gate is non-blocking by design (review finding F15).
-  echo "$GATE_RESULT" | jq -e '.data.passed == true' >/dev/null || {
-    echo "$GATE_RESULT" | jq -r '.data.message'
+  echo "$GATE_RESULT" | jq -e '(.passed // .data.passed) == true' >/dev/null || {
+    echo "$GATE_RESULT" | jq -r '(.message // .data.message // "Decision coverage gate failed.")'
     exit 1
   }
 fi
@@ -1631,7 +1650,8 @@ one place before execution begins.
 ```bash
 POST_PLANNING_GAPS=$($GSD_SDK query config-get workflow.post_planning_gaps --default true 2>/dev/null || echo true)
 if [ "$POST_PLANNING_GAPS" = "true" ]; then
-  node "$HOME/.claude/get-shit-done/bin/gsd-tools.cjs" gap-analysis --phase-dir "${PHASE_DIR}"
+  # Scope to this phase's mapped REQ-IDs (#447); null/TBD skips the requirements comparison (CONTEXT.md decisions still reported), mirroring §13.
+  $GSD_SDK gap-analysis --phase-dir "${PHASE_DIR}" --phase-req-ids "$($GSD_SDK query init.plan-phase "$PHASE" --pick phase_req_ids 2>/dev/null || echo TBD)"
 fi
 ```
 
