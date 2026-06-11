@@ -67,7 +67,7 @@ Find first PLAN without matching SUMMARY. Decimal phases supported (`01.1-hotfix
 
 ```bash
 PHASE=$(echo "$PLAN_PATH" | grep -oE '[0-9]+(\.[0-9]+)?-[0-9]+')
-# config settings can be fetched via gsd-sdk query config-get if needed
+# config settings can be fetched via gsd-tools.cjs query config-get if needed
 ```
 
 <if mode="yolo">
@@ -392,7 +392,7 @@ Next: more plans → "Ready for {next-plan}" | last → "Phase complete, ready f
 handles STATE.md/ROADMAP.md updates centrally after merging worktrees to avoid
 merge conflicts).
 
-Update STATE.md using gsd-sdk query (or legacy gsd-tools) state mutations:
+Update STATE.md using gsd-tools.cjs query (or legacy gsd-tools) state mutations:
 
 ```bash
 # Auto-detect parallel mode: .git is a file in worktrees, a directory in main repo
@@ -429,7 +429,7 @@ $GSD_SDK query state.add-blocker --text-file "${BLOCKER_TEXT_FILE}"
 </step>
 
 <step name="update_session_continuity">
-Update session info using gsd-sdk query (or legacy gsd-tools):
+Update session info using gsd-tools.cjs query (or legacy gsd-tools):
 
 ```bash
 $GSD_SDK query state.record-session \
