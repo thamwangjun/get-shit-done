@@ -160,7 +160,7 @@ If found, delete them — phase is complete, handoffs are stale.
 
 <step name="update_roadmap_and_state">
 
-**Delegate ROADMAP.md and STATE.md updates to `gsd-sdk query phase.complete`:**
+**Delegate ROADMAP.md and STATE.md updates to `gsd-tools.cjs query phase.complete`:**
 
 ```bash
 # SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk (#3668)
@@ -306,7 +306,7 @@ This step is fully delegated to `graduation.md`. It handles guard checks (featur
 
 <step name="update_current_position_after_transition">
 
-**Note:** Basic position updates (Current Phase, Status, Current Plan, Last Activity) were already handled by `gsd-sdk query phase.complete` in the update_roadmap_and_state step.
+**Note:** Basic position updates (Current Phase, Status, Current Plan, Last Activity) were already handled by `gsd-tools.cjs query phase.complete` in the update_roadmap_and_state step.
 
 Verify the updates are correct by reading STATE.md. If the progress bar needs updating, use:
 
@@ -410,7 +410,7 @@ Resume file: None
 
 **MANDATORY: Verify milestone status before presenting next steps.**
 
-**Use the transition result from `gsd-sdk query phase.complete`:**
+**Use the transition result from `gsd-tools.cjs query phase.complete`:**
 
 The `is_last_phase` field from the phase complete result tells you directly:
 - `is_last_phase: false` → More phases remain → Go to **Route A**
