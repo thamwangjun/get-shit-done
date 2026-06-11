@@ -3,14 +3,13 @@ gsd_state_version: 1.0
 milestone: v2.1.0-h
 milestone_name: Phase Details
 status: executing
-stopped_at: Phase 68 context gathered
-last_updated: "2026-06-11T13:58:46.276Z"
-last_activity: 2026-06-11 — Roadmap created for v2.1.0-h (Phases 68–77)
+last_updated: "2026-06-11T14:08:18.936Z"
+last_activity: 2026-06-11
 progress:
   total_phases: 10
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 2
+  completed_plans: 1
   percent: 0
 ---
 
@@ -21,16 +20,16 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-07 after v2.1.0-f milestone start)
 
 **Core value:** Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships
-**Current focus:** Phase 68 — Spec Scaffold (v2.1.0-h Fork Feature Specification)
+**Current focus:** Phase 68 — spec-scaffold
 
 ## Current Position
 
-Phase: 68 of 77 (Spec Scaffold) — first phase of v2.1.0-h
-Plan: — (not yet planned)
+Phase: 68 (spec-scaffold) — EXECUTING
+Plan: 2 of 2
 Status: Ready to execute
-Last activity: 2026-06-11 — Roadmap created for v2.1.0-h (Phases 68–77)
+Last activity: 2026-06-11
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█████░░░░░] 50%
 
 ## Performance Metrics
 
@@ -49,6 +48,9 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - [v2.1.0-h roadmap]: QUAL-01–05 are cross-cutting acceptance criteria folded into every feature-spec phase (69–76), not a standalone phase — each spec must independently satisfy all five.
 - [v2.1.0-h roadmap]: Despite `coarse` granularity, the 8 feature specs are kept as distinct phases — one directory per feature maps to GSD's wave-parallel model; combining them would defeat parallel execution and produce monolithic specs synthesized from fragments.
 - [v2.1.0-h roadmap]: Wave 1 = Phases 69/70/71/72 (no deps, parallel). Wave 2 = Phases 73/74/75/76 (73→70, 74/75/76→72). Review (77) follows all 8.
+- [Phase ?]: D-04 ID scheme locked: SCAF/SPEC requirement IDs unchanged; invariant IDs are NN-INV-M; Requirement: back-reference in each stub frontmatter
+- [Phase ?]: D-01 7-section template locked: no per-spec section drift permitted across the 8 feature specs
+- [Phase ?]: Block-header frontmatter (not YAML) used for all .planning/spec/ files
 
 ### Wave Structure (for execution)
 
@@ -90,12 +92,13 @@ None. Research is HIGH confidence across all five phases.
 | 260610-heg | Refactor no-issue-citations.test.cjs to two-tier allowlist (PLACEHOLDER_DIGITS + FILE_ALLOWLIST per-file map) | 2026-06-10 | 23089feb | [260610-heg-refactor-no-issue-citations-test-cjs-all](./quick/260610-heg-refactor-no-issue-citations-test-cjs-all/) |
 | 260610-d6m | Archive two resolved debug sessions into .planning/debug/resolved/ | 2026-06-10 | c931aaf8 | [260610-d6m-archive-resolved-debug-sessions](./quick/260610-d6m-archive-resolved-debug-sessions/) |
 | 260610-ita | Address milestone v2.1.0-g documentation tech debt | 2026-06-10 | e3bf3419 | [260610-ita-address-milestone-v2-1-0-g-documentation](./quick/260610-ita-address-milestone-v2-1-0-g-documentation/) |
+| Phase 68 P01 | 3m | 2 tasks | 9 files |
 
 ## Session Continuity
 
 Last activity: 2026-06-11 — Roadmap created for v2.1.0-h (Phases 68–77); REQUIREMENTS traceability filled
-Stopped at: Phase 68 context gathered
-Resume file: .planning/phases/68-spec-scaffold/68-CONTEXT.md
+Stopped at: Completed Phase 68 Plan 01 — spec scaffold conventions and stubs
+Resume file: .planning/phases/68-spec-scaffold/68-01-SUMMARY.md
 
 ## Deferred Items
 

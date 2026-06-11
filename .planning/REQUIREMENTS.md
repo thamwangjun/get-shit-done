@@ -13,7 +13,7 @@
 ### Scaffold
 
 - [ ] **SCAF-01**: `.planning/spec/INDEX.md` exists as the spec-set manifest with a feature-status table (ID, feature, spec link, status, depends-on), a dependency graph, and a Wave 1 / Wave 2 build order
-- [ ] **SCAF-02**: `.planning/spec/00-CONVENTIONS.md` defines the per-feature spec template, the REQ-ID/SPEC-ID scheme, the status vocabulary (Draft/Ready/Implemented/Verified), and the source-of-truth hierarchy
+- [x] **SCAF-02**: `.planning/spec/00-CONVENTIONS.md` defines the per-feature spec template, the REQ-ID/SPEC-ID scheme, the status vocabulary (Draft/Ready/Implemented/Verified), and the source-of-truth hierarchy
 - [ ] **SCAF-03**: `INDEX.md` contains an explicit "Excluded from scope" section listing superseded/abandoned work the reimplementer must NOT carry forward (XML tag hierarchy `<persona>`/`<intent>`/`<objective>`, `resolveIncludes()` stepping stone, `parseV()` semver block, and any other PROJECT.md Out-of-Scope items)
 
 ### Feature Specs
@@ -61,7 +61,7 @@ Maps each REQ-ID to its phase. Every requirement maps to exactly one phase; QUAL
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | SCAF-01 | Phase 68 | Pending |
-| SCAF-02 | Phase 68 | Pending |
+| SCAF-02 | Phase 68 | Complete |
 | SCAF-03 | Phase 68 | Pending |
 | SPEC-01 | Phase 69 | Pending |
 | SPEC-02 | Phase 70 | Pending |

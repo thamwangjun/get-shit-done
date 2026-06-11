@@ -785,7 +785,7 @@ Plans:
 
 **Wave 1**
 
-- [ ] 68-01-PLAN.md — 00-CONVENTIONS.md meta-spec (locked 7-section template, NN-INV-M ID scheme, status vocab, source-of-truth hierarchy) + eight NN-*/SPEC.md stubs [SCAF-02]
+- [x] 68-01-PLAN.md — 00-CONVENTIONS.md meta-spec (locked 7-section template, NN-INV-M ID scheme, status vocab, source-of-truth hierarchy) + eight NN-*/SPEC.md stubs [SCAF-02]
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -988,7 +988,7 @@ Plans:
 | 65. Guard Test (RED) | v2.1.0-g | 2/2 | Complete    | 2026-06-09 |
 | 66. Citation Cleanup | v2.1.0-g | 4/4 | Complete    | 2026-06-09 |
 | 67. Full Verification | v2.1.0-g | 1/1 | Complete    | 2026-06-10 |
-| 68. Spec Scaffold | v2.1.0-h | 0/TBD | Not started | - |
+| 68. Spec Scaffold | v2.1.0-h | 1/2 | In Progress|  |
 | 69. spec-01 Positive Framing | v2.1.0-h | 0/TBD | Not started | - |
 | 70. spec-02 SHA Versioning | v2.1.0-h | 0/TBD | Not started | - |
 | 71. spec-04 Eta Materialization | v2.1.0-h | 0/TBD | Not started | - |
