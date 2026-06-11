@@ -73,3 +73,16 @@ created: 2026-06-11
 - [x] `nyquist_compliant: true` set in frontmatter
 
 **Approval:** approved 2026-06-11
+
+---
+
+## Validation Audit 2026-06-11
+
+Re-audit of structural-only validation contract. All 7 structural phase-gate checks re-run and confirmed passing (merge 2nd parent `1bb253c9`, no unresolved markers, fork-only files present, fork module restored, `sdk/` absent). No automated-test gaps exist by design — VERIFY-02 mandates structural verification, not a green suite.
+
+| Metric | Count |
+|--------|-------|
+| Gaps found | 0 |
+| Resolved | 0 |
+| Escalated | 0 |
+| Manual-only (documented) | 2 |
