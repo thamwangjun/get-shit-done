@@ -190,8 +190,54 @@ After recording decisions, continue to `dispatch_wave_1`.
 Fallback (no AskUserQuestion): default to `preserve`.
 </step>
 
-<step name="dispatch_wave_1" condition="Task tool available">
-Read manifest, use items with `wave: 1`.
+<!-- If Task tool is unavailable at runtime, skip dispatch/collect waves and use sequential_generation instead. -->
+
+<step name="dispatch_wave_1" condition="Task tool is available">
+**Read the work manifest first:** `Read .planning/tmp/docs-work-manifest.json` — use `canonical_queue` items with `wave: 1` for this step.
+
+Spawn 3 parallel gsd-doc-writer agents for Wave 1 docs: README, ARCHITECTURE, CONFIGURATION (each runs in a subagent — no output until they return, ~1–5 min; expected, not a freeze).
+
+These are foundational docs with no cross-references needed, making them ideal for parallel generation.
+
+Use `run_in_background=true` for all three to enable parallel execution.
+
+**Agent 1: README**
+
+```
+Agent(
+  subagent_type="gsd-doc-writer",
+  model="{doc_writer_model}",
+  run_in_background=true,
+  description="Generate README.md for target project",
+  prompt="<doc_assignment>
+type: readme
+mode: {create|update|supplement}
+preservation_mode: {preserve|supplement|regenerate|null}
+project_context: {INIT JSON}
+{existing_content: | (include full file content here if mode is update or supplement, else omit this line)}
+</doc_assignment>
+
+{AGENT_SKILLS}
+
+Write the doc file directly. Return confirmation only — do not return doc content."
+)
+```
+
+**Agent 2: ARCHITECTURE**
+
+```
+Agent(
+  subagent_type="gsd-doc-writer",
+  model="{doc_writer_model}",
+  run_in_background=true,
+  description="Generate ARCHITECTURE.md for target project",
+  prompt="<doc_assignment>
+type: architecture
+mode: {create|update|supplement}
+preservation_mode: {preserve|supplement|regenerate|null}
+project_context: {INIT JSON}
+{existing_content: | (include full file content here if mode is update or supplement, else omit this line)}
+</doc_assignment>
 
 Spawn 3 parallel agents for README, ARCHITECTURE, CONFIGURATION:
 
@@ -337,12 +383,41 @@ doc_path: {relative path}
 project_root: {from init JSON}
 </verify_assignment>
 ```
+Read .planning/tmp/docs-work-manifest.json
+```
+
+Extract `canonical_queue` (items with `status: "completed"`) and `review_queue` (items with `status: "pending_review"`). Both queues are verified in this step.
+
+**Skip condition:** If `--verify-only` is present in `$ARGUMENTS`, this step was already handled by `verify_only_report` (early exit). Skip.
+
+**Phase 1: Verify canonical docs (generated/updated docs)**
+
+For each doc in `canonical_queue` that was successfully written to disk:
+
+1. Print: `◆ Spawning doc verifier for {doc_path}... (runs in a subagent — no output until it returns, ~1–5 min; expected, not a freeze)`
+   Spawn the `gsd-doc-verifier` agent (or invoke sequentially if Task tool is unavailable) with a `<verify_assignment>` block:
+   ```xml
+   <verify_assignment>
+   doc_path: {relative path to the doc file, e.g. README.md}
+   project_root: {project_root from init JSON}
+   </verify_assignment>
+   ```
+
+2. After the verifier completes, read the result JSON from `.planning/tmp/verify-{doc_filename}.json`.
+
+3. Update the manifest: set `status: "verified"` for each canonical doc processed.
+
+**Phase 2: Verify non-canonical docs (existing hand-written docs)**
+
+This is NOT optional. Every doc in `review_queue` MUST be verified.
 
 Read result from `.planning/tmp/verify-{filename}.json`.
 Update manifest: `status: "verified"`.
 
-**Phase 2: Verify non-canonical docs**
-Verify all review_queue docs (not optional).
+1. Print: `◆ Spawning doc verifier for {doc_path}... (runs in a subagent — no output until it returns, ~1–5 min; expected, not a freeze)`
+   Spawn the `gsd-doc-verifier` agent with the same `<verify_assignment>` block as above.
+2. Read the result JSON from `.planning/tmp/verify-{doc_filename}.json`.
+3. Update the manifest: set `status: "verified"` for each review_queue doc processed.
 
 Non-canonical docs with failures eligible for fix_loop via `fix` mode.
 
@@ -368,7 +443,75 @@ If any fail: continue to fix_loop.
 </step>
 
 <step name="fix_loop">
-Read manifest. Identify all docs (canonical + non-canonical) with `claims_failed > 0`.
+**Read the work manifest first:** `Read .planning/tmp/docs-work-manifest.json` — identify ALL docs (canonical AND non-canonical) with `claims_failed > 0` from the verification results in `.planning/tmp/verify-*.json`. Both queues are eligible for fixes.
+
+Correct flagged inaccuracies by re-sending failing docs to the doc-writer in fix mode. Per D-06, max 2 iterations. Per D-05, halt immediately on regression.
+
+**Skip condition:** If all docs passed verification (no failures), skip this step.
+
+**Iteration tracking:**
+- `MAX_FIX_ITERATIONS = 2`
+- `iteration = 0`
+- `previous_passed_docs` = set of doc_paths where claims_failed === 0 after initial verification
+
+**For each iteration (while iteration < MAX_FIX_ITERATIONS and there are docs with failures):**
+
+1. For each doc with `claims_failed > 0` in the latest verification_results:
+   a. Read the current file content from disk. Record the pre-fix line count:
+      ```bash
+      PRE_FIX_LINES=$(wc -l < "{doc_path}" 2>/dev/null || echo 0)
+      ```
+   b. Spawn `gsd-doc-writer` agent (or invoke sequentially) with a fix assignment:
+      ```xml
+      <doc_assignment>
+      type: {original doc type from the queue, e.g. readme}
+      mode: fix
+      doc_path: {relative path}
+      project_context: {INIT JSON}
+      existing_content: {current file content read from disk}
+      failures:
+        - line: {line}
+          claim: "{claim}"
+          expected: "{expected}"
+          actual: "{actual}"
+      </doc_assignment>
+      ```
+   c. One agent spawn per doc with failures. Do not batch multiple docs into one spawn.
+   d. **Post-fix truncation guard:** After the fix agent completes, check for file corruption:
+      ```bash
+      POST_FIX_LINES=$(wc -l < "{doc_path}" 2>/dev/null || echo 0)
+      ```
+      If `POST_FIX_LINES` is less than 10% of `PRE_FIX_LINES` (i.e. the file shrank by more than 90%), the fix agent corrupted the file via a full-file Write. Restore it immediately:
+      - Write the `existing_content` captured in step 1a back to `"{doc_path}"` using the Write tool
+      - Log: `WARNING: Fix agent corrupted {doc_path} ({POST_FIX_LINES} lines after fix, was {PRE_FIX_LINES}). Restored from pre-fix content. Failures for this doc require manual correction.`
+      - Mark this doc as `"fix-corrupted"` in the manifest; it will appear in remaining failures at the end
+      - Do NOT attempt to fix this doc again this iteration. It is still included in the step 2 re-verification (so its failures are counted) but no further fix agent will be dispatched for it in this iteration.
+
+2. After all fix agents complete, re-verify ALL docs (not just the ones that were fixed):
+   - Re-run the same verification process as verify_docs step.
+   - Read updated result JSONs from `.planning/tmp/verify-{doc_filename}.json`.
+
+3. **Regression detection (D-05):**
+   For each doc in the new verification_results:
+   - If this doc was in `previous_passed_docs` (passed in the prior round) AND now has `claims_failed > 0`, this is a REGRESSION.
+   - If regression detected: HALT the loop immediately. Present:
+     ```
+     REGRESSION DETECTED -- halting fix loop.
+
+     {doc_path} previously passed verification but now has {claims_failed} failures after fix iteration {iteration + 1}.
+
+     This means the fix introduced new errors. Remaining failures require manual review.
+     ```
+     Continue to scan_for_secrets (do not attempt further fixes).
+
+4. Update `previous_passed_docs` with docs that now pass.
+5. Increment `iteration`.
+
+**After loop exhaustion (iteration === MAX_FIX_ITERATIONS and failures remain):**
+
+Present remaining failures:
+```
+Fix loop completed ({MAX_FIX_ITERATIONS} iterations). Remaining failures:
 
 Skip if none.
 
