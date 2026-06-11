@@ -17,6 +17,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 Parse arguments and load project state:
 
 ```bash
+_GSD_SHIM_NAME="gsd-tools.cjs"; _GSD_RUNTIME_ROOT="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"; GSD_TOOLS="${_GSD_RUNTIME_ROOT}/get-shit-done/bin/${_GSD_SHIM_NAME}"; if [ -f "$GSD_TOOLS" ]; then $GSD_SDK() { node "$GSD_TOOLS" "$@"; }; elif [ -f "${_GSD_RUNTIME_ROOT}/.claude/get-shit-done/bin/${_GSD_SHIM_NAME}" ]; then GSD_TOOLS="${_GSD_RUNTIME_ROOT}/.claude/get-shit-done/bin/${_GSD_SHIM_NAME}"; $GSD_SDK() { node "$GSD_TOOLS" "$@"; }; elif command -v gsd-tools >/dev/null 2>&1; then GSD_TOOLS="$(command -v gsd-tools)"; $GSD_SDK() { "$GSD_TOOLS" "$@"; }; elif [ -f "$HOME/.claude/get-shit-done/bin/${_GSD_SHIM_NAME}" ]; then GSD_TOOLS="$HOME/.claude/get-shit-done/bin/${_GSD_SHIM_NAME}"; $GSD_SDK() { node "$GSD_TOOLS" "$@"; }; else echo "ERROR: gsd-tools.cjs not found at $GSD_TOOLS and gsd-tools is not on PATH. Run: npx -y @opengsd/get-shit-done-redux@latest --claude --local" >&2; exit 1; fi
 PHASE_ARG="${1}"
 # SDK resolution: prefer local gsd-tools.cjs, fall back to global gsd-sdk (#3668)
 GSD_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/get-shit-done/bin/gsd-tools.cjs"
@@ -103,7 +104,7 @@ Default is true — only skip on explicit false. This check runs AFTER phase val
 Determine review depth with priority order:
 
 1. DEPTH_OVERRIDE from --depth flag (highest priority)
-2. Config value: `gsd-sdk query config-get workflow.code_review_depth 2>/dev/null`
+2. Config value: `gsd-tools.cjs query config-get workflow.code_review_depth 2>/dev/null`
 3. Default: "standard"
 
 ```bash
@@ -452,6 +453,8 @@ fi
 ```
 
 Spawn the gsd-code-reviewer agent:
+
+Print: `◆ Spawning code reviewer... (runs in a subagent — no output until it returns, ~1–5 min; expected, not a freeze)`
 
 ```
 Agent(subagent_type="gsd-code-reviewer", model="{code_reviewer_model}", effort={code_reviewer_model_effort_arg} prompt="
