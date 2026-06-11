@@ -4,8 +4,8 @@ milestone: v2.3.1-a
 milestone_name: milestone
 status: executing
 stopped_at: context exhaustion at 75% (2026-06-11)
-last_updated: "2026-06-11T08:15:39.747Z"
-last_activity: 2026-06-11 -- Phase 69 planning complete
+last_updated: "2026-06-11T08:28:42.524Z"
+last_activity: 2026-06-11 -- Phase 69 execution started
 progress:
   total_phases: 8
   completed_phases: 0
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-07 after v2.1.0-f milestone start)
 
 **Core value:** Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships
-**Current focus:** Phase 68 — pre-merge-inventory-backup-sdk-capture
+**Current focus:** Phase 69 — merge-execution-ordered-conflict-resolution
 
 ## Current Position
 
-Phase: 68 (pre-merge-inventory-backup-sdk-capture) — COMPLETE
-Plan: 2 of 2
-Status: Ready to execute
-Last activity: 2026-06-11 -- Phase 69 planning complete
+Phase: 69 (merge-execution-ordered-conflict-resolution) — EXECUTING
+Plan: 1 of 8
+Status: Executing Phase 69
+Last activity: 2026-06-11 -- Phase 69 execution started
 
 ## Performance Metrics
 
