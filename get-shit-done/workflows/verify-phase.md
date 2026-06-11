@@ -64,7 +64,7 @@ Extract **phase goal** from ROADMAP.md (the outcome to verify, not tasks), **req
 <step name="establish_must_haves">
 **Option A: Must-haves in PLAN frontmatter**
 
-Use `gsd-sdk query` verify handlers (or legacy gsd-tools) to extract must_haves from each PLAN:
+Use `gsd-tools.cjs query` verify handlers (or legacy gsd-tools) to extract must_haves from each PLAN:
 
 ```bash
 for plan in "$PHASE_DIR"/*-PLAN.md; do
@@ -114,7 +114,7 @@ For each truth: identify supporting artifacts → check artifact status → chec
 </step>
 
 <step name="verify_artifacts">
-Use `gsd-sdk query verify.artifacts` (or legacy gsd-tools) for artifact verification against must_haves in each PLAN:
+Use `gsd-tools.cjs query verify.artifacts` (or legacy gsd-tools) for artifact verification against must_haves in each PLAN:
 
 ```bash
 for plan in "$PHASE_DIR"/*-PLAN.md; do
@@ -157,7 +157,7 @@ wiring or leftover code from plan revisions.
 </step>
 
 <step name="verify_wiring">
-Use `gsd-sdk query verify.key-links` (or legacy gsd-tools) for key link verification against must_haves in each PLAN:
+Use `gsd-tools.cjs query verify.key-links` (or legacy gsd-tools) for key link verification against must_haves in each PLAN:
 
 ```bash
 for plan in "$PHASE_DIR"/*-PLAN.md; do
