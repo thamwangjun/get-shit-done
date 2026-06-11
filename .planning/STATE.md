@@ -2,8 +2,8 @@
 gsd_state_version: 1.0
 milestone: v2.3.1-a
 milestone_name: Upstream v1.3.1 Merge & Rename Adoption
-status: executing
-last_updated: "2026-06-11T05:29:21.879Z"
+status: verifying
+last_updated: "2026-06-11T05:36:32.562Z"
 last_activity: 2026-06-11
 ---
 
@@ -20,7 +20,7 @@ See: .planning/PROJECT.md (updated 2026-06-07 after v2.1.0-f milestone start)
 
 Phase: 68 (pre-merge-inventory-backup-sdk-capture) — EXECUTING
 Plan: 2 of 2
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-06-11
 
 ## Performance Metrics
@@ -48,6 +48,7 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - [v2.1.0-f roadmap]: GAP-K and GAP-M2 are one physical location (lines 133–139 of debug-session-management.test.cjs) — treated as one phase (SFC-01, Phase 63).
 - [Phase 68]: KEEP fork SHA-based isNewer update-check worker (PATCH-02)
 - [Phase 68]: ACCEPT upstream sdk/ deletion gated on SDK-01 documentation existing first (SDK-01->SDK-02)
+- [Phase ?]: SDK capability documented restoration-grade; supporting tree enumerated by subsystem; SDK-01 satisfied; gates Phase 69 sdk/ deletion
 
 ### Plan-Time Verification Flags
 
@@ -93,6 +94,7 @@ None. Research is HIGH confidence across all five phases.
 | 260610-d6m | Archive two resolved debug sessions into .planning/debug/resolved/ | 2026-06-10 | c931aaf8 | [260610-d6m-archive-resolved-debug-sessions](./quick/260610-d6m-archive-resolved-debug-sessions/) |
 | 260610-ita | Address milestone v2.1.0-g documentation tech debt | 2026-06-10 | e3bf3419 | [260610-ita-address-milestone-v2-1-0-g-documentation](./quick/260610-ita-address-milestone-v2-1-0-g-documentation/) |
 | 260610-h41 | Condense PROJECT.md; move information to PROJECT_HISTORY.md | 2026-06-10 | 87f62ebe | [260610-h41-condense-project-md-move-information-to-](./quick/260610-h41-condense-project-md-move-information-to-/) |
+| Phase 68-pre-merge-inventory-backup-sdk-capture P02 | 12 | 2 tasks | 1 files |
 
 ## Session Continuity
 

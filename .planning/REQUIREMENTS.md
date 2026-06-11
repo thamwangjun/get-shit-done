@@ -35,7 +35,7 @@
 
 ### SDK Capability Preservation
 
-- [ ] **SDK-01**: Before accepting upstream's `sdk/` deletion, the fork's `sdk/` capability (`session-runner.ts`, `config.ts`, `model-catalog.ts`, `ws-transport.ts`, and supporting modules) is documented in full detail — purpose, public surface, behavior, and integration points — sufficient for a future milestone to restore the feature compatibly with upstream
+- [x] **SDK-01**: Before accepting upstream's `sdk/` deletion, the fork's `sdk/` capability (`session-runner.ts`, `config.ts`, `model-catalog.ts`, `ws-transport.ts`, and supporting modules) is documented in full detail — purpose, public surface, behavior, and integration points — sufficient for a future milestone to restore the feature compatibly with upstream
 - [ ] **SDK-02**: Upstream's `sdk/` deletion is accepted (after SDK-01 documentation is captured), resolving the delete/modify conflicts in upstream's favor
 
 ### Verification
@@ -83,7 +83,7 @@ Which phases cover which requirements. Populated during roadmap creation.
 | PATCH-04 | Phase 70 | Pending |
 | GUARD-01 | Phase 70 | Pending |
 | GUARD-02 | Phase 70 | Pending |
-| SDK-01 | Phase 68 | Pending |
+| SDK-01 | Phase 68 | Complete |
 | SDK-02 | Phase 69 | Pending |
 | VERIFY-01 | Phase 71 | Pending |
 | VERIFY-02 | Phase 71 | Pending |
