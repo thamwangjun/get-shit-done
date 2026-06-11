@@ -66,6 +66,8 @@ if [ -f "$GSD_TOOLS" ]; then GSD_SDK="node $GSD_TOOLS"; elif command -v gsd-sdk 
 phase_researcher_model=$($GSD_SDK query resolve-model gsd-phase-researcher --raw)
 phase_researcher_model_effort_arg=$($GSD_SDK query resolve-model-effort gsd-phase-researcher --raw 2>/dev/null || echo "")
 ```
+
+Print: `◆ Spawning explorer... (runs in a subagent — no output until it returns, ~1–5 min; expected, not a freeze)`
 ```
 Agent(
   prompt="Quick research: {specific_question}. Return 3-5 key findings, no more than 200 words.",
