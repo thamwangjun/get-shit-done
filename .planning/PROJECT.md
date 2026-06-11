@@ -28,9 +28,24 @@ All issue/PR-number citations removed from prompt content `.md` files across 5 s
 
 Closed all behavioral and documentation testing gaps from the v2.1.0-e gap report. Test-only milestone — 5 phases (59–63), 5 plans, additive test code across four existing test files with no agent/workflow source changes: 8 Group B effort-wiring guards (`phase-56-effort-wiring.test.cjs`), submodule-exclusion guard scoped to `gsd-executor.md` `<task_commit_protocol>` (`bug-3097-3099-...test.cjs`), rubric-inlining guard for `gsd-user-profiler.md` and reactivated `gsd-debugger.md` hardened-security test (`debug-session-management.test.cjs`), and stale-comment removal (`step-numbering-scan.test.cjs`). `npm test` 9115 pass / 0 fail / 9 skipped. Full details: `.planning/milestones/v2.1.0-f-ROADMAP.md`.
 
-## Current Milestone: Planning Next
+## Current Milestone: v2.1.0-h Fork Feature Specification
 
-**Next:** Run `/gsd-new-milestone` to start next milestone cycle (questioning → research → requirements → roadmap).
+**Goal:** Produce a complete, reimplementation-ready specification of every unique fork feature in `.planning/spec/`, so the fork's value can be rebuilt on a heavily-refactored upstream where a direct merge of hundreds of conflicting changes is infeasible.
+
+**Target features to spec:**
+- Positive/affirmative framing standard + negative-framing scanner
+- SHA-based versioning system (update worker via GitHub Commits API, install.js git-SHA, statusline, check-latest-version, `no-network` sentinel)
+- On-demand hooks build (`ensureHooksDist`)
+- Eta v4 install-time content materialization (`<%~ include() %>`)
+- Whole-integer step numbering (scanner + `normalize-step-numbers.cjs` + cross-file-ref scanner)
+- Per-agent thinking effort (`model;effort` labels, unified resolver, D-08 floor, catalog/init/spawn wiring)
+- Citation cleanup guard (`no-issue-citations.test.cjs`)
+- Fork test suite & infrastructure (scanner-precedence rule, serial isolation)
+- Fork reference/playbook docs as encoded standards
+
+**Explicitly excluded:** XML tag conventions (`<intent>` commands / `<persona>` agents) — not being carried to the new fork.
+
+**Why:** The new upstream is a major refactor; merging hundreds of conflicting changes is too costly. Each spec must capture the *what* and *why* of a feature independent of the current upstream's code structure, so it survives the refactor and can be reimplemented at a point far ahead of this one.
 
 ## Requirements
 
@@ -147,7 +162,7 @@ Closed all behavioral and documentation testing gaps from the v2.1.0-e gap repor
 
 ### Active
 
-(None — ready for next milestone)
+- Milestone v2.1.0-h Fork Feature Specification — requirements being defined (spec all unique fork features to `.planning/spec/`)
 
 ### Out of Scope
 
@@ -248,4 +263,4 @@ This document evolves at phase transitions and milestone boundaries.
 ---
 ---
 ---
-*Last updated: 2026-06-10 after v2.1.0-g milestone complete*
+*Last updated: 2026-06-11 — milestone v2.1.0-h Fork Feature Specification started*
