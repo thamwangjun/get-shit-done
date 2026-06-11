@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Regression test for issue #4 (open-gsd/get-shit-done-redux):
+ * Regression test for issue #4 (open-gsd/gsd-core):
  *   bin/lib/phase.cjs cmdPhaseComplete — non-idempotent and unclamped.
  *
  * Root cause (pre-fix):
@@ -21,7 +21,7 @@
  * References:
  *   - ADR-3524 (docs/adr/3524-cjs-sdk-hard-seam.md) — architectural foundation
  *   - /tmp/adr-3524-review-findings.md — architectural justification
- *   - Issue #4 (open-gsd/get-shit-done-redux)
+ *   - Issue #4 (open-gsd/gsd-core)
  */
 
 const { describe, test, beforeEach, afterEach } = require('node:test');
@@ -30,10 +30,12 @@ const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
 
+const { cleanup } = require('./helpers.cjs');
+
 // ── Load cmdPhaseComplete directly from phase.cjs (bypass the SDK router) ────
 // phase-command-router.cjs delegates to SDK when available; we must test the
 // CJS implementation directly since that is where the bug lives.
-const phaseModule = require('../get-shit-done/bin/lib/phase.cjs');
+const phaseModule = require('../gsd-core/bin/lib/phase.cjs');
 const { cmdPhaseComplete } = phaseModule;
 
 // ── Fixture builder ──────────────────────────────────────────────────────────
@@ -41,6 +43,7 @@ const { cmdPhaseComplete } = phaseModule;
 /**
  * Creates a minimal fixture project with:
  *   - ROADMAP.md with a 4-column progress table (Phase | Plans | Status | Completed)
+ *   - REQUIREMENTS.md with a phase-scoped REQ-ID and Traceability row
  *   - STATE.md with Completed Phases: 0 and Total Phases: 2 (Progress 0%)
  *   - Phase 01 directory with one plan+summary (to satisfy phase complete guard)
  *   - Phase 02 directory (next phase)
@@ -61,6 +64,7 @@ function createFixture(prefix = 'gsd-4-regression-') {
     '',
     '### Phase 01: Foundation',
     '**Goal:** Build the foundation',
+    '**Requirements:** REQ-1',
     '**Plans:** 1 plans',
     '',
     '### Phase 02: API',
@@ -75,6 +79,22 @@ function createFixture(prefix = 'gsd-4-regression-') {
     '',
   ].join('\n');
   fs.writeFileSync(path.join(planningDir, 'ROADMAP.md'), roadmap);
+
+  const requirements = [
+    '# Requirements',
+    '',
+    '## Functional Requirements',
+    '',
+    '- [ ] **REQ-1** Foundation must be complete.',
+    '',
+    '## Traceability',
+    '',
+    '| Requirement | Phase | Status |',
+    '|-------------|-------|--------|',
+    '| REQ-1 | Phase 01 | Pending |',
+    '',
+  ].join('\n');
+  fs.writeFileSync(path.join(planningDir, 'REQUIREMENTS.md'), requirements);
 
   // STATE.md: Completed Phases: 0, Total Phases: 2, Progress: 0%
   // Uses body-field format (bold **Field:** value) so the CJS handler's
@@ -111,6 +131,38 @@ function readStateMd(tmpDir) {
   return fs.readFileSync(path.join(tmpDir, '.planning', 'STATE.md'), 'utf8');
 }
 
+function roadmapCompletionSnapshot(roadmapContent) {
+  const snapshot = {
+    phaseCheckboxes: [],
+    progressRows: [],
+  };
+
+  for (const line of roadmapContent.split(/\r?\n/)) {
+    let match = line.match(/^- \[([ x])\] Phase ([^:]+): (.*)$/);
+    if (match) {
+      snapshot.phaseCheckboxes.push({
+        checked: match[1] === 'x',
+        phase: match[2].trim(),
+        title: match[3].replace(/\s+\(completed [^)]+\)$/, '').trim(),
+      });
+      continue;
+    }
+
+    match = line.match(/^\|\s*(\d+[A-Z]?(?:\.\d+)*)\.?\s*([^|]*)\|\s*([^|]*)\|\s*([^|]*)\|\s*([^|]*)\|$/i);
+    if (match) {
+      snapshot.progressRows.push({
+        phase: match[1].trim(),
+        title: match[2].trim(),
+        plans: match[3].trim(),
+        status: match[4].trim(),
+        completed: match[5].trim(),
+      });
+    }
+  }
+
+  return snapshot;
+}
+
 function extractField(stateContent, fieldName) {
   const escaped = fieldName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const boldMatch = stateContent.match(new RegExp(`\\*\\*${escaped}:\\*\\*[ \\t]*(.+)`, 'i'));
@@ -141,7 +193,7 @@ function extractFrontmatterField(stateContent, fieldName) {
 // Capture stdout from cmdPhaseComplete (it calls output() which writes to stdout)
 function capturePhaseComplete(cwd, phaseNum) {
   const { execFileSync } = require('child_process');
-  const TOOLS = path.join(__dirname, '..', 'get-shit-done', 'bin', 'gsd-tools.cjs');
+  const TOOLS = path.join(__dirname, '..', 'gsd-core', 'bin', 'gsd-tools.cjs');
   // We invoke gsd-tools directly for the full CJS path, but with GSD_DISABLE_SDK_BRIDGE=1
   // to force the CJS implementation. Since no env var disables bridge, we call cmdPhaseComplete
   // directly and redirect output capture.
@@ -166,7 +218,7 @@ describe('issue #4 (CJS): cmdPhaseComplete — idempotency (blind-increment bug)
   });
 
   afterEach(() => {
-    fs.rmSync(tmpDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
+    cleanup(tmpDir);
   });
 
   test('T1: double invocation does NOT double-increment Completed Phases in STATE.md body', () => {
@@ -207,6 +259,102 @@ describe('issue #4 (CJS): cmdPhaseComplete — idempotency (blind-increment bug)
       `STATE after second call (body: ${completedAfter2Body}, fm: ${completedAfter2Fm}):\n${stateAfter2}`,
     );
   });
+
+  test('rolls back ROADMAP when STATE write fails during phase completion', (t) => {
+    const roadmapPath = path.join(tmpDir, '.planning', 'ROADMAP.md');
+    const reqPath = path.join(tmpDir, '.planning', 'REQUIREMENTS.md');
+    const statePath = path.join(tmpDir, '.planning', 'STATE.md');
+    const originalRoadmap = fs.readFileSync(roadmapPath, 'utf8');
+    const originalReq = fs.readFileSync(reqPath, 'utf8');
+    const originalState = fs.readFileSync(statePath, 'utf8');
+    const originalWriteFileSync = fs.writeFileSync;
+
+    t.mock.method(fs, 'writeFileSync', function injectedStateWriteFailure(target, ...args) {
+      const targetPath = String(target);
+      const isStatePublish = targetPath === statePath || targetPath === `${statePath}.tmp.${process.pid}`;
+      if (isStatePublish) {
+        const err = new Error('injected STATE.md write failure');
+        err.code = 'EIO';
+        throw err;
+      }
+      return originalWriteFileSync.call(this, target, ...args);
+    });
+
+    assert.throws(
+      () => capturePhaseComplete(tmpDir, '1'),
+      /injected STATE\.md write failure/,
+    );
+
+    const roadmapAfter = fs.readFileSync(roadmapPath, 'utf8');
+    const reqAfter = fs.readFileSync(reqPath, 'utf8');
+    const stateAfter = fs.readFileSync(statePath, 'utf8');
+
+    assert.deepEqual(
+      roadmapCompletionSnapshot(roadmapAfter),
+      roadmapCompletionSnapshot(originalRoadmap),
+      'ROADMAP.md should roll back to its original completion state',
+    );
+    assert.equal(reqAfter, originalReq, 'REQUIREMENTS.md should roll back when STATE.md write fails');
+    assert.equal(stateAfter, originalState, 'STATE.md should remain unchanged after injected write failure');
+  });
+
+  test('rolls back ROADMAP when REQUIREMENTS write fails during phase completion', (t) => {
+    const roadmapPath = path.join(tmpDir, '.planning', 'ROADMAP.md');
+    const reqPath = path.join(tmpDir, '.planning', 'REQUIREMENTS.md');
+    const originalRoadmap = fs.readFileSync(roadmapPath, 'utf8');
+    const originalReq = fs.readFileSync(reqPath, 'utf8');
+    const originalWriteFileSync = fs.writeFileSync;
+
+    t.mock.method(fs, 'writeFileSync', function injectedRequirementsWriteFailure(target, ...args) {
+      const targetPath = String(target);
+      if (targetPath === reqPath || targetPath === `${reqPath}.tmp.${process.pid}`) {
+        const err = new Error('injected REQUIREMENTS.md write failure');
+        err.code = 'EIO';
+        throw err;
+      }
+      return originalWriteFileSync.call(this, target, ...args);
+    });
+
+    assert.throws(
+      () => capturePhaseComplete(tmpDir, '1'),
+      /injected REQUIREMENTS\.md write failure/,
+    );
+
+    assert.deepEqual(
+      roadmapCompletionSnapshot(fs.readFileSync(roadmapPath, 'utf8')),
+      roadmapCompletionSnapshot(originalRoadmap),
+      'ROADMAP.md should roll back when the REQUIREMENTS write fails',
+    );
+    assert.equal(fs.readFileSync(reqPath, 'utf8'), originalReq, 'REQUIREMENTS.md should be unchanged');
+  });
+
+  test('reports rollback failure when restoring an earlier planning file fails', (t) => {
+    const roadmapPath = path.join(tmpDir, '.planning', 'ROADMAP.md');
+    const reqPath = path.join(tmpDir, '.planning', 'REQUIREMENTS.md');
+    const originalWriteFileSync = fs.writeFileSync;
+    let requirementsWriteFailed = false;
+
+    t.mock.method(fs, 'writeFileSync', function injectedRollbackFailure(target, ...args) {
+      const targetPath = String(target);
+      if (targetPath === reqPath || targetPath === `${reqPath}.tmp.${process.pid}`) {
+        requirementsWriteFailed = true;
+        const err = new Error('injected REQUIREMENTS.md write failure');
+        err.code = 'EIO';
+        throw err;
+      }
+      if (requirementsWriteFailed && (targetPath === roadmapPath || targetPath === `${roadmapPath}.tmp.${process.pid}`)) {
+        const err = new Error('injected ROADMAP.md rollback failure');
+        err.code = 'EIO';
+        throw err;
+      }
+      return originalWriteFileSync.call(this, target, ...args);
+    });
+
+    assert.throws(
+      () => capturePhaseComplete(tmpDir, '1'),
+      /injected REQUIREMENTS\.md write failure[\s\S]*WARNING: rollback failed while restoring[\s\S]*injected ROADMAP\.md rollback failure/,
+    );
+  });
 });
 
 // ── T2: Progress percent must never exceed 100% ──────────────────────────────
@@ -215,7 +363,7 @@ describe('issue #4 (CJS): cmdPhaseComplete — progress percent clamp', () => {
   let tmpDir;
 
   afterEach(() => {
-    if (tmpDir) fs.rmSync(tmpDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
+    cleanup(tmpDir);
   });
 
   test('T2: Progress percent never exceeds 100 after double invocation', () => {

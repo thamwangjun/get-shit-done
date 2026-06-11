@@ -1,17 +1,17 @@
 'use strict';
 
 /**
- * Regression tests for issue #26 (open-gsd/get-shit-done-redux).
+ * Regression tests for issue #26 (open-gsd/gsd-core).
  * Three generator-pattern drift items: W005 phaseDirNameRe,
  * W006-archived regex constants (PHASE_TOKEN_FROM_DIR_RE, MILESTONE_ARCHIVE_DIR_RE),
  * I001 canonicalPlanStem.
  *
  * After the generator migration, all three helpers are sourced from
- * validate.generated.cjs. If they diverge from validate.ts, these
+ * validate.cjs. If they diverge from validate.ts, these
  * tests go RED.
  *
  * References:
- *   - Issue #26 (open-gsd/get-shit-done-redux) — three drift items + reproducer
+ *   - Issue #26 (open-gsd/gsd-core) — three drift items + reproducer
  *   - ADR-3524 (docs/adr/3524-cjs-sdk-hard-seam.md)
  *   - PR #154 (issue #4) — generator pattern precedent
  *   - PR #156 (issue #6) — validate.ts generator scaffolding (#26 extends this)
@@ -24,7 +24,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
 
-const { runGsdTools } = require('./helpers.cjs');
+const { runGsdTools, cleanup } = require('./helpers.cjs');
 
 function mkplanning(base) {
   const planningDir = path.join(base, '.planning');
@@ -59,10 +59,10 @@ function writeConfigJson(planningDir) {
 // Issue #26 reproducer (verbatim):
 //   mkdir -p .planning/phases/999.1-foo
 //   echo "# Roadmap" > .planning/ROADMAP.md
-//   node .claude/get-shit-done/bin/gsd-tools.cjs validate health
+//   node .claude/gsd-core/bin/gsd-tools.cjs validate health
 //   # Bug: emits W005 about 999.1-foo not following NN-name format
 //
-// verify.cjs must consume phaseDirNameRe from validate.generated.cjs so
+// verify.cjs must consume phaseDirNameRe from validate.cjs so
 // the regex /^\d{2,}(?:\.\d+)*-[\w-]+$/ is the single source of truth.
 
 describe('Drift item W005 — phaseDirNameRe: 999.X-name dirs must not trigger W005', () => {
@@ -84,7 +84,7 @@ describe('Drift item W005 — phaseDirNameRe: 999.X-name dirs must not trigger W
     fs.mkdirSync(path.join(phasesDir, '999.1-foo'), { recursive: true });
   });
 
-  after(() => { fs.rmSync(tmpDir, { recursive: true, force: true }); });
+  after(() => { cleanup(tmpDir); });
 
   test('no W005 for 999.1-foo (multi-digit sub-phase prefix)', () => {
     const result = runGsdTools(['validate', 'health', '--json'], tmpDir);
@@ -95,10 +95,10 @@ describe('Drift item W005 — phaseDirNameRe: 999.X-name dirs must not trigger W
       `Expected zero W005 for 999.1-foo, got: ${JSON.stringify(w005)}`);
   });
 
-  test('phaseDirNameRe is exported from validate.generated.cjs', () => {
-    const gen = require('../get-shit-done/bin/lib/validate.generated.cjs');
+  test('phaseDirNameRe is exported from validate.cjs', () => {
+    const gen = require('../gsd-core/bin/lib/validate.cjs');
     assert.ok(gen.phaseDirNameRe instanceof RegExp,
-      'validate.generated.cjs must export phaseDirNameRe as a RegExp');
+      'validate.cjs must export phaseDirNameRe as a RegExp');
     const re = gen.phaseDirNameRe;
     assert.ok(re.test('01-setup'), 'should accept 01-setup');
     assert.ok(re.test('999-longphase'), 'should accept 999-longphase (3-digit prefix)');
@@ -110,7 +110,7 @@ describe('Drift item W005 — phaseDirNameRe: 999.X-name dirs must not trigger W
 // ── Drift Item W006-archived: PHASE_TOKEN_FROM_DIR_RE / MILESTONE_ARCHIVE_DIR_RE ─
 //
 // forEachArchivedPhaseToken() in verify.cjs uses two inline regex constants.
-// After migration both are sourced from validate.generated.cjs:
+// After migration both are sourced from validate.cjs:
 //   PHASE_TOKEN_FROM_DIR_RE  — extracts token from dir name like "64-auth-service"
 //   MILESTONE_ARCHIVE_DIR_RE — matches archive dirs like "v1.0-phases"
 //
@@ -159,7 +159,7 @@ describe('Drift item W006-archived — MILESTONE_ARCHIVE_DIR_RE and PHASE_TOKEN_
     );
   });
 
-  after(() => { fs.rmSync(tmpDir, { recursive: true, force: true }); });
+  after(() => { cleanup(tmpDir); });
 
   test('no W006 for Phase 64 archived under milestones/v1.0-phases/', () => {
     const result = runGsdTools(['validate', 'health', '--json'], tmpDir);
@@ -173,9 +173,9 @@ describe('Drift item W006-archived — MILESTONE_ARCHIVE_DIR_RE and PHASE_TOKEN_
   });
 
   test('MILESTONE_ARCHIVE_DIR_RE is exported and matches vN.N-phases dirs', () => {
-    const gen = require('../get-shit-done/bin/lib/validate.generated.cjs');
+    const gen = require('../gsd-core/bin/lib/validate.cjs');
     assert.ok(gen.MILESTONE_ARCHIVE_DIR_RE instanceof RegExp,
-      'validate.generated.cjs must export MILESTONE_ARCHIVE_DIR_RE');
+      'validate.cjs must export MILESTONE_ARCHIVE_DIR_RE');
     const re = gen.MILESTONE_ARCHIVE_DIR_RE;
     assert.ok(re.test('v1.0-phases'), 'should match v1.0-phases');
     assert.ok(re.test('v1.10-phases'), 'should match v1.10-phases');
@@ -184,9 +184,9 @@ describe('Drift item W006-archived — MILESTONE_ARCHIVE_DIR_RE and PHASE_TOKEN_
   });
 
   test('PHASE_TOKEN_FROM_DIR_RE is exported and extracts phase tokens correctly', () => {
-    const gen = require('../get-shit-done/bin/lib/validate.generated.cjs');
+    const gen = require('../gsd-core/bin/lib/validate.cjs');
     assert.ok(gen.PHASE_TOKEN_FROM_DIR_RE instanceof RegExp,
-      'validate.generated.cjs must export PHASE_TOKEN_FROM_DIR_RE');
+      'validate.cjs must export PHASE_TOKEN_FROM_DIR_RE');
     const re = gen.PHASE_TOKEN_FROM_DIR_RE;
     assert.strictEqual(re.exec('64-auth-service')?.[1], '64');
     assert.strictEqual(re.exec('03B-feature')?.[1], '03B');
@@ -199,7 +199,7 @@ describe('Drift item W006-archived — MILESTONE_ARCHIVE_DIR_RE and PHASE_TOKEN_
 //
 // validate.ts Check 7: canonicalPlanStem('68-01-scaffolding') → '68-01'
 // verify.cjs had an inline copy. After migration, canonicalPlanStem is
-// sourced from validate.generated.cjs.
+// sourced from validate.cjs.
 //
 // Test: "68-01-scaffolding-PLAN.md" + "68-01-SUMMARY.md" → no I001
 // Both stems canonicalize to "68-01" → match found → I001 suppressed.
@@ -227,7 +227,7 @@ describe('Drift item I001 — canonicalPlanStem: long PLAN stem matches short SU
     fs.writeFileSync(path.join(phaseDir, '68-01-SUMMARY.md'), '# Summary\n');
   });
 
-  after(() => { fs.rmSync(tmpDir, { recursive: true, force: true }); });
+  after(() => { cleanup(tmpDir); });
 
   test('no I001 when 68-01-scaffolding-PLAN.md matches 68-01-SUMMARY.md via canonicalPlanStem', () => {
     const result = runGsdTools(['validate', 'health', '--json'], tmpDir);
@@ -238,10 +238,10 @@ describe('Drift item I001 — canonicalPlanStem: long PLAN stem matches short SU
       `Expected zero I001, got: ${JSON.stringify(i001)}`);
   });
 
-  test('canonicalPlanStem is exported from validate.generated.cjs', () => {
-    const gen = require('../get-shit-done/bin/lib/validate.generated.cjs');
+  test('canonicalPlanStem is exported from validate.cjs', () => {
+    const gen = require('../gsd-core/bin/lib/validate.cjs');
     assert.strictEqual(typeof gen.canonicalPlanStem, 'function',
-      'validate.generated.cjs must export canonicalPlanStem as a function');
+      'validate.cjs must export canonicalPlanStem as a function');
     assert.strictEqual(gen.canonicalPlanStem('68-01-scaffolding'), '68-01');
     assert.strictEqual(gen.canonicalPlanStem('68-01'), '68-01');
     assert.strictEqual(gen.canonicalPlanStem('3A-01-feature'), '3A-01');

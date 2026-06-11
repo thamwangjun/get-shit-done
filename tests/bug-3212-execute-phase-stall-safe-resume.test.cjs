@@ -9,6 +9,7 @@ const { spawnSync } = require('node:child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { cleanup } = require('./helpers.cjs');
 
 const ROOT = path.join(__dirname, '..');
 
@@ -17,7 +18,7 @@ function read(relativePath) {
 }
 
 function runGsd(args, cwd) {
-  return spawnSync(process.execPath, [path.join(ROOT, 'get-shit-done/bin/gsd-tools.cjs'), ...args], {
+  return spawnSync(process.execPath, [path.join(ROOT, 'gsd-core/bin/gsd-tools.cjs'), ...args], {
     cwd,
     encoding: 'utf8',
   });
@@ -28,8 +29,8 @@ describe('bug #3212 execute-phase stall detection and safe resume', () => {
     // After Cycle 5 (#3536), both CJS and SDK source from the manifest.
     // Use the CJS runtime Set for CJS; use the manifest directly for SDK-side
     // verification (since config-schema.ts no longer has inline literals).
-    const { VALID_CONFIG_KEYS: cjsKeys } = require('../get-shit-done/bin/lib/config-schema.cjs');
-    const manifest = JSON.parse(read('sdk/shared/config-schema.manifest.json'));
+    const { VALID_CONFIG_KEYS: cjsKeys } = require('../gsd-core/bin/lib/config-schema.cjs');
+    const manifest = JSON.parse(read('gsd-core/bin/shared/config-schema.manifest.json'));
     const manifestKeys = new Set(manifest.validKeys);
 
     for (const key of ['executor.stall_detect_interval_minutes', 'executor.stall_threshold_minutes']) {
@@ -47,7 +48,7 @@ describe('bug #3212 execute-phase stall detection and safe resume', () => {
 
   test('config-get returns schema defaults for executor stall detector keys', (t) => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-3212-'));
-    t.after(() => fs.rmSync(tmp, { recursive: true, force: true }));
+    t.after(() => cleanup(tmp));
     fs.mkdirSync(path.join(tmp, '.planning'));
     fs.writeFileSync(path.join(tmp, '.planning/config.json'), '{}\n');
 
@@ -61,7 +62,7 @@ describe('bug #3212 execute-phase stall detection and safe resume', () => {
   });
 
   test('execute-phase verifies partial-plan drift before dispatch', () => {
-    const workflow = read('get-shit-done/workflows/execute-phase.md');
+    const workflow = read('gsd-core/workflows/execute-phase.md');
 
     // 260608-fwg (D-02): the named `<step name="safe_resume_gate">` was removed in the
     // rewrite; the same drift-before-dispatch contract now lives as a "Safe resume gate"
@@ -79,7 +80,7 @@ describe('bug #3212 execute-phase stall detection and safe resume', () => {
   });
 
   test('execute-phase has configurable executor stall surveillance after dispatch', () => {
-    const workflow = read('get-shit-done/workflows/execute-phase.md');
+    const workflow = read('gsd-core/workflows/execute-phase.md');
 
     assert.match(workflow, /EXECUTOR_STALL_INTERVAL_MINUTES=.*executor\.stall_detect_interval_minutes/);
     assert.match(workflow, /EXECUTOR_STALL_THRESHOLD_MINUTES=.*executor\.stall_threshold_minutes/);
@@ -94,7 +95,7 @@ describe('bug #3212 execute-phase stall detection and safe resume', () => {
   });
 
   test('execute-plan documents atomic close-out invariant', () => {
-    const workflow = read('get-shit-done/workflows/execute-plan.md');
+    const workflow = read('gsd-core/workflows/execute-plan.md');
 
     assert.match(workflow, /<atomic_close_out_invariant>/, 'execute-plan must contain a formal atomic close-out invariant');
     assert.match(workflow, /production-code commit\(s\) -> SUMMARY commit -> STATE\/ROADMAP update/, 'invariant must name the legal close-out sequence');
@@ -102,7 +103,7 @@ describe('bug #3212 execute-phase stall detection and safe resume', () => {
   });
 
   test('forensics includes the partial-plan drift detector', () => {
-    const workflow = read('get-shit-done/workflows/forensics.md');
+    const workflow = read('gsd-core/workflows/forensics.md');
 
     assert.match(workflow, /Partial-plan Drift Detection/);
     assert.match(workflow, /commits exist but SUMMARY.md is missing/);

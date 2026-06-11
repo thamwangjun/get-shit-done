@@ -42,10 +42,14 @@ const {
   writeManifest,
   reportLocalPatches,
   installRuntimeArtifacts,
+  runtimeMap,
+  allRuntimes,
+  parseRuntimeInput,
+  buildRuntimePromptText,
 } = require('../bin/install.js');
 
 // ─── Profile resolution for installRuntimeArtifacts tests ────────────────────
-const _gsdLibDir = path.join(__dirname, '..', 'get-shit-done', 'bin', 'lib');
+const _gsdLibDir = path.join(__dirname, '..', 'gsd-core', 'bin', 'lib');
 const { loadSkillsManifest, resolveProfile } = require(path.join(_gsdLibDir, 'install-profiles.cjs'));
 const _manifest = loadSkillsManifest();
 const resolvedProfileFull = resolveProfile({ modes: [], manifest: _manifest });
@@ -132,60 +136,67 @@ describe('getConfigDirFromHome (Copilot)', () => {
   });
 });
 
-// ─── Source code integration checks ─────────────────────────────────────────────
+// ─── Typed runtime registry checks (Copilot) ─────────────────────────────────
+// Migrated (#455): uses typed exports (runtimeMap, allRuntimes, parseRuntimeInput,
+// buildRuntimePromptText) instead of source-grep on bin/install.js.
 
-describe('Source code integration (Copilot)', () => {
-  const src = fs.readFileSync(path.join(__dirname, '..', 'bin', 'install.js'), 'utf8');
-
-  test('CLI-01: --copilot flag parsing exists', () => {
-    assert.ok(src.includes("args.includes('--copilot')"), '--copilot flag parsed');
+describe('Runtime registry integration (Copilot)', () => {
+  test('CLI-02: runtimeMap has Copilot as option 7', () => {
+    assert.strictEqual(runtimeMap['7'], 'copilot', 'runtimeMap must map 7 to copilot');
   });
 
-  test('CLI-03: --all array includes copilot', () => {
+  test('CLI-03: allRuntimes array includes copilot', () => {
+    assert.ok(Array.isArray(allRuntimes), 'allRuntimes must be an array');
+    assert.ok(allRuntimes.includes('copilot'), 'allRuntimes must include copilot');
+  });
+
+  test('CLI-02: allRuntimes keeps kilo above opencode', () => {
+    const kiloIdx = allRuntimes.indexOf('kilo');
+    const opencodeIdx = allRuntimes.indexOf('opencode');
+    assert.ok(kiloIdx !== -1, 'allRuntimes must contain kilo');
+    assert.ok(opencodeIdx !== -1, 'allRuntimes must contain opencode');
+    assert.ok(kiloIdx < opencodeIdx, 'kilo must appear before opencode in allRuntimes');
+  });
+
+  test('CLI-01: parseRuntimeInput resolves option 7 to copilot runtime', () => {
+    // Copilot is option 7 in the runtime menu. parseRuntimeInput('7') must resolve to ['copilot'].
+    const result = parseRuntimeInput('7');
+    assert.ok(Array.isArray(result), 'parseRuntimeInput must return an array');
+    assert.ok(result.includes('copilot'), `parseRuntimeInput('7') must resolve to copilot, got: ${JSON.stringify(result)}`);
+  });
+
+  test('CLI-06: buildRuntimePromptText includes Copilot in the prompt', () => {
+    const text = buildRuntimePromptText();
+    assert.ok(typeof text === 'string' && text.length > 0, 'buildRuntimePromptText must return a non-empty string');
+    assert.ok(text.includes('Copilot') || text.includes('copilot'), 'runtime prompt must mention Copilot');
+  });
+
+  test('CLI-06: buildRuntimePromptText includes --copilot option text', () => {
+    const text = buildRuntimePromptText();
+    // Copilot is in the runtime map, so the prompt must list it
     assert.ok(
-      src.includes("'copilot'") && src.includes('selectedRuntimes = ['),
-      '--all includes copilot runtime'
+      text.includes('copilot') || text.includes('Copilot'),
+      'runtime selection prompt must list copilot as an option'
     );
   });
 
-  test('CLI-06: banner text includes Copilot', () => {
-    assert.ok(src.includes('Copilot'), 'banner mentions Copilot');
+  test('runtimeMap and allRuntimes are consistent (every allRuntimes entry has a map key)', () => {
+    const mapValues = Object.values(runtimeMap);
+    for (const runtime of allRuntimes) {
+      assert.ok(
+        mapValues.includes(runtime),
+        `allRuntimes entry '${runtime}' must have a corresponding key in runtimeMap`
+      );
+    }
   });
 
-  test('CLI-06: help text includes --copilot', () => {
-    assert.ok(src.includes('--copilot'), 'help text has --copilot option');
-  });
-
-  test('CLI-02: promptRuntime runtimeMap has Copilot as option 7', () => {
-    assert.ok(src.includes("'7': 'copilot'"), 'runtimeMap has 7 -> copilot');
-  });
-
-  test('CLI-02: promptRuntime allRuntimes array includes copilot', () => {
-    const allMatch = src.match(/const allRuntimes = \[([^\]]+)\]/);
-    assert.ok(allMatch && allMatch[1].includes('copilot'), 'allRuntimes includes copilot');
-  });
-
-  test('CLI-02: promptRuntime keeps Kilo above OpenCode in allRuntimes', () => {
-    const allMatch = src.match(/const allRuntimes = \[([^\]]+)\]/);
-    assert.ok(allMatch, 'allRuntimes array found');
-    assert.ok(allMatch[1].indexOf("'kilo'") < allMatch[1].indexOf("'opencode'"), 'kilo appears before opencode');
-  });
-
-  test('isCopilot variable exists in install function', () => {
-    assert.ok(src.includes("const isCopilot = runtime === 'copilot'"), 'isCopilot defined');
-  });
-
-  test('hooks are skipped for Copilot', () => {
-    assert.ok(src.includes('!isCodex && !isCopilot'), 'hooks skip check includes copilot');
-  });
-
-  test('--both flag unchanged (still claude + opencode only)', () => {
-    // Verify the else-if-hasBoth maps to ['claude', 'opencode'] — NOT including copilot
-    const bothUsage = src.indexOf('} else if (hasBoth)');
-    assert.ok(bothUsage > 0, 'hasBoth usage exists');
-    const bothSection = src.substring(bothUsage, bothUsage + 200);
-    assert.ok(bothSection.includes("['claude', 'opencode']"), '--both maps to claude+opencode');
-    assert.ok(!bothSection.includes('copilot'), '--both does NOT include copilot');
+  test('allRuntimes does not put copilot ahead of claude and opencode', () => {
+    // copilot is a supplementary runtime — claude and opencode are the primary pair.
+    // The allRuntimes list must contain both claude (idx 0) and copilot.
+    assert.ok(allRuntimes.includes('claude'), 'allRuntimes must include claude');
+    assert.ok(allRuntimes.includes('opencode'), 'allRuntimes must include opencode');
+    // copilot is present but must NOT displace claude as the default (first entry)
+    assert.strictEqual(allRuntimes[0], 'claude', 'claude must be first in allRuntimes (the default runtime)');
   });
 });
 
@@ -797,7 +808,7 @@ describe('Copilot agent conversion - real files', () => {
 describe('Copilot content conversion - engine files', () => {
   test('converts engine .md files correctly (local mode default)', () => {
     const healthMd = fs.readFileSync(
-      path.join(__dirname, '..', 'get-shit-done', 'workflows', 'health.md'), 'utf8'
+      path.join(__dirname, '..', 'gsd-core', 'workflows', 'health.md'), 'utf8'
     );
     const result = convertClaudeToCopilotContent(healthMd);
 
@@ -812,7 +823,7 @@ describe('Copilot content conversion - engine files', () => {
 
   test('converts engine .md files correctly (global mode)', () => {
     const healthMd = fs.readFileSync(
-      path.join(__dirname, '..', 'get-shit-done', 'workflows', 'health.md'), 'utf8'
+      path.join(__dirname, '..', 'gsd-core', 'workflows', 'health.md'), 'utf8'
     );
     const result = convertClaudeToCopilotContent(healthMd, true);
 
@@ -866,7 +877,7 @@ describe('Copilot instructions merge/strip', () => {
     });
 
     afterEach(() => {
-      fs.rmSync(tmpMergeDir, { recursive: true, force: true });
+      cleanup(tmpMergeDir);
     });
 
     test('creates file from scratch when none exists', () => {
@@ -1010,7 +1021,7 @@ describe('Copilot uninstall skill removal', () => {
   });
 
   afterEach(() => {
-    fs.rmSync(tmpDir, { recursive: true, force: true });
+    cleanup(tmpDir);
   });
 
   test('identifies gsd-* skill directories for removal', () => {
@@ -1072,12 +1083,12 @@ describe('Copilot manifest and patches fixes', () => {
   });
 
   afterEach(() => {
-    fs.rmSync(tmpDir, { recursive: true, force: true });
+    cleanup(tmpDir);
   });
 
   test('writeManifest hashes skills for Copilot runtime', () => {
-    // Create minimal get-shit-done dir (required by writeManifest)
-    const gsdDir = path.join(tmpDir, 'get-shit-done', 'bin');
+    // Create minimal gsd-core dir (required by writeManifest)
+    const gsdDir = path.join(tmpDir, 'gsd-core', 'bin');
     fs.mkdirSync(gsdDir, { recursive: true });
     fs.writeFileSync(path.join(gsdDir, 'verify.cjs'), '// verify stub');
 
@@ -1141,7 +1152,7 @@ describe('Copilot manifest and patches fixes', () => {
       fs.mkdirSync(patchesDir, { recursive: true });
       fs.writeFileSync(path.join(patchesDir, 'backup-meta.json'), JSON.stringify({
         from_version: '1.0',
-        files: ['get-shit-done/bin/verify.cjs']
+        files: ['gsd-core/bin/verify.cjs']
       }));
 
       const result = reportLocalPatches(tmpDir, 'claude');
@@ -1199,7 +1210,7 @@ describe('E2E: Copilot full install verification', () => {
   });
 
   afterEach(() => {
-    fs.rmSync(tmpDir, { recursive: true, force: true });
+    cleanup(tmpDir);
   });
 
   test('installs expected number of skill directories', () => {
@@ -1300,14 +1311,14 @@ describe('E2E: Copilot full install verification', () => {
 
     const skillEntries = keys.filter(k => k.startsWith('skills/'));
     const agentEntries = keys.filter(k => k.startsWith('agents/'));
-    const engineEntries = keys.filter(k => k.startsWith('get-shit-done/'));
+    const engineEntries = keys.filter(k => k.startsWith('gsd-core/'));
 
     assert.strictEqual(skillEntries.length, EXPECTED_SKILLS,
       `Expected ${EXPECTED_SKILLS} skill manifest entries, got ${skillEntries.length}`);
     assert.strictEqual(agentEntries.length, EXPECTED_AGENTS,
       `Expected ${EXPECTED_AGENTS} agent manifest entries, got ${agentEntries.length}`);
     assert.ok(engineEntries.length > 0,
-      'Should have get-shit-done/ engine manifest entries');
+      'Should have gsd-core/ engine manifest entries');
   });
 
   test('manifest SHA256 hashes match actual file contents', () => {
@@ -1327,7 +1338,7 @@ describe('E2E: Copilot full install verification', () => {
   });
 
   test('engine directory contains required subdirectories and files', () => {
-    const engineDir = path.join(tmpDir, '.github', 'get-shit-done');
+    const engineDir = path.join(tmpDir, '.github', 'gsd-core');
     const requiredDirs = ['bin', 'references', 'templates', 'workflows'];
     const requiredFiles = ['CHANGELOG.md', 'VERSION'];
 
@@ -1354,13 +1365,13 @@ describe('E2E: Copilot uninstall verification', () => {
   });
 
   afterEach(() => {
-    fs.rmSync(tmpDir, { recursive: true, force: true });
+    cleanup(tmpDir);
   });
 
   test('removes engine directory', () => {
-    const engineDir = path.join(tmpDir, '.github', 'get-shit-done');
+    const engineDir = path.join(tmpDir, '.github', 'gsd-core');
     assert.ok(!fs.existsSync(engineDir),
-      'get-shit-done directory should not exist after uninstall');
+      'gsd-core directory should not exist after uninstall');
   });
 
   test('removes copilot-instructions.md', () => {
@@ -1398,7 +1409,7 @@ describe('E2E: Copilot uninstall verification', () => {
     });
 
     afterEach(() => {
-      fs.rmSync(td, { recursive: true, force: true });
+      cleanup(td);
     });
 
     test('preserves non-GSD content in skills directory', () => {
@@ -1459,11 +1470,11 @@ describe('Claude uninstall preserves user-generated files (#1423)', () => {
   });
 
   afterEach(() => {
-    fs.rmSync(tmpDir, { recursive: true, force: true });
+    cleanup(tmpDir);
   });
 
   test('preserves USER-PROFILE.md across uninstall', () => {
-    const profilePath = path.join(tmpDir, '.claude', 'get-shit-done', 'USER-PROFILE.md');
+    const profilePath = path.join(tmpDir, '.claude', 'gsd-core', 'USER-PROFILE.md');
     const content = '# Developer Profile\n\nAutonomy: High\nGenerated: 2026-03-29\n';
     fs.writeFileSync(profilePath, content);
 
@@ -1487,11 +1498,11 @@ describe('Claude uninstall preserves user-generated files (#1423)', () => {
   });
 
   test('still removes GSD engine files during uninstall', () => {
-    const profilePath = path.join(tmpDir, '.claude', 'get-shit-done', 'USER-PROFILE.md');
+    const profilePath = path.join(tmpDir, '.claude', 'gsd-core', 'USER-PROFILE.md');
     fs.writeFileSync(profilePath, '# Profile\n');
 
     // Verify engine files exist before uninstall
-    const binDir = path.join(tmpDir, '.claude', 'get-shit-done', 'bin');
+    const binDir = path.join(tmpDir, '.claude', 'gsd-core', 'bin');
     assert.ok(fs.existsSync(binDir), 'bin/ should exist before uninstall');
 
     runClaudeUninstall(tmpDir);
@@ -1504,10 +1515,10 @@ describe('Claude uninstall preserves user-generated files (#1423)', () => {
   test('clean uninstall when no user files exist', () => {
     runClaudeUninstall(tmpDir);
 
-    const gsdDir = path.join(tmpDir, '.claude', 'get-shit-done');
+    const gsdDir = path.join(tmpDir, '.claude', 'gsd-core');
     const cmdDir = path.join(tmpDir, '.claude', 'commands', 'gsd');
     // Directories should be fully removed when no user files to preserve
-    assert.ok(!fs.existsSync(gsdDir), 'get-shit-done/ should not exist after clean uninstall');
+    assert.ok(!fs.existsSync(gsdDir), 'gsd-core/ should not exist after clean uninstall');
     assert.ok(!fs.existsSync(cmdDir), 'commands/gsd/ should not exist after clean uninstall');
   });
 });

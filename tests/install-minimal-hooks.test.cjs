@@ -34,6 +34,7 @@ const { createTempDir, cleanup } = require('./helpers.cjs');
 
 const {
   writeManifest,
+  GSD_UNINSTALL_HOOKS,
 } = require('../bin/install.js');
 
 const {
@@ -45,7 +46,7 @@ const {
   cleanupStagedSkills,
   loadSkillsManifest,
   resolveProfile,
-} = require('../get-shit-done/bin/lib/install-profiles.cjs');
+} = require('../gsd-core/bin/lib/install-profiles.cjs');
 
 const {
   INSTALL_SCRIPT,
@@ -139,7 +140,7 @@ describe('install-profiles: stageSkillsForMode', () => {
     try {
       assert.strictEqual(stageSkillsForMode(src, 'full'), src);
     } finally {
-      fs.rmSync(src, { recursive: true, force: true });
+      cleanup(src);
     }
   });
 
@@ -155,8 +156,8 @@ describe('install-profiles: stageSkillsForMode', () => {
           'phase.md', 'plan-phase.md', 'surface.md', 'update.md'],
       );
     } finally {
-      fs.rmSync(src, { recursive: true, force: true });
-      if (staged) fs.rmSync(staged, { recursive: true, force: true });
+      cleanup(src);
+      cleanup(staged);
     }
   });
 
@@ -169,8 +170,8 @@ describe('install-profiles: stageSkillsForMode', () => {
       const copied = fs.readFileSync(path.join(staged, 'plan-phase.md'), 'utf8');
       assert.strictEqual(copied, original);
     } finally {
-      fs.rmSync(src, { recursive: true, force: true });
-      if (staged) fs.rmSync(staged, { recursive: true, force: true });
+      cleanup(src);
+      cleanup(staged);
     }
   });
 
@@ -190,8 +191,8 @@ describe('install-profiles: stageSkillsForMode', () => {
       staged = stageSkillsForMode(src, 'minimal');
       assert.deepStrictEqual(fs.readdirSync(staged), ['plan-phase.md']);
     } finally {
-      fs.rmSync(src, { recursive: true, force: true });
-      if (staged) fs.rmSync(staged, { recursive: true, force: true });
+      cleanup(src);
+      cleanup(staged);
     }
   });
 });
@@ -210,7 +211,7 @@ describe('install-profiles: cleanupStagedSkills', () => {
       assert.ok(!fs.existsSync(a));
       assert.ok(!fs.existsSync(b));
     } finally {
-      fs.rmSync(src, { recursive: true, force: true });
+      cleanup(src);
     }
   });
 
@@ -229,7 +230,7 @@ describe('install-profiles: cleanupStagedSkills', () => {
       const after = process.listenerCount('exit');
       assert.ok(after - before <= 1, `expected <=1 new exit listener, got ${after - before}`);
     } finally {
-      fs.rmSync(src, { recursive: true, force: true });
+      cleanup(src);
       cleanupStagedSkills();
     }
   });
@@ -260,7 +261,7 @@ describe('install-profiles: cleanupStagedSkills', () => {
     } finally {
       fs.copyFileSync = realCopy;
       fs.mkdtempSync = realMkdtemp;
-      fs.rmSync(src, { recursive: true, force: true });
+      cleanup(src);
       cleanupStagedSkills();
     }
   });
@@ -295,7 +296,7 @@ describe('install: --minimal honoured for every runtime in --global mode', () =>
         );
         assert.strictEqual(manifestAgentCount(manifest), 0);
       } finally {
-        fs.rmSync(root, { recursive: true, force: true });
+        cleanup(root);
       }
     });
   }
@@ -314,7 +315,7 @@ describe('install: --minimal honoured for every runtime in --local mode', () => 
         );
         assert.strictEqual(manifestAgentCount(manifest), 0);
       } finally {
-        fs.rmSync(root, { recursive: true, force: true });
+        cleanup(root);
       }
     });
   }
@@ -332,7 +333,7 @@ describe('install: Cline --minimal (rules-based, no skills/ dir)', () => {
         assert.strictEqual(manifestAgentCount(manifest), 0);
         assert.ok(fs.existsSync(path.join(configDir, '.clinerules')));
       } finally {
-        fs.rmSync(root, { recursive: true, force: true });
+        cleanup(root);
       }
     });
   }
@@ -357,7 +358,7 @@ describe('install: on-disk skill files match manifest for --minimal', () => {
             assert.deepStrictEqual(gsdAgents, []);
           }
         } finally {
-          fs.rmSync(root, { recursive: true, force: true });
+          cleanup(root);
         }
       });
     }
@@ -384,7 +385,7 @@ describe('install: manifest records mode for both profiles', () => {
       const agentCount = Object.keys(m.files || {}).filter(k => k.startsWith('agents/')).length;
       return { mode: m.mode, skillCount, agentCount };
     } finally {
-      fs.rmSync(targetDir, { recursive: true, force: true });
+      cleanup(targetDir);
     }
   }
 
@@ -438,7 +439,7 @@ describe('install-minimal-backcompat: --minimal and --profile=core produce same 
       const profileMarker = fs.existsSync(markerPath) ? fs.readFileSync(markerPath, 'utf8').trim() : null;
       return { mode: m.mode, skillCount, profileMarker };
     } finally {
-      fs.rmSync(targetDir, { recursive: true, force: true });
+      cleanup(targetDir);
     }
   }
 
@@ -484,7 +485,7 @@ describe('install: Codex full → minimal downgrade cleans stale agent state', (
         '# user-owned setting',
         'model = "gpt-5"',
         '',
-        '# GSD Agent Configuration — managed by get-shit-done installer',
+        '# GSD Agent Configuration — managed by gsd-core installer',
         '[agents.gsd-executor]',
         'cmd = "stale"',
         '',
@@ -517,7 +518,7 @@ describe('install: Codex full → minimal downgrade cleans stale agent state', (
       }
       assert.ok(fs.existsSync(configPath));
     } finally {
-      fs.rmSync(targetDir, { recursive: true, force: true });
+      cleanup(targetDir);
     }
   });
 });
@@ -544,7 +545,7 @@ describe('install: Claude full → minimal downgrade removes stale agents', () =
       assert.ok(remaining.includes('my-custom-agent.md'));
       assert.deepStrictEqual(remaining.filter(f => f.startsWith('gsd-')), []);
     } finally {
-      fs.rmSync(targetDir, { recursive: true, force: true });
+      cleanup(targetDir);
     }
   });
 });
@@ -593,60 +594,50 @@ describe('#1755: .sh hooks are copied and executable after install', () => {
   });
 });
 
-describe('install.js source correctness', () => {
-  const src = fs.readFileSync(path.join(__dirname, '..', 'bin', 'install.js'), 'utf8');
-
-  test('.sh files get chmod after copyFileSync', () => {
-    assert.ok(src.includes("if (entry.endsWith('.sh'))"));
+// Migrated (#455): uses typed export GSD_UNINSTALL_HOOKS instead of
+// source-grep assertions on bin/install.js for the uninstall hook list tests.
+describe('install.js uninstall hooks registry (typed assertions)', () => {
+  test('GSD_UNINSTALL_HOOKS is a non-empty array', () => {
+    assert.ok(Array.isArray(GSD_UNINSTALL_HOOKS), 'GSD_UNINSTALL_HOOKS must be an array');
+    assert.ok(GSD_UNINSTALL_HOOKS.length > 0, 'GSD_UNINSTALL_HOOKS must not be empty');
   });
 
-  test('Codex hook uses correct filename gsd-check-update.js', () => {
-    assert.ok(!src.match(/['"]gsd-update-check\.js['"]/));
+  test('gsd-workflow-guard.js is in GSD_UNINSTALL_HOOKS', () => {
+    assert.ok(
+      GSD_UNINSTALL_HOOKS.includes('gsd-workflow-guard.js'),
+      'GSD_UNINSTALL_HOOKS must include gsd-workflow-guard.js'
+    );
   });
 
-  test('Codex hook path does not use get-shit-done/hooks/ subdirectory', () => {
-    assert.ok(!src.includes("'get-shit-done', 'hooks', 'gsd-check-update"));
+  test('phantom gsd-check-update.sh is NOT in GSD_UNINSTALL_HOOKS', () => {
+    assert.ok(
+      !GSD_UNINSTALL_HOOKS.includes('gsd-check-update.sh'),
+      'GSD_UNINSTALL_HOOKS must not include the phantom gsd-check-update.sh entry'
+    );
   });
 
-  test('cache invalidation uses ~/.cache/gsd/ path', () => {
-    assert.ok(src.includes("os.homedir(), '.cache', 'gsd'"));
-  });
-
-  test('manifest tracks .sh hook files', () => {
-    assert.ok(src.includes("file.endsWith('.sh')"));
-  });
-
-  test('gsd-workflow-guard.js is in uninstall hook list', () => {
-    const m = src.match(/const gsdHooks\s*=\s*\[([^\]]+)\]/);
-    assert.ok(m, 'gsdHooks array must exist');
-    assert.ok(m[1].includes('gsd-workflow-guard.js'));
-  });
-
-  test('phantom gsd-check-update.sh is not in uninstall hook list', () => {
-    const m = src.match(/const gsdHooks\s*=\s*\[([^\]]+)\]/);
-    assert.ok(m);
-    assert.ok(!m[1].includes('gsd-check-update.sh'));
-  });
-
-  test('isGsdHookCommand covers all GSD hook names', () => {
-    const names = [
-      'gsd-check-update', 'gsd-statusline', 'gsd-session-state',
-      'gsd-context-monitor', 'gsd-phase-boundary', 'gsd-prompt-guard',
-      'gsd-read-guard', 'gsd-validate-commit', 'gsd-workflow-guard',
-    ];
-    for (const name of names) {
-      assert.ok(src.includes(`'${name}'`) || src.includes(`"${name}"`));
+  test('GSD_UNINSTALL_HOOKS covers all 3 opt-in bash hooks', () => {
+    const required = ['gsd-session-state.sh', 'gsd-validate-commit.sh', 'gsd-phase-boundary.sh'];
+    for (const hook of required) {
+      assert.ok(
+        GSD_UNINSTALL_HOOKS.includes(hook),
+        `GSD_UNINSTALL_HOOKS must include ${hook}`
+      );
     }
   });
 
-  test('no duplicate isCursor or isWindsurf branches in uninstall', () => {
-    const uninstallStart = src.indexOf('function uninstall(');
-    const uninstallEnd = src.indexOf('function verifyInstalled(');
-    assert.ok(uninstallStart !== -1);
-    assert.ok(uninstallEnd !== -1);
-    const block = src.substring(uninstallStart, uninstallEnd);
-    assert.strictEqual((block.match(/else if \(isCursor\)/g) || []).length, 0);
-    assert.strictEqual((block.match(/else if \(isWindsurf\)/g) || []).length, 0);
+  test('GSD_UNINSTALL_HOOKS covers core JS hooks', () => {
+    const coreJsHooks = [
+      'gsd-check-update.js', 'gsd-statusline.js', 'gsd-session-state.sh',
+      'gsd-context-monitor.js', 'gsd-phase-boundary.sh', 'gsd-prompt-guard.js',
+      'gsd-read-guard.js', 'gsd-validate-commit.sh', 'gsd-workflow-guard.js',
+    ];
+    for (const hook of coreJsHooks) {
+      assert.ok(
+        GSD_UNINSTALL_HOOKS.includes(hook),
+        `GSD_UNINSTALL_HOOKS must include ${hook}`
+      );
+    }
   });
 });
 

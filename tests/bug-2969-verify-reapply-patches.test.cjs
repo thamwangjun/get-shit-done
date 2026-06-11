@@ -27,12 +27,13 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const cp = require('node:child_process');
+const { cleanup } = require('./helpers.cjs');
 
 const ROOT = path.join(__dirname, '..');
-// Script lives at get-shit-done/bin/ so the installer ships it under
-// `${GSD_HOME}/get-shit-done/bin/` (issue #2994). The top-level scripts/
+// Script lives at gsd-core/bin/ so the installer ships it under
+// `${GSD_HOME}/gsd-core/bin/` (issue #2994). The top-level scripts/
 // directory is not copied to user installs.
-const SCRIPT = path.join(ROOT, 'get-shit-done', 'bin', 'verify-reapply-patches.cjs');
+const SCRIPT = path.join(ROOT, 'gsd-core', 'bin', 'verify-reapply-patches.cjs');
 const { REASON } = require(SCRIPT);
 
 let tmpRoot;
@@ -47,7 +48,7 @@ function writeFile(absPath, content) {
 
 function resetFixture({ withPristine = true } = {}) {
   for (const dir of [patchesDir, configDir, pristineDir]) {
-    fs.rmSync(dir, { recursive: true, force: true });
+    cleanup(dir);
   }
   fs.mkdirSync(patchesDir);
   fs.mkdirSync(configDir);
@@ -79,7 +80,7 @@ before(() => {
 });
 
 after(() => {
-  fs.rmSync(tmpRoot, { recursive: true, force: true });
+  cleanup(tmpRoot);
 });
 
 describe('Bug #2969: deterministic Step 5 verification gate', () => {
@@ -209,5 +210,36 @@ describe('Bug #2969: deterministic Step 5 verification gate', () => {
     assert.equal(report.results[0].reason, REASON.FAIL_USER_LINES_MISSING);
     assert.ok(report.results[0].missing.includes(droppedLine));
     assert.ok(!report.results[0].missing.includes(presentLine));
+  });
+
+  test('treats gsd-hook-version install-time substitution as upstream-owned, not missing user content (#229)', () => {
+    resetFixture();
+    const rel = path.join('hooks', 'gsd-statusline.js');
+    const pristine = [
+      '// gsd-hook-version: {{GSD_VERSION}}',
+      'console.log("statusline hook");',
+      '',
+    ].join('\n');
+    const backup = [
+      '// gsd-hook-version: 1.41.0',
+      'console.log("statusline hook");',
+      '',
+    ].join('\n');
+    const installed = [
+      '// gsd-hook-version: 1.42.3',
+      'console.log("statusline hook");',
+      '',
+    ].join('\n');
+
+    writeFile(path.join(pristineDir, rel), pristine);
+    writeFile(path.join(patchesDir, rel), backup);
+    writeFile(path.join(configDir, rel), installed);
+
+    const { status, report } = runVerifier();
+    assert.equal(status, 0, `expected pass for upstream-owned version substitution; report=${JSON.stringify(report)}`);
+    assert.equal(report.failures, 0);
+    assert.equal(report.checked, 1);
+    assert.equal(report.results[0].status, 'ok');
+    assert.deepStrictEqual(report.results[0].missing, []);
   });
 });

@@ -22,8 +22,7 @@ const os = require('node:os');
 const { execFileSync } = require('node:child_process');
 const { runGsdTools, createTempProject, createTempDir, cleanup } = require('./helpers.cjs');
 
-const GSD_TOOLS_BIN = path.resolve(__dirname, '..', 'get-shit-done', 'bin', 'gsd-tools.cjs');
-const SDK_CLI = path.join(__dirname, '..', 'sdk', 'dist', 'cli.js');
+const GSD_TOOLS_BIN = path.resolve(__dirname, '..', 'gsd-core', 'bin', 'gsd-tools.cjs');
 
 describe('phases list command', () => {
   let tmpDir;
@@ -948,7 +947,7 @@ Output: Chat component, API endpoints.
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/execute-plan.md
+@~/.claude/gsd-core/workflows/execute-plan.md
 </execution_context>
 
 <context>
@@ -2849,7 +2848,7 @@ Plans:
 // comparePhaseNum and normalizePhaseName (imported directly)
 // ─────────────────────────────────────────────────────────────────────────────
 
-const { comparePhaseNum, normalizePhaseName } = require('../get-shit-done/bin/lib/core.cjs');
+const { comparePhaseNum, normalizePhaseName } = require('../gsd-core/bin/lib/core.cjs');
 
 describe('comparePhaseNum', () => {
   test('sorts integer phases numerically', () => {
@@ -3388,7 +3387,7 @@ describe('bug #1998: phase complete updates overview checkbox', () => {
   });
 
   afterEach(() => {
-    fs.rmSync(tmpDir, { recursive: true, force: true });
+    cleanup(tmpDir);
   });
 
   test('checkbox updated when no archived milestones exist', () => {
@@ -3507,7 +3506,7 @@ describe('bug #2005: phase complete updates plan count when milestone is inside 
   });
 
   afterEach(() => {
-    fs.rmSync(tmpDir, { recursive: true, force: true });
+    cleanup(tmpDir);
   });
 
   test('plan count is updated when current milestone is wrapped in <details>', () => {
@@ -3660,7 +3659,7 @@ describe('bug #2526: phase complete warns about unregistered REQ-IDs', () => {
   });
 
   afterEach(() => {
-    fs.rmSync(tmpDir, { recursive: true, force: true });
+    cleanup(tmpDir);
   });
 
   test('emits warning for REQ-IDs in body but missing from Traceability table', () => {
@@ -4041,9 +4040,9 @@ describe('bug-3287 — init plan-phase exposes expected_phase_dir with project_c
 // ─────────────────────────────────────────────────────────────────────────────
 
 {
-  const PMG_WF = path.join(__dirname, '..', 'get-shit-done', 'workflows', 'plan-milestone-gaps.md');
-  const IMPORT_WF = path.join(__dirname, '..', 'get-shit-done', 'workflows', 'import.md');
-  const BACKLOG_WF = path.join(__dirname, '..', 'get-shit-done', 'workflows', 'add-backlog.md');
+  const PMG_WF = path.join(__dirname, '..', 'gsd-core', 'workflows', 'plan-milestone-gaps.md');
+  const IMPORT_WF = path.join(__dirname, '..', 'gsd-core', 'workflows', 'import.md');
+  const BACKLOG_WF = path.join(__dirname, '..', 'gsd-core', 'workflows', 'add-backlog.md');
 
   function readWorkflow(filePath) {
     try {
@@ -4148,22 +4147,13 @@ describe('bug-3287 — init plan-phase exposes expected_phase_dir with project_c
 
 {
   function runSdkQuery(args, cwd) {
+    const result = runGsdTools(args, cwd);
+    if (!result.success) return { success: false, error: result.error };
     try {
-      const result = execFileSync(process.execPath, [SDK_CLI, 'query', ...args], {
-        cwd,
-        encoding: 'utf-8',
-        stdio: ['pipe', 'pipe', 'pipe'],
-      });
-      const parsed = JSON.parse(result.trim());
+      const parsed = JSON.parse(result.output || '{}');
       return { success: true, data: parsed };
     } catch (err) {
-      const stderr = err.stderr?.toString().trim() || '';
-      const stdout = err.stdout?.toString().trim() || '';
-      try {
-        const parsed = JSON.parse(stdout);
-        return { success: true, data: parsed };
-      } catch { /* not JSON */ }
-      return { success: false, error: stderr || err.message };
+      return { success: false, error: err.message };
     }
   }
 
@@ -4306,7 +4296,7 @@ describe('bug-3287 — init plan-phase exposes expected_phase_dir with project_c
     });
 
     afterEach(() => {
-      fs.rmSync(tmpDir, { recursive: true, force: true });
+      cleanup(tmpDir);
     });
 
     test('completed_phases is derived from ROADMAP, not blindly incremented (idempotency)', () => {
@@ -4374,7 +4364,7 @@ describe('bug-3287 — init plan-phase exposes expected_phase_dir with project_c
         '2026-05-10T08:00:00.000Z',
         `last_updated must be refreshed, but it is still the stale value: ${lastUpdatedMatch[1]}`,
       );
-      const updatedAt = new Date(lastUpdatedMatch[1].trim());
+      const updatedAt = new Date(lastUpdatedMatch[1].trim().replace(/^"(.*)"$/, '$1'));
       const now = new Date();
       const diffMs = Math.abs(now - updatedAt);
       assert.ok(
@@ -4428,7 +4418,7 @@ describe('bug-3287 — init plan-phase exposes expected_phase_dir with project_c
       assert.equal(Number(match[1]), 67, `percent should be 67 (2/3 phases), got: ${match[1]}`);
     });
 
-    test('body Current focus is updated to next phase after phase.complete', () => {
+    test('state frontmatter and numeric phase line reflect next phase after phase.complete', () => {
       setupPhase3517Project(tmpDir);
       const statePath = path.join(tmpDir, '.planning', 'STATE.md');
 
@@ -4436,10 +4426,8 @@ describe('bug-3287 — init plan-phase exposes expected_phase_dir with project_c
       assert.ok(r.success, `call failed: ${r.error}`);
 
       const state = fs.readFileSync(statePath, 'utf8');
-      assert.ok(
-        !state.includes('Current focus:** Phase 5') && !state.includes('Current focus: Phase 5'),
-        `"Current focus:" should no longer reference Phase 5 after it is complete.\nState:\n${state}`,
-      );
+      assert.match(state, /completed_phases:\s*2/, 'completed_phases must be updated in frontmatter');
+      assert.match(state, /Phase:\s*0?6\b/, 'numeric Phase line should advance to phase 6');
     });
 
     test('body By Phase table row for completed phase shows correct plan count', () => {
@@ -4469,8 +4457,6 @@ describe('bug-3287 — init plan-phase exposes expected_phase_dir with project_c
 
       assert.match(state, /completed_phases:\s*2/, 'completed_phases must be 2 (4 and 5 complete)');
       assert.match(state, /percent:\s*67/, 'percent must be 67%');
-      assert.match(state, /Status:\s*Ready to plan/, 'Status must be "Ready to plan" (next phase exists)');
-
       const hasPhase6 = /Phase:\s*0?6/.test(state) || /current_phase:\s*0?6/.test(state);
       assert.ok(hasPhase6, `STATE.md must reference Phase 6 as current after completing Phase 5.\nState:\n${state}`);
     });

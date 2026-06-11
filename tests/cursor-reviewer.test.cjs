@@ -1,7 +1,7 @@
-// allow-test-rule: pending-migration-to-typed-ir [#2974]
-// Tracked in #2974 for migration to typed-IR assertions per CONTRIBUTING.md
-// "Prohibited: Raw Text Matching on Test Outputs". Per-file review may
-// reclassify some entries as source-text-is-the-product during migration.
+// allow-test-rule: source-text-is-the-product
+// Workflow .md / agent .md / command .md / reference .md files — their text
+// IS what the runtime loads. Testing text content tests the deployed contract.
+// Per CONTRIBUTING.md exception matrix.
 
 /**
  * Cursor CLI Reviewer Tests (#1960)
@@ -28,7 +28,7 @@ describe('Cursor CLI reviewer in /gsd-review (#1960)', () => {
   // --- review.md workflow ---
 
   describe('review.md workflow', () => {
-    const reviewPath = path.join(ROOT, 'get-shit-done', 'workflows', 'review.md');
+    const reviewPath = path.join(ROOT, 'gsd-core', 'workflows', 'review.md');
     let content;
 
     test('review.md exists', () => {
@@ -111,7 +111,7 @@ describe('Cursor CLI reviewer in /gsd-review (#1960)', () => {
 
   describe('help.md', () => {
     // After #3039, help content moved into help/modes/full.md.
-    const helpPath = path.join(ROOT, 'get-shit-done', 'workflows', 'help', 'modes', 'full.md');
+    const helpPath = path.join(ROOT, 'gsd-core', 'workflows', 'help', 'modes', 'full.md');
 
     test('lists --cursor in /gsd-review signature', () => {
       const c = fs.readFileSync(helpPath, 'utf-8');

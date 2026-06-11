@@ -1,6 +1,6 @@
 # GSD Feature Reference
 
-> Complete feature and function documentation with requirements. For architecture details, see [Architecture](ARCHITECTURE.md). For command syntax, see [Command Reference](COMMANDS.md).
+> Feature index and reference for GSD Core. For architecture details, see [Architecture](ARCHITECTURE.md). For command syntax, see [Command Reference](COMMANDS.md). Return to [docs index](README.md).
 
 ---
 
@@ -73,8 +73,6 @@
 - [v1.29 Features](#v129-features)
   - [Windsurf Runtime Support](#56-windsurf-runtime-support)
   - [Internationalized Documentation](#57-internationalized-documentation)
-- [v1.30 Features](#v130-features)
-  - [GSD SDK](#58-gsd-sdk)
 - [v1.31 Features](#v131-features)
   - [Schema Drift Detection](#59-schema-drift-detection)
   - [Security Enforcement](#60-security-enforcement)
@@ -134,7 +132,6 @@
   - [Cross-AI Execution Delegation](#110-cross-ai-execution-delegation)
   - [Architectural Responsibility Mapping](#111-architectural-responsibility-mapping)
   - [Extract Learnings](#112-extract-learnings)
-  - [SDK Workstream Support](#113-sdk-workstream-support)
   - [Context-Window-Aware Prompt Thinning](#114-context-window-aware-prompt-thinning)
   - [Configurable CLAUDE.md Path](#115-configurable-claudemd-path)
   - [TDD Pipeline Mode](#116-tdd-pipeline-mode)
@@ -155,7 +152,6 @@
   - [Update Banner Opt-In](#128-update-banner-opt-in)
   - [Issue-Driven Orchestration Guide](#129-issue-driven-orchestration-guide)
   - [Graphify Commit-Based Staleness](#130-graphify-commit-based-staleness)
-  - [MVP Mode SDK Resolution Layer](#131-mvp-mode-sdk-resolution-layer)
 - [v1.42.1 Features](#v1421-features)
   - [Package Legitimacy Gate](#132-package-legitimacy-gate)
   - [Skill Surface Budgeting](#133-skill-surface-budgeting)
@@ -212,7 +208,7 @@
 **Functional Requirements:**
 - Questions adapt based on detected project type (web app, CLI, mobile, API, etc.)
 - Research agents have web search capability for current ecosystem information
-- Granularity setting controls phase count: `coarse` (3-5), `standard` (5-8), `fine` (8-12)
+- Granularity setting controls phase count: `coarse` (2-4), `standard` (4-6), `fine` (6-10)
 - `--auto` mode extracts all information from the provided document without interactive questioning
 - Existing codebase context (from `/gsd-map-codebase`) is loaded if present
 
@@ -929,6 +925,7 @@ continues. Drift detection cannot fail verification.
 | `granularity` | enum | `standard` | `coarse`, `standard`, or `fine` |
 | `model_profile` | enum | `balanced` | `quality`, `balanced`, `budget`, or `inherit` |
 | `models.<phase_type>` | enum | (none) | Per-phase-type tier override (`planning`, `discuss`, `research`, `execution`, `verification`, `completion`). Values: `opus`, `sonnet`, `haiku`, `inherit`. Coarse phase-level tuning that wins over `model_profile` but loses to per-agent `model_overrides`. See [CONFIGURATION.md](CONFIGURATION.md#per-phase-type-models-models--added-in-v140). Added in v1.40 |
+| `granularities.<phase_type>` | enum | (none) | Per-phase-type granularity override (`planning`, `discuss`, `research`, `execution`, `verification`, `completion`). Values: `coarse`, `standard`, `fine`. Mirrors `models.<phase_type>` for granularity. See [CONFIGURATION.md](CONFIGURATION.md#core-settings). Added in v1.43 ([#68](https://github.com/open-gsd/gsd-core/issues/68)) |
 | `dynamic_routing.enabled` | boolean | `false` | Master switch for failure-tier escalation. When `true`, agents resolve to `tier_models[default_tier]` and escalate one tier on orchestrator-detected soft failure. Capped by `max_escalations`. See [CONFIGURATION.md](CONFIGURATION.md#dynamic-routing-with-failure-tier-escalation-dynamic_routing--added-in-v140). Added in v1.40 |
 | `workflow.research` | boolean | `true` | Domain research before planning |
 | `workflow.plan_check` | boolean | `true` | Plan verification loop |
@@ -1054,7 +1051,7 @@ When the user declines (or keeps a non-GSD) statusline, the installer offers a S
 GSD update available: 1.39.0 → 1.40.0. Run /gsd-update.
 ```
 
-The banner is silent when up-to-date and rate-limits "check failed" diagnostics to once per 24 hours. Removed cleanly by `npx @opengsd/get-shit-done-redux --uninstall` or by deleting the SessionStart entry that references `gsd-update-banner.js`.
+The banner is silent when up-to-date and rate-limits "check failed" diagnostics to once per 24 hours. Removed cleanly by `npx @opengsd/gsd-core --uninstall` or by deleting the SessionStart entry that references `gsd-update-banner.js`.
 
 ### 38. Developer Profiling
 
@@ -1168,9 +1165,9 @@ When verification returns `human_needed`, items are persisted as a trackable HUM
 
 ### 42. Cross-AI Peer Review
 
-**Command:** `/gsd-review --phase N [--gemini] [--claude] [--codex] [--coderabbit] [--opencode] [--qwen] [--cursor] [--ollama] [--lm-studio] [--llama-cpp] [--all]`
+**Command:** `/gsd-review --phase N [--gemini] [--claude] [--codex] [--coderabbit] [--opencode] [--qwen] [--cursor] [--agy] [--ollama] [--lm-studio] [--llama-cpp] [--all]`
 
-**Purpose:** Invoke external AI CLIs (Gemini, Claude, Codex, CodeRabbit, OpenCode, Qwen Code, Cursor) to independently review phase plans. Produces structured REVIEWS.md with per-reviewer feedback.
+**Purpose:** Invoke external AI CLIs (Gemini, Claude, Codex, CodeRabbit, OpenCode, Qwen Code, Cursor, Antigravity) to independently review phase plans. Produces structured REVIEWS.md with per-reviewer feedback.
 
 **Requirements:**
 - REQ-REVIEW-01: System MUST detect available AI CLIs on the system
@@ -1436,7 +1433,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 55. Multi-Runtime Installer Selection
 
-**Part of:** `npx @opengsd/get-shit-done-redux`
+**Part of:** `npx @opengsd/gsd-core`
 
 **Purpose:** Select multiple runtimes in a single interactive install session.
 
@@ -1455,7 +1452,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 56. Windsurf Runtime Support
 
-**Part of:** `npx @opengsd/get-shit-done-redux`
+**Part of:** `npx @opengsd/gsd-core`
 
 **Purpose:** Add Windsurf as a supported AI CLI runtime for GSD installation and execution.
 
@@ -1482,26 +1479,6 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 **Process:**
 1. **Translate** — Convert core documentation into target languages
 2. **Publish** — Make translated documentation accessible alongside English originals
-
----
-
-## v1.30 Features
-
-### 58. GSD SDK
-
-**Command:** Programmatic API (headless)
-
-**Purpose:** Headless TypeScript SDK for running GSD workflows programmatically without a CLI session.
-
-**Requirements:**
-- REQ-SDK-01: SDK MUST expose GSD workflow operations as TypeScript functions
-- REQ-SDK-02: SDK MUST support headless execution without interactive prompts
-- REQ-SDK-03: SDK MUST produce the same artifacts as CLI-driven workflows
-
-**Process:**
-1. **Import** — Import GSD SDK into a TypeScript/JavaScript project
-2. **Configure** — Set project path and workflow options programmatically
-3. **Execute** — Run GSD phases (discuss, plan, execute) via API calls
 
 ---
 
@@ -1695,7 +1672,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 68. Claude Code Skills Migration
 
-**Part of:** `npx @opengsd/get-shit-done-redux`
+**Part of:** `npx @opengsd/gsd-core`
 
 **Purpose:** Migrate GSD commands to Claude Code 2.1.88+ skills format with backward compatibility.
 
@@ -1807,7 +1784,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 74. Context Reduction
 
-**Part of:** GSD SDK prompt assembly
+**Part of:** prompt assembly pipeline
 
 **Purpose:** Reduce context prompt sizes through markdown truncation and cache-friendly prompt ordering.
 
@@ -1959,7 +1936,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 85. New Runtime Support (Trae, Cline, Augment Code)
 
-**Part of:** `npx @opengsd/get-shit-done-redux`
+**Part of:** `npx @opengsd/gsd-core`
 
 **Purpose:** Extend GSD installation to Trae IDE, Cline, and Augment Code runtimes.
 
@@ -2110,7 +2087,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 92. Gates Taxonomy
 
-**References:** `get-shit-done/references/gates.md`
+**References:** `gsd-core/references/gates.md`
 **Agents:** plan-checker, verifier
 
 **Purpose:** Define 4 canonical gate types that structure all workflow decision points, enabling plan-checker and verifier agents to apply consistent gate logic.
@@ -2301,7 +2278,7 @@ Test suite that scans all agent, workflow, and command files for embedded inject
 
 ### 104. New Runtime Support (Cline, CodeBuddy, Qwen Code)
 
-**Part of:** `npx @opengsd/get-shit-done-redux`
+**Part of:** `npx @opengsd/gsd-core`
 
 **Purpose:** Extend GSD installation to Cline, CodeBuddy, and Qwen Code runtimes.
 
@@ -2474,20 +2451,6 @@ Users who run a memory / knowledge-base MCP server (for example, ExoCortex-style
 
 ---
 
-### 113. SDK Workstream Support
-
-**Command:** `gsd-sdk init @prd.md --ws my-workstream`
-
-**Purpose:** Route all SDK `.planning/` paths to `.planning/workstreams/<name>/`, enabling multi-workstream projects without "Project already exists" errors. The `--ws` flag validates the workstream name and propagates to all subsystems (tools, config, context engine).
-
-**Requirements:**
-- REQ-WS-01: `--ws <name>` routes all `.planning/` paths to `.planning/workstreams/<name>/`
-- REQ-WS-02: Without `--ws`, behavior is unchanged (flat mode)
-- REQ-WS-03: Name validated to alphanumeric, hyphens, underscores, and dots only
-- REQ-WS-04: Config resolves from workstream path first, falls back to root `.planning/config.json`
-
----
-
 ### 114. Context-Window-Aware Prompt Thinning
 
 **Purpose:** Reduce static prompt overhead by ~40% for models with context windows under 200K tokens. Extended examples and anti-pattern lists are extracted from agent definitions into reference files loaded on demand via `@` required_reading.
@@ -2621,7 +2584,7 @@ Users who run a memory / knowledge-base MCP server (for example, ExoCortex-style
 - REQ-GRAPH-02: Slash-command `/gsd-graphify` exposes subcommands `build`, `query <term>`, `status`, `diff`. The programmatic CLI `node gsd-tools.cjs graphify …` additionally exposes `snapshot`, which is also invoked automatically as the final step of `graphify build`.
 - REQ-GRAPH-03: Build runs within the configurable `graphify.build_timeout` (seconds); exceeding the timeout aborts cleanly without leaving a partial graph.
 - REQ-GRAPH-04: `graphify.cjs` falls back to `graph.links` when `graph.edges` is absent so older graph artifacts keep rendering.
-- REQ-GRAPH-05: CJS-only surface; `gsd-sdk query` does not yet register graphify handlers.
+- REQ-GRAPH-05: Graphify is invoked through `gsd-tools.cjs graphify ...` command handlers.
 
 **Configuration:** `graphify.enabled`, `graphify.build_timeout`
 **Reference files:** `commands/gsd/graphify.md`, `bin/lib/graphify.cjs`
@@ -2644,7 +2607,7 @@ Users who run a memory / knowledge-base MCP server (for example, ExoCortex-style
 - REQ-CONSOLIDATE-03: Deleted micro-skill slash forms (the bare `gsd-add-todo`, `gsd-add-backlog`, `gsd-plant-seed`, `gsd-check-todos`, `gsd-add-phase`, `gsd-insert-phase`, `gsd-remove-phase`, `gsd-edit-phase`, `gsd-new-workspace`, `gsd-list-workspaces`, `gsd-remove-workspace`, `gsd-settings-advanced`, `gsd-settings-integrations`, `gsd-set-profile`, `gsd-sketch-wrap-up`, `gsd-spike-wrap-up`, `gsd-reapply-patches`, `gsd-code-review-fix`, …) MUST resolve to "Unknown command" — no shadow stubs.
 - REQ-CONSOLIDATE-04: `autonomous.md` invokes `/gsd-code-review --fix` (was previously calling the deleted `gsd-code-review-fix`).
 
-**Reference issue:** [#2790](https://github.com/open-gsd/get-shit-done-redux/issues/2790)
+**Reference issue:** [#2790](https://github.com/open-gsd/gsd-core/issues/2790)
 
 ---
 
@@ -2672,7 +2635,7 @@ Users who run a memory / knowledge-base MCP server (for example, ExoCortex-style
 - REQ-NS-02: Existing sub-skills are unchanged and still invocable directly — namespace skills are additive, not a replacement for direct slash forms.
 - REQ-NS-03: The body of each namespace router contains a routing table that maps user intent to the correct concrete sub-skill on the post-#2790 consolidated surface.
 
-**Reference issue:** [#2792](https://github.com/open-gsd/get-shit-done-redux/issues/2792)
+**Reference issue:** [#2792](https://github.com/open-gsd/gsd-core/issues/2792)
 
 ---
 
@@ -2684,10 +2647,10 @@ Users who run a memory / knowledge-base MCP server (for example, ExoCortex-style
 
 **Requirements:**
 - REQ-CTX-GUARD-01: `/gsd-health --context` prints a structured status line with current utilization, threshold tier (`ok` / `warn` / `critical`), and a remediation suggestion.
-- REQ-CTX-GUARD-02: The same triage is exposed as `gsd-sdk query validate.context --tokens-used <int> --context-window <int>` — a structured envelope for status-line and hook callers (#125). Both flags are required; the handler returns the same `{ percent, state }` envelope as the pure classifier in REQ-CTX-GUARD-03.
+- REQ-CTX-GUARD-02: The same triage is exposed as `gsd-tools.cjs validate context --tokens-used <int> --context-window <int>` — a structured envelope for status-line and hook callers (#125). Both flags are required; the handler returns the same `{ percent, state }` envelope as the pure classifier in REQ-CTX-GUARD-03.
 - REQ-CTX-GUARD-03: The classifier (`bin/lib/context-utilization.cjs`) is pure: input `(tokensUsed, contextWindow)`, output `{ percent, state }`. Easy to unit-test, easy to reuse from any caller.
 
-**Reference issue:** [#2792](https://github.com/open-gsd/get-shit-done-redux/issues/2792)
+**Reference issue:** [#2792](https://github.com/open-gsd/gsd-core/issues/2792)
 
 ---
 
@@ -2704,7 +2667,7 @@ Users who run a memory / knowledge-base MCP server (for example, ExoCortex-style
 - REQ-LIFECYCLE-02: `formatGsdState()` checks the lifecycle fields in priority order and emits the first matching scene (Phase active → Idle next-recommended → Milestone complete → Default fallback).
 - REQ-LIFECYCLE-03: All four fields default to undefined; existing STATE.md files render byte-for-byte identically.
 
-**Reference issue:** [#2833](https://github.com/open-gsd/get-shit-done-redux/issues/2833) — see [`docs/STATE-MD-LIFECYCLE.md`](STATE-MD-LIFECYCLE.md) for the full field reference and rendering rules.
+**Reference issue:** [#2833](https://github.com/open-gsd/gsd-core/issues/2833) — see [`docs/STATE-MD-LIFECYCLE.md`](reference/state-md.md) for the full field reference and rendering rules.
 
 ---
 
@@ -2744,7 +2707,7 @@ Users who run a memory / knowledge-base MCP server (for example, ExoCortex-style
 - REQ-PHASE-MODELS-02: Configs without a `models` block behave byte-for-byte identically to pre-v1.41 behavior.
 - REQ-PHASE-MODELS-03: `discuss` and `completion` are accepted by the schema for forward compatibility; setting them today is a no-op until a subagent maps to each.
 
-**Reference issue:** [#3023](https://github.com/open-gsd/get-shit-done-redux/pull/3030)
+**Reference issue:** [#3023](https://github.com/open-gsd/gsd-core/pull/3030)
 
 ---
 
@@ -2765,7 +2728,7 @@ Users who run a memory / knowledge-base MCP server (for example, ExoCortex-style
 - REQ-DYNROUTE-02: New resolver `resolveModelForTier(cwd, agent, attempt)` in `core.cjs` is the single call-site for orchestrator integration.
 - REQ-DYNROUTE-03: `max_escalations` caps the escalation chain to prevent runaway cost.
 
-**Reference issue:** [#3024](https://github.com/open-gsd/get-shit-done-redux/pull/3031)
+**Reference issue:** [#3024](https://github.com/open-gsd/gsd-core/pull/3031)
 
 ---
 
@@ -2778,14 +2741,14 @@ Users who run a memory / knowledge-base MCP server (for example, ExoCortex-style
 - The hook reads the existing `~/.cache/gsd/gsd-update-check.json` cache — the same cache used by the statusline — and prints a banner only when an update is available.
 - Silent when up-to-date.
 - Failure diagnostics rate-limited to once per 24 h.
-- Cleanly removed by `npx @opengsd/get-shit-done-redux --uninstall`.
+- Cleanly removed by `npx @opengsd/gsd-core --uninstall`.
 
 **Requirements:**
 - REQ-BANNER-01: Banner does not install without explicit opt-in.
 - REQ-BANNER-02: No additional network requests — reuses the existing background update-check cache.
 - REQ-BANNER-03: Uninstall path removes the banner hook.
 
-**Reference issue:** [#2795](https://github.com/open-gsd/get-shit-done-redux/pull/2795)
+**Reference issue:** [#2795](https://github.com/open-gsd/gsd-core/pull/2795)
 
 ---
 
@@ -2804,7 +2767,7 @@ Users who run a memory / knowledge-base MCP server (for example, ExoCortex-style
 
 No new commands or daemon process — purely a documentation artifact that maps existing primitives onto a tracker-driven workflow.
 
-**Reference issue:** [#2840](https://github.com/open-gsd/get-shit-done-redux/pull/2840)
+**Reference issue:** [#2840](https://github.com/open-gsd/gsd-core/pull/2840)
 
 ---
 
@@ -2832,28 +2795,7 @@ Source commit: abc1234 (3 commits behind HEAD)
 
 **Fallback:** pre-v0.7 graphs and non-git checkouts return `commit_stale: null`; callers fall back to the existing mtime-based `stale` flag. No behavior change for existing users.
 
-**Reference issue:** [#3170](https://github.com/open-gsd/get-shit-done-redux/issues/3170)
-
----
-
-### 131. MVP Mode SDK Resolution Layer
-
-**Purpose:** Replace per-workflow MVP-mode predicate duplication with three canonical SDK query verbs. All consuming workflows now call a single source of truth instead of inlining 4–8 bash lines each.
-
-**New query verbs:**
-
-| Verb | Returns | Used by |
-|------|---------|---------|
-| `gsd-sdk query phase.mvp-mode <N>` | `{active, source, roadmap_mode, config_mvp_mode, cli_flag_present}` | `plan-phase`, `execute-phase`, `verify-work`, `progress` |
-| `gsd-sdk query task.is-behavior-adding <plan-file>` | `{is_behavior_adding, checks: {tdd_true, has_behavior_block, has_source_files}, reason}` | `gsd-executor` agent |
-| `gsd-sdk query user-story.validate "<text>"` | `{valid, slots: {role, capability, outcome}, errors[]}` | `gsd-verifier`, `/gsd-mvp-phase` |
-
-**Resolution precedence for `phase.mvp-mode`:**
-CLI flag → ROADMAP `**Mode:** mvp` → `workflow.mvp_mode` config → `false`
-
-**Bug fix:** `roadmap.get-phase --pick mode` in the SDK's `roadmap.ts` previously returned `null` for phases with `**Mode:** mvp`, causing MVP_MODE to silently fall through to false on the native dispatch path. Restores parity with the CJS implementation.
-
-**Reference issue:** [#3178](https://github.com/open-gsd/get-shit-done-redux/pull/3178)
+**Reference issue:** [#3170](https://github.com/open-gsd/gsd-core/issues/3170)
 
 ---
 
@@ -2875,7 +2817,7 @@ CLI flag → ROADMAP `**Mode:** mvp` → `workflow.mvp_mode` config → `false`
 - REQ-PKG-GATE-02: Planner MUST gate unverified or suspicious package installs before execution.
 - REQ-PKG-GATE-03: Executor MUST NOT auto-substitute package names after failed package-manager installs.
 
-**Reference:** [v1.42.1 Release Notes](RELEASE-v1.42.1.md)
+**Reference:** [v1.42.1 Release Notes](RELEASE-NOTES-LEGACY.md)
 
 ---
 
@@ -2994,7 +2936,7 @@ explicit reviewer flags -> --all -> review.default_reviewers -> all detected rev
 - REQ-HUMAN-VERIFY-02: Human-needed verification MUST remain pending until the end-of-phase review resolves it.
 - REQ-HUMAN-VERIFY-03: Configs without the key MUST use `"end-of-phase"`.
 
-**Reference:** [Checkpoints Reference](../get-shit-done/references/checkpoints.md)
+**Reference:** [Checkpoints Reference](../gsd-core/references/checkpoints.md)
 
 ---
 
@@ -3058,7 +3000,7 @@ explicit reviewer flags -> --all -> review.default_reviewers -> all detected rev
 
 **CLI:** `gsd-tools --json-errors`
 
-**Purpose:** Give SDK and automation callers stable machine-readable error envelopes.
+**Purpose:** Give automation callers stable machine-readable error envelopes.
 
 **Behavior:** Commands that fail under `--json-errors` return structured `ok: false` payloads with error kind, message, command context, and exit mapping instead of prose-only stderr.
 
@@ -3066,5 +3008,13 @@ explicit reviewer flags -> --all -> review.default_reviewers -> all detected rev
 - REQ-JSON-ERRORS-01: Unknown commands, validation errors, timeouts, native failures, fallback failures, and internal errors MUST map to canonical error kinds.
 - REQ-JSON-ERRORS-02: CLI exit code mapping MUST remain stable for automation callers.
 - REQ-JSON-ERRORS-03: Human-readable output MUST remain the default when `--json-errors` is absent.
+
+---
+
+## Related
+
+- [Commands](COMMANDS.md)
+- [Configuration](CONFIGURATION.md)
+- [docs index](README.md)
 
 **Reference:** [JSON Error Mode](json-errors.md)

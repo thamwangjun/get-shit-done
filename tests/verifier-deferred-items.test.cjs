@@ -115,8 +115,8 @@ describe('verifier deferred-items filtering (#1624)', () => {
 
   // ── verify-phase.md (workflow) ─────────────────────────────────────────────
 
-  describe('get-shit-done/workflows/verify-phase.md', () => {
-    const workflowPath = path.join(ROOT, 'get-shit-done', 'workflows', 'verify-phase.md');
+  describe('gsd-core/workflows/verify-phase.md', () => {
+    const workflowPath = path.join(ROOT, 'gsd-core', 'workflows', 'verify-phase.md');
     let workflowContent;
 
     test('file exists', () => {
@@ -155,8 +155,8 @@ describe('verifier deferred-items filtering (#1624)', () => {
 
   // ── planner-gap-closure.md ─────────────────────────────────────────────────
 
-  describe('get-shit-done/references/planner-gap-closure.md', () => {
-    const closurePath = path.join(ROOT, 'get-shit-done', 'references', 'planner-gap-closure.md');
+  describe('gsd-core/references/planner-gap-closure.md', () => {
+    const closurePath = path.join(ROOT, 'gsd-core', 'references', 'planner-gap-closure.md');
     let closureContent;
 
     test('file exists', () => {

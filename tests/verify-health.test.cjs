@@ -1,7 +1,13 @@
-// allow-test-rule: pending-migration-to-typed-ir [#2974]
-// Tracked in #2974 for migration to typed-IR assertions per CONTRIBUTING.md
-// "Prohibited: Raw Text Matching on Test Outputs". Per-file review may
-// reclassify some entries as source-text-is-the-product during migration.
+// allow-test-rule: source-text-is-the-product
+// Workflow .md / agent .md / command .md / reference .md files — their text
+// IS what the runtime loads. Testing text content tests the deployed contract.
+// Per CONTRIBUTING.md exception matrix.
+// Migrated (#455): tests parse JSON output and assert on typed fields
+// (output.status, error/warning/info codes). The single message.includes()
+// at W001 checks the canonical section name '## Core Value' which is the
+// product contract for PROJECT.md; stateContent.includes('# Session State')
+// checks the canonical header of a generated file — both are
+// source-text-is-the-product assertions, not output-grep violations.
 
 /**
  * GSD Tools Tests - Validate Health Command
@@ -68,6 +74,7 @@ describe('validate health command', () => {
 
   test("returns 'broken' when .planning directory is missing", () => {
     // createTempProject creates .planning/phases — remove it entirely
+    // eslint-disable-next-line local/no-raw-rmsync-in-tests -- mid-test SUT setup: removes .planning/ to simulate missing dir condition
     fs.rmSync(path.join(tmpDir, '.planning'), { recursive: true, force: true });
 
     const result = runGsdTools('validate health', tmpDir);
@@ -833,7 +840,7 @@ describe('validate health --repair command', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 // Regression: CJS bundle drift — W005/W006/I001 false positives (#3806)
 // PR #3479 fixed these in sdk/src/query/validate.ts but never propagated to
-// get-shit-done/bin/lib/verify.cjs. These tests fail on old verify.cjs and
+// gsd-core/bin/lib/verify.cjs. These tests fail on old verify.cjs and
 // pass on the fixed version.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -1002,6 +1009,7 @@ describe('validate health — missing phasesDir', () => {
     // Remove the phases directory if it exists
     const phasesDir = path.join(tmpDir, '.planning', 'phases');
     if (fs.existsSync(phasesDir)) {
+      // eslint-disable-next-line local/no-raw-rmsync-in-tests -- mid-test SUT setup: removes phases/ to simulate missing phasesDir condition
       fs.rmSync(phasesDir, { recursive: true, force: true });
     }
 
