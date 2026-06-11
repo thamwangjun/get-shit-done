@@ -330,7 +330,15 @@ Plans:
   4. `package.json` and `package-lock.json` are reconciled (upstream base with fork-specific values preserved) and the lockfile regenerated cleanly (`npm install` exits 0, no lockfile churn on a second run)
   5. Upstream's `sdk/` deletion is accepted — `ls sdk/` returns "No such file or directory" — with the delete/modify conflicts resolved in upstream's favor (SDK-01 documentation already captured in Phase 68)
 
-**Plans**: TBD
+**Plans**: 6 plans (strictly sequential — one stateful git merge, no parallelism)
+
+Plans:
+- [ ] 69-01-PLAN.md — Tier 1: start -s ort merge, resolve CONTEXT.md (ours), verify PATCH-03 fork-only files
+- [ ] 69-02-PLAN.md — Tier 2: infrastructure — package.json sacred-field reconcile + clean lockfile regen, install.js/hooks fork patches
+- [ ] 69-03-PLAN.md — Tier 3: restore fork get-shit-done/bin/lib modules (rename not adopted); accept sdk/ deletion
+- [ ] 69-04-PLAN.md — Tier 4: hand-merge prompt content (agents/, commands/gsd/, get-shit-done workflows/refs/templates, docs, READMEs)
+- [ ] 69-05-PLAN.md — Tier 5: tests — hand-merge UU, restore fork-only-module UD tests, resolve DU/AA
+- [ ] 69-06-PLAN.md — Tier 6: accept upstream additions (additive gsd-core/ tree); close merge; structural phase gate
 **UI hint**: no
 
 ### Phase 70: Fork-Patch Restoration & TypeScript Port
