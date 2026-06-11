@@ -88,7 +88,7 @@ Wait for confirmation.
 </step>
 
 <step name="execute_removal">
-**Delegate the entire removal operation to `gsd-sdk query phase.remove`:**
+**Delegate the entire removal operation to `gsd-tools.cjs query phase.remove`:**
 
 ```bash
 RESULT=$($GSD_SDK query phase.remove "${target}")
@@ -172,7 +172,7 @@ Would you like to:
 Phase removal is complete when:
 
 - [ ] Target phase validated as future/unstarted
-- [ ] `gsd-sdk query phase.remove` executed successfully
+- [ ] `gsd-tools.cjs query phase.remove` executed successfully
 - [ ] Changes committed with descriptive message
 - [ ] User informed of changes
 </success_criteria>
