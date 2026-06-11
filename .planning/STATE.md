@@ -9,7 +9,7 @@ progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 8
-  completed_plans: 6
+  completed_plans: 8
   percent: 0
 ---
 
@@ -24,9 +24,9 @@ See: .planning/PROJECT.md (updated 2026-06-07 after v2.1.0-f milestone start)
 
 ## Current Position
 
-Phase: 69 (merge-execution-ordered-conflict-resolution) — EXECUTING
-Plan: 7 of 8
-Status: 69-05 (Tier 5 tests) complete — upstream functional test changes folded into 4 UU test files (workflow-size-budget, worktree-cleanup, worktree-safety, plus 3 from prior session); 9 fork-only UD tests confirmed present; 2 files skipped (path-rename-only or parallel fork-only); 6 per-file commits total; ready for 69-06 (verification)
+Phase: 69 (merge-execution-ordered-conflict-resolution) — COMPLETE
+Plan: 8 of 8
+Status: 69-06 (structural phase gate verification) complete — all 7 structural checks passed; all 5 requirements satisfied (MERGE-02/03/04, PATCH-03, SDK-02); three ratified deviations accounted for; Phase 69 COMPLETE, ready for Phase 70
 Last activity: 2026-06-11
 
 ## Performance Metrics
@@ -104,8 +104,8 @@ None. Research is HIGH confidence across all five phases.
 
 ## Session Continuity
 
-Last activity: 2026-06-11 — Completed 69-04b (Tier 4b): CORRECTIVE restore of fork get-shit-done/{workflows,references,templates,contexts}/ prompt corpus (222 files deleted by 69-01 rename adoption) via pre-merge-v1.3.1-backup, then folded upstream functional deltas into 71 files; fork patches preserved (Eta <%~ includes, $GSD_SDK resolver shim, inline worktree guard, get-shit-done/ paths, @opengsd/get-shit-done-redux); rename NOT adopted (Phase 71); skipped worktree-path-safety.md (kept fork inline guard); 72 commits (1 restore + 71 per-file); merge stays closed
-Stopped at: 69-04b complete — next is 69-04c (Tier 4c: docs/READMEs)
+Last activity: 2026-06-11 — Completed 69-06 (structural phase gate verification): all 7 structural checks PASS; MERGE-02/03/04/PATCH-03/SDK-02 all satisfied; three ratified deviations accounted for (69-02 TS defer to P70, 69-05 test-file skips, 69-04b prompt-corpus restore); Phase 69 COMPLETE
+Stopped at: Phase 69 complete — next is Phase 70 (Fork-Patch Restoration and TypeScript Port)
 Resume file: None
 
 ## Deferred Items

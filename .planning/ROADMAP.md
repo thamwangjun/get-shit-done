@@ -283,7 +283,7 @@ Full details: `.planning/milestones/v2.1.0-g-ROADMAP.md`
 **Milestone Goal:** Land the `git merge` of upstream tag `v1.3.1` (`open-gsd/gsd-core`, `1bb253c9`) into the fork, resolve every conflict preserving critical fork patches, and adopt the `get-shit-done/` → `gsd-core/` directory + npm package/bin rename. A green test suite is **not** a completion gate — residual failing tests are documented as deferred backlog (VERIFY-02). Two architecture decisions are pre-made: KEEP the fork's SHA-based update-check worker (PATCH-02); ACCEPT upstream's `sdk/` deletion after first documenting the fork's `sdk/` capability (SDK-01 before SDK-02).
 
 - [x] **Phase 68: Pre-Merge Inventory, Backup & SDK Capture** - Recovery branch, fork-edit inventory, architecture decisions recorded, and the fork's sdk/ capability fully documented before the merge deletes it
-- [ ] **Phase 69: Merge Execution & Ordered Conflict Resolution** - Upstream v1.3.1 merged via `git merge -s ort`; conflicts resolved in documented triage order with incremental commits; fork-only files restored; sdk/ deletion accepted
+- [x] **Phase 69: Merge Execution & Ordered Conflict Resolution** - Upstream v1.3.1 merged via `git merge -s ort`; conflicts resolved in documented triage order with incremental commits; fork-only files restored; sdk/ deletion accepted
 - [ ] **Phase 70: Fork-Patch Restoration & TypeScript Port** - install.js/worker fork patches re-applied; bin/lib additions ported to src/*.cts; guard tests + agent-frontmatter list + test require paths repaired with non-empty-corpus assertions
 - [ ] **Phase 71: Rename Sweep & Post-Merge Verification** - Stale get-shit-done/ literals eliminated; c8 globs / CI / package identity repointed; structural verification checklist passes; residual failing tests enumerated as deferred backlog
 
@@ -355,7 +355,7 @@ Plans:
 
 **Wave 8** *(blocked on Wave 7 completion)*
 
-- [ ] 69-06-PLAN.md — Tier 6: accept upstream additions (additive gsd-core/ tree); close merge; structural phase gate
+- [x] 69-06-PLAN.md — Tier 6: accept upstream additions (additive gsd-core/ tree); close merge; structural phase gate
 
 **Cross-cutting constraints:**
 
