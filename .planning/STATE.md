@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v2.3.1-a
 milestone_name: Upstream v1.3.1 Merge & Rename Adoption
 status: executing
-last_updated: "2026-06-11T05:26:45.644Z"
-last_activity: 2026-06-11 -- Phase 68 execution started
+last_updated: "2026-06-11T05:29:21.879Z"
+last_activity: 2026-06-11
 ---
 
 # Project State
@@ -19,9 +19,9 @@ See: .planning/PROJECT.md (updated 2026-06-07 after v2.1.0-f milestone start)
 ## Current Position
 
 Phase: 68 (pre-merge-inventory-backup-sdk-capture) — EXECUTING
-Plan: 1 of 2
-Status: Executing Phase 68
-Last activity: 2026-06-11 -- Phase 68 execution started
+Plan: 2 of 2
+Status: Ready to execute
+Last activity: 2026-06-11
 
 ## Performance Metrics
 
@@ -46,6 +46,8 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - [v2.1.0-f roadmap]: EWC-04 (code-review-fix.md) and EWC-07 (ingest-docs.md) each need assertions for TWO agents — four tokens each, not two.
 - [v2.1.0-f roadmap]: WSC-01 assertions must be scoped within the `<task_commit_protocol>` XML block slice (not full file) to prevent vacuous passes from documentation text.
 - [v2.1.0-f roadmap]: GAP-K and GAP-M2 are one physical location (lines 133–139 of debug-session-management.test.cjs) — treated as one phase (SFC-01, Phase 63).
+- [Phase 68]: KEEP fork SHA-based isNewer update-check worker (PATCH-02)
+- [Phase 68]: ACCEPT upstream sdk/ deletion gated on SDK-01 documentation existing first (SDK-01->SDK-02)
 
 ### Plan-Time Verification Flags
 
@@ -96,7 +98,7 @@ None. Research is HIGH confidence across all five phases.
 
 Last activity: 2026-06-10 — Created v2.3.1-a roadmap (Phases 68–71); 17/17 requirements mapped
 Stopped at: Phase 68 context gathered
-Resume file: .planning/milestones/v2.3.1-a-phases/68-pre-merge-inventory-backup-sdk-capture/68-CONTEXT.md
+Resume file: None
 
 ## Deferred Items
 

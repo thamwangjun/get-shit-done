@@ -10,7 +10,7 @@
 
 ### Merge Execution
 
-- [ ] **MERGE-01**: Before any merge operation, a `pre-merge-v1.3.1-backup` recovery branch exists and a fork-edit inventory (`git diff fa4bba47..HEAD` over fork-owned paths) is captured
+- [x] **MERGE-01**: Before any merge operation, a `pre-merge-v1.3.1-backup` recovery branch exists and a fork-edit inventory (`git diff fa4bba47..HEAD` over fork-owned paths) is captured
 - [ ] **MERGE-02**: Upstream tag `v1.3.1` is merged into the fork via `git merge -s ort` with `diff.renameLimit`/`merge.renameLimit` raised to 5000 (shared-history merge — no `--allow-unrelated-histories`, no pre-renaming the directory)
 - [ ] **MERGE-03**: All merge conflicts are resolved in documented triage order (`.planning/`+`CLAUDE.md` ours → infrastructure → fork-critical → prompt content per-file → tests → new upstream additions) with incremental committed batches; no single mega-commit and no bulk `-X theirs` on prompt content
 - [ ] **MERGE-04**: `package.json` and `package-lock.json` are reconciled (upstream base + fork-specific values preserved) and the lockfile is cleanly regenerated
@@ -70,7 +70,7 @@ Which phases cover which requirements. Populated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| MERGE-01 | Phase 68 | Pending |
+| MERGE-01 | Phase 68 | Complete |
 | MERGE-02 | Phase 69 | Pending |
 | MERGE-03 | Phase 69 | Pending |
 | MERGE-04 | Phase 69 | Pending |

@@ -313,7 +313,7 @@ Full details below in Phase Details.
 **Plans**: 2 plans
 
 Plans:
-- [ ] 68-01-PLAN.md — Recovery anchor: backup branch, renameLimit=5000, durable fork-edit inventory diff, architecture decisions (MERGE-01)
+- [x] 68-01-PLAN.md — Recovery anchor: backup branch, renameLimit=5000, durable fork-edit inventory diff, architecture decisions (MERGE-01)
 - [ ] 68-02-PLAN.md — Restoration-grade documentation of the fork sdk/ capability (SDK-01)
 **UI hint**: no
 
@@ -909,7 +909,7 @@ Plans:
 | 65. Guard Test (RED) | v2.1.0-g | 2/2 | Complete    | 2026-06-09 |
 | 66. Citation Cleanup | v2.1.0-g | 4/4 | Complete    | 2026-06-09 |
 | 67. Full Verification | v2.1.0-g | 1/1 | Complete    | 2026-06-10 |
-| 68. Pre-Merge Inventory, Backup & SDK Capture | v2.3.1-a | 0/0 | Not started | - |
+| 68. Pre-Merge Inventory, Backup & SDK Capture | v2.3.1-a | 1/2 | In Progress|  |
 | 69. Merge Execution & Ordered Conflict Resolution | v2.3.1-a | 0/0 | Not started | - |
 | 70. Fork-Patch Restoration & TypeScript Port | v2.3.1-a | 0/0 | Not started | - |
 | 71. Rename Sweep & Post-Merge Verification | v2.3.1-a | 0/0 | Not started | - |
