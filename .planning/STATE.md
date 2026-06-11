@@ -9,7 +9,7 @@ progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 8
-  completed_plans: 4
+  completed_plans: 5
   percent: 0
 ---
 
@@ -25,8 +25,8 @@ See: .planning/PROJECT.md (updated 2026-06-07 after v2.1.0-f milestone start)
 ## Current Position
 
 Phase: 69 (merge-execution-ordered-conflict-resolution) — EXECUTING
-Plan: 5 of 8
-Status: 69-04b (Tier 4b) complete — fork get-shit-done/{workflows,references,templates,contexts}/ prompt corpus RESTORED (corrective fix for 69-01 rename-adoption defect that deleted 222 fork files) then upstream functional deltas folded into 71 files (72 commits = 1 restore + 71 per-file); fork patches preserved, no rename adopted; ready for 69-04c (docs/READMEs)
+Plan: 6 of 8
+Status: 69-04c (Tier 4c) complete — upstream functional deltas folded into 12 doc/README/CONTRIBUTING files (12 per-file commits); 170 upstream-added files already present from merge; RELEASE-*.md deletion accepted (upstream pruning); fork patches preserved (continuity notice, branding, get-shit-done/ paths); ready for 69-05 (tests)
 Last activity: 2026-06-11
 
 ## Performance Metrics
