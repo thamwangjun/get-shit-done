@@ -50,6 +50,7 @@ Parse current values (default to `true` if not present):
 - `workflow.research` — spawn researcher during plan-phase
 - `workflow.plan_check` — spawn plan checker during plan-phase
 - `workflow.verifier` — spawn verifier during execute-phase
+- `plan_review.source_grounding` — verify plan symbols against live source during plan review (default: true if absent; set `plan_review.source_grounding_authority` to select the resolver adapter: `grep` (default), `intel`, `treesitter`, `lsp`, or `scip`)
 - `workflow.nyquist_validation` — validation architecture research during plan-phase (default: true if absent)
 - `workflow.pattern_mapper` — run gsd-pattern-mapper between research and planning (default: true if absent)
 - `workflow.ui_phase` — generate UI-SPEC.md design contracts for frontend phases (default: true if absent)
@@ -66,6 +67,11 @@ Parse current values (default to `true` if not present):
 - `model_profile` — which model each agent uses (default: `balanced`)
 - `git.branching_strategy` — branching approach (default: `"none"`)
 - `workflow.use_worktrees` — whether parallel executor agents run in worktree isolation (default: `true`)
+- `model_policy.provider` — provider slug for model policy (default: `null`; known values: anthropic, openai, google, qwen; set via /gsd:config --advanced)
+- `model_policy.budget` — budget level for model policy (default: `null`; known values: high, medium, low; set via /gsd:config --advanced)
+- `model_policy.high` — model ID for high-cost tier (default: `null`; set via /gsd:config --advanced)
+- `model_policy.medium` — model ID for medium-cost tier (default: `null`; set via /gsd:config --advanced)
+- `model_policy.low` — model ID for low-cost tier (default: `null`; set via /gsd:config --advanced)
 </step>
 
 <step name="present_settings">
@@ -93,7 +99,7 @@ Use AskUserQuestion with current values pre-selected. Questions are grouped into
 Section layout:
 
 ### Planning
-Research, Plan Checker, Pattern Mapper, Nyquist, UI Phase, UI Gate, AI Phase
+Research, Plan Checker, Drift Guard, Pattern Mapper, Nyquist, UI Phase, UI Gate, AI Phase
 
 ### Execution
 Verifier, TDD Mode, Code Review, Code Review Depth _(conditional — only when code_review=on)_, UI Review
@@ -184,6 +190,15 @@ AskUserQuestion([
     options: [
       { label: "Yes", description: "Verify must-haves after execution" },
       { label: "No", description: "Skip post-execution verification" }
+    ]
+  },
+  {
+    question: "Enable Plan Drift Guard? (verifies that symbols cited in plans exist in source at review time)",
+    header: "Drift Guard",
+    multiSelect: false,
+    options: [
+      { label: "Yes (Recommended)", description: "Resolve symbol references (decorators, classes, functions, CLI flags) against live source — catches hallucinated names before execution. Authority controlled by plan_review.source_grounding_authority (default: grep)." },
+      { label: "No", description: "Skip symbol grounding. Plan review proceeds without source verification." }
     ]
   },
   {
@@ -405,6 +420,9 @@ Merge new settings into existing config.json:
     "skip_discuss": true/false,
     "use_worktrees": true/false
   },
+  "plan_review": {
+    "source_grounding": true/false
+  },
   "intel": {
     "enabled": true/false
   },
@@ -420,11 +438,20 @@ Merge new settings into existing config.json:
   "hooks": {
     "context_warnings": true/false,
     "workflow_guard": true/false
+  },
+  "model_policy": {
+    // Read-only in this flow — written only by /gsd:config --advanced (Section 8).
+    // Listed here so safe-merge never clobbers an existing model_policy object.
+    "provider": <existing|null>,
+    "budget": <existing|null>,
+    "high": <existing|null>,
+    "medium": <existing|null>,
+    "low": <existing|null>
   }
 }
 ```
 
-**Safe merge:** Apply each chosen value via `gsd-sdk query config-set <key.path> <value>` so unrelated keys are never clobbered. `code_review_depth` is written only if the code_review question was answered `on`; otherwise leave the existing value in place. `model_profile` is written on Q1 "Adaptive (Recommended)" (→ adaptive) or Q1 "Inherit" (→ inherit) immediately; for Q1 "Standard tier…", `model_profile` is written from Q2's answer. If Q1 = "Standard tier…" but Q2 is cancelled, leave the existing `model_profile` value unchanged — do not write any new value.
+**Safe merge:** Apply each chosen value via `gsd-tools.cjs query config-set <key.path> <value>` so unrelated keys are never clobbered. `code_review_depth` is written only if the code_review question was answered `on`; otherwise leave the existing value in place. `model_profile` is written on Q1 "Adaptive (Recommended)" (→ adaptive) or Q1 "Inherit" (→ inherit) immediately; for Q1 "Standard tier…", `model_profile` is written from Q2's answer. If Q1 = "Standard tier…" but Q2 is cancelled, leave the existing `model_profile` value unchanged — do not write any new value.
 
 Write updated config to `$GSD_CONFIG_PATH` (the workstream-aware path resolved in `ensure_and_load_config`). Never hardcode `.planning/config.json` — workstream installs route to `.planning/workstreams/<slug>/config.json`.
 </step>
@@ -478,6 +505,9 @@ Write `~/.gsd/defaults.json` with:
     "ui_review": <current>,
     "skip_discuss": <current>
   },
+  "plan_review": {
+    "source_grounding": <current>
+  },
   "intel": {
     "enabled": <current>
   },
@@ -506,6 +536,7 @@ Display:
 | Execution Verifier   | {On/Off} |
 | TDD Mode             | {On/Off} |
 | Code Review          | {On/Off} |
+| Plan Drift Guard     | {On/Off} |
 | Code Review Depth    | {quick/standard/deep} |
 | UI Review            | {On/Off} |
 | Commit Docs          | {On/Off} |
@@ -530,7 +561,7 @@ Quick commands:
 - /gsd:plan-phase --research — force research
 - /gsd:plan-phase --skip-research — skip research
 - /gsd:plan-phase --skip-verify — skip plan check
-- /gsd:config --advanced — power-user tuning (plan bounce, timeouts, branch templates, cross-AI, context window)
+- /gsd:config --advanced — power-user tuning (plan bounce, timeouts, branch templates, cross-AI, context window, model policy)
 ```
 </step>
 
