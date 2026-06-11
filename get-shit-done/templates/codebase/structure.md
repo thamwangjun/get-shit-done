@@ -123,7 +123,7 @@ Template for `.planning/codebase/STRUCTURE.md` - captures physical file organiza
 ## Directory Layout
 
 ```
-get-shit-done/
+gsd-core/
 ├── bin/                # Executable entry points
 ├── commands/           # Slash command definitions
 │   └── gsd/           # GSD-specific commands
@@ -228,7 +228,7 @@ get-shit-done/
 
 ## Special Directories
 
-**get-shit-done/**
+**gsd-core/**
 - Purpose: Resources installed to ~/.claude/
 - Source: Copied by bin/install.js during installation
 - Committed: Yes (source of truth)
