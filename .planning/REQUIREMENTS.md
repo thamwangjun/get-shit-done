@@ -11,7 +11,7 @@
 ### Merge Execution
 
 - [x] **MERGE-01**: Before any merge operation, a `pre-merge-v1.3.1-backup` recovery branch exists and a fork-edit inventory (`git diff fa4bba47..HEAD` over fork-owned paths) is captured
-- [ ] **MERGE-02**: Upstream tag `v1.3.1` is merged into the fork via `git merge -s ort` with `diff.renameLimit`/`merge.renameLimit` raised to 5000 (shared-history merge — no `--allow-unrelated-histories`, no pre-renaming the directory)
+- [x] **MERGE-02**: Upstream tag `v1.3.1` is merged into the fork via `git merge -s ort` with `diff.renameLimit`/`merge.renameLimit` raised to 5000 (shared-history merge — no `--allow-unrelated-histories`, no pre-renaming the directory)
 - [ ] **MERGE-03**: All merge conflicts are resolved in documented triage order (`.planning/`+`CLAUDE.md` ours → infrastructure → fork-critical → prompt content per-file → tests → new upstream additions) with incremental committed batches; no single mega-commit and no bulk `-X theirs` on prompt content
 - [ ] **MERGE-04**: `package.json` and `package-lock.json` are reconciled (upstream base + fork-specific values preserved) and the lockfile is cleanly regenerated
 
@@ -25,7 +25,7 @@
 
 - [ ] **PATCH-01**: `bin/install.js` fork patches survive the merge — `ensureHooksDist()`, the six `{{GSD_REPO}}`/`{{GSD_BRANCH}}` replacement sites, and the lib-dir constant — confirmed by grep checks
 - [ ] **PATCH-02**: The fork's SHA-based update-check worker (`isNewer()` via GitHub Commits API) is re-applied over upstream's restructured file; upstream's semver/npm approach is **not** adopted
-- [ ] **PATCH-03**: Fork-only files that upstream deletes are restored, not silently dropped — `CLAUDE.md`, `.planning/`, `CATALOGUE.json`
+- [x] **PATCH-03**: Fork-only files that upstream deletes are restored, not silently dropped — `CLAUDE.md`, `.planning/`, `CATALOGUE.json`
 - [ ] **PATCH-04**: Fork `bin/lib` additions (`parseModelEffort()`, `resolveReasoningEffortInternal()`, `EFFORT_SET`, `*_effort` init fields) are ported to the corresponding `src/*.cts` TypeScript sources (ADR-457 — no three-way merge possible)
 
 ### Guard Integrity
@@ -36,7 +36,7 @@
 ### SDK Capability Preservation
 
 - [x] **SDK-01**: Before accepting upstream's `sdk/` deletion, the fork's `sdk/` capability (`session-runner.ts`, `config.ts`, `model-catalog.ts`, `ws-transport.ts`, and supporting modules) is documented in full detail — purpose, public surface, behavior, and integration points — sufficient for a future milestone to restore the feature compatibly with upstream
-- [ ] **SDK-02**: Upstream's `sdk/` deletion is accepted (after SDK-01 documentation is captured), resolving the delete/modify conflicts in upstream's favor
+- [x] **SDK-02**: Upstream's `sdk/` deletion is accepted (after SDK-01 documentation is captured), resolving the delete/modify conflicts in upstream's favor
 
 ### Verification
 
@@ -71,7 +71,7 @@ Which phases cover which requirements. Populated during roadmap creation.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | MERGE-01 | Phase 68 | Complete |
-| MERGE-02 | Phase 69 | Pending |
+| MERGE-02 | Phase 69 | Complete |
 | MERGE-03 | Phase 69 | Pending |
 | MERGE-04 | Phase 69 | Pending |
 | RENAME-01 | Phase 71 | Pending |
@@ -79,12 +79,12 @@ Which phases cover which requirements. Populated during roadmap creation.
 | RENAME-03 | Phase 70 | Pending |
 | PATCH-01 | Phase 70 | Pending |
 | PATCH-02 | Phase 70 | Pending |
-| PATCH-03 | Phase 69 | Pending |
+| PATCH-03 | Phase 69 | Complete |
 | PATCH-04 | Phase 70 | Pending |
 | GUARD-01 | Phase 70 | Pending |
 | GUARD-02 | Phase 70 | Pending |
 | SDK-01 | Phase 68 | Complete |
-| SDK-02 | Phase 69 | Pending |
+| SDK-02 | Phase 69 | Complete |
 | VERIFY-01 | Phase 71 | Pending |
 | VERIFY-02 | Phase 71 | Pending |
 
