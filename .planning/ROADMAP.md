@@ -341,7 +341,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 69-02-PLAN.md — Tier 2: infrastructure — package.json sacred-field reconcile + clean lockfile regen, install.js/hooks fork patches
+- [x] 69-02-PLAN.md — Tier 2: infrastructure — package.json sacred-field reconcile + clean lockfile regen, install.js/hooks fork patches
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -939,7 +939,7 @@ Plans:
 | 66. Citation Cleanup | v2.1.0-g | 4/4 | Complete    | 2026-06-09 |
 | 67. Full Verification | v2.1.0-g | 1/1 | Complete    | 2026-06-10 |
 | 68. Pre-Merge Inventory, Backup & SDK Capture | v2.3.1-a | 2/2 | Complete   | 2026-06-11 |
-| 69. Merge Execution & Ordered Conflict Resolution | v2.3.1-a | 1/8 | In Progress|  |
+| 69. Merge Execution & Ordered Conflict Resolution | v2.3.1-a | 2/8 | In Progress|  |
 | 70. Fork-Patch Restoration & TypeScript Port | v2.3.1-a | 0/0 | Not started | - |
 | 71. Rename Sweep & Post-Merge Verification | v2.3.1-a | 0/0 | Not started | - |
 
