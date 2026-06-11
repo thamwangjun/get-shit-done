@@ -10,7 +10,7 @@ A non-committing trial merge (`git merge --no-commit --no-ff -s ort 1bb253c9`) w
 
 **The single most important discovery:** upstream `v1.3.1` has **already performed the `get-shit-done/` → `gsd-core/` directory rename** (and folded `sdk/` into `gsd-core/bin/`). This is why the fork's `get-shit-done/bin/lib/*.cjs` appear as `UD` (deleted by them) while a parallel populated `gsd-core/` tree appears as `UU`/added. Phase 69 must NOT adopt that rename (MERGE-02 forbids pre-renaming; Phase 71 owns it). For Phase 69, fork-owned `get-shit-done/` paths that upstream "deleted" via rename are **fork-only files to RESTORE** (`git checkout --ours` / re-add HEAD version), and the incoming `gsd-core/` tree is **new upstream additions** accepted as-is. The directory reconciliation itself is deferred — Phase 69 only lands a clean, committed merge with both trees present, fork patches preserved.
 
-**Primary recommendation:** Resolve in the locked triage order with **per-file commits** (D-03). Accept `sdk/` deletion wholesale (SDK-01 doc already committed at `.planning/milestones/v2.3.1-a-phases/68-.../68-SDK-CAPABILITY.md`). Restore fork-only `get-shit-done/bin/lib/*.cjs`, `CLAUDE.md`, `CATALOGUE.json`, `.planning/` to their HEAD content. Reconcile `package.json` to upstream base + sacred fork fields, then regenerate the lockfile cleanly.
+**Primary recommendation:** Use the git-correct **two-step model** (see "Merge Mechanics — two-step model" below). **Step A:** land the SINGLE merge commit via a mechanical fork-preserving resolution of all 311 conflicts (keep OURS for fork-owned files, `git rm` sdk/, accept gsd-core/ + added-by-them additive) — this is the FIRST successful commit and carries 2nd parent 1bb253c9. **Step B:** integrate upstream's functional changes INTO the fork files as ordinary per-file follow-up commits, in locked triage order (D-03). Accept `sdk/` deletion wholesale (SDK-01 doc already committed at `.planning/milestones/v2.3.1-a-phases/68-.../68-SDK-CAPABILITY.md`). Restore fork-only `get-shit-done/bin/lib/*.cjs`, `CLAUDE.md`, `CATALOGUE.json`, `.planning/` to their HEAD content. Reconcile `package.json` to upstream base + sacred fork fields, then regenerate the lockfile cleanly.
 
 ## User Constraints (from CONTEXT.md)
 
@@ -19,7 +19,10 @@ A non-committing trial merge (`git merge --no-commit --no-ff -s ort 1bb253c9`) w
 - **D-02:** Hand-merge depth = integrate upstream changes while preserving all fork patches. Do **NOT** apply the fork's positive-framing/quality-bar conformance during this merge — that is a separate future milestone, not Phase 69/70/71.
 - **D-03:** **Per-file commits everywhere** for conflict resolution across all triage tiers. Triage *order* governs the sequence.
 - **D-04:** Fork identity fields are **sacred** on `package.json` conflict: `name` (`get-shit-done-cc`), the `bin` map (`get-shit-done-redux`, `gsd-sdk`, `gsd-tools`), `repository.url`, and fork `version`. Take upstream for genuinely new deps/scripts/engines unless they break the fork. Regenerate the lockfile cleanly (`npm install` exits 0, no churn on a second run).
-- **D-05:** **Abort-and-restart before commits.** Any resolution mistake caught before a resolution commit lands → `git merge --abort` and restart. `pre-merge-v1.3.1-backup` is the hard recovery anchor.
+- **D-05:** **Abort-and-restart before commits.** Any resolution mistake caught before the merge commit lands → `git merge --abort` and restart. `pre-merge-v1.3.1-backup` is the hard recovery anchor.
+- **D-06:** **Single merge commit, committed FIRST.** Git refuses to commit while ANY unmerged path remains, and the FIRST successful commit after a `--no-commit` merge IS the merge commit (it consumes MERGE_HEAD and records 2nd parent 1bb253c9). Therefore the merge commit must be a complete, mechanical fork-preserving resolution of the whole conflict set, landed as one commit. Per-file commits CANNOT interleave with an unmerged index.
+- **D-07:** **Per-path resolution for the merge commit, not merge-level `-X`.** The mechanical fork-preserving resolution keeps the fork side per-path (`git checkout --ours <file>` + `git add`) and accepts deletions/additions per-path — it does NOT pass `-X ours` or `-X theirs` to the merge.
+- **D-08:** **Step B follow-ups are ordinary single-parent commits.** After the merge commit lands (MERGE_HEAD cleared), upstream's functional changes are integrated as ordinary per-file commits. No Step B commit references MERGE_HEAD or runs `git merge --continue`.
 
 ### Claude's Discretion
 - Exact per-file ordering *within* each triage tier (tier order itself is locked by MERGE-03).
@@ -36,7 +39,7 @@ A non-committing trial merge (`git merge --no-commit --no-ff -s ort 1bb253c9`) w
 | ID | Description | Research Support |
 |----|-------------|------------------|
 | MERGE-02 | Merge `v1.3.1` via `git merge -s ort`, renameLimit 5000, shared history (no `--allow-unrelated-histories`, no pre-rename) | Trial merge confirmed shared-history `-s ort` runs; `diff.renameLimit`/`merge.renameLimit` both read `5000`; `1bb253c9` reachable. The merge commit's 2nd parent will be `1bb253c9`. |
-| MERGE-03 | Resolve all conflicts in triage order, incremental commits, no mega-commit, no bulk `-X theirs` on prompt content | Per-tier conflict table below assigns every one of the 311 conflicts + 513 additions to a tier. Per-file commits (D-03). |
+| MERGE-03 | Resolve all conflicts in triage order, incremental commits, no mega-commit, no bulk `-X theirs` on prompt content | The single merge commit (Step A) + the many per-file follow-up commits (Step B, one per integrated file) give >1 resolution commit with no mega-commit. Per-file commits (D-03). |
 | MERGE-04 | Reconcile `package.json`/`package-lock.json`; regenerate lockfile cleanly | package.json conflict regions enumerated below; upstream renamed to `@opengsd/gsd-core` v1.3.1 — fork sacred fields documented. |
 | PATCH-03 | Restore fork-only files upstream deletes: `CLAUDE.md`, `.planning/`, `CATALOGUE.json` | `CLAUDE.md`/`CATALOGUE.json` are absent from upstream tree → auto-kept (no conflict). `.planning/` is fork-only → no conflict. Explicit `ls` verification still required. |
 | SDK-02 | Accept upstream `sdk/` deletion, resolving delete/modify in upstream's favor | 293 staged `sdk/` deletions + 62 `UD` modify/delete + 7 renames into `gsd-core/bin/shared/`. SDK-01 doc committed at `68-SDK-CAPABILITY.md`. |
@@ -46,7 +49,7 @@ A non-committing trial merge (`git merge --no-commit --no-ff -s ort 1bb253c9`) w
 | Capability | Primary Tier | Secondary Tier | Rationale |
 |------------|-------------|----------------|-----------|
 | Merge execution & abort/recovery | Git VCS (local) | — | `-s ort`, shared history, backup branch anchor |
-| Conflict resolution ordering | Human/agent triage | Git index | Locked tier order; per-file commits |
+| Conflict resolution ordering | Human/agent triage | Git index | Locked tier order; single merge commit + per-file follow-ups |
 | Identity preservation | `package.json` reconciliation | lockfile regen | Fork name/bin/repo/version are sacred |
 | Fork-only file survival | Working tree restore | Git index | Restore HEAD content of files upstream "deleted" |
 
@@ -66,7 +69,7 @@ No `## Package Legitimacy Audit` needed — phase installs no external packages.
 
 **Totals from trial merge:** 311 unmerged paths (207 `UU` + 84 `UD` + 6 `DU` + 14 `AA`/`AU`) + 513 added-by-them (new, no conflict) + 183 rename detections.
 
-> Per-file commits (D-03) apply to all *resolved conflicts*. New additions (Tier 6) and clean staged deletions (sdk/) can be batched per-group since they carry no conflict markers — but tier ORDER is still honored.
+> Per-file commits (D-03) apply to all *upstream functional integrations* in Step B (ordinary commits after the merge commit). The merge commit itself (Step A) is ONE commit that mechanically resolves the entire conflict set to the fork-preserving / additive state. New additions (Tier 6) and clean staged deletions (sdk/) carry no conflict markers and are resolved inside the single merge commit; tier ORDER governs the Step B follow-up sequence.
 
 ### Tier 1 — `.planning/` + `CLAUDE.md` (resolve OURS)
 | File | Conflict class | Action |
@@ -92,7 +95,7 @@ No `## Package Legitimacy Audit` needed — phase installs no external packages.
 | `rollout-next-phase1.sh`, `rollout-next-phase2.sh` | `AA` | Resolve add/add |
 
 ### Tier 3 — Fork-critical files (fork-only files upstream "deleted" via rename → RESTORE)
-> Upstream renamed `get-shit-done/` → `gsd-core/`. These `UD` (deleted-by-them) entries are the fork's live `get-shit-done/bin/lib/*` modules. Phase 69 does NOT adopt the rename → restore HEAD versions.
+> Upstream renamed `get-shit-done/` → `gsd-core/`. These `UD` (deleted-by-them) entries are the fork's live `get-shit-done/bin/lib/*` modules. Phase 69 does NOT adopt the rename → restore HEAD versions. These are fork-ONLY files with no upstream counterpart at `get-shit-done/`, so the merge commit's OURS resolution restores them and there is NO upstream functional change to integrate in Step B.
 
 | File | Conflict class | Action |
 |------|---------------|--------|
@@ -111,34 +114,36 @@ No `## Package Legitimacy Audit` needed — phase installs no external packages.
 *(These 10 `get-shit-done/bin/lib/*` files are the headline restore set; the full `get-shit-done/` corpus — workflows, references, templates — appears as `UU` because upstream's `gsd-core/` rename pairs with them. See Tier 4.)*
 
 ### Tier 4 — Prompt content (per-file hand-merge, D-01/D-02)
-Two parallel trees conflict because of upstream's rename. **For Phase 69, hand-merge the fork's `get-shit-done/` + `agents/` + `commands/gsd/` files (preserve fork patches), and accept the new `gsd-core/` tree as upstream additions (Tier 6).** The directory reconciliation is Phase 71.
+Two parallel trees conflict because of upstream's rename. **For Phase 69, the merge commit keeps the fork's `get-shit-done/` + `agents/` + `commands/gsd/` files OURS, and accepts the new `gsd-core/` tree additively (Tier 6). Step B then folds upstream's functional changes (extracted from the renamed `gsd-core/` counterpart) into the fork files per-file.** The directory reconciliation is Phase 71. To extract upstream's functional change for a renamed file: `git diff $(git merge-base HEAD 1bb253c9):get-shit-done/<path> 1bb253c9:gsd-core/<path>`.
 
 | Group | Count | Conflict class | Action |
 |-------|-------|---------------|--------|
-| `agents/gsd-*.md` (11 files: debugger, debug-session-manager, doc-writer, executor, intel-updater, phase-researcher, plan-checker, planner, research-synthesizer, user-profiler, verifier) | 11 | `UU` | Hand-merge per-file (D-01) |
-| `commands/gsd/*.md` | ~67 | `UU` | Hand-merge per-file |
-| `get-shit-done/workflows/*.md` | (paired with `gsd-core/workflows/*` UU) | `UU` | Hand-merge fork file; new `gsd-core/workflows/*` are Tier 6 additions |
-| `get-shit-done/references/*.md` | `UU` | Hand-merge per-file |
-| `get-shit-done/templates/*.md` | `UU` | Hand-merge per-file |
+| `agents/gsd-*.md` (11 files: debugger, debug-session-manager, doc-writer, executor, intel-updater, phase-researcher, plan-checker, planner, research-synthesizer, user-profiler, verifier) | 11 | `UU` | Hand-merge per-file (D-01) — Step B |
+| `commands/gsd/*.md` | ~67 | `UU` | Hand-merge per-file — Step B |
+| `get-shit-done/workflows/*.md` (paired with `gsd-core/workflows/*` UU) | | `UU` | Hand-merge fork file; new `gsd-core/workflows/*` are Tier 6 additions |
+| `get-shit-done/references/*.md` | | `UU` | Hand-merge per-file |
+| `get-shit-done/templates/*.md` | | `UU` | Hand-merge per-file |
 | `gsd-core/workflows/**`, `gsd-core/references/**`, `gsd-core/templates/**`, `gsd-core/bin/**` | ~150 `UU` + `AU` | Accept upstream (new rename target tree) — Tier 6 |
 | `docs/**` (USER-GUIDE, CONFIGURATION, adr/, prd/, agents/, zh-CN/, branching) | ~14 `UU`/`AA` | Hand-merge / accept |
 | `README*.md` (en, ja-JP, ko-KR, pt-BR, zh-CN) | 5 | `UU` | Hand-merge |
-| `CONTRIBUTING.md` | `UU` | Hand-merge |
+| `CONTRIBUTING.md` | | `UU` | Hand-merge |
+
+**Tier 4 is split across three sequential plans** so no single plan integrates ~150 files: 69-04a (agents/ + commands/gsd/), 69-04b (get-shit-done/ workflows/references/templates), 69-04c (docs/ + READMEs + CONTRIBUTING.md).
 
 ### Tier 5 — Tests
 | Group | Count | Conflict class | Action |
 |-------|-------|---------------|--------|
-| Content-conflict test files (`plan-review-convergence`, `semver-compare`, `ultraplan-phase`, `windows-test-parity-guard`, `workflow-size-budget`, `workspace`, `worktree-cleanup`, `worktree-safety`, etc.) | ~12 | `UU` | Hand-merge (tests may fail — verification is structural, not green-suite) |
-| `tests/*.test.cjs` deleted-by-them (`bug-3751-init-local-agents`, `cjs-sdk-bridge-integration`, `config-schema-sdk-parity`, `configuration-generator`, `gen-staleness-check`, `lint-shared-module-handsync`, `project-root-generator`, `state-document-generator`, `workstream-inventory-builder-generator`) | 9 | `UD` | RESTORE fork test (these test fork-only `bin/lib` modules) — Phase 70 repairs require paths |
-| `tests/*.test.cjs` deleted-by-us / upstream kept (`execute-phase-step-5-5-deviation-doc`) | 1 | `DU` | Decide per-file: accept upstream deletion if fork no longer needs it |
-| `tests/bug-*.test.cjs` add/add (`bug-170`, `bug-17`, `bug-224`, `bug-33`) | 4 | `AA` | Resolve add/add |
+| Content-conflict test files (`plan-review-convergence`, `semver-compare`, `ultraplan-phase`, `windows-test-parity-guard`, `workflow-size-budget`, `workspace`, `worktree-cleanup`, `worktree-safety`, etc.) | ~12 | `UU` | Hand-merge — Step B (tests may fail — verification is structural, not green-suite) |
+| `tests/*.test.cjs` deleted-by-them (`bug-3751-init-local-agents`, `cjs-sdk-bridge-integration`, `config-schema-sdk-parity`, `configuration-generator`, `gen-staleness-check`, `lint-shared-module-handsync`, `project-root-generator`, `state-document-generator`, `workstream-inventory-builder-generator`) | 9 | `UD` | RESTORE fork test (these test fork-only `bin/lib` modules) — restored in the merge commit; Phase 70 repairs require paths |
+| `tests/*.test.cjs` deleted-by-us / upstream kept (`execute-phase-step-5-5-deviation-doc`) | 1 | `DU` | Resolve per-file: keep fork deletion (`git rm`) for the merge commit; fold upstream content in Step B if needed |
+| `tests/bug-*.test.cjs` add/add (`bug-170`, `bug-17`, `bug-224`, `bug-33`) | 4 | `AA` | Resolve add/add mechanically in the merge commit; fold upstream functional content in Step B |
 
 ### Tier 6 — New upstream additions (no conflict — 513 files)
-Accept as-is. Includes the entire incoming `gsd-core/` rename tree, new `docs/`, new `tests/bug-*`, new `sdk/`-derived `gsd-core/bin/shared/*.json` (via rename), changeset infra. Batch-stage acceptable (no markers); honor tier order (last).
+Accept as-is inside the single merge commit. Includes the entire incoming `gsd-core/` rename tree, new `docs/`, new `tests/bug-*`, new `sdk/`-derived `gsd-core/bin/shared/*.json` (via rename), changeset infra. Resolved additively in the merge commit; no Step B integration needed.
 
 ### Separate: `sdk/` deletion to ACCEPT (SDK-02)
 - **293** staged clean deletions (`D `) + **62** `UD` modify/delete + **7** renames (`sdk/shared/*.json` → `gsd-core/bin/shared/*.json`).
-- **Action:** Accept all deletions (`git rm` the `UD` paths; the clean `D ` deletions are already staged). After merge: `ls sdk/` must return "No such file or directory".
+- **Action:** Accept all deletions inside the merge commit (`git rm` the `UD` paths; the clean `D ` deletions are already staged). After merge: `ls sdk/` must return "No such file or directory".
 - SDK-01 documentation already committed: `.planning/milestones/v2.3.1-a-phases/68-pre-merge-inventory-backup-sdk-capture/68-SDK-CAPABILITY.md` — restoration-grade record consulted before accepting deletion. Dependency satisfied.
 
 ## package.json / package-lock.json Reconciliation (MERGE-04 / D-04)
@@ -157,23 +162,42 @@ Accept as-is. Includes the entire incoming `gsd-core/` rename tree, new `docs/`,
 | `repository.url` | fork URL (current fork value, NOT `open-gsd/gsd-core`) |
 | `version` | fork version (NOT `1.3.1`) |
 
-**Reconcile to:** upstream base + the four sacred fork values above. Take upstream's genuinely new dependencies / scripts / engines **unless they break the fork**. NOTE: upstream's c8 `--include 'gsd-core/bin/lib/*.cjs'` and bin path `gsd-core/bin/...` point at the renamed dir — the fork's tools still live at `get-shit-done/bin/` for Phase 69. Keep fork's bin map values (sacred); coverage glob/path repointing is **Phase 71**, not 69. Do not pre-rename to satisfy upstream's paths.
+**Reconcile to:** upstream base + the four sacred fork values above. Take upstream's genuinely new dependencies / scripts / engines **unless they break the fork**. NOTE: upstream's c8 `--include 'gsd-core/bin/lib/*.cjs'` and bin path `gsd-core/bin/...` point at the renamed dir — the fork's tools still live at `get-shit-done/bin/` for Phase 69. Keep fork's bin map values (sacred); coverage glob/path repointing is **Phase 71**, not 69. Do not pre-rename to satisfy upstream's paths. The package.json reconciliation is a Step B follow-up commit (Tier 2 slot, 69-02) — it edits the OURS package.json the merge commit preserved.
 
 **Lockfile regeneration (clean-regen criterion):**
-1. Resolve `package.json` first and commit (per-file, Tier 2).
+1. Reconcile `package.json` first and commit (per-file, Tier 2 / 69-02, ordinary follow-up commit).
 2. Delete `package-lock.json` (or take one side), run `npm install` → must exit 0.
 3. Run `npm install` a **second** time → zero lockfile churn (no diff). This is the MERGE-04 acceptance test.
-4. Note `sdk/package.json` + `sdk/package-lock.json` are `UD` (upstream deleted sdk/) → accept deletion; no workspace lockfile to reconcile for the deleted SDK.
+4. Note `sdk/package.json` + `sdk/package-lock.json` are `UD` (upstream deleted sdk/) → accept deletion in the merge commit; no workspace lockfile to reconcile for the deleted SDK.
 
-## Merge Mechanics — delete/modify resolution (the load-bearing detail)
+## Merge Mechanics — two-step model (the load-bearing detail)
+
+**Verified in a scratch repo:** (a) `git commit` refuses while ANY unmerged path remains (exit 128: "Committing is not possible because you have unmerged files"); (b) the FIRST successful commit after `git merge --no-commit` IS the merge commit — it consumes MERGE_HEAD, records the 2nd parent (1bb253c9), and clears MERGE_HEAD immediately. **Consequence:** per-file commits CANNOT interleave while MERGE_HEAD is still set, and there is no multi-plan "merge in progress" state. The earlier assumption that per-file commits land while MERGE_HEAD stays set is FALSE and has been removed.
+
+**Step A — land the single merge commit (mechanical fork-preserving resolution):**
+1. `git merge --no-commit --no-ff -s ort 1bb253c9` (stops on the 311 conflicts).
+2. Resolve EVERY conflict for the merge commit MECHANICALLY, integrating NO upstream functional changes yet (per-path, NOT merge-level `-X`):
+   - conflicted fork-owned files (`UU` on agents/, commands/gsd/, get-shit-done/, infra, docs, READMEs, root CONTEXT.md, package.json) → keep FORK side (`git checkout --ours <file>` + `git add`).
+   - fork `get-shit-done/bin/lib/*` and fork-only tests (`UD`) → restore fork (`git checkout --ours` + `git add`).
+   - all `sdk/**` (`UD` + staged `D`) → accept deletion (`git rm`).
+   - `gsd-core/**` and the 513 added-by-them files → accept additively (`git checkout --theirs` / `git add`).
+   - `AA`/`DU` → resolve mechanically to the fork-preserving state (keep OURS / keep fork deletion).
+3. Stage all, then `git commit` → THIS is the single merge commit (2nd parent 1bb253c9, MERGE_HEAD cleared). Working tree = fork unchanged + upstream additions present + sdk/ gone.
+
+**Step B — integrate upstream functional changes as ordinary per-file follow-up commits (triage order, D-03):**
+For each conflicted fork-owned file, hand-merge upstream's functional changes INTO the fork file. Diff upstream against the merge-base to see what upstream changed (`git diff $(git merge-base HEAD 1bb253c9) 1bb253c9 -- <path>`, or for renamed get-shit-done/ files diff against the `gsd-core/` counterpart); apply those functional changes while preserving fork patches; do NOT apply positive-framing/quality conformance. Commit EACH file individually in triage order (ordinary single-parent commits — MERGE_HEAD is already gone): Tier 2 infra + package.json + lockfile (69-02) → Tier 3 fork-critical confirm (69-03; fork-only files, no upstream counterpart, nothing to integrate) → Tier 4 prompt content per-file (69-04a/b/c) → Tier 5 tests (69-05).
+
+Result over the phase range: 1 merge commit + N per-file follow-up commits = ">1 resolution commit, no mega-commit" (MERGE-03). The 2nd-parent check belongs to the merge commit; the ">1 resolution commit" check belongs to the overall `git log` over the phase range (69-06).
+
+### delete/modify resolution table
 
 | Situation | git status code | Meaning | Resolution command |
 |-----------|----------------|---------|---------------------|
 | Upstream deleted, fork modified, fork file should STAY | `UD` | "deleted by them" | `git checkout --ours <file>` then `git add <file>` (restores HEAD version) — used for `get-shit-done/bin/lib/*`, fork-only tests |
 | Upstream deleted, fork modified, ACCEPT deletion | `UD` | "deleted by them" | `git rm <file>` — used for all `sdk/**` `UD` paths |
 | Fork deleted, upstream modified | `DU` | "deleted by us" | per-file: `git rm` (keep deletion) or `git checkout --theirs` + `git add` (take upstream) |
-| Both added | `AA` | "both added" | hand-merge markers, `git add` |
-| Both modified | `UU` | content conflict | hand-merge markers, `git add` |
+| Both added | `AA` | "both added" | merge commit: keep OURS where a fork side exists; fold upstream functional content in Step B |
+| Both modified | `UU` | content conflict | merge commit: `git checkout --ours` + `git add`; fold upstream functional changes in Step B |
 
 ## Common Pitfalls
 
@@ -190,9 +214,9 @@ Accept as-is. Includes the entire incoming `gsd-core/` rename tree, new `docs/`,
 **What goes wrong:** Resolving the lockfile by hand-merging markers leaves it inconsistent with `package.json`; `npm install` rewrites it, failing the no-churn criterion.
 **How to avoid:** Regenerate from scratch after `package.json` is finalized; verify idempotent second run.
 
-### Pitfall 4: Mega-commit / bulk `-X theirs`
-**What goes wrong:** Resolving everything then one `git commit` violates MERGE-03; `-X theirs` on prompt content violates D-01.
-**How to avoid:** Per-file commits in tier order (D-03). Never pass `-X theirs`.
+### Pitfall 4: Mega-commit / bulk `-X theirs` / committing per-file mid-merge
+**What goes wrong:** Resolving everything then one squashed `git commit` of all content violates MERGE-03's "no mega-commit"; `-X theirs` on prompt content violates D-01. Conversely, attempting per-file commits WHILE MERGE_HEAD is set is impossible — git refuses to commit with unmerged paths, so the phase would deadlock.
+**How to avoid:** Land ONE mechanical merge commit (Step A, the FIRST commit), then per-file ordinary follow-up commits in tier order (Step B, D-03). Never pass `-X theirs` to the merge or take `--theirs` on a fork file.
 
 ### Pitfall 5: Expecting a green test suite
 **What goes wrong:** Treating failing tests as a blocker. Verification is structural/grep-based (VERIFY-02). Tests referencing renamed paths WILL fail — that's deferred backlog for Phase 70/71.
@@ -237,7 +261,7 @@ Accept as-is. Includes the entire incoming `gsd-core/` rename tree, new `docs/`,
 |-------|---------|----------------|
 | Shared-history merge landed | `git log --merges -1 --format=%P` | 2nd parent == `1bb253c9` |
 | No unresolved markers | `git status --porcelain` | no `UU`/`UD`/`DU`/`AA` codes |
-| Incremental commits | `git log` over merge range | >1 resolution commit, no mega-commit |
+| Incremental commits | `git log` over merge range | merge commit + per-file follow-ups: >1 resolution commit, no mega-commit |
 | Fork-only files restored | `ls CLAUDE.md CATALOGUE.json .planning/` | all present, non-empty |
 | sdk/ deletion accepted | `ls sdk/` | "No such file or directory" |
 | Lockfile clean | `npm install` ×2 | exit 0, no churn on 2nd run |
@@ -261,12 +285,13 @@ Not applicable in the threat-modeling sense — no auth/crypto/input-validation 
 1. **Exact count of `commands/gsd/*.md` UU conflicts (~67) vs which are pure-fork-only.**
    - What we know: 67 `commands/gsd/*.md` show `UU`.
    - What's unclear: a few may be fork-only additions with no upstream counterpart (would be `AU` not `UU`); the trial showed all as `UU`, so all have an upstream side.
-   - Recommendation: planner produces one per-file commit plan per `UU` file; group the ~150 additive `gsd-core/**` files into a single Tier-6 acceptance step.
+   - Recommendation: the merge commit keeps all fork files OURS; Step B (69-04a) folds upstream functional changes in per-file; group the ~150 additive `gsd-core/**` files into the single merge-commit acceptance.
 
 ## Sources
 
 ### Primary (HIGH confidence)
 - Trial merge on `dev` (`git merge --no-commit --no-ff -s ort 1bb253c9`, aborted clean) — full conflict set, status codes, counts
+- Scratch-repo verification of `--no-commit` merge commit semantics (commit-refuses-with-unmerged-paths; first commit IS the merge commit)
 - `git show 1bb253c9:package.json` — upstream identity/bin/scripts
 - `.planning/REQUIREMENTS.md` (MERGE-02/03/04, PATCH-03, SDK-02), `.planning/ROADMAP.md` Phase 69, `69-CONTEXT.md`
 - `git ls-files` — confirmed `68-SDK-CAPABILITY.md` committed (SDK-01 satisfied)
@@ -275,6 +300,7 @@ Not applicable in the threat-modeling sense — no auth/crypto/input-validation 
 
 **Confidence breakdown:**
 - Conflict set & counts: HIGH — enumerated by real trial merge
+- Merge commit mechanics (two-step model): HIGH — verified in a scratch repo
 - package.json reconciliation: HIGH — upstream values read directly; fork sacred fields from D-04
 - Rename/landmine analysis: HIGH — 183 renames identified, no submodules, no binaries
 - Per-tier assignment: MEDIUM-HIGH — tier boundaries are clear; exact within-tier ordering is discretion
@@ -289,8 +315,9 @@ Not applicable in the threat-modeling sense — no auth/crypto/input-validation 
 
 ### Key Findings
 - Trial merge enumerated **311 conflicts** (207 `UU` + 84 `UD` + 6 `DU` + 14 `AA`/`AU`) + **513 added-by-them** files + **183 renames**; aborted cleanly, HEAD restored to `982420f7`.
+- **Git-correct two-step model:** the SINGLE merge commit is the FIRST successful commit (mechanical fork-preserving resolution of all 311 conflicts); upstream functional changes are then integrated as ordinary per-file follow-up commits in triage order. Per-file commits CANNOT interleave while MERGE_HEAD is set (git refuses to commit with unmerged paths) — verified in a scratch repo.
 - **Upstream v1.3.1 already did the `get-shit-done/`→`gsd-core/` rename** — Phase 69 must RESTORE fork `get-shit-done/` files and accept `gsd-core/` as additive WITHOUT adopting the rename (Phase 71 owns it).
-- `sdk/` fully deleted upstream (293 `D` + 62 `UD` + 7 renames) — ACCEPT; SDK-01 doc already committed at `68-SDK-CAPABILITY.md`.
+- `sdk/` fully deleted upstream (293 `D` + 62 `UD` + 7 renames) — ACCEPT in the merge commit; SDK-01 doc already committed at `68-SDK-CAPABILITY.md`.
 - `CLAUDE.md`/`CATALOGUE.json`/`.planning/` are NOT conflicts — absent from upstream, auto-survive; PATCH-03 satisfied by `ls` presence checks.
 - `package.json` reconciles to upstream `@opengsd/gsd-core` v1.3.1 base + 4 sacred fork fields (name/bin/repo/version); lockfile regen via `npm install` ×2 (no-churn gate).
 
@@ -298,4 +325,5 @@ Not applicable in the threat-modeling sense — no auth/crypto/input-validation 
 `.planning/phases/69-merge-execution-ordered-conflict-resolution/69-RESEARCH.md`
 
 ### Ready for Planning
-Per-tier conflict table provides the planner a direct mapping for per-file commit plans (D-03) in locked triage order.
+Per-tier conflict table provides the planner a direct mapping for the single merge commit (Step A) and per-file follow-up commit plans (Step B, D-03) in locked triage order.
+</content>

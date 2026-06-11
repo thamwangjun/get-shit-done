@@ -313,8 +313,10 @@ Full details below in Phase Details.
 **Plans**: 2 plans
 
 Plans:
+
 - [x] 68-01-PLAN.md — Recovery anchor: backup branch, renameLimit=5000, durable fork-edit inventory diff, architecture decisions (MERGE-01)
 - [x] 68-02-PLAN.md — Restoration-grade documentation of the fork sdk/ capability (SDK-01)
+
 **UI hint**: no
 
 ### Phase 69: Merge Execution & Ordered Conflict Resolution
@@ -331,14 +333,33 @@ Plans:
   5. Upstream's `sdk/` deletion is accepted — `ls sdk/` returns "No such file or directory" — with the delete/modify conflicts resolved in upstream's favor (SDK-01 documentation already captured in Phase 68)
 
 **Plans**: 6 plans (strictly sequential — one stateful git merge, no parallelism)
-
 Plans:
+**Wave 1**
+
 - [ ] 69-01-PLAN.md — Tier 1: start -s ort merge, resolve CONTEXT.md (ours), verify PATCH-03 fork-only files
-- [ ] 69-02-PLAN.md — Tier 2: infrastructure — package.json sacred-field reconcile + clean lockfile regen, install.js/hooks fork patches
-- [ ] 69-03-PLAN.md — Tier 3: restore fork get-shit-done/bin/lib modules (rename not adopted); accept sdk/ deletion
 - [ ] 69-04-PLAN.md — Tier 4: hand-merge prompt content (agents/, commands/gsd/, get-shit-done workflows/refs/templates, docs, READMEs)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 69-02-PLAN.md — Tier 2: infrastructure — package.json sacred-field reconcile + clean lockfile regen, install.js/hooks fork patches
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 69-03-PLAN.md — Tier 3: restore fork get-shit-done/bin/lib modules (rename not adopted); accept sdk/ deletion
+
+**Wave 7** *(blocked on Wave 3 completion)*
+
 - [ ] 69-05-PLAN.md — Tier 5: tests — hand-merge UU, restore fork-only-module UD tests, resolve DU/AA
+
+**Wave 8** *(blocked on Wave 7 completion)*
+
 - [ ] 69-06-PLAN.md — Tier 6: accept upstream additions (additive gsd-core/ tree); close merge; structural phase gate
+
+**Cross-cutting constraints:**
+
+- D-03: every integrated file lands as its own per-file commit
+- D-08: ordinary single-parent per-file follow-up commits AFTER the closed merge (no MERGE_HEAD)
+
 **UI hint**: no
 
 ### Phase 70: Fork-Patch Restoration & TypeScript Port
