@@ -351,7 +351,7 @@ Plans:
 
 **Wave 7** *(blocked on Wave 3 completion)*
 
-- [ ] 69-05-PLAN.md — Tier 5: tests — hand-merge UU, restore fork-only-module UD tests, resolve DU/AA
+- [x] 69-05-PLAN.md — Tier 5: tests — hand-merge UU, restore fork-only-module UD tests, resolve DU/AA
 
 **Wave 8** *(blocked on Wave 7 completion)*
 

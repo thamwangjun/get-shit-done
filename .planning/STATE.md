@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v2.3.1-a
 milestone_name: Refactor Git Commit History
 status: executing
-last_updated: "2026-06-11T09:30:00.000Z"
+last_updated: "2026-06-11T12:00:00.000Z"
 last_activity: 2026-06-11
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 8
-  completed_plans: 5
+  completed_plans: 6
   percent: 0
 ---
 
@@ -25,8 +25,8 @@ See: .planning/PROJECT.md (updated 2026-06-07 after v2.1.0-f milestone start)
 ## Current Position
 
 Phase: 69 (merge-execution-ordered-conflict-resolution) — EXECUTING
-Plan: 6 of 8
-Status: 69-04c (Tier 4c) complete — upstream functional deltas folded into 12 doc/README/CONTRIBUTING files (12 per-file commits); 170 upstream-added files already present from merge; RELEASE-*.md deletion accepted (upstream pruning); fork patches preserved (continuity notice, branding, get-shit-done/ paths); ready for 69-05 (tests)
+Plan: 7 of 8
+Status: 69-05 (Tier 5 tests) complete — upstream functional test changes folded into 4 UU test files (workflow-size-budget, worktree-cleanup, worktree-safety, plus 3 from prior session); 9 fork-only UD tests confirmed present; 2 files skipped (path-rename-only or parallel fork-only); 6 per-file commits total; ready for 69-06 (verification)
 Last activity: 2026-06-11
 
 ## Performance Metrics
