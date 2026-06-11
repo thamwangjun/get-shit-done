@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-06-07 after v2.1.0-f milestone start)
 
 Phase: 69 (merge-execution-ordered-conflict-resolution) — EXECUTING
 Plan: 5 of 8
-Status: 69-04a (Tier 4a) complete — upstream functional deltas folded into agents/ + commands/gsd/ (9 per-file commits); fork patches preserved, no rename adopted; ready for 69-04b (get-shit-done/ workflows/references/templates)
+Status: 69-04b (Tier 4b) complete — fork get-shit-done/{workflows,references,templates,contexts}/ prompt corpus RESTORED (corrective fix for 69-01 rename-adoption defect that deleted 222 fork files) then upstream functional deltas folded into 71 files (72 commits = 1 restore + 71 per-file); fork patches preserved, no rename adopted; ready for 69-04c (docs/READMEs)
 Last activity: 2026-06-11
 
 ## Performance Metrics
@@ -104,8 +104,8 @@ None. Research is HIGH confidence across all five phases.
 
 ## Session Continuity
 
-Last activity: 2026-06-11 — Completed 69-04a (Tier 4a prompt-content hand-merge): folded upstream functional deltas into 7 agents/ + 2 commands/gsd/ files (Write-contract blocks, Edit-tool additions, UAT filename, antigravity review option, config query fix); fork patches preserved (Eta includes, gsd-sdk name, get-shit-done/ paths, positive framing); rename/identity changes NOT adopted; 9 per-file commits; merge stays closed
-Stopped at: 69-04a complete — next is 69-04b (Tier 4b: get-shit-done/ workflows/references/templates)
+Last activity: 2026-06-11 — Completed 69-04b (Tier 4b): CORRECTIVE restore of fork get-shit-done/{workflows,references,templates,contexts}/ prompt corpus (222 files deleted by 69-01 rename adoption) via pre-merge-v1.3.1-backup, then folded upstream functional deltas into 71 files; fork patches preserved (Eta <%~ includes, $GSD_SDK resolver shim, inline worktree guard, get-shit-done/ paths, @opengsd/get-shit-done-redux); rename NOT adopted (Phase 71); skipped worktree-path-safety.md (kept fork inline guard); 72 commits (1 restore + 71 per-file); merge stays closed
+Stopped at: 69-04b complete — next is 69-04c (Tier 4c: docs/READMEs)
 Resume file: None
 
 ## Deferred Items
