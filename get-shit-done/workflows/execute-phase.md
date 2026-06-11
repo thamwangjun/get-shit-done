@@ -1,0 +1,1055 @@
+<purpose>
+Execute all plans in a phase using wave-based parallel execution. Orchestrator coordinates; subagents execute.
+</purpose>
+
+<core_principle>
+Orchestrator: discover plans → analyze deps → group waves → spawn agents → handle checkpoints → collect results.
+Subagents load full execute-plan context; orchestrator stays lean (~10-15% for 200k models).
+</core_principle>
+
+<runtime_compatibility>
+**Claude Code:** Uses `Agent(subagent_type="gsd-executor", ...)` — blocks until complete.
+**Copilot:** No reliable completion signals. Use sequential inline execution: read execute-plan.md directly per plan. Only attempt parallel spawning when the user explicitly requests it — and in that case, rely on the spot-check fallback (commits visible + SUMMARY.md exists) to detect completion; do not trust the signal alone.
+**Other runtimes:** If Agent unavailable, use sequential inline as fallback. Check at runtime.
+**Fallback rule:** If spawned agent finishes (commits visible, SUMMARY.md exists) but signal not received, treat as successful via spot-check. Never block indefinitely — verify via git state.
+</runtime_compatibility>
+
+<required_reading>
+Read STATE.md before operations.
+<%~ include('get-shit-done/references/agent-contracts.md') %>
+<%~ include('get-shit-done/references/context-budget.md') %>
+<%~ include('get-shit-done/references/gates.md') %>
+</required_reading>
+
+<available_agent_types>
+These are the valid GSD subagent types registered in .claude/agents/ (or equivalent for your runtime).
+Always use the exact name from this list — do not fall back to 'general-purpose' or other built-in types:
+
+- gsd-executor — Executes plan tasks, commits, creates SUMMARY.md
+- gsd-verifier — Verifies phase completion, checks quality gates
+- gsd-planner — Creates detailed plans from phase scope
+- gsd-phase-researcher — Researches technical approaches for a phase
+- gsd-plan-checker — Reviews plan quality before execution
+- gsd-debugger — Diagnoses and fixes issues
+- gsd-codebase-mapper — Maps project structure and dependencies
+- gsd-integration-checker — Checks cross-phase integration
+- gsd-nyquist-auditor — Validates verification coverage
+- gsd-ui-researcher — Researches UI/UX approaches
+- gsd-ui-checker — Reviews UI implementation quality
+- gsd-ui-auditor — Audits UI against design requirements
+</available_agent_types>
+
+<process>
+
+<step name="parse_args" priority="first">
+Parse `$ARGUMENTS`:
+- First positional → `PHASE_ARG`
+- `--wave N` → `WAVE_FILTER`
+- `--gaps-only` → keep current meaning
+- `--cross-ai` → `CROSS_AI_FORCE=true`
+- `--no-cross-ai` → `CROSS_AI_DISABLED=true`
+
+If `--wave` is absent, preserve the current behavior of executing all incomplete waves in the phase.
+</step>
+
+<step name="initialize" priority="first">
+Load context in one call:
+```bash
+GSD_TOOLS="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}/get-shit-done/bin/gsd-tools.cjs"
+if [ -f "$GSD_TOOLS" ]; then
+  GSD_SDK="node $GSD_TOOLS"
+elif command -v gsd-sdk >/dev/null 2>&1; then
+  GSD_SDK="gsd-sdk"
+else
+  echo "ERROR: gsd-sdk not found on PATH and $GSD_TOOLS does not exist." >&2
+  echo "Run: npx -y @opengsd/get-shit-done-redux@latest --claude --local" >&2
+  exit 1
+fi
+INIT=$($GSD_SDK query init.execute-phase "${PHASE_ARG}")
+if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
+AGENT_SKILLS=$($GSD_SDK query agent-skills gsd-executor)
+```
+
+Parse JSON for: `executor_model`, `executor_effort`, `verifier_model`, `verifier_effort`, `commit_docs`, `parallelization`, `branching_strategy`, `branch_name`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `plans`, `incomplete_plans`, `plan_count`, `incomplete_count`, `state_exists`, `roadmap_exists`, `phase_req_ids`, `response_language`.
+
+**Model resolution:** If `executor_model` is `"inherit"`, omit `model=` param — Claude Code inherits orchestrator model. Only set `model=` when explicit (e.g., `"claude-sonnet-4-6"`).
+
+**Effort resolution:**
+```bash
+executor_model_effort_arg=$([ -n "$executor_effort" ] && [ "$executor_effort" != "null" ] && echo "effort=\"$executor_effort\"" || echo "")
+verifier_model_effort_arg=$([ -n "$verifier_effort" ] && [ "$verifier_effort" != "null" ] && echo "effort=\"$verifier_effort\"" || echo "")
+```
+
+**If `response_language` is set:** Include `response_language: {value}` in all spawned subagent prompts so any user-facing output stays in the configured language.
+
+Read runtime config; fail if incompatible:
+```bash
+RUNTIME=$($GSD_SDK query config-get runtime --default claude 2>/dev/null || echo "claude")
+USE_WORKTREES=$($GSD_SDK query config-get workflow.use_worktrees 2>/dev/null || echo "true")
+EXECUTOR_STALL_INTERVAL_MINUTES=$($GSD_SDK query config-get executor.stall_detect_interval_minutes 2>/dev/null || echo "5")
+EXECUTOR_STALL_THRESHOLD_MINUTES=$($GSD_SDK query config-get executor.stall_threshold_minutes 2>/dev/null || echo "10")
+
+if [ "$RUNTIME" = "codex" ] && [ "$USE_WORKTREES" != "false" ]; then
+  echo "FATAL: Codex worktree isolation unsupported. Set workflow.use_worktrees=false or use compatible runtime." >&2; exit 1
+fi
+[ "$USE_WORKTREES" != "false" ] && $GSD_SDK query worktree.reap-orphans 2>/dev/null || true
+```
+
+**Submodule handling:** Parse submodule paths once; intersect per-plan with files_modified to decide worktree isolation per-plan.
+```bash
+if [ -f .gitmodules ]; then
+  SUBMODULE_PATHS=$(git config --file .gitmodules --get-regexp '^submodule\..*\.path$' 2>/dev/null | awk '{print $2}')
+else
+  SUBMODULE_PATHS=""
+fi
+```
+`SUBMODULE_PATHS` is exported to the `execute_waves` step, where the per-plan decision actually happens (see "Per-plan worktree decision" sub-step inside `execute_waves`). The decision is per-plan because different plans in the same wave can touch different files — only plans whose paths intersect a submodule must drop worktree isolation; plans nowhere near a submodule keep parallel isolation.
+
+When `USE_WORKTREES` (project-level) is `false`, all executor agents run without `isolation="worktree"` — they execute sequentially on the main working tree instead of in parallel worktrees. The per-plan decision below has no effect when worktrees are project-disabled.
+
+Cross-phase context files (prior-wave SUMMARY.md, phase CONTEXT.md/RESEARCH.md, REQUIREMENTS.md) are listed in each subagent's files_to_read and read at execution start — they are always provided. Reference files load on demand by need:
+
+- Executors consult `@~/.claude/get-shit-done/references/executor-examples.md` when handling a deviation from the plan or executing a task that carries a checkpoint (the file holds extended deviation-rule and checkpoint examples).
+- Planners consult `@~/.claude/get-shit-done/references/planner-antipatterns.md` when checking a plan for anti-patterns or tightening task specificity (the file holds extended anti-pattern lists and specificity examples).
+
+**If `phase_found` is false:** Error — phase directory not found.
+**If `plan_count` is 0:** Error — no plans found in phase.
+**If `state_exists` is false but `.planning/` exists:** Offer reconstruct or continue.
+
+When `parallelization` is false, plans within a wave execute sequentially.
+
+**REQUIRED — Sync chain flag with intent.** If user invoked manually (no `--auto`), clear the ephemeral chain flag from any previous interrupted `--auto` chain. This prevents stale `_auto_chain_active: true` from causing unwanted auto-advance. This does NOT touch `workflow.auto_advance` (the user's persistent settings preference). You MUST execute this bash block before any config reads:
+```bash
+# REQUIRED: prevents stale auto-chain from previous --auto runs
+if [[ ! "$ARGUMENTS" =~ --auto ]]; then
+  $GSD_SDK query config-set workflow._auto_chain_active false || true
+fi
+```
+
+**MVP+TDD mode:**
+```bash
+MVP_FLAG_ARG=""
+[[ "$ARGUMENTS" =~ (^|[[:space:]])--mvp([[:space:]]|$) ]] && MVP_FLAG_ARG="--cli-flag"
+MVP_MODE=$($GSD_SDK query phase.mvp-mode "${PHASE_NUMBER}" $MVP_FLAG_ARG --pick active)
+TDD_MODE=$($GSD_SDK query config-get workflow.tdd_mode 2>/dev/null || echo "false")
+```
+
+**Safe resume gate:** Before trusting `STATE.md` or dispatching any executor, derive `CURRENT_PLAN_ID`
+from the active incomplete plan in `INIT`, then search recent history:
+```bash
+CURRENT_PLAN_ID="{phase_number}-{plan_padded}"
+SUMMARY_PATH="{phase_dir}/{plan_padded}-SUMMARY.md"
+PLAN_COMMITS=$(git log --oneline --grep="${CURRENT_PLAN_ID}" -30)
+```
+If production commits exist and `SUMMARY.md` is missing, stop before spawning a new executor — continuing risks duplicate work and stale `STATE.md`/ROADMAP progress. Offer these recovery options:
+- `close out manually` — inspect commits, write SUMMARY.md, then update STATE/ROADMAP.
+- `re-execute from scratch` — revert or supersede partial commits before dispatch.
+- `mark-and-skip` — record the anomaly and move on only with explicit confirmation.
+
+**MVP+TDD gate.** Task-scoped enforcement runs inside plan execution (immediately before each implementation step), where `TASK_FILE`, `PLAN_ID`, and `TASK_ID` are defined. Keep the same predicate and RED-commit contract:
+```bash
+if [ "$MVP_MODE" = "true" ] && [ "$TDD_MODE" = "true" ]; then
+  IS_BEHAVIOR_ADDING=$($GSD_SDK query task.is-behavior-adding "$TASK_FILE" --pick is_behavior_adding)
+  if [ "$IS_BEHAVIOR_ADDING" = "true" ]; then
+    RED_COMMIT=$(git log --oneline --grep="^test(${PHASE_NUMBER}-${PLAN_ID}):" -- "**/*.test.*" "**/*.spec.*" "tests/" | head -1)
+    if [ -z "$RED_COMMIT" ]; then
+      $GSD_SDK query state.update last_gate_trip "${PLAN_ID}/${TASK_ID}" || true
+      echo "MVP+TDD GATE TRIPPED: missing RED commit for ${PLAN_ID}/${TASK_ID}"
+      exit 1
+    fi
+  fi
+fi
+```
+Pure doc-only / config-only / test-only tasks return `is_behavior_adding=false` and are exempt. See `execute-mvp-tdd.md` for the halt report format.
+
+**Copilot sequential detection:**
+Check for `@gsd-executor` pattern or absence of Agent() API. If Copilot, set `COPILOT_SEQUENTIAL=true` and skip `execute_waves` for inline execution.
+</step>
+
+<step name="check_blocking_antipatterns" priority="first">
+**MANDATORY — Check for blocking anti-patterns before any other work.**
+
+Look for a `.continue-here.md` in the current phase directory:
+
+```bash
+ls ${phase_dir}/.continue-here.md 2>/dev/null || true
+```
+
+If `.continue-here.md` exists, parse its "Critical Anti-Patterns" table for rows with `severity` = `blocking`.
+
+**If one or more `blocking` anti-patterns are found:**
+
+This step cannot be skipped. Before proceeding to `check_interactive_mode` or any other step, the agent must demonstrate understanding of each blocking anti-pattern by answering all three questions for each one:
+
+1. **What is this anti-pattern?** — Describe it in your own words, not by quoting the handoff.
+2. **How did it manifest?** — Explain the specific failure that caused it to be recorded.
+3. **What structural mechanism (not acknowledgment) prevents it?** — Name the concrete step, checklist item, or enforcement mechanism that stops recurrence.
+
+Write these answers inline before continuing. If a blocking anti-pattern cannot be answered from the context in `.continue-here.md`, stop and ask the user for clarification.
+
+**If no `.continue-here.md` exists, or no `blocking` rows are found:** Proceed directly to `check_interactive_mode`.
+</step>
+
+<step name="check_interactive_mode">
+Parse `--interactive` flag from $ARGUMENTS.
+
+**If present:** Execute plans sequentially inline (no subagent spawning) with user checkpoints between tasks. For each plan:
+1. Present plan summary; user chooses Execute / Review first / Skip / Stop
+   ```
+   ## Plan {plan_id}: {plan_name}
+   Objective: {from plan file}
+   Tasks: {task_count}
+   Options: Execute / Review first / Skip / Stop
+   ```
+   If "Review first": display the full plan file, then ask again: Execute / Modify / Skip.
+2. If Execute: read execute-plan.md inline, execute tasks one by one
+3. After each task: pause; user can intervene or continue
+4. After plan: show results, commit, create SUMMARY.md
+5. Continue to next plan
+
+Skip to handle_branching step after all plans complete.
+</step>
+
+<step name="handle_branching">
+Check `branching_strategy` from init. **"none":** skip. **"phase" or "milestone":** use `branch_name`.
+
+Fork from origin/HEAD, not current HEAD:
+```bash
+DEFAULT_BRANCH=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's|^origin/||')
+DEFAULT_BRANCH=${DEFAULT_BRANCH:-main}
+
+if git show-ref --verify --quiet "refs/heads/$BRANCH_NAME"; then
+  git switch "$BRANCH_NAME" || { echo "ERROR: Could not switch to '$BRANCH_NAME'." >&2; exit 1; }
+else
+  git fetch --quiet origin "$DEFAULT_BRANCH" || \
+    git show-ref --verify --quiet "refs/remotes/origin/$DEFAULT_BRANCH" || \
+    { echo "ERROR: Cannot create branch without origin/$DEFAULT_BRANCH." >&2; exit 1; }
+  if [ -n "$(git status --porcelain)" ]; then
+    echo "WARNING: Uncommitted changes will be carried onto '$BRANCH_NAME' (branched off origin/$DEFAULT_BRANCH, not previous HEAD)."
+  else
+    git switch --quiet "$DEFAULT_BRANCH" 2>/dev/null && git merge --ff-only --quiet "origin/$DEFAULT_BRANCH" 2>/dev/null || true
+  fi
+  git checkout -b "$BRANCH_NAME" "origin/$DEFAULT_BRANCH" || \
+    { echo "ERROR: Could not create '$BRANCH_NAME' from origin/$DEFAULT_BRANCH." >&2; exit 1; }
+fi
+```
+</step>
+
+<step name="validate_phase">
+Report: "Found {plan_count} plans in {phase_dir} ({incomplete_count} incomplete)"
+Update STATE.md: `$GSD_SDK query state.begin-phase --phase "${PHASE_NUMBER}" --name "${PHASE_NAME}" --plans "${PLAN_COUNT}"`
+</step>
+
+<step name="discover_and_group_plans">
+```bash
+PLAN_INDEX=$($GSD_SDK query phase-plan-index "${PHASE_NUMBER}")
+```
+Parse JSON for: `phase`, `plans[]` (id, wave, autonomous, objective, files_modified, task_count, has_summary), `waves`, `incomplete`.
+
+Skip plans where `has_summary: true`. If `--gaps-only`: skip non-gap_closure. If `WAVE_FILTER`: skip non-matching waves.
+
+**Wave safety:** If `WAVE_FILTER` set and incomplete plans exist in earlier waves, STOP. Do not skip prerequisites.
+
+Report:
+```
+## Execution Plan
+
+**Phase {X}: {Name}** — {total_plans} matching plans across {wave_count} wave(s)
+
+{If WAVE_FILTER is set: `Wave filter active: executing only Wave {WAVE_FILTER}`.}
+
+| Wave | Plans | What it builds |
+|------|-------|----------------|
+| 1 | 01-01, 01-02 | {from plan objectives, 3-8 words} |
+| 2 | 01-03 | ... |
+```
+</step>
+
+<step name="cross_ai_delegation">
+**Skip if** `CROSS_AI_DISABLED=true`. **Force all if** `CROSS_AI_FORCE=true`.
+
+Otherwise: check frontmatter `cross_ai: true` AND config `workflow.cross_ai_execution=true`.
+
+```bash
+CROSS_AI_ENABLED=$($GSD_SDK query config-get workflow.cross_ai_execution 2>/dev/null || echo "false")
+CROSS_AI_CMD=$($GSD_SDK query config-get workflow.cross_ai_command 2>/dev/null || echo "")
+CROSS_AI_TIMEOUT=$($GSD_SDK query config-get workflow.cross_ai_timeout 2>/dev/null || echo "300")
+```
+
+**If no plans marked:** skip to execute_waves.
+
+**If marked but `cross_ai_command` empty:** error — user must set via config.
+
+**Check for dirty working tree before each cross-AI execution:**
+```bash
+if ! git diff --quiet HEAD 2>/dev/null; then
+  echo "WARNING: dirty working tree detected — the external AI command may produce uncommitted changes that conflict with existing modifications"
+fi
+```
+
+**For each cross-ai plan:** Extract objective+tasks from PLAN.md. Pipe to external command via stdin (never shell-interpolate). Capture result:
+```bash
+echo "$TASK_PROMPT" | timeout "${CROSS_AI_TIMEOUT}s" ${CROSS_AI_CMD} > "$CANDIDATE_SUMMARY" 2>"$ERROR_LOG"
+```
+
+**Success (exit 0 + valid SUMMARY.md):** Write SUMMARY.md, update STATE/ROADMAP, skip in execute_waves.
+
+**Failure:** Display error. Offer retry / skip-to-fallback / abort.
+
+**After cross-AI failure:** warn the user about uncommitted changes before retry: "Review `git status` and `git diff` before proceeding — the external command may have left partial edits."
+
+Remove successful plans from execute_waves list.
+</step>
+
+<step name="execute_waves">
+**Stream-idle-timeout prevention:** Emit heartbeat lines `[checkpoint] ...` at wave/plan boundaries (literal text, no tool call).
+
+**For each wave:**
+
+1. **Intra-wave overlap check (BEFORE spawning):** If two plans share files in `files_modified`, flag overlap and force sequential (override `PARALLELIZATION` for this wave). Warn user — planning defect.
+
+2. **Emit wave-start heartbeat:**
+
+   **First, emit the wave-start checkpoint heartbeat as a literal assistant-text
+   line — no tool call. Do NOT skip this even for single-plan waves; it
+   is required before any further reasoning or spawning:**
+
+   `[checkpoint] phase {PHASE_NUMBER} wave {N}/{M} starting, {wave_plan_count} plan(s), {P}/{Q} plans done`
+
+3. **Describe what's being built:** Read each plan's `<objective>`. Extract 2-3 sentences per plan explaining what's built and why.
+
+4. **Per-plan worktree decision:** Execute `get-shit-done/workflows/execute-phase/steps/per-plan-worktree-gate.md` for each plan. Append to `WAVE_WORKTREE_PLANS` if not dropped. Set `USE_WORKTREES_FOR_PLAN` per plan.
+   The dispatch branches in step 5 MUST gate on `USE_WORKTREES_FOR_PLAN` for the current plan, not on the project-level `USE_WORKTREES`.
+
+5. **Spawn executor agents:**
+
+**Emit plan-start heartbeat before each Agent() dispatch:** `[checkpoint] phase {PHASE_NUMBER} wave {N}/{M} plan {plan_id} starting ({P}/{Q} plans done)`
+
+**Worktree mode** (if `USE_WORKTREES_FOR_PLAN` not false):
+
+Capture expected state:
+```bash
+EXPECTED_BASE=$(git rev-parse HEAD)
+DISPATCH_TS=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+EXPECTED_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [ -z "${WAVE_WORKTREE_MANIFEST:-}" ]; then
+  WAVE_WORKTREE_MANIFEST="$(mktemp "${TMPDIR:-/tmp}/gsd-worktree-wave-XXXXXX").json"
+  printf '{"worktrees":[]}\n' > "$WAVE_WORKTREE_MANIFEST"
+  export WAVE_WORKTREE_MANIFEST
+fi
+```
+
+**Sequential dispatch for parallel execution (waves with 2+ agents):**
+Dispatch each `Agent()` call **one at a time with `run_in_background: true`**. Do NOT
+send all Agent calls in a single message: simultaneous `git worktree add` calls race
+on `.git/config.lock`. Agents still run in parallel once their worktrees are created.
+
+```text
+# CORRECT: one Agent() per message with run_in_background: true
+# WRONG: multiple Agent() calls in one message -> .git/config.lock contention
+```
+
+```text
+Agent(
+  subagent_type="gsd-executor",
+  description="Execute plan {plan_number} of phase {phase_number}",
+  model="{executor_model}",  # omit when executor_model == "inherit"
+  effort={executor_model_effort_arg}  # omit this line when executor_model_effort_arg == null
+  isolation="worktree",
+  prompt="
+    <objective>
+    Execute plan {plan_number} of phase {phase_number}-{phase_name}.
+    Commit each task atomically. Create SUMMARY.md.
+    Do NOT update STATE.md or ROADMAP.md — orchestrator owns these.
+    </objective>
+
+    <worktree_branch_check>
+    FIRST ACTION: HEAD assertion before any reset/checkout. Worktrees use `worktree-agent-<id>` namespace. If HEAD is on protected ref (main/master/develop/trunk/release/*) or detached, HALT — do NOT self-recover via `git update-ref`.
+    ```bash
+    HEAD_REF=$(git symbolic-ref --quiet HEAD || echo "DETACHED")
+    ACTUAL_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+    if [ "$HEAD_REF" = "DETACHED" ] || echo "$ACTUAL_BRANCH" | grep -Eq '^(main|master|develop|trunk|release/.*)$'; then
+      echo "FATAL: worktree HEAD on '$ACTUAL_BRANCH' (expected worktree-agent-*); refusing self-recovery." >&2; exit 1
+    fi
+    if ! echo "$ACTUAL_BRANCH" | grep -Eq '^worktree-agent-[A-Za-z0-9._/-]+$'; then
+      echo "FATAL: worktree HEAD not in worktree-agent-* namespace; refusing to commit." >&2; exit 1
+    fi
+    ACTUAL_BASE=$(git merge-base HEAD {EXPECTED_BASE})
+    if [ "$ACTUAL_BASE" != "{EXPECTED_BASE}" ]; then
+      git reset --hard {EXPECTED_BASE}
+      [ "$(git rev-parse HEAD)" != "{EXPECTED_BASE}" ] && { echo "ERROR: could not correct worktree base"; exit 1; }
+    fi
+    ```
+    Per-commit safety: `agents/gsd-executor.md` steps 0/0a/0b + `references/worktree-path-safety.md`.
+    </worktree_branch_check>
+
+    <parallel_execution>
+    Parallel executor in git worktree. Path safety (cwd-drift, absolute-path guards) in `worktree-path-safety.md` (loaded below).
+    Run `git commit` normally — hooks run by default. Do NOT pass `--no-verify` unless `workflow.worktree_skip_hooks=true`.
+    Do NOT modify STATE.md or ROADMAP.md. execute-plan.md auto-detects worktree mode (`.git` is a file, not a directory) and skips STATE.md/ROADMAP.md updates automatically.
+    REQUIRED: SUMMARY.md MUST be committed before return. Worktree mode commits SUMMARY.md and REQUIREMENTS.md only. Do NOT skip.
+    REQUIRED ORDER: Write SUMMARY.md → commit → narration. No text between Write and commit (truncation risk; rescue is not primary defense).
+    </parallel_execution>
+
+    <execution_context>
+    @~/.claude/get-shit-done/workflows/execute-plan.md
+    @~/.claude/get-shit-done/templates/summary.md
+    @~/.claude/get-shit-done/references/checkpoints.md
+    @~/.claude/get-shit-done/references/tdd.md
+    <%~ include('get-shit-done/references/worktree-path-safety.md') %>
+    @~/.claude/get-shit-done/references/executor-examples.md
+    </execution_context>
+
+    <reference_usage>
+    Read `~/.claude/get-shit-done/workflows/execute-plan.md` FIRST — it defines the per-task loop, atomic commit protocol, deviation handling, and worktree auto-detection. Both spawned and inline executors depend on it.
+    Consult `checkpoints.md` when a plan task carries a checkpoint (`human-verify`, `decision`, or `human-action`): it defines how to segment execution around each type and which work returns to MAIN vs. continues in the SUBAGENT.
+    Consult `templates/summary.md` when writing SUMMARY.md: it defines the required structure, frontmatter fields (requires/provides, subsystem, tags, key-files, decisions, metrics), and one-liner rules.
+    Consult `tdd.md` when a plan task is TDD-flagged or behavior-adding: it defines the red-green-refactor cycle and when TDD improves quality vs. when to skip it.
+    Consult `executor-examples.md` when handling a plan deviation or a checkpoint-bearing task — it provides worked deviation-rule and checkpoint examples.
+    </reference_usage>
+
+    <files_to_read>
+    - {phase_dir}/{plan_file} (Plan)
+    - .planning/PROJECT.md (Project context)
+    - .planning/STATE.md (State)
+    - .planning/config.json (Config, if exists)
+    - ${phase_dir}/*-CONTEXT.md (User decisions)
+    - ${phase_dir}/*-RESEARCH.md (Technical research)
+    - ${prior_wave_summaries} (Earlier waves)
+    - ./CLAUDE.md (Project instructions)
+    - .claude/skills/ or .agents/skills/ (Project skills)
+    </files_to_read>
+
+    ${AGENT_SKILLS}
+
+    <mcp_tools>
+    If CLAUDE.md references MCP tools, prefer them over Grep/Glob for code navigation.
+    </mcp_tools>
+
+    <success_criteria>
+    - [ ] All tasks executed
+    - [ ] Each task committed individually
+    - [ ] SUMMARY.md created in plan directory
+    - [ ] No modifications to STATE.md/ROADMAP.md
+    </success_criteria>
+  "
+)
+```
+
+   > **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Agent() above to spawn executor agent(s), stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
+
+Append `{agent_id, worktree_path, branch, expected_base}` to `WAVE_WORKTREE_MANIFEST` after return. If any field missing, stop and ask for recovery.
+
+**Sequential mode** (if `USE_WORKTREES_FOR_PLAN` is false — project-level or per-plan submodule intersection):
+
+Omit `isolation="worktree"`. Replace `<parallel_execution>` block with:
+```
+<sequential_execution>
+Sequential executor on main working tree. Use normal commits with hooks.
+REQUIRED ORDER: Write SUMMARY.md → commit → only then any narration. No text between Write and commit (truncation risk; rescue is not primary defense).
+</sequential_execution>
+```
+
+Success criteria include STATE.md and ROADMAP.md updates (not deferred).
+
+When plan in wave dropped to sequential, execute affected plan(s) one-at-a-time to avoid concurrent main-tree writes. Parallel plans with worktree isolation can run alongside.
+
+6. **Wait for all agents in wave to complete.**
+
+**Plan-complete heartbeat:**
+```
+[checkpoint] phase {PHASE_NUMBER} wave {N}/{M} plan {plan_id} complete ({P}/{Q} plans done)
+[checkpoint] phase {PHASE_NUMBER} wave {N}/{M} plan {plan_id} failed ({P}/{Q} plans done)
+[checkpoint] phase {PHASE_NUMBER} wave {N}/{M} plan {plan_id} checkpoint ({P}/{Q} plans done)
+```
+
+**Completion signal fallback:** If agent doesn't return signal but appears complete, spot-check:
+```bash
+SUMMARY_EXISTS=$(test -f "{phase_dir}/{plan_number}-{plan_padded}-SUMMARY.md" && echo "true" || echo "false")
+COMMITS_FOUND=$(git log --oneline --all --grep="{phase_number}-{plan_padded}" --since="1 hour ago" | head -1)
+COMMITS_SINCE_DISPATCH=$(git log "${EXPECTED_BRANCH}" --since="${DISPATCH_TS}" --oneline | head -1)
+```
+
+If SUMMARY exists AND commits found → treat as done. If not, check for activity.
+
+**Configurable stall surveillance:** `EXECUTOR_STALL_INTERVAL_MINUTES` controls how often to poll for activity; `EXECUTOR_STALL_THRESHOLD_MINUTES` controls how long with no activity before pausing. Every interval, inspect `git log` for new commits. If no SUMMARY.md and no new commits appear for the threshold duration, pause and offer: continue waiting / kill-and-retry / kill-and-inline.
+
+7. **Post-wave hook validation** (parallel mode, if `workflow.worktree_skip_hooks=true` opted out):
+```bash
+SKIP_HOOKS=$($GSD_SDK query config-get workflow.worktree_skip_hooks 2>/dev/null || echo "false")
+if [ "$SKIP_HOOKS" = "true" ]; then
+  STASHED=false
+  # Stash uncommitted changes under a named ref so we always pop (bare `git stash` strands them on hook/script failure). `refs/stash` is shared across worktrees, so this helper runs ONLY in the orchestrator's main checkout after all wave worktrees have been merged + removed; executors are forbidden from running any `git stash` subcommand.
+  if (! git diff --quiet || ! git diff --cached --quiet) && git stash push -u -m "gsd-post-wave-hook-$$" >/dev/null 2>&1; then STASHED=true; fi
+  git hook run pre-commit 2>&1 || echo "⚠ Pre-commit hooks failed"
+  [ "$STASHED" = "true" ] && (git stash pop >/dev/null 2>&1 || echo "⚠ Could not pop stash")
+fi
+```
+
+8. **Worktree cleanup** (when isolation used):
+
+Use manifest as source of truth. Fail closed:
+```bash
+[ -n "${WAVE_WORKTREE_MANIFEST:-}" ] && [ -f "$WAVE_WORKTREE_MANIFEST" ] || { echo "BLOCKED: missing WAVE_WORKTREE_MANIFEST." >&2; exit 1; }
+
+PRIMARY_WT=$(git worktree list --porcelain | awk '/^worktree /{print substr($0,10); exit}')
+[ -z "$PRIMARY_WT" ] && { echo "FATAL: no primary worktree" >&2; exit 1; }
+[ "$(pwd -P 2>/dev/null)" != "$(cd "$PRIMARY_WT" 2>/dev/null && pwd -P)" ] && cd "$PRIMARY_WT" || { echo "FATAL: cannot cd to primary" >&2; exit 1; }
+ORCH_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+[ -z "${EXPECTED_BRANCH:-}" ] || [ "$ORCH_BRANCH" = "$EXPECTED_BRANCH" ] || { echo "FATAL: branch drift before cleanup" >&2; exit 1; }
+
+$GSD_SDK query worktree.cleanup-wave --manifest "$WAVE_WORKTREE_MANIFEST" || exit 1
+```
+
+**Cleanup-tail** (after custom cross-wave merges):
+```bash
+PRIMARY_WT=$(git worktree list --porcelain | awk '/^worktree /{print substr($0,10); exit}')
+[ -n "$PRIMARY_WT" ] && [ "$(pwd -P 2>/dev/null)" != "$(cd "$PRIMARY_WT" 2>/dev/null && pwd -P)" ] && cd "$PRIMARY_WT" || { echo "FATAL: cannot cd to primary" >&2; exit 1; }
+WT_PATHS_FILE=$(mktemp "${TMPDIR:-/tmp}/gsd-worktree-paths-XXXXXX")
+node -e 'const fs=require("fs");const p=process.env.WAVE_WORKTREE_MANIFEST;try{if(!p)throw new Error("WAVE_WORKTREE_MANIFEST unset");if(!fs.existsSync(p))throw new Error("manifest missing");const s=fs.readFileSync(p,"utf8");if(!s.trim())throw new Error("manifest empty");const j=JSON.parse(s);for(const w of j.worktrees||[])if(w.worktree_path)console.log(w.worktree_path)}catch(e){console.error(`ERROR: cannot read manifest: ${e.message}`);process.exit(1)}' > "$WT_PATHS_FILE" || { echo "BLOCKED: cannot read WAVE_WORKTREE_MANIFEST." >&2; exit 1; }
+while IFS= read -r WT; do
+  [ -z "$WT" ] && continue
+  WT_BRANCH=$(git -C "$WT" rev-parse --abbrev-ref HEAD 2>/dev/null)
+  [ -z "$WT_BRANCH" ] || [ "$WT_BRANCH" = "HEAD" ] && continue
+  git worktree unlock "$WT" 2>/dev/null || true
+  git worktree remove "$WT" --force || { WT_NAME=$(basename "$WT"); echo "⚠ Manual cleanup: git worktree unlock \"$WT\" && git worktree remove \"$WT\" --force && git branch -D \"$WT_BRANCH\""; }
+  git branch -D "$WT_BRANCH" 2>/dev/null || true
+done < "$WT_PATHS_FILE"
+git worktree prune
+```
+
+**When to skip step 8:**
+- If no plan in this wave used worktree isolation (`WAVE_WORKTREE_PLANS` is empty): all agents ran on the main working tree — skip entirely.
+- If the orchestrator merged via custom messages (cross-wave-dependency deviation): run the cleanup-tail snippet above instead, then continue.
+- If at least one plan used worktrees but others did not: still run cleanup — it iterates actual `git worktree list` output and only removes worktrees that were created.
+
+9. **Post-merge build & test gate:** Execute `get-shit-done/workflows/execute-phase/steps/post-merge-gate.md` after worktree merges. Catches integration issues agents' self-checks miss.
+
+10. **Post-wave shared artifact update** (when worktrees used, skip if tests failed):
+
+Only update tracking when `TEST_EXIT=0`:
+```bash
+if [ "${TEST_EXIT}" -eq 0 ]; then
+  for plan_id in {completed_plan_ids}; do
+    $GSD_SDK query roadmap.update-plan-progress "${PHASE_NUMBER}" "${plan_id}" "complete"
+  done
+  if ! git diff --quiet .planning/ROADMAP.md .planning/STATE.md 2>/dev/null; then
+    $GSD_SDK query commit "docs(phase-${PHASE_NUMBER}): update tracking after wave ${N}" --files .planning/ROADMAP.md .planning/STATE.md
+  fi
+elif [ "${TEST_EXIT}" -eq 124 ]; then
+  echo "⚠ Test timeout — skipping tracking. Plans remain in-progress."
+else
+  echo "⚠ Tests failed (exit ${TEST_EXIT}) — skipping tracking until tests pass."
+fi
+```
+
+Skip if no worktrees used (sequential agents updated themselves).
+
+11. **Handle test failures:** If `WAVE_FAILURE_COUNT > 0`, present failures and offer Fix now / Continue / Abort. If multiple failures, strongly recommend Fix now.
+
+12. **Report completion — spot-check claims first:**
+
+   For each SUMMARY.md:
+   - Verify first 2 files from `key-files.created` exist on disk
+   - Check `git log --oneline --all --grep="{phase}-{plan}"` returns ≥1 commit
+   - Check for `## Self-Check: FAILED` marker
+
+   If ANY spot-check fails: report which plan failed, route to failure handler — ask "Retry plan?" or "Continue with remaining waves?"
+
+   **Wave-close heartbeat:** after spot-checks finish (pass or fail),
+   before the `## Wave {N} Complete` summary, emit as a literal line:
+
+   ```
+   [checkpoint] phase {PHASE_NUMBER} wave {N}/{M} complete, {P}/{Q} plans done ({wave_success}/{wave_plan_count} ok)
+   ```
+
+   If pass:
+   ```
+   ---
+   ## Wave {N} Complete
+
+   **{Plan ID}: {Plan Name}**
+   {What was built — from SUMMARY.md}
+   {Notable deviations, if any}
+
+   {If more waves: what this enables for next wave}
+   ---
+   ```
+
+14. **Handle failures:**
+   **Step 7 — classify before branching:**
+   ```bash
+   CLASS_JSON=$($GSD_SDK query agent.classify-failure -- "$AGENT_RETURN_BODY")
+   CLASS=$(echo "$CLASS_JSON" | jq -r '.class')
+   SENTINEL=$(echo "$CLASS_JSON" | jq -r '.sentinel // empty')
+   RETRY_AFTER=$(echo "$CLASS_JSON" | jq -r '.retryAfterSeconds // empty')
+   if [ -n "$RETRY_AFTER" ]; then RETRY_HINT="  Provider hinted retry-after: ${RETRY_AFTER}s"; else RETRY_HINT=""; fi
+   ```
+   One classifier branch handles sentinels across Claude/Copilot/Codex/Gemini. Reference: `docs/research/provider-rate-limit-signals.md`.
+   **Step 8 — `class == "quota-exceeded"`:**
+   Do not offer "retry now". Run step-5 spot-check first; if SUMMARY.md is missing but commits exist, route to safe-resume (`state.verify-against-disk`) instead of immediate redispatch.
+   ```text
+   ⚠ Plan {plan_id} terminated by provider quota / rate limit
+     Runtime sentinel: {SENTINEL}
+     {RETRY_HINT}
+     Partial commits on worktree branch: {N}
+     SUMMARY.md present: {yes|no}
+     1. Wait for quota reset, then resume (recommended)
+     2. Switch to a different runtime / model and resume
+     3. Abort phase and report partial state
+   ```
+   Re-run `/gsd:execute-phase` after quota reset for Option 1.
+   **Step 9 — `class == "classify-handoff-bug"`:**
+   If error contains `classifyHandoffIfNeeded is not defined`, treat as Claude runtime bug. Run the same step-5 spot-checks; PASS => treat as success, FAIL => fall through.
+   **Step 10 — `class == "unknown-failure"`:**
+   Report failed plan and ask Continue/Stop; continuing may cascade into dependent plan failures.
+
+14b. **Pre-wave dependency check (waves 2+ only):**
+    Before wave N+1, run `gsd-sdk query verify.key-links {phase_dir}/{plan}-PLAN.md` for each upcoming plan.
+    If any PRIOR-wave artifact link fails, present:
+    - `## Cross-Plan Wiring Gap` with plan/link/from/pattern rows
+    - Options: investigate+fix before continue, or continue with cascade risk
+    Skip key-links that reference files in the CURRENT (upcoming) wave.
+
+15. **Checkpoint plans between waves** — see `<checkpoint_handling>`.
+
+16. **Proceed to next wave.**
+</step>
+
+<step name="checkpoint_handling">
+Plans with `autonomous: false` require user interaction.
+
+**Auto-mode:** Read config:
+```bash
+AUTO_MODE=$($GSD_SDK query check auto-mode --pick active 2>/dev/null || echo "false")
+```
+
+When executor returns checkpoint AND `AUTO_MODE=true`:
+- **human-verify** → Auto-spawn continuation agent with `{user_response}` = `"approved"`. Log `⚡ Auto-approved checkpoint`.
+- **decision** → Auto-spawn continuation agent with `{user_response}` = first option from checkpoint details. Log `⚡ Auto-selected: [option]`.
+- **human-action** → Present to user. Auth gates cannot be automated — these require human credentials or physical interaction.
+
+**Standard flow:** Spawn agent → agent runs until checkpoint → returns structured state (completed tasks, current task, blocker, checkpoint type/details). Present to user. User responds: approved / issue description / decision selection. Spawn continuation agent (fresh, not resume) with explicit state (completed_tasks_table, resume_task_number, resume_task_name, user_response, resume_instructions). Continuation verifies prior commits, continues from resume point. Repeat until plan completes or user stops.
+
+Fresh agent approach more reliable than resume (which breaks with parallel tool calls).
+</step>
+
+<step name="aggregate_results">
+Report:
+```markdown
+## Phase {X}: {Name} Execution Complete
+
+**Waves:** {N} | **Plans:** {M}/{total} complete
+
+| Wave | Plans | Status |
+|------|-------|--------|
+| 1 | {plan_ids} | ✓ Complete |
+| CP | {plan_ids} | ✓ Verified |
+
+### Plan Details
+{One-liners from SUMMARY.md}
+
+### Issues Encountered
+{Aggregate from SUMMARYs}
+```
+
+**Security gate:**
+```bash
+SECURITY_CFG=$($GSD_SDK query config-get workflow.security_enforcement --raw 2>/dev/null || echo "true")
+SECURITY_FILE=$(ls "${PHASE_DIR}"/*-SECURITY.md 2>/dev/null | head -1)
+```
+
+If `SECURITY_CFG=false`: skip. If `true` AND no SECURITY.md: suggest `/gsd:secure-phase`. If SECURITY.md exists and `threats_open > 0`: block until resolved.
+</step>
+
+<step name="tdd_review_checkpoint">
+Skip if `TDD_MODE=false`.
+
+Check for `type: tdd` plans:
+```bash
+TDD_PLANS=$(grep -rl "^type: tdd" "${PHASE_DIR}"/*-PLAN.md 2>/dev/null | wc -l | tr -d ' ')
+```
+
+If `TDD_PLANS > 0`: Verify RED/GREEN/REFACTOR gate sequence for each. RED gate: failing test commit exists. GREEN gate: implementation commit exists. REFACTOR gate: optional cleanup. Flag violations.
+
+Present summary table. **Escalation under MVP+TDD:** When both `MVP_MODE=true` AND `TDD_MODE=true`, violations are **blocking** unless overridden with `--force-mvp-gate`.
+Override: `/gsd execute-phase {phase} --force-mvp-gate` to ship despite violations (escape hatch — not yet implemented as a command; included for documentation and future enforcement). Policy: `MVP_MODE=true` AND `TDD_MODE=true` → violations are blocking; otherwise advisory and surfaced for review only.
+</step>
+
+<step name="handle_partial_wave_execution">
+If `WAVE_FILTER` used, re-run discovery after execution. If incomplete plans remain, STOP — skip phase verification. Present wave-complete summary + commands to continue remaining waves. If no incomplete plans remain, continue to verification.
+</step>
+
+<step name="code_review_gate" required="true">
+**Config gate:**
+```bash
+CODE_REVIEW_ENABLED=$($GSD_SDK query config-get workflow.code_review 2>/dev/null || echo "true")
+```
+
+If `CODE_REVIEW_ENABLED` is `"false"`: display "Code review skipped (workflow.code_review=false)" and proceed to next step.
+
+**Invoke review:**
+```
+Skill(skill="gsd-code-review", args="${PHASE_NUMBER}")
+```
+
+**Check results using deterministic path:**
+```bash
+PADDED=$(printf "%02d" "${PHASE_NUMBER}")
+REVIEW_FILE="${PHASE_DIR}/${PADDED}-REVIEW.md"
+REVIEW_STATUS=$(sed -n '/^---$/,/^---$/p' "$REVIEW_FILE" | grep "^status:" | head -1 | cut -d: -f2 | tr -d ' ')
+```
+
+If REVIEW_STATUS is not "clean" and not "skipped" and not empty, display:
+```
+Code review found issues. Consider running:
+/gsd:code-review ${PHASE_NUMBER} --fix
+```
+
+**Error handling:** If the Skill invocation fails or throws, catch the error, display "Code review encountered an error (non-blocking): {error}" and proceed to next step. Review failures must never block execution.
+
+Regardless of review result, always proceed to close_parent_artifacts → regression_gate → verify_phase_goal.
+</step>
+
+<step name="close_parent_artifacts">
+**For decimal/polish phases only (X.Y pattern):** Close the feedback loop by resolving parent UAT and debug artifacts.
+
+**Skip if** phase number has no decimal (e.g., `3`, `04`) — only applies to gap-closure phases like `4.1`, `03.1`.
+
+**1. Detect decimal phase and derive parent:**
+```bash
+# Check if phase_number contains a decimal
+if [[ "$PHASE_NUMBER" == *.* ]]; then
+  PARENT_PHASE="${PHASE_NUMBER%%.*}"
+fi
+```
+
+**2. Find parent UAT file:**
+```bash
+PARENT_INFO=$($GSD_SDK query find-phase "${PARENT_PHASE}" --raw)
+# Extract directory from PARENT_INFO JSON, then find UAT file in that directory
+```
+
+**If no parent UAT found:** Skip this step (gap-closure may have been triggered by VERIFICATION.md instead).
+
+**3. Update UAT gap statuses:**
+
+Read the parent UAT file's `## Gaps` section. For each gap entry with `status: failed`:
+- Update to `status: resolved`
+
+**4. Update UAT frontmatter:**
+
+If all gaps now have `status: resolved`:
+- Update frontmatter `status: diagnosed` → `status: resolved`
+- Update frontmatter `updated:` timestamp
+
+**5. Resolve referenced debug sessions:**
+
+For each gap that has a `debug_session:` field:
+- Read the debug session file
+- Update frontmatter `status:` → `resolved`
+- Update frontmatter `updated:` timestamp
+- Move to resolved directory:
+```bash
+mkdir -p .planning/debug/resolved
+mv .planning/debug/{slug}.md .planning/debug/resolved/
+```
+
+**6. Commit updated artifacts:**
+```bash
+$GSD_SDK query commit "docs(phase-${PARENT_PHASE}): resolve UAT gaps and debug sessions after ${PHASE_NUMBER} gap closure" --files .planning/phases/*${PARENT_PHASE}*/*-UAT.md .planning/debug/resolved/*.md
+```
+</step>
+
+<step name="regression_gate">
+Run prior phases' test suites to catch cross-phase regressions BEFORE verification.
+
+**Skip if:** This is the first phase (no prior phases), or no prior VERIFICATION.md files exist.
+
+**Discover prior phases' test files:**
+```bash
+PRIOR_VERIFICATIONS=$(find .planning/phases/ -name "*-VERIFICATION.md" ! -path "*${PHASE_NUMBER}*" 2>/dev/null)
+```
+
+**Extract test file lists from prior verifications:**
+
+For each VERIFICATION.md found, look for test file references:
+- Lines containing `test`, `spec`, or `__tests__` paths
+- The "Test Suite" or "Automated Checks" section
+- File patterns from `key-files.created` in corresponding SUMMARY.md files that match `*.test.*` or `*.spec.*`
+
+Collect all unique test file paths into `REGRESSION_FILES`.
+
+**Run regression tests (if any found):**
+```bash
+# Resolve test command: project config > Makefile > language sniff
+REG_TEST_CMD=$($GSD_SDK query config-get workflow.test_command --default "" 2>/dev/null || true)
+if [ -z "$REG_TEST_CMD" ]; then
+  if [ -f "Makefile" ] && grep -q "^test:" Makefile; then
+    REG_TEST_CMD="make test"
+  elif [ -f "Justfile" ] || [ -f "justfile" ]; then
+    REG_TEST_CMD="just test"
+  elif [ -f "package.json" ]; then
+    REG_TEST_CMD="npm test"
+  elif [ -f "Cargo.toml" ]; then
+    REG_TEST_CMD="cargo test"
+  elif [ -f "go.mod" ]; then
+    REG_TEST_CMD="go test ./..."
+  elif [ -f "requirements.txt" ] || [ -f "pyproject.toml" ]; then
+    REG_TEST_CMD="python -m pytest ${REGRESSION_FILES} -q --tb=short"
+  else
+    REG_TEST_CMD="true"
+  fi
+fi
+eval "$REG_TEST_CMD" 2>&1
+```
+
+**Report results:**
+
+If all tests pass:
+```
+✓ Regression gate: {N} prior-phase test files passed — no regressions detected
+```
+
+If any tests fail:
+```
+## ⚠ Cross-Phase Regression Detected
+
+Phase {X} execution may have broken functionality from prior phases.
+
+| Test File | Phase | Status | Detail |
+|-----------|-------|--------|--------|
+| {file} | {origin_phase} | FAILED | {first_failure_line} |
+
+Options:
+1. Fix regressions before verification (recommended)
+2. Continue to verification anyway (regressions will compound)
+3. Abort phase — roll back and re-plan
+```
+
+Use AskUserQuestion to present the options.
+</step>
+
+<step name="schema_drift_gate">
+Post-execution schema drift detection. Catches false-positive verification where build/types pass because TypeScript types come from config, not the live database.
+
+**Run after execution completes but BEFORE verification marks success.**
+
+Run post-execution schema drift detection:
+```bash
+SCHEMA_DRIFT=$($GSD_SDK query verify.schema-drift "${PHASE_NUMBER}" 2>/dev/null)
+```
+
+Parse JSON result for: `drift_detected`, `blocking`, `schema_files`, `orms`, `unpushed_orms`, `message`.
+
+If false: skip. If true AND blocking:
+Check override:
+```bash
+SKIP_SCHEMA=$(echo "${GSD_SKIP_SCHEMA_CHECK:-false}")
+```
+
+If skip: display warning + continue. Otherwise: BLOCK verification. Display schema files changed and required push commands. User picks: run-push-now (recommended) / skip-check / abort. If run-push, re-check drift. If skip, continue.
+</step>
+
+<step name="codebase_drift_gate">
+Post-execution structural drift detection. Non-blocking by contract:
+any internal error here MUST fall through to `verify_phase_goal`. The phase
+is never failed by this gate.
+
+Load and follow the full step spec from
+`get-shit-done/workflows/execute-phase/steps/codebase-drift-gate.md` —
+covers the SDK call, JSON contract, `warn` vs `auto-remap` branches, mapper
+spawn template, and the two `workflow.drift_*` config keys.
+</step>
+
+<step name="verify_phase_goal">
+Verify phase achieved GOAL, not just completed tasks:
+
+```bash
+VERIFIER_SKILLS=$($GSD_SDK query agent-skills gsd-verifier)
+```
+
+```
+Agent(
+  description="Verify phase {phase_number} goal achievement",
+  prompt="Verify phase {phase_number} goal achievement. Phase directory: {phase_dir}. Phase goal: {goal from ROADMAP.md}. Phase requirement IDs: {phase_req_ids}. Check must_haves against actual codebase. Cross-reference requirement IDs vs REQUIREMENTS.md — every ID MUST be accounted for. Create VERIFICATION.md.
+
+<files_to_read>
+- {phase_dir}/*-PLAN.md (all plans — understand intent, check must_haves)
+- {phase_dir}/*-SUMMARY.md (all summaries — cross-reference claimed vs actual)
+- .planning/REQUIREMENTS.md (Requirement traceability)
+- {phase_dir}/*-CONTEXT.md (User decisions)
+- {phase_dir}/*-RESEARCH.md (Known pitfalls)
+- Prior VERIFICATION.md files (regression check)
+</files_to_read>
+
+${VERIFIER_SKILLS}",
+  subagent_type="gsd-verifier",
+  model="{verifier_model}",
+  effort={verifier_model_effort_arg}  # omit this line when verifier_model_effort_arg == null
+)
+```
+
+> **ORCHESTRATOR RULE — CODEX RUNTIME**: After calling Agent() above, stop working on this task immediately. Do not read more files, edit code, or run tests related to this task while the subagent is active. Wait for the subagent to return its result. This prevents duplicate work, conflicting edits, and wasted context. Only resume when the subagent result is available.
+
+Read status:
+```bash
+grep "^status:" "$PHASE_DIR"/*-VERIFICATION.md | cut -d: -f2 | tr -d ' '
+```
+
+**If passed:** → update_roadmap.
+
+**If human_needed:**
+
+**Step A — Persist:** Create `{phase_dir}/{phase_num}-HUMAN-UAT.md` with frontmatter: `status: partial`, `phase`, `source`, `started`, `updated` — plus `## Tests` section listing each `human_verification` item as `### N. {description}` with `expected:` and `result: [pending]`, and a `## Summary` block (`total`, `passed`, `issues`, `pending`, `skipped`, `blocked`), and a `## Gaps` section (empty at creation, populated by gap-closure runs). These fields are required by `/gsd:progress` and `/gsd:audit-uat`. Commit: `test({phase_num}): persist human verification items as UAT`.
+
+**Step B — Present:**
+```
+## Phase {X}: {Name} — Human Verification Required
+All automated checks passed. {N} items need human testing.
+{items from VERIFICATION.md}
+Items saved to `{phase_num}-HUMAN-UAT.md` — visible in /gsd:progress and /gsd:audit-uat.
+"approved" → continue | Report issues → gap closure
+```
+
+If approved: proceed to `update_roadmap`. HUMAN-UAT.md persists with `status: partial` until the user runs `/gsd:verify-work` on it.
+
+**If gaps_found:** Present gap summary. Offer `/gsd:plan-phase {X} --gaps`. Gap closure cycle: plan-phase creates gap plans → user runs execute-phase --gaps-only → verifier re-runs.
+</step>
+
+<step name="update_roadmap">
+Mark phase complete:
+```bash
+COMPLETION=$($GSD_SDK query phase.complete "${PHASE_NUMBER}")
+```
+
+Extract: `next_phase`, `is_last_phase`, `warnings`, `has_warnings`.
+
+If `has_warnings`: display warning list (tracked in progress/audit-uat).
+
+Commit:
+```bash
+$GSD_SDK query commit "docs(phase-{X}): complete phase execution" --files .planning/ROADMAP.md .planning/STATE.md .planning/REQUIREMENTS.md {phase_dir}/*-VERIFICATION.md
+```
+</step>
+
+<step name="auto_copy_learnings">
+**Check config:**
+```bash
+GL_ENABLED=$($GSD_SDK query config-get features.global_learnings --raw 2>/dev/null || echo "false")
+```
+
+If not `true`: skip (disabled by default).
+
+If enabled: Check if LEARNINGS.md exists in phase dir. If yes, copy to global store:
+```bash
+$GSD_SDK query learnings.copy 2>/dev/null || echo "⚠ Learnings copy failed — continuing"
+```
+
+Copy failure is non-blocking.
+</step>
+
+<step name="close_phase_todos">
+Auto-close todos tagged `resolves_phase: <current-phase>`:
+```bash
+PHASE_NUM="${PHASE_NUMBER}"
+PENDING_DIR=".planning/todos/pending"
+COMPLETED_DIR=".planning/todos/completed"
+mkdir -p "$COMPLETED_DIR"
+
+CLOSED=()
+for TODO_FILE in "$PENDING_DIR"/*.md; do
+  [ -f "$TODO_FILE" ] || continue
+  RP=$(awk '/^---/{c++;next} c==1 && /^resolves_phase:/{print $2;exit} c==2{exit}' "$TODO_FILE" 2>/dev/null || true)
+  if [ "$RP" = "$PHASE_NUM" ] || [ "$RP" = "\"$PHASE_NUM\"" ]; then
+    mv "$TODO_FILE" "$COMPLETED_DIR/"
+    CLOSED+=("$(basename "$TODO_FILE")")
+  fi
+done
+
+if [ ${#CLOSED[@]} -gt 0 ]; then
+  $GSD_SDK query commit "docs(phase-${PHASE_NUMBER}): auto-close ${#CLOSED[@]} todo(s)" --files .planning/todos/completed/ .planning/STATE.md || true
+fi
+```
+
+Skip silently if no matching todos.
+</step>
+
+<step name="update_project_md">
+Update PROJECT.md to reflect phase completion. Move validated requirements from Active → Validated. Update "Current State" section. Commit.
+
+Skip if no PROJECT.md exists.
+</step>
+
+<step name="offer_next">
+**Exception:** If gaps_found, verify_phase_goal already presents gap-closure path.
+
+**No-transition check:** If `--no-transition` flag present (execute-phase spawned by plan-phase's auto-advance), then after verification passes and ROADMAP is updated, return completion status to the parent in this exact format and STOP — auto-advance and transition stay the parent's responsibility:
+
+```
+PHASE COMPLETE
+Phase: ${PHASE_NUMBER} - ${PHASE_NAME}
+Plans: ${completed_count}/${total_count}
+Verification: {Passed | Gaps Found}
+[Include aggregate_results output]
+```
+
+`plan-phase.md` and discuss-phase chain mode grep for the literal `PHASE COMPLETE` marker to detect chain success, so emit it verbatim as the first line.
+
+**Auto-advance detection:**
+```bash
+AUTO_MODE=$($GSD_SDK query check auto-mode --pick active 2>/dev/null || echo "false")
+```
+
+If `--auto` flag present OR `AUTO_MODE=true` (AND verification passed, no gaps):
+Execute transition workflow inline (orchestrator context ~10-15%, transition needs phase data in context). Pass `--auto` flag for propagation to next phase.
+
+**Otherwise:** STOP. Do not auto-advance. Do not suggest `/gsd-transition` — it is internal only and does not exist as a user command.
+
+Check whether CONTEXT.md exists for the next phase:
+```bash
+ls .planning/phases/*{next}*/{next}-CONTEXT.md 2>/dev/null || echo "no-context"
+```
+
+**If CONTEXT.md does NOT exist for the next phase:**
+```
+## Phase {X}: {Name} Complete
+/gsd:progress ${GSD_WS} — see updated roadmap
+/gsd:discuss-phase {next} ${GSD_WS} — discuss next phase  ← recommended
+/gsd:plan-phase {next} ${GSD_WS} — plan next phase (skip discuss)
+/gsd:execute-phase {next} ${GSD_WS} — execute next (skip discuss and plan)
+```
+
+**If CONTEXT.md exists for the next phase:**
+```
+## Phase {X}: {Name} Complete
+/gsd:progress ${GSD_WS} — see updated roadmap
+/gsd:plan-phase {next} ${GSD_WS} — plan next phase (CONTEXT.md present)  ← recommended
+/gsd:discuss-phase {next} ${GSD_WS} — re-discuss next phase
+/gsd:execute-phase {next} ${GSD_WS} — execute next (skip planning)
+```
+
+Only suggest the commands listed above. Do not invent or hallucinate command names.
+</step>
+
+</process>
+
+<context_efficiency>
+Orchestrator: ~10-15% context for 200k windows, can use more for 1M+.
+Subagents: fresh context each (200k-1M). No polling (Agent blocks). No context bleed.
+
+For 1M+: pass richer context (code snippets, dependency outputs) directly to executors.
+</context_efficiency>
+
+<failure_handling>
+- **Quota / rate-limit:** Agent return body contains a sentinel like `usage limit`, `rate limit`, `429`, `too many requests`, `RESOURCE_EXHAUSTED`, `usage_limit_reached`. Route via `gsd-sdk query agent.classify-failure` → `class: "quota-exceeded"`. Do not offer retry-now; the right action is wait-for-reset and resume.
+- **classifyHandoffIfNeeded false:** Claude Code bug, not GSD. Spot-check → if pass, treat as success.
+- **Agent fails mid-plan:** Missing SUMMARY.md → report, ask user how to proceed.
+- **Dependency chain breaks:** Wave 1 fails → Wave 2 dependents likely fail → offer attempt or skip.
+- **All agents in wave fail:** Systemic issue → stop, report.
+- **Checkpoint unresolvable:** Ask skip / abort → record partial progress in STATE.md.
+</failure_handling>
+
+<resumption>
+Re-run `/gsd:execute-phase {phase}` → discovery finds completed SUMMARYs → skips them → resumes from first incomplete. STATE.md tracks: last completed plan, current wave, pending checkpoints.
+</resumption>
