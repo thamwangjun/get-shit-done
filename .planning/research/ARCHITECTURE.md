@@ -1,201 +1,356 @@
-# Architecture
+# Architecture Research: Spec Set Organization
 
-**Domain:** Coverage gap closure — adding 6 test changes to existing test files
-**Researched:** 2026-06-07
-**Confidence:** HIGH (all integration points read directly from source files)
+**Domain:** Multi-document feature-spec collection for fork reimplementation
+**Researched:** 2026-06-11
+**Confidence:** HIGH — derived directly from the fork's own GSD conventions, existing milestone artifacts, and the eight named features in PROJECT.md
 
----
+## Standard Architecture
 
-## Files Modified vs Created
+### System Overview
 
-| Gap | File | Operation | Lines Affected |
-|-----|------|-----------|---------------|
-| GAP-E | `tests/phase-56-effort-wiring.test.cjs` | MODIFY — append 8 new `test()` entries inside existing `describe` blocks or a new `describe` block | After line 228 (end of file) |
-| GAP-H | `tests/bug-3097-3099-executor-worktree-path-safety.test.cjs` | MODIFY — add 1 new `test()` inside existing `describe('bug #3097: ...')` | After line 62 |
-| GAP-K | `tests/debug-session-management.test.cjs` | MODIFY — remove `{ skip: ... }` option object from line 133 | Line 133 |
-| GAP-M2 | `tests/debug-session-management.test.cjs` | MODIFY — remove `.skip` from `test.skip` at line 184 and add anti-heredoc assertion | Line 184–187 |
-| GAP-L | `tests/debug-session-management.test.cjs` OR new file | ADD test — gsd-user-profiler.md structural assertion (see decision below) | New `describe` block |
-| GAP-M1 | `tests/step-numbering-scan.test.cjs` | MODIFY — comment-only edit (JSDoc header update) | Lines 1–26 |
+```
+.planning/spec/
+├── INDEX.md                   # manifest + dependency graph + build order
+├── 00-CONVENTIONS.md          # how to read a spec, traceability model, REQ-ID scheme
+│
+├── 01-positive-framing/
+│   └── SPEC.md
+├── 02-sha-versioning/
+│   └── SPEC.md
+├── 03-hooks-build/
+│   └── SPEC.md
+├── 04-eta-materialization/
+│   └── SPEC.md
+├── 05-step-numbering/
+│   └── SPEC.md
+├── 06-thinking-effort/
+│   └── SPEC.md
+├── 07-citation-guard/
+│   └── SPEC.md
+└── 08-test-infrastructure/
+    └── SPEC.md
+```
 
-**Net file creation: 0 new files required.** All gaps fit into existing files.
+Each numbered directory holds exactly one `SPEC.md`. The number encodes the suggested reimplementation order and is the stable anchor for cross-spec dependency references (`spec-02`, `spec-06`, etc.).
 
----
+### Component Responsibilities
+
+| Component | Responsibility | How It Works |
+|-----------|----------------|--------------|
+| `INDEX.md` | Single entry point; manifest of all specs, dependency graph, build order, status column | Human-readable table + Mermaid or ASCII dependency diagram |
+| `00-CONVENTIONS.md` | Meta-spec: explains REQ-ID scheme, traceability model, status vocabulary, how a cold reader navigates | Written once; spec authors reference it |
+| `NN-feature/SPEC.md` | Complete, self-contained specification for one feature | Structured sections (see below); no runtime code |
+
+## Recommended Project Structure
+
+```
+.planning/spec/
+├── INDEX.md               # ALWAYS the first file a reader opens
+├── 00-CONVENTIONS.md      # read second; explains the system
+│
+├── 01-positive-framing/
+│   └── SPEC.md            # framing standard + negative-framing scanner
+├── 02-sha-versioning/
+│   └── SPEC.md            # update worker + install.js SHA + statusline + check-latest-version
+├── 03-hooks-build/
+│   └── SPEC.md            # ensureHooksDist on-demand build
+├── 04-eta-materialization/
+│   └── SPEC.md            # Eta v4 install-time include resolution
+├── 05-step-numbering/
+│   └── SPEC.md            # scanner + normalize CLI + cross-file-ref scanner
+├── 06-thinking-effort/
+│   └── SPEC.md            # model;effort label + resolver + catalog + spawn wiring + install.js
+├── 07-citation-guard/
+│   └── SPEC.md            # no-issue-citations.test.cjs guard + corpus cleanup process
+└── 08-test-infrastructure/
+    └── SPEC.md            # scanner-precedence rule + serial isolation + fork test suite layout
+```
+
+### Structure Rationale
+
+- **One directory per feature:** keeps each spec's future supporting files (diagrams, fixtures) co-located without polluting the index level.
+- **Numeric prefix on directories, not files:** the prefix is the build-order encoding; `SPEC.md` is always the filename so tooling and humans find it without guessing.
+- **`INDEX.md` at root level, not inside a subfolder:** the orchestrator and a cold reader both want `ls .planning/spec/` to reveal the entry point immediately.
+- **`00-CONVENTIONS.md` numbered 00:** never conflicts with a feature spec; sorts to top; read before any `SPEC.md`.
+
+## Architectural Patterns
+
+### Pattern 1: INDEX.md as Manifest + DAG
+
+**What:** The index document contains three things in order: a feature-status table, a dependency diagram, and a reimplementation-order table. These are the three questions a cold reader asks first.
+
+**When to use:** Always. The index is the contract between the spec set and the roadmapper.
+
+**Structure:**
+
+```markdown
+# Fork Feature Spec — Index
+
+## Feature Status
+
+| # | Feature | Spec | Status | Depends On |
+|---|---------|------|--------|------------|
+| 01 | Positive Framing | [SPEC](01-positive-framing/SPEC.md) | DRAFT | — |
+| 02 | SHA Versioning | [SPEC](02-sha-versioning/SPEC.md) | DRAFT | — |
+| 03 | Hooks Build | [SPEC](03-hooks-build/SPEC.md) | DRAFT | spec-02 |
+| 04 | Eta Materialization | [SPEC](04-eta-materialization/SPEC.md) | DRAFT | — |
+| 05 | Step Numbering | [SPEC](05-step-numbering/SPEC.md) | DRAFT | spec-08 |
+| 06 | Thinking Effort | [SPEC](06-thinking-effort/SPEC.md) | DRAFT | spec-08 |
+| 07 | Citation Guard | [SPEC](07-citation-guard/SPEC.md) | DRAFT | spec-08 |
+| 08 | Test Infrastructure | [SPEC](08-test-infrastructure/SPEC.md) | DRAFT | — |
+
+## Dependency Graph
+
+spec-02 ──→ spec-03
+spec-08 ──→ spec-05
+spec-08 ──→ spec-06
+spec-08 ──→ spec-07
+(all others: no hard dependencies)
+
+## Reimplementation Order
+
+Wave 1 (no deps):   spec-01, spec-02, spec-04, spec-08
+Wave 2 (after w1):  spec-03, spec-05, spec-06, spec-07
+```
+
+**Trade-offs:** The index must be kept in sync as specs are written. Stale status column is the main failure mode — mitigate by making status values minimal: DRAFT / READY / IMPLEMENTED.
+
+### Pattern 2: Self-Contained SPEC.md
+
+**What:** Every `SPEC.md` is written so it can be read cold, with no other file required. It opens with a one-paragraph summary, states the "why this feature exists" explicitly, then proceeds through requirements and implementation notes.
+
+**When to use:** Always. The reimplementation target is a refactored upstream where current file paths and module names will not match. Specs that depend on knowing the current code structure will become invalid.
+
+**Canonical SPEC.md section order:**
+
+```markdown
+# Spec: [Feature Name]
+
+**ID:** spec-NN
+**Status:** DRAFT | READY | IMPLEMENTED
+**Depends on:** spec-XX, spec-YY (or "none")
+**Reimplementation phase:** Phase N (from roadmap, filled in after roadmapping)
+
+## Summary
+
+[One paragraph. What this feature does. Why the fork has it. What breaks without it.]
+
+## Motivation
+
+[Why upstream does not have this. What problem it solves for the fork. The decision rationale
+that justifies the implementation cost — draw from PROJECT.md Key Decisions.]
+
+## Requirements
+
+### Validated REQ-IDs
+
+List every REQ-ID from PROJECT.md that this feature owns. These are the acceptance criteria.
+
+| REQ-ID | Description | Test File | Test Name / Subtest |
+|--------|-------------|-----------|---------------------|
+| SCAN-01 | Scanner detects bare `avoid [verb]` directives | negative-framing-scan.test.cjs | "avoid verb" subtest |
+
+### Behavioral Requirements
+
+Narrative requirements not yet encoded as tests. Written as SHALL statements.
+The reimplementer converts these to tests before coding.
+
+## Implementation Notes
+
+[Subsystem map: which files/modules are involved. Written at the conceptual level —
+describe what each subsystem does, not what the current file path is. Current paths
+cited in parentheses as orientation only.]
+
+## Test Surface
+
+[Which test files cover this feature. For each: what it guards, what makes it RED.]
+
+## Known Constraints and Gotchas
+
+[The "Key Decisions" relevant to this feature, extracted from PROJECT.md.
+This is the distilled wisdom that prevents the reimplementer from repeating mistakes.]
+
+## Done Criteria
+
+[Checklist. "Feature is IMPLEMENTED when:" — must be verifiable by running tests.]
+```
+
+**Trade-offs:** Verbose per spec. Justified because the reimplementation context is a heavily-refactored codebase; the spec must be the source of truth, not the current code.
+
+### Pattern 3: Traceability via REQ-ID Table
+
+**What:** Every spec contains a Requirements table that maps each validated REQ-ID (from PROJECT.md) to its test file and subtest name. This is the traceability link.
+
+**When to use:** Always. The roadmapper and the reimplementer both need to know "how will I know this is done?"
+
+**Model:**
+
+```
+PROJECT.md (REQ-IDs) → SPEC.md Requirements table → test file → subtest
+```
+
+For REQ-IDs that are validated but whose test file has been identified, the table entry is complete. For requirements that exist as narrative only (not yet tested), the Test File column reads "none — add test first."
+
+**Trade-offs:** Requires reading PROJECT.md to populate the table. This is unavoidable — PROJECT.md is the authoritative source of validated requirements for this fork.
+
+### Pattern 4: Multi-Subsystem Features Stay in One Spec
+
+**What:** Features that span multiple subsystems (e.g., thinking effort spans `model-catalog.json`, `init.cjs`, `resolve.cjs`, spawn templates, and `install.js`) stay in a single `SPEC.md`. The Implementation Notes section uses a subsystem table to map the feature's touch points.
+
+**When to use:** When a feature has one coherent behavioral contract, regardless of how many files it touches. Split into multiple specs only when two distinct features happen to be implemented in the same file — not when one feature happens to touch many files.
+
+**Subsystem table format:**
+
+```markdown
+## Implementation Notes
+
+| Subsystem | Role in Feature | Current File (orientation) |
+|-----------|-----------------|---------------------------|
+| Parser | Parses `model;effort` label strings | `bin/lib/init.cjs` — `parseModelEffort()` |
+| Resolver | Applies precedence chain | `bin/lib/init.cjs` — `resolveReasoningEffortInternal()` |
+| Catalog | Stores per-agent effort assignments | `model-catalog.json` + `sdk/src/model-catalog.ts` |
+| Spawn templates | Carry effort to Agent() call sites | `get-shit-done/workflows/*.md` |
+| Install seam | Materializes effort for non-Claude runtimes | `bin/install.js` — Codex emit boundary |
+```
+
+**Trade-offs:** A single large spec is harder to assign to multiple implementers in parallel. Accept this: the fork's reimplementation is sequential by nature (one developer, GSD phases).
+
+### Pattern 5: GSD Phase Mapping
+
+**What:** Each spec maps to one GSD phase in the reimplementation roadmap. The `INDEX.md` wave structure maps directly to GSD's wave execution model. The spec set as a whole maps to a single GSD milestone.
+
+**Recommended phase structure for the reimplementation milestone:**
+
+```
+Phase 0:  Index + Conventions setup (produce .planning/spec/ skeleton)
+Phase 1:  spec-01 — Positive Framing
+Phase 2:  spec-02 — SHA Versioning
+Phase 3:  spec-04 — Eta Materialization
+Phase 4:  spec-08 — Test Infrastructure  ← completes Wave 1
+Phase 5:  spec-03 — Hooks Build          ← depends on spec-02
+Phase 6:  spec-05 — Step Numbering       ← depends on spec-08
+Phase 7:  spec-06 — Thinking Effort      ← depends on spec-08
+Phase 8:  spec-07 — Citation Guard       ← depends on spec-08
+Phase 9:  Review + consistency pass across all specs
+```
+
+Phases 1–4 are Wave 1 (independent) and can run in parallel under GSD's wave execution. Phases 5–8 are Wave 2 and can also run in parallel with each other once Wave 1 completes.
+
+**Trade-offs:** One spec per phase means 9 phases for 8 features plus the index phase. This is the right granularity — each phase has a single clear deliverable and a clear done criterion (spec READY).
+
+## Data Flow
+
+### Cold-Reader Navigation
+
+```
+New reader opens .planning/spec/
+    ↓
+Reads INDEX.md (status table + dependency graph + build order)
+    ↓
+Reads 00-CONVENTIONS.md (REQ-ID scheme, status vocab, how to interpret specs)
+    ↓
+Reads spec for the feature they are implementing (e.g. spec-06)
+    ↓
+Checks "Depends on" → reads spec-08 first if not done
+    ↓
+Reads "Validated REQ-IDs" table → locates test files → runs tests RED to confirm baseline
+    ↓
+Reads "Implementation Notes" → maps to refactored upstream's equivalent modules
+    ↓
+Reads "Done Criteria" → knows exactly what passing looks like
+```
+
+### Roadmapper Consumption
+
+```
+Roadmapper reads INDEX.md
+    ↓
+Reads wave structure → generates Phase N entries in ROADMAP.md
+    ↓
+For each phase: reads SPEC.md "Done Criteria" → becomes phase acceptance criteria
+    ↓
+Reads "Depends on" → encodes as depends_on: in PLAN.md frontmatter
+```
+
+## Scaling Considerations
+
+| Scale | Architecture Adjustments |
+|-------|--------------------------|
+| 8 features (current) | One directory per feature, flat layout, single index |
+| 15-20 features | Group into functional clusters (enforcement, infrastructure, content-quality); add a cluster-level README |
+| 30+ features | Two-level hierarchy: cluster directories each containing feature subdirectories |
+
+The current 8-feature set does not need clustering. The flat layout with numeric prefixes is sufficient and keeps navigation simple.
+
+## Anti-Patterns
+
+### Anti-Pattern 1: Spec Per Subsystem Instead of Spec Per Feature
+
+**What people do:** Create `spec-06a-parser.md`, `spec-06b-resolver.md`, `spec-06c-catalog.md` because the feature touches many files.
+
+**Why it's wrong:** The feature's behavioral contract is one thing. Splitting by subsystem creates artificial dependencies between spec documents and forces the reimplementer to synthesize the feature from fragments. The implementation will naturally discover the subsystem split.
+
+**Do this instead:** One spec per feature. Use an Implementation Notes subsystem table to enumerate touch points within that one spec.
+
+### Anti-Pattern 2: Specs That Reference Current File Paths as Requirements
+
+**What people do:** Write requirements like "parseModelEffort in bin/lib/init.cjs must parse semicolon-delimited strings."
+
+**Why it's wrong:** The refactored upstream will have different file paths and module structure. A spec that requires the current path is invalid before the reimplementation starts.
+
+**Do this instead:** Write behavioral requirements ("the parser SHALL accept `model;effort` format and return `{ model, effort }` or `{ model, effort: null }` for bare model strings"). Cite current paths in Implementation Notes as orientation only, clearly labeled "(current path — will differ on refactored upstream)."
+
+### Anti-Pattern 3: No Cold-Start Entry Point
+
+**What people do:** Put all spec files at the flat root with no index, or name them `feature-positive-framing.md` without a manifest.
+
+**Why it's wrong:** The roadmapper agent spawned months later has no context. It must infer dependencies from content rather than reading a dependency graph. Build order becomes guesswork.
+
+**Do this instead:** `INDEX.md` at the root of `.planning/spec/` is mandatory. It is the first file the roadmapper reads. The numeric prefix on directories encodes order so the manifest and directory listing agree.
+
+### Anti-Pattern 4: REQ-IDs Without Test Pointers
+
+**What people do:** List REQ-IDs as acceptance criteria without mapping them to specific test files and subtest names.
+
+**Why it's wrong:** "SCAN-01 is satisfied" is not verifiable without knowing which test subtest to run. The reimplementer has to grep through the test suite to find coverage.
+
+**Do this instead:** Every REQ-ID in a spec's requirements table has a `Test File` and `Test Name` column. If no test exists, the entry reads "none — write test first (TDD gate)."
+
+### Anti-Pattern 5: Mixing SPEC Content With Planning Artifacts
+
+**What people do:** Put phase plans, wave assignments, or PLAN.md-style content inside `SPEC.md`.
+
+**Why it's wrong:** Specs are requirements documents. Plans are execution documents. Mixing them makes the spec stale the moment planning changes and makes the requirements harder to find.
+
+**Do this instead:** `SPEC.md` contains only: summary, motivation, requirements, implementation notes, test surface, constraints, done criteria. Phase assignments live in the roadmap. Wave assignments live in `INDEX.md`.
 
 ## Integration Points
 
-### GAP-E: 8 new entries in `phase-56-effort-wiring.test.cjs`
+### With GSD Planning Infrastructure
 
-**Pattern.** The file has two shapes, both self-contained and copy-paste-safe:
+| Boundary | How It Connects | Notes |
+|----------|-----------------|-------|
+| `SPEC.md` → PLAN.md | PLAN.md `description:` cites the spec; `acceptance_criteria:` copies "Done Criteria" verbatim | Roadmapper agent reads SPEC.md to generate PLAN.md |
+| `INDEX.md` wave structure → PLAN.md `depends_on:` | Dependency graph entries become `depends_on: [phase-N]` in PLAN frontmatter | Direct mechanical translation |
+| `SPEC.md` REQ-ID table → PLAN.md `requirements:` | Each validated REQ-ID with test pointer becomes a requirement row | Traceability chain: PROJECT.md → SPEC.md → PLAN.md → test |
+| `00-CONVENTIONS.md` → roadmapper agent prompt | Conventions doc is injected as required reading for the roadmapper | Ensures consistent interpretation |
 
-Shape 1 (Group A — multi-token check):
-```js
-test('<workflow>.md carries <token_a> and <token_b>', () => {
-  const content = read('get-shit-done/workflows/<workflow>.md');
-  assert.ok(content.includes('<token_a>'), '<workflow>.md must define/reference <token_a>');
-  assert.ok(content.includes('<token_b>'), '<workflow>.md must define/reference <token_b>');
-});
-```
+### With Existing Fork Artifacts
 
-Shape 2 (Group B — single resolve-model-effort line):
-```js
-test('<workflow>.md has resolve-model-effort <agent>', () => {
-  const content = read('get-shit-done/workflows/<workflow>.md');
-  assert.ok(
-    content.includes('resolve-model-effort <agent>'),
-    '<workflow>.md must contain "resolve-model-effort <agent>"'
-  );
-});
-```
+| Artifact | Role in Spec Set |
+|----------|------------------|
+| `PROJECT.md` `## Requirements` section | Source of all validated REQ-IDs; each spec harvests the REQ-IDs that belong to its feature |
+| `PROJECT.md` `## Key Decisions` | Source of "Known Constraints and Gotchas" in each spec |
+| `MILESTONES.md` | Source of implementation detail for "what was actually built" — supplements spec's Implementation Notes |
+| Test files in `tests/` | The ground truth for "Done Criteria" — each spec's done criteria must be runnable |
 
-**Data access.** The module-level `read(rel)` helper (lines 29–35) reads from `ROOT` (repo root, one level above `__dirname`). New tests use `read(...)` exactly like existing tests — no import change needed.
+## Sources
 
-**Placement.** New Group-A entries go inside the existing `describe('phase-56 GAP A: ...')` block (before its closing `}`); new Group-B entries go inside `describe('phase-56 GAP B: ...')` block. No new `describe` wrappers needed unless a new GAP letter is introduced.
-
-**No shared helpers are needed.** `read()` is already the shared helper; `helpers.cjs` is not imported by this file at all.
+- Derived from `PROJECT.md` current milestone (v2.1.0-h) and all eight named features
+- Derived from `MILESTONES.md` shipped milestones v2.1.0-a through v2.1.0-g
+- Derived from GSD's own phase/plan/wave execution model as described in `CLAUDE.md`
+- No external sources needed — this is a structural organization question with all inputs available locally
 
 ---
-
-### GAP-H: submodule exclusion in `bug-3097-3099-executor-worktree-path-safety.test.cjs`
-
-**Existing mock pattern.** The file does NOT create a fake filesystem. It reads the actual product file at load-time into two module-level constants:
-```js
-const executorSrc = fs.readFileSync(path.join(ROOT, 'agents', 'gsd-executor.md'), 'utf8');
-```
-All tests slice into `executorSrc` by finding XML tags (`<task_commit_protocol>`) and doing string pattern matching inside that slice. No temp dirs, no git mocks, no file system setup.
-
-**What the existing tests assert about `.git` file detection.** Current tests (lines 42–50) verify that `rev-parse --git-dir` or `.git/worktrees/` pattern is used for worktree detection. They do NOT assert the submodule exclusion path.
-
-**What the new submodule test needs to assert.** `gsd-executor.md` lines 455–464 (read above) show the product already contains the submodule disambiguation:
-```bash
-# Distinguish worktree (gitdir: .git/worktrees/...) from submodule (gitdir: ../.git/modules/...)
-if echo "$GIT_CONTENT" | command grep -q "^gitdir:.*\.git/worktrees/"; then
-  # This is a worktree
-else
-  # This is a submodule or other non-worktree .git file — skip worktree guards
-```
-
-The new test should slice the same `task_commit_protocol` block from `executorSrc` (same pattern as existing tests) and assert the presence of a submodule-distinguishing comment or the `\.git/modules/` pattern. No additional mocking is needed — the assertion is text-only against the product source.
-
-**Suggested test shape:**
-```js
-test('sentinel distinguishes submodule .git files from worktree .git files', () => {
-  const protocolIdx = executorSrc.indexOf('<task_commit_protocol>');
-  const protocolEnd = executorSrc.indexOf('</task_commit_protocol>');
-  const protocol = executorSrc.slice(protocolIdx, protocolEnd);
-  assert.ok(
-    protocol.includes('submodule') || protocol.includes('.git/modules/'),
-    'task_commit_protocol must explicitly exclude submodule .git files from worktree guards',
-  );
-});
-```
-
-**Placement:** Inside `describe('bug #3097: cwd-drift sentinel in gsd-executor.md', ...)` after the existing 3 tests (after line 62).
-
----
-
-### GAP-K: unskipping line 133 in `debug-session-management.test.cjs`
-
-**Current state (line 133):**
-```js
-test('gsd-debugger contains security note about DATA_START', { skip: 'fork intentionally diverges from upstream contract' }, () => {
-```
-The test body reads `gsd-debugger.md` and asserts `content.includes('DATA_START')`.
-
-**What verification shows.** A grep of `agents/gsd-debugger.md` for `DATA_START` returns no results — the agent does NOT contain the string `DATA_START`. The test was skipped because the fork diverges from the upstream contract. The skip reason is still valid unless the profiler agent or session manager is the right target.
-
-**Decision for GAP-K.** The skip removal is only safe if `gsd-debugger.md` has been updated to include `DATA_START`. Before removing the skip, confirm `DATA_START` is now present in `gsd-debugger.md`. If it is not yet present, GAP-K is blocked on the product file change and the skip should remain.
-
-**If the product file has been updated:** Change line 133 from `{ skip: '...' }` to no options object. The test body already contains the correct assertion. No structural change to the file needed.
-
----
-
-### GAP-M2: unskipping line 184 in `debug-session-management.test.cjs`
-
-**Current state (lines 184–187):**
-```js
-test.skip('gsd-debug-session-manager includes anti-heredoc rule', () => {
-  const content = fs.readFileSync(path.join(process.cwd(), 'agents', 'gsd-debug-session-manager.md'), 'utf8');
-  assert.ok(/only use the write tool/i.test(content), 'session manager missing anti-heredoc rule');
-});
-```
-
-**What verification shows.** `gsd-debug-session-manager.md` does NOT use `Write` in its `tools:` frontmatter field (tools is not visible from the grep, but the agent is a session manager, not a file writer). The `agent-frontmatter.test.cjs` file-writing agent rule only applies to agents with `Write` in their `tools:` line. If `Write` is NOT listed, the anti-heredoc rule is not required by the frontmatter test, but could still be present as a best practice.
-
-**Decision for GAP-M2.** Check `tools:` in `agents/gsd-debug-session-manager.md` frontmatter. If `Write` is absent, the anti-heredoc text is not contractually required; the unskip would assert something that may not exist. Confirm the product file has had `only use the Write tool` added before removing `.skip`. If the phrase is now present, change `test.skip(` to `test(`.
-
----
-
-### GAP-L: new test for `gsd-user-profiler.md`
-
-**Best home: `tests/debug-session-management.test.cjs` — NO.**
-
-The file is debug-workflow-specific. `gsd-user-profiler.md` is a profiling agent; putting it there would create a naming mismatch.
-
-**Best home: `tests/agent-skills.test.cjs` — NO.**
-
-That file tests the `agent-skills` gsd-tools CLI subcommand, not agent structural contracts.
-
-**Best home: new dedicated file — PREFERRED.**
-
-The precedent for agent structural contract tests is either:
-- `agent-frontmatter.test.cjs` (validates frontmatter shape for all agents — already covers `gsd-user-profiler` automatically because `ALL_AGENTS` is built dynamically from `fs.readdirSync(AGENTS_DIR)`)
-- A named regression test like `bug-<N>-<desc>.test.cjs` for a specific contract
-
-Since `agent-frontmatter.test.cjs` already dynamically includes `gsd-user-profiler` in its frontmatter scans (no explicit name list required; `ALL_AGENTS` is built by globbing `agents/gsd-*.md`), the gap is about a content-level assertion, not frontmatter.
-
-**Recommended approach:** Add a new `describe` block at the bottom of `tests/debug-session-management.test.cjs` or, if the contract being asserted is about profiler output format, in a new file `tests/profile-pipeline.test.cjs`. However, `tests/profile-pipeline.test.cjs` already exists (shown in the directory listing). Check its contents before creating a duplicate.
-
-**Minimal-risk placement:** Append a new `describe('gsd-user-profiler structural contract', ...)` block at the end of `tests/debug-session-management.test.cjs`. This is the lowest-friction option: zero new files, same `'use strict'` + `require('node:test')` + `require('node:fs')` imports already present, same `process.cwd()` path convention used by most tests in that file.
-
-**Test shape for GAP-L:**
-```js
-describe('gsd-user-profiler structural contract', () => {
-  test('gsd-user-profiler.md has tools: Read (no Write)', () => {
-    const content = fs.readFileSync(
-      path.join(process.cwd(), 'agents', 'gsd-user-profiler.md'), 'utf8'
-    );
-    const toolsMatch = content.match(/^tools:\s*(.+)$/m);
-    assert.ok(toolsMatch, 'gsd-user-profiler.md missing tools: frontmatter');
-    assert.ok(toolsMatch[1].includes('Read'), 'gsd-user-profiler.md must have Read in tools');
-    assert.ok(!toolsMatch[1].includes('Write'), 'gsd-user-profiler.md must not have Write (read-only profiler)');
-  });
-
-  test('gsd-user-profiler.md returns output in <analysis> tags', () => {
-    const content = fs.readFileSync(
-      path.join(process.cwd(), 'agents', 'gsd-user-profiler.md'), 'utf8'
-    );
-    assert.ok(content.includes('<analysis>'), 'gsd-user-profiler.md must document <analysis> output tags');
-  });
-});
-```
-
-The `path` and `fs` constants are already declared at the top of `debug-session-management.test.cjs`; the new block requires no additional imports.
-
----
-
-### GAP-M1: comment update in `step-numbering-scan.test.cjs`
-
-**Nature of change.** Lines 1–26 are a module-level JSDoc block describing the scan's expected violation inventory. This is a pure comment — the `describe`/`test` structure and all runtime assertions begin at line 28 (`'use strict'`). Updating the comment (e.g. removing files that have been fixed, or updating the "Phase 48 RED expectation" count) has zero behavioral effect on test outcomes.
-
-**Confirmation:** `scanContent`, `scanForOutOfOrder`, `collectMarkdownFiles`, `SCAN_DIRS`, `PATTERN_C_EXCLUDES`, and `ALL_FILES` are entirely unaffected by JSDoc edits. The corpus scan `describe` blocks at lines 294–337 iterate `SCAN_FILES` dynamically; no hardcoded file list exists in the runtime path.
-
-**This is strictly a comment edit with no behavioral change.**
-
----
-
-## Build Order
-
-The following order minimizes re-runs of `npm test` and respects file-level dependencies:
-
-| Step | Action | Rationale |
-|------|--------|-----------|
-| 1 | GAP-M1: edit JSDoc comment in `step-numbering-scan.test.cjs` | Zero risk; no behavioral change; validate `npm test` still passes as baseline |
-| 2 | GAP-E: append 8 new `test()` entries to `phase-56-effort-wiring.test.cjs` | Pure additions to an existing file; no shared state; new tests either pass (product has tokens) or fail cleanly with a clear message |
-| 3 | GAP-H: add submodule test to `bug-3097-3099-executor-worktree-path-safety.test.cjs` | Reads same `executorSrc` constant; no new mocking needed; pure addition inside existing `describe` |
-| 4 | GAP-L: append `gsd-user-profiler` `describe` block to `debug-session-management.test.cjs` | Appends to existing file; all imports already present; does not touch GAP-K or GAP-M2 lines |
-| 5 | GAP-K: remove `{ skip: '...' }` from line 133 | Conditional on product-side confirmation that `gsd-debugger.md` now contains `DATA_START`; must run `npm test` after to confirm test passes (not just skips) |
-| 6 | GAP-M2: change `test.skip` to `test` at line 184 | Conditional on product-side confirmation that `gsd-debug-session-manager.md` now contains `only use the Write tool`; do after GAP-K so both changes are visible in the same test run |
-
-**Gate:** Run `npm test 2>&1 | tee /tmp/gsd-test-output.txt` after steps 1–4 (the unconditional changes) to establish a green baseline before touching the skip removals in steps 5–6.
-
-**Dependency note:** Steps 5 and 6 are product-file-gated, not test-file-gated. If the product files (`gsd-debugger.md`, `gsd-debug-session-manager.md`) have not been updated to include the asserted content, the unskips will produce NEW TEST FAILURES rather than gap closures. Verify with `grep -n "DATA_START" agents/gsd-debugger.md` and `grep -ni "only use the write tool" agents/gsd-debug-session-manager.md` before proceeding to steps 5–6.
+*Architecture research for: Fork Feature Spec Set Organization (.planning/spec/)*
+*Researched: 2026-06-11*
