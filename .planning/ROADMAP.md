@@ -310,7 +310,11 @@ Full details below in Phase Details.
   3. The fork's `sdk/` capability (`session-runner.ts`, `config.ts`, `model-catalog.ts`, `ws-transport.ts`, supporting modules) is documented in `.planning/` — purpose, public surface, behavior, and integration points captured in enough detail for a future milestone to restore it; a grep of the doc confirms each named module appears
   4. Both pre-made architecture decisions are recorded in `.planning/` (KEEP fork SHA-based update-check worker; ACCEPT upstream `sdk/` deletion after SDK-01), and `git config diff.renameLimit` / `merge.renameLimit` both read `5000`
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 68-01-PLAN.md — Recovery anchor: backup branch, renameLimit=5000, durable fork-edit inventory diff, architecture decisions (MERGE-01)
+- [ ] 68-02-PLAN.md — Restoration-grade documentation of the fork sdk/ capability (SDK-01)
 **UI hint**: no
 
 ### Phase 69: Merge Execution & Ordered Conflict Resolution
