@@ -9,7 +9,7 @@ progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 8
-  completed_plans: 3
+  completed_plans: 4
   percent: 0
 ---
 
@@ -25,8 +25,8 @@ See: .planning/PROJECT.md (updated 2026-06-07 after v2.1.0-f milestone start)
 ## Current Position
 
 Phase: 69 (merge-execution-ordered-conflict-resolution) — EXECUTING
-Plan: 4 of 8
-Status: 69-03 (Tier 3) complete — fork modules confirmed present, sdk/ deletion confirmed; ready for Tier 4 (69-04)
+Plan: 5 of 8
+Status: 69-04a (Tier 4a) complete — upstream functional deltas folded into agents/ + commands/gsd/ (9 per-file commits); fork patches preserved, no rename adopted; ready for 69-04b (get-shit-done/ workflows/references/templates)
 Last activity: 2026-06-11
 
 ## Performance Metrics
@@ -104,8 +104,8 @@ None. Research is HIGH confidence across all five phases.
 
 ## Session Continuity
 
-Last activity: 2026-06-11 — Completed 69-03 (Tier 3 confirm/verify): fork-only get-shit-done/bin/lib modules confirmed present (rename NOT adopted, MERGE-02), sdk/ deletion confirmed (SDK-02); no corrections needed; merge stays closed
-Stopped at: 69-03 complete — next is 69-04 (Tier 4 prompt-content hand-merge)
+Last activity: 2026-06-11 — Completed 69-04a (Tier 4a prompt-content hand-merge): folded upstream functional deltas into 7 agents/ + 2 commands/gsd/ files (Write-contract blocks, Edit-tool additions, UAT filename, antigravity review option, config query fix); fork patches preserved (Eta includes, gsd-sdk name, get-shit-done/ paths, positive framing); rename/identity changes NOT adopted; 9 per-file commits; merge stays closed
+Stopped at: 69-04a complete — next is 69-04b (Tier 4b: get-shit-done/ workflows/references/templates)
 Resume file: None
 
 ## Deferred Items

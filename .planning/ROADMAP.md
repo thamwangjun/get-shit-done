@@ -337,7 +337,9 @@ Plans:
 **Wave 1**
 
 - [x] 69-01-PLAN.md — Tier 1: start -s ort merge, resolve CONTEXT.md (ours), verify PATCH-03 fork-only files
-- [ ] 69-04-PLAN.md — Tier 4: hand-merge prompt content (agents/, commands/gsd/, get-shit-done workflows/refs/templates, docs, READMEs)
+- [x] 69-04a-PLAN.md — Tier 4a: hand-merge prompt content (agents/, commands/gsd/) — upstream functional deltas folded in, fork patches preserved, no rename adopted
+- [ ] 69-04b-PLAN.md — Tier 4b: hand-merge prompt content (get-shit-done/ workflows/references/templates)
+- [ ] 69-04c-PLAN.md — Tier 4c: hand-merge prompt content (docs/, READMEs, CONTRIBUTING.md)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
