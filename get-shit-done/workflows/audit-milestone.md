@@ -78,6 +78,8 @@ With phase context collected:
 
 Extract `MILESTONE_REQ_IDS` from REQUIREMENTS.md traceability table — all REQ-IDs assigned to phases in this milestone.
 
+Print: "Spawning integration checker (runs in a subagent — no output until it returns, ~1–5 min; expected, not a freeze)"
+
 ```
 Agent(
   prompt="Check cross-phase integration and E2E flows.
@@ -156,7 +158,7 @@ For each REQ-ID, determine status using all three sources:
 Skip if `workflow.nyquist_validation` is explicitly `false` (absent = enabled).
 
 ```bash
-NYQUIST_CONFIG=$($GSD_SDK query config-get workflow.nyquist_validation --raw 2>/dev/null)
+NYQUIST_CONFIG=$($GSD_SDK query config-get workflow.nyquist_validation --raw --default true 2>/dev/null)
 ```
 
 If `false`: skip entirely.
