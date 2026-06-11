@@ -2,7 +2,7 @@
 Interactive configuration of third-party integrations for GSD — search API keys
 (Brave / Firecrawl / Exa), code-review CLI routing (`review.models.<cli>`), and
 agent-skill injection (`agent_skills.<agent-type>`). Writes to
-`.planning/config.json` via `gsd-sdk`/`gsd-tools` so unrelated keys are
+`.planning/config.json` via `gsd-tools` so unrelated keys are
 preserved, never clobbered.
 
 This command is deliberately separate from `/gsd:settings` (workflow toggles)
