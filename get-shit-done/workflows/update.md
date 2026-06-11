@@ -9,7 +9,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 <process>
 
 <step name="get_installed_version">
-Detect whether GSD is installed locally or globally by checking both locations and validating install integrity.
+Detect the installed GSD version, scope, runtime, and config dir.
 
 First, derive `PREFERRED_CONFIG_DIR` and `PREFERRED_RUNTIME` from the invoking prompt's `execution_context` path:
 - If the path contains `/get-shit-done/workflows/update.md`, strip that suffix and store the remainder as `PREFERRED_CONFIG_DIR`
@@ -22,10 +22,7 @@ First, derive `PREFERRED_CONFIG_DIR` and `PREFERRED_RUNTIME` from the invoking p
 - Path contains `/.config/opencode/` or `/.opencode/`, or `PREFERRED_CONFIG_DIR` contains `opencode.json` / `opencode.jsonc` -> `opencode`
 - Otherwise -> `claude`
 
-Use `PREFERRED_CONFIG_DIR` when available so custom `--config-dir` installs are checked before default locations.
-Use `PREFERRED_RUNTIME` as the first runtime checked so `/gsd:update` targets the runtime that invoked it.
-
-Kilo config precedence must match the installer: `KILO_CONFIG_DIR` -> `dirname(KILO_CONFIG)` -> `XDG_CONFIG_HOME/kilo` -> `~/.config/kilo`.
+Then resolve the install context via the deterministic projection (#498). **Do NOT re-derive scope, runtime, or version by hand** — `update-context` owns that cascade in tested code (`get-shit-done/bin/lib/update-context.cjs`), the same way `check-latest-version` owns the package name (#2992):
 
 ```bash
 expand_home() {
@@ -182,46 +179,10 @@ for entry in "${RUNTIME_DIRS[@]}"; do
     ORDERED_RUNTIME_DIRS+=( "$entry" )
   fi
 done
-
-# Check local first (takes priority only if valid and distinct from global)
-LOCAL_VERSION_FILE="" LOCAL_MARKER_FILE="" LOCAL_DIR="" LOCAL_RUNTIME=""
-for entry in "${ORDERED_RUNTIME_DIRS[@]}"; do
-  runtime="${entry%%:*}"
-  dir="${entry#*:}"
-  if [ -f "./$dir/get-shit-done/VERSION" ] || [ -f "./$dir/get-shit-done/workflows/update.md" ]; then
-    LOCAL_RUNTIME="$runtime"
-    LOCAL_VERSION_FILE="./$dir/get-shit-done/VERSION"
-    LOCAL_MARKER_FILE="./$dir/get-shit-done/workflows/update.md"
-    LOCAL_DIR="$(cd "./$dir" 2>/dev/null && pwd)"
-    break
-  fi
-done
-
-GLOBAL_VERSION_FILE="" GLOBAL_MARKER_FILE="" GLOBAL_DIR="" GLOBAL_RUNTIME=""
-for entry in "${ORDERED_ENV_RUNTIME_DIRS[@]}"; do
-  runtime="${entry%%:*}"
-  dir="${entry#*:}"
-  if [ -f "$dir/get-shit-done/VERSION" ] || [ -f "$dir/get-shit-done/workflows/update.md" ]; then
-    GLOBAL_RUNTIME="$runtime"
-    GLOBAL_VERSION_FILE="$dir/get-shit-done/VERSION"
-    GLOBAL_MARKER_FILE="$dir/get-shit-done/workflows/update.md"
-    GLOBAL_DIR="$(cd "$dir" 2>/dev/null && pwd)"
-    break
-  fi
-done
-
-if [ -z "$GLOBAL_RUNTIME" ]; then
-  for entry in "${ORDERED_RUNTIME_DIRS[@]}"; do
-    runtime="${entry%%:*}"
-    dir="${entry#*:}"
-    if [ -f "$HOME/$dir/get-shit-done/VERSION" ] || [ -f "$HOME/$dir/get-shit-done/workflows/update.md" ]; then
-      GLOBAL_RUNTIME="$runtime"
-      GLOBAL_VERSION_FILE="$HOME/$dir/get-shit-done/VERSION"
-      GLOBAL_MARKER_FILE="$HOME/$dir/get-shit-done/workflows/update.md"
-      GLOBAL_DIR="$(cd "$HOME/$dir" 2>/dev/null && pwd)"
-      break
-    fi
-  done
+# Last resort: the gsd-tools shim on PATH — resolved to its absolute path and
+# invoked via the variable (never a bare `gsd-tools` command; see #2851).
+if [ -z "$GSD_TOOLS" ] && command -v gsd-tools >/dev/null 2>&1; then
+  GSD_TOOLS="$(command -v gsd-tools)"
 fi
 
 # Only treat as LOCAL if the resolved paths differ (prevents misdetection when CWD=$HOME)
@@ -254,39 +215,31 @@ elif [ -n "$GLOBAL_RUNTIME" ] && [ -f "$GLOBAL_MARKER_FILE" ]; then
   TARGET_RUNTIME="$GLOBAL_RUNTIME"
   RESOLVED_GSD_DIR="$GLOBAL_DIR"
 else
+  # No tool resolvable / projection failed -> treat as a fresh install.
   INSTALLED_VERSION="0.0.0"
   INSTALL_SCOPE="UNKNOWN"
   TARGET_RUNTIME="claude"
-  RESOLVED_GSD_DIR=""
+  GSD_DIR=""
 fi
 
 echo "$INSTALLED_VERSION"
 echo "$INSTALL_SCOPE"
 echo "$TARGET_RUNTIME"
-echo "$RESOLVED_GSD_DIR"
+echo "$GSD_DIR"
 ```
 
 Parse output:
 - Line 1 = installed version (`0.0.0` means unknown version)
 - Line 2 = install scope (`LOCAL`, `GLOBAL`, or `UNKNOWN`)
-- Line 3 = target runtime (`claude`, `opencode`, `gemini`, `kilo`, or `codex`)
-- Line 4 = resolved GSD config dir (e.g. `/Users/me/.claude`, `/Users/me/.gemini`); empty if scope is `UNKNOWN`. Capture this as `GSD_DIR` and pass it to subsequent steps so they don't have to re-derive the runtime path.
-- If scope is `UNKNOWN`, proceed to install step using `--claude --global` fallback.
+- Line 3 = target runtime (`claude`, `opencode`, `gemini`, `kilo`, `codex`, `antigravity`)
+- Line 4 = resolved GSD config dir (e.g. `/Users/me/.claude`, `/Users/me/.gemini`); empty if scope is `UNKNOWN`. Capture this as `GSD_DIR` and pass it to subsequent steps so they don't re-derive the runtime path.
+- If scope is `UNKNOWN`, proceed to install using the `--claude --global` fallback.
+
+`update-context` reproduces the previous detection cascade — preferred-config-dir fast path, local-over-global with same-path dedup (so `CWD=$HOME` does not misdetect as LOCAL), env-var overrides (`CLAUDE_CONFIG_DIR`, `OPENCODE_CONFIG_DIR`, `KILO_CONFIG`, `XDG_CONFIG_HOME`, `CODEX_HOME`, …), and semver validation — but as a tested projection rather than ~280 lines of inline bash. Branch coverage lives in `tests/issue-498-update-context.test.cjs`.
 
 If multiple runtime installs are detected and the invoking runtime cannot be determined from execution_context, ask the user which runtime to update before running install.
 
-**If VERSION file missing:**
-```
-## GSD Update
-
-**Installed version:** Unknown
-
-Your installation doesn't include version tracking.
-
-Running fresh install...
-```
-
-Proceed to install step (treat as version 0.0.0 for comparison).
+**If VERSION file missing (version resolves to `0.0.0`):** report the installed version as Unknown and proceed to install (treated as `0.0.0` for comparison).
 </step>
 
 <step name="check_latest_version">
@@ -411,30 +364,21 @@ First, resolve the config directory (`RUNTIME_DIR`) from the install scope
 detected in `get_installed_version`:
 
 ```bash
-# RUNTIME_DIR is the resolved config directory (e.g. ~/.config/opencode, ~/.gemini)
-# It should already be set from get_installed_version as GLOBAL_DIR or LOCAL_DIR.
-# Use the appropriate variable based on INSTALL_SCOPE.
-if [ "$INSTALL_SCOPE" = "LOCAL" ]; then
-  RUNTIME_DIR="$LOCAL_DIR"
-elif [ "$INSTALL_SCOPE" = "GLOBAL" ]; then
-  RUNTIME_DIR="$GLOBAL_DIR"
-else
-  RUNTIME_DIR=""
-fi
+# RUNTIME_DIR is the resolved config directory (e.g. ~/.config/opencode, ~/.gemini).
+# get_installed_version emits it as GSD_DIR (LOCAL or GLOBAL install dir, or empty
+# when scope is UNKNOWN). Empty RUNTIME_DIR skips the backup below.
+RUNTIME_DIR="$GSD_DIR"
 ```
 
 If `RUNTIME_DIR` is empty or does not exist, skip this step (no config dir to
 inspect).
 
-Otherwise run `detect-custom-files` (prefer SDK when available):
+Otherwise run `detect-custom-files`:
 
 ```bash
-GSD_TOOLS="$RUNTIME_DIR/get-shit-done/bin/gsd-tools.cjs"
 CUSTOM_JSON=''
 if [ -f "$GSD_TOOLS" ] && [ -n "$RUNTIME_DIR" ]; then
   CUSTOM_JSON=$(node "$GSD_TOOLS" detect-custom-files --config-dir "$RUNTIME_DIR" 2>/dev/null)
-elif [ -n "$RUNTIME_DIR" ] && command -v gsd-sdk >/dev/null 2>&1; then
-  CUSTOM_JSON=$(gsd-sdk query detect-custom-files --config-dir "$RUNTIME_DIR" 2>/dev/null)
 fi
 if [ -z "$CUSTOM_JSON" ]; then
   CUSTOM_JSON='{"custom_files":[],"custom_count":0}'
@@ -548,10 +492,34 @@ fi
 if [ -n "$CODEX_HOME" ]; then
   CACHE_DIRS+=( "$(expand_home "$CODEX_HOME")" )
 fi
+if [ -n "$CURSOR_CONFIG_DIR" ]; then
+  CACHE_DIRS+=( "$(expand_home "$CURSOR_CONFIG_DIR")" )
+fi
+if [ -n "$WINDSURF_CONFIG_DIR" ]; then
+  CACHE_DIRS+=( "$(expand_home "$WINDSURF_CONFIG_DIR")" )
+fi
+if [ -n "$AUGMENT_CONFIG_DIR" ]; then
+  CACHE_DIRS+=( "$(expand_home "$AUGMENT_CONFIG_DIR")" )
+fi
+if [ -n "$TRAE_CONFIG_DIR" ]; then
+  CACHE_DIRS+=( "$(expand_home "$TRAE_CONFIG_DIR")" )
+fi
+if [ -n "$QWEN_CONFIG_DIR" ]; then
+  CACHE_DIRS+=( "$(expand_home "$QWEN_CONFIG_DIR")" )
+fi
+if [ -n "$HERMES_HOME" ]; then
+  CACHE_DIRS+=( "$(expand_home "$HERMES_HOME")" )
+fi
+if [ -n "$CODEBUDDY_CONFIG_DIR" ]; then
+  CACHE_DIRS+=( "$(expand_home "$CODEBUDDY_CONFIG_DIR")" )
+fi
+if [ -n "$CLINE_CONFIG_DIR" ]; then
+  CACHE_DIRS+=( "$(expand_home "$CLINE_CONFIG_DIR")" )
+fi
 
 for dir in "${CACHE_DIRS[@]}"; do
   if [ -n "$dir" ]; then
-    rm -f "$dir/cache/gsd-update-check.json"
+    rm -f "$dir/cache/gsd-update-check"*.json
   fi
 done
 
