@@ -789,7 +789,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 68-02-PLAN.md — INDEX.md manifest (feature-status table + dependency graph + Wave 1/2 build order + exhaustive Excluded-from-scope sweep) [SCAF-01, SCAF-03]
+- [x] 68-02-PLAN.md — INDEX.md manifest (feature-status table + dependency graph + Wave 1/2 build order + exhaustive Excluded-from-scope sweep) [SCAF-01, SCAF-03]
 
 #### Phase 69: spec-01 Positive Framing
 
@@ -988,7 +988,7 @@ Plans:
 | 65. Guard Test (RED) | v2.1.0-g | 2/2 | Complete    | 2026-06-09 |
 | 66. Citation Cleanup | v2.1.0-g | 4/4 | Complete    | 2026-06-09 |
 | 67. Full Verification | v2.1.0-g | 1/1 | Complete    | 2026-06-10 |
-| 68. Spec Scaffold | v2.1.0-h | 1/2 | In Progress|  |
+| 68. Spec Scaffold | v2.1.0-h | 2/2 | Complete   | 2026-06-11 |
 | 69. spec-01 Positive Framing | v2.1.0-h | 0/TBD | Not started | - |
 | 70. spec-02 SHA Versioning | v2.1.0-h | 0/TBD | Not started | - |
 | 71. spec-04 Eta Materialization | v2.1.0-h | 0/TBD | Not started | - |
