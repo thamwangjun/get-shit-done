@@ -779,7 +779,9 @@ Plans:
   2. `.planning/spec/00-CONVENTIONS.md` exists and defines the per-feature spec template, the REQ-ID/SPEC-ID scheme, the status vocabulary (Draft/Ready/Implemented/Verified), and the source-of-truth hierarchy [SCAF-02]
   3. `INDEX.md` contains an explicit "Excluded from scope" section listing superseded/abandoned work the reimplementer must not carry forward — at minimum XML tag hierarchy (`<persona>`/`<intent>`/`<objective>`), the `resolveIncludes()` stepping stone, the `parseV()` semver block, and every PROJECT.md Out-of-Scope item [SCAF-03]
   4. Eight numbered feature subdirectories (`01-positive-framing/` through `08-test-infrastructure/`) each contain a `SPEC.md` stub with populated frontmatter, matching the INDEX manifest order
-**Plans**: TBD
+**Plans**: 2 plans
+- [ ] 68-01-PLAN.md — 00-CONVENTIONS.md meta-spec (locked 7-section template, NN-INV-M ID scheme, status vocab, source-of-truth hierarchy) + eight NN-*/SPEC.md stubs [SCAF-02]
+- [ ] 68-02-PLAN.md — INDEX.md manifest (feature-status table + dependency graph + Wave 1/2 build order + exhaustive Excluded-from-scope sweep) [SCAF-01, SCAF-03]
 
 #### Phase 69: spec-01 Positive Framing
 **Goal**: `01-positive-framing/SPEC.md` fully specifies the affirmative-framing standard and the negative-framing corpus scanner as a behavioral contract a reimplementer can rebuild on a refactored upstream
