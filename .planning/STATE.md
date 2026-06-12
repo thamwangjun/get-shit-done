@@ -2,16 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.1.0-h
 milestone_name: Phase Details
-status: executing
-stopped_at: context exhaustion at 76% (2026-06-12)
-last_updated: "2026-06-12T00:33:17.705Z"
-last_activity: 2026-06-12 -- Phase 69 planning complete
+status: verifying
+last_updated: "2026-06-12T00:42:27.531Z"
+last_activity: 2026-06-12
 progress:
   total_phases: 10
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 3
-  completed_plans: 2
-  percent: 10
+  completed_plans: 3
+  percent: 20
 ---
 
 # Project State
@@ -21,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-07 after v2.1.0-f milestone start)
 
 **Core value:** Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships
-**Current focus:** Phase 68 — spec-scaffold
+**Current focus:** Phase 69 — spec-01-positive-framing
 
 ## Current Position
 
-Phase: 69
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-06-12 -- Phase 69 planning complete
+Phase: 69 (spec-01-positive-framing) — EXECUTING
+Plan: 1 of 1
+Status: Phase complete — ready for verification
+Last activity: 2026-06-12
 
 Progress: [██████████] 100%
 
@@ -54,6 +53,8 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - [Phase ?]: Block-header frontmatter (not YAML) used for all .planning/spec/ files
 - [Phase ?]: INDEX.md uses ASCII dependency graph — legible, consistent with repo plain-text convention, arrows and wave split are clear
 - [Phase ?]: XML tag hierarchy exclusion recorded once in INDEX.md — PROJECT.md item and SCAF-03 floor item are the same exclusion; single consolidated entry
+- [Phase 69]: D-02 shape-normative: detection SHAPE is the contract; branch enumeration marked 'current as of 2026-06-12' and advisory — makes spec survive upstream merges that add/remove detection branches
+- [Phase 69]: D-05 affirmative-rewrite rule documented in Purpose + Key Decisions, NOT as a MUST invariant — scanner only flags; no tier-1 test for rewriting; rewrite is a human-authoring standard
 
 ### Wave Structure (for execution)
 
@@ -101,8 +102,8 @@ None. Research is HIGH confidence across all five phases.
 ## Session Continuity
 
 Last activity: 2026-06-11 — Roadmap created for v2.1.0-h (Phases 68–77); REQUIREMENTS traceability filled
-Stopped at: context exhaustion at 76% (2026-06-12)
-Resume file: .planning/phases/69-spec-01-positive-framing/69-CONTEXT.md
+Stopped at: Completed 69-01-PLAN.md
+Resume file: None
 
 ## Deferred Items
 

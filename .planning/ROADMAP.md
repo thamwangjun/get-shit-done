@@ -806,7 +806,7 @@ Plans:
 
 **Wave 1**
 
-- [ ] 69-01-PLAN.md — Author SPEC.md body: Purpose, Scope, five 01-INV-M invariants + Acceptance Tests table, Key Decisions, advisory Code Context; advance Status Draft -> Ready [SPEC-01, QUAL-01, QUAL-02, QUAL-03, QUAL-04, QUAL-05]
+- [x] 69-01-PLAN.md — Author SPEC.md body: Purpose, Scope, five 01-INV-M invariants + Acceptance Tests table, Key Decisions, advisory Code Context; advance Status Draft -> Ready [SPEC-01, QUAL-01, QUAL-02, QUAL-03, QUAL-04, QUAL-05]
 
 #### Phase 70: spec-02 SHA Versioning
 
@@ -993,7 +993,7 @@ Plans:
 | 66. Citation Cleanup | v2.1.0-g | 4/4 | Complete    | 2026-06-09 |
 | 67. Full Verification | v2.1.0-g | 1/1 | Complete    | 2026-06-10 |
 | 68. Spec Scaffold | v2.1.0-h | 2/2 | Complete    | 2026-06-11 |
-| 69. spec-01 Positive Framing | v2.1.0-h | 0/TBD | Not started | - |
+| 69. spec-01 Positive Framing | v2.1.0-h | 1/1 | Complete   | 2026-06-12 |
 | 70. spec-02 SHA Versioning | v2.1.0-h | 0/TBD | Not started | - |
 | 71. spec-04 Eta Materialization | v2.1.0-h | 0/TBD | Not started | - |
 | 72. spec-08 Test Infrastructure | v2.1.0-h | 0/TBD | Not started | - |

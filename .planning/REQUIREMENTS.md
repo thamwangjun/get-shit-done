@@ -18,7 +18,7 @@
 
 ### Feature Specs
 
-- [ ] **SPEC-01**: `01-positive-framing/SPEC.md` specifies the positive/affirmative-framing standard and the negative-framing corpus scanner — all 12+ detection branches enumerated (doNot, never, dont, antiPatterns, mustNot, shouldNot, cannot, wont, willNot, prohibited, forbidden, warn-only variants), the replacement rule (rewrite negatives as affirmative instructions), the paired-pattern exception, and the four scan directories
+- [x] **SPEC-01**: `01-positive-framing/SPEC.md` specifies the positive/affirmative-framing standard and the negative-framing corpus scanner — all 12+ detection branches enumerated (doNot, never, dont, antiPatterns, mustNot, shouldNot, cannot, wont, willNot, prohibited, forbidden, warn-only variants), the replacement rule (rewrite negatives as affirmative instructions), the paired-pattern exception, and the four scan directories
 - [ ] **SPEC-02**: `02-sha-versioning/SPEC.md` specifies the SHA-based versioning system — install.js git-SHA emit, `no-network` sentinel semantics, update worker via the GitHub Commits API with `isNewer` SHA equality, statusline display, `check-latest-version.cjs` injectable seam, and the `{{GSD_REPO}}`/`{{GSD_BRANCH}}` template placeholder boundary
 - [ ] **SPEC-03**: `03-hooks-build/SPEC.md` specifies the on-demand hooks build (`ensureHooksDist`) — trigger condition (absent `hooks/dist/`), `spawnSync` vs `execSync` decision, console notice, and abort-on-failure behavior
 - [ ] **SPEC-04**: `04-eta-materialization/SPEC.md` specifies Eta v4 install-time content materialization — engine configuration (default delimiters, `autoEscape: false`, `<%~` raw output), `<%~ include() %>` conversion from `@~/` refs, the `ALLOWED_INLINE_REFS` exception list, and coverage of every copy path including the skills `wrappedConverter`
@@ -29,11 +29,11 @@
 
 ### Quality (applies to every SPEC.md)
 
-- [ ] **QUAL-01**: Each spec states behavioral invariants as numbered, falsifiable EARS statements with RFC 2119 strength — the normative contract is behavior, not implementation
-- [ ] **QUAL-02**: Each spec has an Acceptance-Tests traceability table mapping each MUST-level invariant to a test file and subtest name; invariants without a test are flagged `[MISSING — write test first]`
-- [ ] **QUAL-03**: Each spec separates the normative behavioral contract from advisory implementation notes; any current file path or symbol is marked advisory (`<!-- advisory -->`) and survives a file move
-- [ ] **QUAL-04**: Each spec cites at least one tier-1 (test) or tier-2 (source) artifact; reference guides are cited only as background
-- [ ] **QUAL-05**: Each spec has a Key Decisions section recording settled decisions with rationale, marked "settled — do not reopen", with the consequence of reopening stated inline
+- [x] **QUAL-01**: Each spec states behavioral invariants as numbered, falsifiable EARS statements with RFC 2119 strength — the normative contract is behavior, not implementation
+- [x] **QUAL-02**: Each spec has an Acceptance-Tests traceability table mapping each MUST-level invariant to a test file and subtest name; invariants without a test are flagged `[MISSING — write test first]`
+- [x] **QUAL-03**: Each spec separates the normative behavioral contract from advisory implementation notes; any current file path or symbol is marked advisory (`<!-- advisory -->`) and survives a file move
+- [x] **QUAL-04**: Each spec cites at least one tier-1 (test) or tier-2 (source) artifact; reference guides are cited only as background
+- [x] **QUAL-05**: Each spec has a Key Decisions section recording settled decisions with rationale, marked "settled — do not reopen", with the consequence of reopening stated inline
 
 ### Review
 
@@ -63,7 +63,7 @@ Maps each REQ-ID to its phase. Every requirement maps to exactly one phase; QUAL
 | SCAF-01 | Phase 68 | Complete |
 | SCAF-02 | Phase 68 | Complete |
 | SCAF-03 | Phase 68 | Complete |
-| SPEC-01 | Phase 69 | Pending |
+| SPEC-01 | Phase 69 | Complete |
 | SPEC-02 | Phase 70 | Pending |
 | SPEC-04 | Phase 71 | Pending |
 | SPEC-08 | Phase 72 | Pending |
@@ -72,10 +72,10 @@ Maps each REQ-ID to its phase. Every requirement maps to exactly one phase; QUAL
 | SPEC-06 | Phase 75 | Pending |
 | SPEC-07 | Phase 76 | Pending |
 | REV-01 | Phase 77 | Pending |
-| QUAL-01 | Phases 69–76 (shared) | Pending |
-| QUAL-02 | Phases 69–76 (shared) | Pending |
-| QUAL-03 | Phases 69–76 (shared) | Pending |
-| QUAL-04 | Phases 69–76 (shared) | Pending |
-| QUAL-05 | Phases 69–76 (shared) | Pending |
+| QUAL-01 | Phases 69–76 (shared) | Complete |
+| QUAL-02 | Phases 69–76 (shared) | Complete |
+| QUAL-03 | Phases 69–76 (shared) | Complete |
+| QUAL-04 | Phases 69–76 (shared) | Complete |
+| QUAL-05 | Phases 69–76 (shared) | Complete |
 
 **Coverage:** 17/17 requirements mapped (12 feature/scaffold/review requirements each to exactly one phase + 5 QUAL criteria applied across all 8 feature-spec phases). No orphans, no duplicates.
