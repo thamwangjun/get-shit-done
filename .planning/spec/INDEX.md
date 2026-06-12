@@ -22,7 +22,7 @@ primary guard against carrying forward abandoned work.
 | SPEC-04 | Eta Materialization | [04-eta-materialization/SPEC.md](04-eta-materialization/SPEC.md) | Draft | — |
 | SPEC-05 | Step Numbering | [05-step-numbering/SPEC.md](05-step-numbering/SPEC.md) | Draft | SPEC-08 |
 | SPEC-06 | Thinking Effort | [06-thinking-effort/SPEC.md](06-thinking-effort/SPEC.md) | Draft | SPEC-08 |
-| SPEC-07 | Citation Guard | [07-citation-guard/SPEC.md](07-citation-guard/SPEC.md) | Draft | SPEC-08 |
+| SPEC-07 | Citation Guard | [07-citation-guard/SPEC.md](07-citation-guard/SPEC.md) | Ready | SPEC-08 |
 | SPEC-08 | Test Infrastructure | [08-test-infrastructure/SPEC.md](08-test-infrastructure/SPEC.md) | Draft | — |
 
 ---
