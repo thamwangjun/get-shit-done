@@ -65,6 +65,8 @@ The installer transforms installed files for each target runtime: tool names (`R
 - **Agents** in `agents/` declare tool permissions in YAML frontmatter (`name`, `description`, `tools`, `color`, optional `hooks`). Keep each focused on a single responsibility.
 - The `gsd-tools.cjs` CLI is the interface between agents and `.planning/`. Run `node get-shit-done/bin/gsd-tools.cjs help` for all commands. Key groups: `scaffold`, `frontmatter`, `verify`, `template fill`, `validate consistency`/`validate health [--repair]`.
 
+> **MANDATORY:** Always invoke `gsd-tools` from the installed location at `$HOME/.claude` (i.e. `node $HOME/.claude/gsd-core/bin/gsd-tools.cjs ...`), never the in-repo copy under `get-shit-done/bin/`. The repo copy is source that gets transformed on install; running it directly can desync behavior from what the installed runtime uses.
+
 ## Testing Conventions
 
 - Test files are `tests/*.test.cjs` (CommonJS); each CLI module in `get-shit-done/bin/lib/` has a corresponding test file.
