@@ -837,8 +837,8 @@ Plans:
   3. Current paths/symbols advisory-marked; Key Decisions records the Eta-v4-over-custom-resolver and default-delimiter decisions as settled [QUAL-03, QUAL-05]
 
 **Plans**: 1 plan
-
 Plans:
+
 - [ ] 71-01-PLAN.md — Author the SPEC-04 Eta materialization body (~5 04-INV-M invariants + Acceptance Tests table; two settled Key Decisions + advisory Code Context; Status Draft -> Ready)
 
 #### Phase 72: spec-08 Test Infrastructure
