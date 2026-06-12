@@ -802,7 +802,11 @@ Plans:
   2. Invariants are numbered EARS statements (≥2) citing `tests/negative-framing-scan.test.cjs` as the tier-1 source; the traceability table maps each MUST to a subtest [QUAL-01, QUAL-02, QUAL-04]
   3. Current file paths/symbols are advisory-marked and the spec survives a file move; a Key Decisions section records settled framing decisions "do not reopen" [QUAL-03, QUAL-05]
 
-**Plans**: TBD
+**Plans**: 1 plan
+
+**Wave 1**
+
+- [ ] 69-01-PLAN.md — Author SPEC.md body: Purpose, Scope, five 01-INV-M invariants + Acceptance Tests table, Key Decisions, advisory Code Context; advance Status Draft -> Ready [SPEC-01, QUAL-01, QUAL-02, QUAL-03, QUAL-04, QUAL-05]
 
 #### Phase 70: spec-02 SHA Versioning
 
