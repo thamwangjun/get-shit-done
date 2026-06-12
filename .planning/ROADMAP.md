@@ -819,7 +819,11 @@ Plans:
   2. The "GitHub Commits API, not npmjs.com" and "SHA equality, not semver ordering" decisions are recorded as settled in Key Decisions with the consequence of reopening stated [QUAL-05]
   3. Invariants are EARS statements citing the version/semver/SHA test files as tier-1 sources; traceability table is complete [QUAL-01, QUAL-02, QUAL-04]; current paths advisory-marked [QUAL-03]
 
-**Plans**: TBD
+**Plans**: 1 plan
+
+**Wave 1**
+
+- [ ] 70-01-PLAN.md — Author SPEC.md body: Purpose, Scope, ~6 02-INV-M invariants + Acceptance Tests table across five tier-1 SHA tests, four settled Key Decisions, advisory Code Context; advance Status Draft -> Ready [SPEC-02, QUAL-01, QUAL-02, QUAL-03, QUAL-04, QUAL-05]
 
 #### Phase 71: spec-04 Eta Materialization
 
