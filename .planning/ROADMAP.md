@@ -289,7 +289,7 @@ Full details: `.planning/milestones/v2.1.0-g-ROADMAP.md`
 - [ ] **Phase 72: spec-08 Test Infrastructure** - Spec scanner-precedence rule, serial isolation, fork test-suite layout (Wave 1)
 - [ ] **Phase 73: spec-03 Hooks Build** - Spec on-demand `ensureHooksDist` build (Wave 2, depends on Phase 70)
 - [x] **Phase 74: spec-05 Step Numbering** - Spec whole-integer step numbering scanner + normalizer + cross-ref scanner (Wave 2, depends on Phase 72) (completed 2026-06-12)
-- [ ] **Phase 75: spec-06 Thinking Effort** - Spec per-agent thinking effort parser/resolver/catalog/wiring (Wave 2, depends on Phase 72)
+- [x] **Phase 75: spec-06 Thinking Effort** - Spec per-agent thinking effort parser/resolver/catalog/wiring (Wave 2, depends on Phase 72) (completed 2026-06-12)
 - [x] **Phase 76: spec-07 Citation Guard** - Spec the citation-cleanup guard and two-tier allowlist (Wave 2, depends on Phase 72) (completed 2026-06-12)
 - [ ] **Phase 77: Cross-Spec Consistency Review** - Reconcile INDEX dependency graph, traceability tables, exclusion list (depends on Phases 69–76)
 
@@ -1012,7 +1012,7 @@ Plans:
 | 72. spec-08 Test Infrastructure | v2.1.0-h | 0/TBD | Not started | - |
 | 73. spec-03 Hooks Build | v2.1.0-h | 0/TBD | Not started | - |
 | 74. spec-05 Step Numbering | v2.1.0-h | 1/1 | Complete    | 2026-06-12 |
-| 75. spec-06 Thinking Effort | v2.1.0-h | 1/1 | Complete   | 2026-06-12 |
+| 75. spec-06 Thinking Effort | v2.1.0-h | 1/1 | Complete    | 2026-06-12 |
 | 76. spec-07 Citation Guard | v2.1.0-h | 1/1 | Complete    | 2026-06-12 |
 | 77. Cross-Spec Consistency Review | v2.1.0-h | 0/TBD | Not started | - |
 
