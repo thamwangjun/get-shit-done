@@ -878,7 +878,8 @@ Plans:
   2. The scanner → normalizer → cross-file-ref-scanner internal ordering is stated explicitly within the spec [SPEC-05]
   3. Invariants are EARS statements (≥2) citing the step-numbering and cross-file-step-refs test files as tier-1; corpus counts recorded "current as of" with the shape (not the count) normative; traceability table complete; paths advisory-marked; Key Decisions settled [QUAL-01–05]
 
-**Plans**: TBD
+**Plans**: 1 plan
+- [ ] 74-01-PLAN.md — Author SPEC-05 body: Purpose/Scope/five 05-INV-M invariants/Acceptance Tests (Task 1) + four Key Decisions/advisory Code Context/Status Draft->Ready (Task 2)
 
 #### Phase 75: spec-06 Thinking Effort
 
