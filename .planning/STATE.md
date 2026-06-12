@@ -2,16 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.1.0-h
 milestone_name: Phase Details
-status: executing
-stopped_at: context exhaustion at 75% (2026-06-12)
-last_updated: "2026-06-12T02:41:06.488Z"
-last_activity: 2026-06-12 -- Phase 71 planning complete
+status: verifying
+last_updated: "2026-06-12T02:51:13.169Z"
+last_activity: 2026-06-12
 progress:
   total_phases: 10
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 5
-  completed_plans: 4
-  percent: 30
+  completed_plans: 5
+  percent: 40
 ---
 
 # Project State
@@ -21,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-07 after v2.1.0-f milestone start)
 
 **Core value:** Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships
-**Current focus:** Phase 70 — spec-02-sha-versioning
+**Current focus:** Phase 71 — spec-04-eta-materialization
 
 ## Current Position
 
-Phase: 71
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-06-12 -- Phase 71 planning complete
+Phase: 71 (spec-04-eta-materialization) — EXECUTING
+Plan: 1 of 1
+Status: Phase complete — ready for verification
+Last activity: 2026-06-12
 
 Progress: [██████████] 100%
 
@@ -106,7 +105,7 @@ None. Research is HIGH confidence across all five phases.
 
 Last activity: 2026-06-11 — Roadmap created for v2.1.0-h (Phases 68–77); REQUIREMENTS traceability filled
 Stopped at: context exhaustion at 75% (2026-06-12)
-Resume file: .planning/phases/71-spec-04-eta-materialization/71-CONTEXT.md
+Resume file: None
 
 ## Deferred Items
 

@@ -839,7 +839,7 @@ Plans:
 **Plans**: 1 plan
 Plans:
 
-- [ ] 71-01-PLAN.md — Author the SPEC-04 Eta materialization body (~5 04-INV-M invariants + Acceptance Tests table; two settled Key Decisions + advisory Code Context; Status Draft -> Ready)
+- [x] 71-01-PLAN.md — Author the SPEC-04 Eta materialization body (~5 04-INV-M invariants + Acceptance Tests table; two settled Key Decisions + advisory Code Context; Status Draft -> Ready)
 
 #### Phase 72: spec-08 Test Infrastructure
 
@@ -1002,7 +1002,7 @@ Plans:
 | 68. Spec Scaffold | v2.1.0-h | 2/2 | Complete    | 2026-06-11 |
 | 69. spec-01 Positive Framing | v2.1.0-h | 1/1 | Complete    | 2026-06-12 |
 | 70. spec-02 SHA Versioning | v2.1.0-h | 1/1 | Complete    | 2026-06-12 |
-| 71. spec-04 Eta Materialization | v2.1.0-h | 0/TBD | Not started | - |
+| 71. spec-04 Eta Materialization | v2.1.0-h | 1/1 | Complete   | 2026-06-12 |
 | 72. spec-08 Test Infrastructure | v2.1.0-h | 0/TBD | Not started | - |
 | 73. spec-03 Hooks Build | v2.1.0-h | 0/TBD | Not started | - |
 | 74. spec-05 Step Numbering | v2.1.0-h | 0/TBD | Not started | - |

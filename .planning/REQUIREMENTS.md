@@ -21,7 +21,7 @@
 - [x] **SPEC-01**: `01-positive-framing/SPEC.md` specifies the positive/affirmative-framing standard and the negative-framing corpus scanner — all 12+ detection branches enumerated (doNot, never, dont, antiPatterns, mustNot, shouldNot, cannot, wont, willNot, prohibited, forbidden, warn-only variants), the replacement rule (rewrite negatives as affirmative instructions), the paired-pattern exception, and the four scan directories
 - [x] **SPEC-02**: `02-sha-versioning/SPEC.md` specifies the SHA-based versioning system — install.js git-SHA emit, `no-network` sentinel semantics, update worker via the GitHub Commits API with `isNewer` SHA equality, statusline display, `check-latest-version.cjs` injectable seam, and the `{{GSD_REPO}}`/`{{GSD_BRANCH}}` template placeholder boundary
 - [ ] **SPEC-03**: `03-hooks-build/SPEC.md` specifies the on-demand hooks build (`ensureHooksDist`) — trigger condition (absent `hooks/dist/`), `spawnSync` vs `execSync` decision, console notice, and abort-on-failure behavior
-- [ ] **SPEC-04**: `04-eta-materialization/SPEC.md` specifies Eta v4 install-time content materialization — engine configuration (default delimiters, `autoEscape: false`, `<%~` raw output), `<%~ include() %>` conversion from `@~/` refs, the `ALLOWED_INLINE_REFS` exception list, and coverage of every copy path including the skills `wrappedConverter`
+- [x] **SPEC-04**: `04-eta-materialization/SPEC.md` specifies Eta v4 install-time content materialization — engine configuration (default delimiters, `autoEscape: false`, `<%~` raw output), `<%~ include() %>` conversion from `@~/` refs, the `ALLOWED_INLINE_REFS` exception list, and coverage of every copy path including the skills `wrappedConverter`
 - [ ] **SPEC-05**: `05-step-numbering/SPEC.md` specifies whole-integer step numbering — the scanner (decimal + letter-suffix + out-of-order detection), `normalize-step-numbers.cjs` cross-file-aware idempotent CLI, the cross-file-step-refs scanner, and the explicit Pattern C exclusion (`## N.N.` section headings in plan files)
 - [ ] **SPEC-06**: `06-thinking-effort/SPEC.md` specifies per-agent thinking effort — `parseModelEffort` semicolon parser (input/output/error modes), the unified `{claude, codex}` resolver precedence chain (override → slot → D-08 medium floor), the static runtime allowlist, the per-runtime behavior matrix, catalog schema, 20 `*_effort` init siblings, spawn-template wiring, install.js Codex emit seam, the `rawSlotForRuntime` Codex fix, and the CATALOG-02 user-handover boundary
 - [ ] **SPEC-07**: `07-citation-guard/SPEC.md` specifies the citation cleanup guard — `no-issue-citations.test.cjs` detection (inline/parenthetical/feat-form), the two-tier allowlist (`PLACEHOLDER_DIGITS` vs `FILE_ALLOWLIST`) with per-tier semantics, and the 5-directory detection scope
@@ -65,7 +65,7 @@ Maps each REQ-ID to its phase. Every requirement maps to exactly one phase; QUAL
 | SCAF-03 | Phase 68 | Complete |
 | SPEC-01 | Phase 69 | Complete |
 | SPEC-02 | Phase 70 | Complete |
-| SPEC-04 | Phase 71 | Pending |
+| SPEC-04 | Phase 71 | Complete |
 | SPEC-08 | Phase 72 | Pending |
 | SPEC-03 | Phase 73 | Pending |
 | SPEC-05 | Phase 74 | Pending |
