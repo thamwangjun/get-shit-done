@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v2.1.0-h
 milestone_name: Phase Details
 status: verifying
-stopped_at: context exhaustion at 78% (2026-06-12)
-last_updated: "2026-06-12T01:49:38.397Z"
+stopped_at: Phase 71 context gathered
+last_updated: "2026-06-12T02:04:47.764Z"
 last_activity: 2026-06-12
 progress:
   total_phases: 10
@@ -105,8 +105,8 @@ None. Research is HIGH confidence across all five phases.
 ## Session Continuity
 
 Last activity: 2026-06-11 — Roadmap created for v2.1.0-h (Phases 68–77); REQUIREMENTS traceability filled
-Stopped at: context exhaustion at 78% (2026-06-12)
-Resume file: None
+Stopped at: Phase 71 context gathered
+Resume file: .planning/phases/71-spec-04-eta-materialization/71-CONTEXT.md
 
 ## Deferred Items
 
