@@ -893,7 +893,9 @@ Plans:
   2. The D-08 medium floor is stated as a MUST-level invariant (not optional) with the consequence of omission; the rawSlotForRuntime fix is named as the correctness linchpin [SPEC-06, QUAL-01]
   3. Invariants cite the effort-resolution regression test (330-row golden snapshot) and `init.cjs` as tier-1/tier-2 sources; the snapshot's structure is described, not just its existence; traceability table complete; paths advisory-marked; Key Decisions settled [QUAL-02–05]
 
-**Plans**: TBD
+**Plans**: 1 plan
+
+- [ ] 75-01-PLAN.md — Author SPEC-06 body: Purpose/Scope/6-8 role-based 06-INV-M invariants (D-08 floor + static-allowlist gate as separate MUSTs from precedence)/Acceptance Tests routed to closest tier-1 oracles (Task 1) + settled Key Decisions incl. Codex emit linchpin (real WR-03 seam, rawSlotForRuntime flagged as paraphrase)/advisory Code Context/Status Draft->Ready (Task 2) + INDEX.md SPEC-06 row Draft->Ready
 
 #### Phase 76: spec-07 Citation Guard
 
