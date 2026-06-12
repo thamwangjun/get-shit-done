@@ -2,9 +2,9 @@
 
 **ID:** 02
 **Requirement:** SPEC-02
-**Status:** Draft
-**Confidence:** <!-- set when body is written -->
-**Specced:** <!-- set when body is written -->
+**Status:** Ready
+**Confidence:** High
+**Specced:** 2026-06-12
 **Reimplementation target:** v2.1.0-h fork features on refactored upstream
 **Depends on:** —
 **Reimplementation evidence (tier-1 test):** tests/version-detection.test.cjs; tests/semver-compare.test.cjs; tests/bug-2992-check-latest-version.test.cjs; tests/statusline-sha.test.cjs; tests/update-sha-migration.test.cjs
