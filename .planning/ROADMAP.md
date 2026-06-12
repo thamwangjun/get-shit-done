@@ -895,7 +895,7 @@ Plans:
 
 **Plans**: 1 plan
 
-- [ ] 75-01-PLAN.md — Author SPEC-06 body: Purpose/Scope/6-8 role-based 06-INV-M invariants (D-08 floor + static-allowlist gate as separate MUSTs from precedence)/Acceptance Tests routed to closest tier-1 oracles (Task 1) + settled Key Decisions incl. Codex emit linchpin (real WR-03 seam, rawSlotForRuntime flagged as paraphrase)/advisory Code Context/Status Draft->Ready (Task 2) + INDEX.md SPEC-06 row Draft->Ready
+- [x] 75-01-PLAN.md — Author SPEC-06 body: Purpose/Scope/6-8 role-based 06-INV-M invariants (D-08 floor + static-allowlist gate as separate MUSTs from precedence)/Acceptance Tests routed to closest tier-1 oracles (Task 1) + settled Key Decisions incl. Codex emit linchpin (real WR-03 seam, rawSlotForRuntime flagged as paraphrase)/advisory Code Context/Status Draft->Ready (Task 2) + INDEX.md SPEC-06 row Draft->Ready
 
 #### Phase 76: spec-07 Citation Guard
 
@@ -1012,7 +1012,7 @@ Plans:
 | 72. spec-08 Test Infrastructure | v2.1.0-h | 0/TBD | Not started | - |
 | 73. spec-03 Hooks Build | v2.1.0-h | 0/TBD | Not started | - |
 | 74. spec-05 Step Numbering | v2.1.0-h | 1/1 | Complete    | 2026-06-12 |
-| 75. spec-06 Thinking Effort | v2.1.0-h | 0/TBD | Not started | - |
+| 75. spec-06 Thinking Effort | v2.1.0-h | 1/1 | Complete   | 2026-06-12 |
 | 76. spec-07 Citation Guard | v2.1.0-h | 1/1 | Complete    | 2026-06-12 |
 | 77. Cross-Spec Consistency Review | v2.1.0-h | 0/TBD | Not started | - |
 

@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.1.0-h
 milestone_name: Phase Details
-status: executing
-stopped_at: context exhaustion at 76% (2026-06-12)
-last_updated: "2026-06-12T07:52:16.193Z"
-last_activity: 2026-06-12 -- Phase 75 planning complete
+status: verifying
+stopped_at: Completed 75-01-PLAN.md
+last_updated: "2026-06-12T08:28:44.562Z"
+last_activity: 2026-06-12 -- Phase 75 execution started
 progress:
   total_phases: 10
-  completed_phases: 6
+  completed_phases: 7
   total_plans: 8
-  completed_plans: 7
-  percent: 60
+  completed_plans: 8
+  percent: 70
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-07 after v2.1.0-f milestone start)
 
 **Core value:** Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships
-**Current focus:** Phase 76 — spec-07-citation-guard
+**Current focus:** Phase 75 — spec-06-thinking-effort
 
 ## Current Position
 
-Phase: 77
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-06-12 -- Phase 75 planning complete
+Phase: 75 (spec-06-thinking-effort) — EXECUTING
+Plan: 1 of 1
+Status: Phase complete — ready for verification
+Last activity: 2026-06-12 -- Phase 75 execution started
 
 Progress: [██████████] 100%
 
@@ -64,6 +64,9 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - [Phase ?]: Hex-color deliberate-false-positive tradeoff (D-04): inline regex hex lookbehind removed (260610-gku); false negatives are worse than false positives
 - [Phase ?]: Two-tier-allowlist refactor settled (D-05): PLACEHOLDER_DIGITS (global) vs FILE_ALLOWLIST (per-file) cannot collapse to single flat list
 - [Phase ?]: INV-5 standalone: SCAN_DIRS scope stated as its own claim; INV-3/INV-5 oracle is corpus describe block (not MISSING rows)
+- [Phase ?]: SPEC-06 authored with 7 role-based EARS invariants; D-08 floor (06-INV-3) and allowlist gate (06-INV-4) kept separate from precedence chain (06-INV-2) per D-03
+- [Phase ?]: Codex emit linchpin (D-04): WR-03 modelEmitted guard named as real seam; rawSlotForRuntime is ROADMAP paraphrase with no literal symbol in source
+- [Phase ?]: All SPEC-06 enumerations marked advisory current as of 2026-06-12; normative claim is always the shape per D-07
 
 ### Wave Structure (for execution)
 
@@ -110,12 +113,13 @@ None. Research is HIGH confidence across all five phases.
 | Phase 70-spec-02-sha-versioning P01 | 203 | 2 tasks | 1 files |
 | Phase 74-spec-05-step-numbering P01 | 218s | 2 tasks | 1 files |
 | Phase 76 P01 | 242 | 3 tasks | 2 files |
+| Phase 75 P01 | 377 | - tasks | - files |
 
 ## Session Continuity
 
 Last activity: 2026-06-11 — Roadmap created for v2.1.0-h (Phases 68–77); REQUIREMENTS traceability filled
-Stopped at: context exhaustion at 76% (2026-06-12)
-Resume file: .planning/phases/75-spec-06-thinking-effort/75-CONTEXT.md
+Stopped at: Completed 75-01-PLAN.md
+Resume file: None
 
 ## Deferred Items
 
