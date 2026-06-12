@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.1.0-h
 milestone_name: Phase Details
-status: executing
-last_updated: "2026-06-12T04:37:47.940Z"
-last_activity: 2026-06-12 -- Phase 74 planning complete
+status: verifying
+last_updated: "2026-06-12T04:49:56.536Z"
+last_activity: 2026-06-12
 progress:
   total_phases: 10
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 6
-  completed_plans: 5
-  percent: 40
+  completed_plans: 6
+  percent: 50
 ---
 
 # Project State
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-07 after v2.1.0-f milestone start)
 
 **Core value:** Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships
-**Current focus:** Phase 71 — spec-04-eta-materialization
+**Current focus:** Phase 74 — spec-05-step-numbering
 
 ## Current Position
 
-Phase: 72
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-06-12 -- Phase 74 planning complete
+Phase: 74 (spec-05-step-numbering) — EXECUTING
+Plan: 1 of 1
+Status: Phase complete — ready for verification
+Last activity: 2026-06-12
 
 Progress: [██████████] 100%
 
@@ -56,6 +56,9 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - [Phase 69]: D-02 shape-normative: detection SHAPE is the contract; branch enumeration marked 'current as of 2026-06-12' and advisory — makes spec survive upstream merges that add/remove detection branches
 - [Phase 69]: D-05 affirmative-rewrite rule documented in Purpose + Key Decisions, NOT as a MUST invariant — scanner only flags; no tier-1 test for rewriting; rewrite is a human-authoring standard
 - [Phase ?]: Placeholder substitution folded into 02-INV-1 as sub-clause per D-01; D-10 sentinel count shape-normative with 'current as of 2026-06-12' marker
+- [Phase 74]: Pattern C exclusion (## N.N. section headings in plan-phase.md/new-milestone.md/new-project.md) is intentional — dual-framed as Out-of-scope Scope bullet and Key Decision (a) in SPEC-05
+- [Phase 74]: Scanner-GREEN is the normalizer acceptance oracle for SPEC-05 INV-4/INV-5 — no dedicated normalizer test required (D-03)
+- [Phase 74]: SPEC-05 three-layer ordering stated explicitly: scanner detects (CI gate), normalizer fixes (remediation), cross-file-ref scanner validates (completeness check)
 
 ### Wave Structure (for execution)
 
@@ -100,12 +103,13 @@ None. Research is HIGH confidence across all five phases.
 | Phase 68 P01 | 3m | 2 tasks | 9 files |
 | Phase 68 P02 | 2m | 1 tasks | 1 files |
 | Phase 70-spec-02-sha-versioning P01 | 203 | 2 tasks | 1 files |
+| Phase 74-spec-05-step-numbering P01 | 218s | 2 tasks | 1 files |
 
 ## Session Continuity
 
 Last activity: 2026-06-11 — Roadmap created for v2.1.0-h (Phases 68–77); REQUIREMENTS traceability filled
 Stopped at: context exhaustion at 76% (2026-06-12)
-Resume file: .planning/phases/74-spec-05-step-numbering/74-CONTEXT.md
+Resume file: None
 
 ## Deferred Items
 

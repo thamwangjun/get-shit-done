@@ -880,7 +880,7 @@ Plans:
 
 **Plans**: 1 plan
 
-- [ ] 74-01-PLAN.md — Author SPEC-05 body: Purpose/Scope/five 05-INV-M invariants/Acceptance Tests (Task 1) + four Key Decisions/advisory Code Context/Status Draft->Ready (Task 2)
+- [x] 74-01-PLAN.md — Author SPEC-05 body: Purpose/Scope/five 05-INV-M invariants/Acceptance Tests (Task 1) + four Key Decisions/advisory Code Context/Status Draft->Ready (Task 2)
 
 #### Phase 75: spec-06 Thinking Effort
 
@@ -1007,7 +1007,7 @@ Plans:
 | 71. spec-04 Eta Materialization | v2.1.0-h | 1/1 | Complete    | 2026-06-12 |
 | 72. spec-08 Test Infrastructure | v2.1.0-h | 0/TBD | Not started | - |
 | 73. spec-03 Hooks Build | v2.1.0-h | 0/TBD | Not started | - |
-| 74. spec-05 Step Numbering | v2.1.0-h | 0/TBD | Not started | - |
+| 74. spec-05 Step Numbering | v2.1.0-h | 1/1 | Complete   | 2026-06-12 |
 | 75. spec-06 Thinking Effort | v2.1.0-h | 0/TBD | Not started | - |
 | 76. spec-07 Citation Guard | v2.1.0-h | 0/TBD | Not started | - |
 | 77. Cross-Spec Consistency Review | v2.1.0-h | 0/TBD | Not started | - |
