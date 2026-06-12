@@ -2,9 +2,9 @@
 
 **ID:** 01
 **Requirement:** SPEC-01
-**Status:** Draft
-**Confidence:** <!-- set when body is written -->
-**Specced:** <!-- set when body is written -->
+**Status:** Ready
+**Confidence:** High
+**Specced:** 2026-06-12
 **Reimplementation target:** v2.1.0-h fork features on refactored upstream
 **Depends on:** —
 **Reimplementation evidence (tier-1 test):** tests/negative-framing-scan.test.cjs
