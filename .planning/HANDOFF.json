@@ -1,0 +1,41 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-06-12T02:20:59.200Z",
+  "phase": "71",
+  "phase_name": "spec-04-eta-materialization",
+  "phase_dir": ".planning/phases/71-spec-04-eta-materialization",
+  "plan": null,
+  "task": null,
+  "total_tasks": null,
+  "status": "paused",
+  "workflow": "plan-phase",
+  "completed_tasks": [
+    {"id": 1, "name": "Init + closed-phase gate (phase_status=Pending)", "status": "done"},
+    {"id": 2, "name": "Load CONTEXT.md (exists)", "status": "done"},
+    {"id": 3, "name": "Research decision (user chose 'Research first')", "status": "done"},
+    {"id": 4, "name": "Spawn gsd-phase-researcher → 71-RESEARCH.md written, HIGH confidence", "status": "done"},
+    {"id": 5, "name": "Pre-planning gates resolved (Nyquist skip, security→threat_model required, UI disabled, schema N/A, pattern-mapper+intel intentionally skipped)", "status": "done"}
+  ],
+  "remaining_tasks": [
+    {"id": 6, "name": "Spawn gsd-planner (model opus) → 71-01-PLAN.md", "status": "not_started"},
+    {"id": 7, "name": "Handle planner return marker (step 9)", "status": "not_started"},
+    {"id": 8, "name": "Spawn gsd-plan-checker (model sonnet) (step 10)", "status": "not_started"},
+    {"id": 9, "name": "Revision loop max 3 if ISSUES FOUND (step 12)", "status": "not_started"},
+    {"id": 10, "name": "Requirements coverage gate (13) + decision coverage gate (13a, BLOCKING)", "status": "not_started"},
+    {"id": 11, "name": "state.planned-phase (13b), roadmap.annotate-dependencies (13c)", "status": "not_started"},
+    {"id": 12, "name": "Commit plans (13d), gap-analysis (13e), present offer_next (14)", "status": "not_started"}
+  ],
+  "blockers": [],
+  "human_actions_pending": [],
+  "decisions": [
+    {"decision": "Research first (spawned gsd-phase-researcher)", "rationale": "Siblings 69/70 both researched before their single plan; spec narrates a test file so a research pass extracting verbatim subtest names + assertion shapes is high-value", "phase": "71"},
+    {"decision": "Skip pattern-mapper (config=true) and intel API-surface (config=true)", "rationale": "Both are code-file tools; this is a single-Markdown prose phase whose analog (sibling SPEC.md) and exact symbols+line-numbers are already in CONTEXT.md/RESEARCH.md; siblings 69/70 produced no PATTERNS.md (precedent)", "phase": "71"},
+    {"decision": "Use 'wrappedConverter' closure at runtime-artifact-layout.cjs:198 for the skills copy path, NOT _copyCommandsAsSkillsViaConverter", "rationale": "Researcher found CONTEXT.md canonical_refs names a JSDoc-only symbol that does not exist as a function; correct symbol baked into 71-RESEARCH.md", "phase": "71"}
+  ],
+  "uncommitted_files": [
+    ".planning/phases/71-spec-04-eta-materialization/71-RESEARCH.md",
+    ".planning/phases/71-spec-04-eta-materialization/71-PLAN-PHASE-HANDOFF.md"
+  ],
+  "next_action": "Spawn ONE gsd-planner Agent (model=opus) mirroring sibling 70-01-PLAN.md structure (single plan, two type=auto tasks, artifacts section, prose-deliverable threat_model, affirmative framing). Full planner brief in 71-PLAN-PHASE-HANDOFF.md.",
+  "context_notes": "Mid-flight /gsd-plan-phase 71. Research complete; about to spawn planner when context hit ~70%. The full step-by-step resume brief (planner prompt files_to_read, locked decisions D-01..D-05, researcher facts, all post-planner steps with exact gsd_run commands) lives in 71-PLAN-PHASE-HANDOFF.md — read it first. granularity=coarse → single plan expected. planner_model=opus;low, checker=sonnet;high, commit_docs=true, mode=yolo, security_enforcement=true (ASVS L1), context_coverage_gate=true, post_planning_gaps=true, nyquist=false."
+}
