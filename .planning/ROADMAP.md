@@ -908,7 +908,7 @@ Plans:
 
 **Plans**: 1 plan
 
-- [ ] 76-01-PLAN.md — Author SPEC-07 body: Purpose/Scope/five 07-INV-M invariants/Acceptance Tests (Task 1) + three Key Decisions/advisory Code Context/Status Draft->Ready (Task 2) + INDEX.md SPEC-07 row Draft->Ready (Task 3)
+- [x] 76-01-PLAN.md — Author SPEC-07 body: Purpose/Scope/five 07-INV-M invariants/Acceptance Tests (Task 1) + three Key Decisions/advisory Code Context/Status Draft->Ready (Task 2) + INDEX.md SPEC-07 row Draft->Ready (Task 3)
 
 #### Phase 77: Cross-Spec Consistency Review
 
@@ -1011,7 +1011,7 @@ Plans:
 | 73. spec-03 Hooks Build | v2.1.0-h | 0/TBD | Not started | - |
 | 74. spec-05 Step Numbering | v2.1.0-h | 1/1 | Complete    | 2026-06-12 |
 | 75. spec-06 Thinking Effort | v2.1.0-h | 0/TBD | Not started | - |
-| 76. spec-07 Citation Guard | v2.1.0-h | 0/TBD | Not started | - |
+| 76. spec-07 Citation Guard | v2.1.0-h | 1/1 | Complete   | 2026-06-12 |
 | 77. Cross-Spec Consistency Review | v2.1.0-h | 0/TBD | Not started | - |
 
 *v1.41.3 shipped 2026-05-19 — see `.planning/milestones/v1.41.3-ROADMAP.md`*

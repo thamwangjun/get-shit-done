@@ -24,7 +24,7 @@
 - [x] **SPEC-04**: `04-eta-materialization/SPEC.md` specifies Eta v4 install-time content materialization — engine configuration (default delimiters, `autoEscape: false`, `<%~` raw output), `<%~ include() %>` conversion from `@~/` refs, the `ALLOWED_INLINE_REFS` exception list, and coverage of every copy path including the skills `wrappedConverter`
 - [x] **SPEC-05**: `05-step-numbering/SPEC.md` specifies whole-integer step numbering — the scanner (decimal + letter-suffix + out-of-order detection), `normalize-step-numbers.cjs` cross-file-aware idempotent CLI, the cross-file-step-refs scanner, and the explicit Pattern C exclusion (`## N.N.` section headings in plan files)
 - [ ] **SPEC-06**: `06-thinking-effort/SPEC.md` specifies per-agent thinking effort — `parseModelEffort` semicolon parser (input/output/error modes), the unified `{claude, codex}` resolver precedence chain (override → slot → D-08 medium floor), the static runtime allowlist, the per-runtime behavior matrix, catalog schema, 20 `*_effort` init siblings, spawn-template wiring, install.js Codex emit seam, the `rawSlotForRuntime` Codex fix, and the CATALOG-02 user-handover boundary
-- [ ] **SPEC-07**: `07-citation-guard/SPEC.md` specifies the citation cleanup guard — `no-issue-citations.test.cjs` detection (inline/parenthetical/feat-form), the two-tier allowlist (`PLACEHOLDER_DIGITS` vs `FILE_ALLOWLIST`) with per-tier semantics, and the 5-directory detection scope
+- [x] **SPEC-07**: `07-citation-guard/SPEC.md` specifies the citation cleanup guard — `no-issue-citations.test.cjs` detection (inline/parenthetical/feat-form), the two-tier allowlist (`PLACEHOLDER_DIGITS` vs `FILE_ALLOWLIST`) with per-tier semantics, and the 5-directory detection scope
 - [ ] **SPEC-08**: `08-test-infrastructure/SPEC.md` specifies the fork test infrastructure — the scanner-precedence rule (fork standard wins when a test conflicts), serial test isolation (`SERIAL_FILES`, `describe({ concurrency: false })`), and the fork-owned test suite layout/conventions
 
 ### Quality (applies to every SPEC.md)
@@ -70,7 +70,7 @@ Maps each REQ-ID to its phase. Every requirement maps to exactly one phase; QUAL
 | SPEC-03 | Phase 73 | Pending |
 | SPEC-05 | Phase 74 | Complete |
 | SPEC-06 | Phase 75 | Pending |
-| SPEC-07 | Phase 76 | Pending |
+| SPEC-07 | Phase 76 | Complete |
 | REV-01 | Phase 77 | Pending |
 | QUAL-01 | Phases 69–76 (shared) | Complete |
 | QUAL-02 | Phases 69–76 (shared) | Complete |

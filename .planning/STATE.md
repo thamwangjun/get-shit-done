@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v2.1.0-h
 milestone_name: Phase Details
-status: executing
-stopped_at: Phase 76 context gathered
-last_updated: "2026-06-12T05:50:32.641Z"
-last_activity: 2026-06-12 -- Phase 76 planning complete
+status: verifying
+stopped_at: Completed 76-01-PLAN.md
+last_updated: "2026-06-12T06:35:52.130Z"
+last_activity: 2026-06-12 -- Phase 76 execution started
 progress:
   total_phases: 10
-  completed_phases: 5
-  total_plans: 6
-  completed_plans: 6
-  percent: 50
+  completed_phases: 6
+  total_plans: 7
+  completed_plans: 7
+  percent: 60
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-07 after v2.1.0-f milestone start)
 
 **Core value:** Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships
-**Current focus:** Phase 74 — spec-05-step-numbering
+**Current focus:** Phase 76 — spec-07-citation-guard
 
 ## Current Position
 
-Phase: 75
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-06-12 -- Phase 76 planning complete
+Phase: 76 (spec-07-citation-guard) — EXECUTING
+Plan: 1 of 1
+Status: Phase complete — ready for verification
+Last activity: 2026-06-12 -- Phase 76 execution started
 
 Progress: [██████████] 100%
 
@@ -60,6 +60,10 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - [Phase 74]: Pattern C exclusion (## N.N. section headings in plan-phase.md/new-milestone.md/new-project.md) is intentional — dual-framed as Out-of-scope Scope bullet and Key Decision (a) in SPEC-05
 - [Phase 74]: Scanner-GREEN is the normalizer acceptance oracle for SPEC-05 INV-4/INV-5 — no dedicated normalizer test required (D-03)
 - [Phase 74]: SPEC-05 three-layer ordering stated explicitly: scanner detects (CI gate), normalizer fixes (remediation), cross-file-ref scanner validates (completeness check)
+- [Phase ?]: FILE_ALLOWLIST test-backing (D-03): every FILE_ALLOWLIST entry must be backed by a sibling test
+- [Phase ?]: Hex-color deliberate-false-positive tradeoff (D-04): inline regex hex lookbehind removed (260610-gku); false negatives are worse than false positives
+- [Phase ?]: Two-tier-allowlist refactor settled (D-05): PLACEHOLDER_DIGITS (global) vs FILE_ALLOWLIST (per-file) cannot collapse to single flat list
+- [Phase ?]: INV-5 standalone: SCAN_DIRS scope stated as its own claim; INV-3/INV-5 oracle is corpus describe block (not MISSING rows)
 
 ### Wave Structure (for execution)
 
@@ -105,12 +109,13 @@ None. Research is HIGH confidence across all five phases.
 | Phase 68 P02 | 2m | 1 tasks | 1 files |
 | Phase 70-spec-02-sha-versioning P01 | 203 | 2 tasks | 1 files |
 | Phase 74-spec-05-step-numbering P01 | 218s | 2 tasks | 1 files |
+| Phase 76 P01 | 242 | 3 tasks | 2 files |
 
 ## Session Continuity
 
 Last activity: 2026-06-11 — Roadmap created for v2.1.0-h (Phases 68–77); REQUIREMENTS traceability filled
-Stopped at: Phase 76 context gathered
-Resume file: .planning/phases/76-spec-07-citation-guard/76-CONTEXT.md
+Stopped at: Completed 76-01-PLAN.md
+Resume file: None
 
 ## Deferred Items
 
