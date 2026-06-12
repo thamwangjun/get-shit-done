@@ -2,9 +2,9 @@
 
 **ID:** 07
 **Requirement:** SPEC-07
-**Status:** Draft
-**Confidence:** <!-- set when body is written -->
-**Specced:** <!-- set when body is written -->
+**Status:** Ready
+**Confidence:** High
+**Specced:** 2026-06-12
 **Reimplementation target:** v2.1.0-h fork features on refactored upstream
 **Depends on:** SPEC-08
 **Reimplementation evidence (tier-1 test):** tests/no-issue-citations.test.cjs
@@ -84,13 +84,71 @@ Consequence of violating this invariant: either scanning too few directories mis
 
 ## Key Decisions
 
-<!-- to be filled: settled decisions the reimplementer MUST honor; each entry:
-     - decision statement
-     - rationale (one sentence)
-     - Settled — do not reopen. Consequence of reopening: <what breaks> -->
+### (a) FILE_ALLOWLIST test-backing requirement (D-03)
+
+Every `FILE_ALLOWLIST` entry exists only because another contract — a sibling test — depends on the cited digit's continued presence in that file; remove the dependency and the citation must go. The allowlist exempts a citation only because another test requires it, so every entry must be backed by a sibling test that asserts the digit's presence. An entry without a backing test is indistinguishable from an un-cleaned citation and becomes a silent permanent exemption that no automated check will ever surface. The four current backing relationships are advisory (current as of 2026-06-12, and will shift on any file rename):
+
+- `commands/gsd/config.md` #2439 ← `tests/bug-2439-set-profile-gsd-sdk-preflight.test.cjs`
+- `get-shit-done/references/thinking-partner.md` #1729 ← `tests/thinking-partner.test.cjs`
+- `agents/gsd-executor.md` #2924 ← `tests/worktree-cleanup.test.cjs`
+- `agents/gsd-executor.md` #3542 ← `tests/bug-3542-executor-git-stash-prohibition.test.cjs`
+
+Rationale: the allowlist is a contract between the citation guard and the tests that depend on those digits — without the backing test, no mechanism enforces that the allowlisted digit is still required, and the exemption silently outlives the reason it was granted.
+
+**Settled — do not reopen.** Consequence of reopening: an unbacked `FILE_ALLOWLIST` entry lets a real un-cleaned citation hide permanently behind a per-file exemption that no test guards — the guard's purpose for that file is defeated, and the corpus silently diverges from the "no citations" contract.
+
+---
+
+### (b) Hex-color deliberate-false-positive tradeoff — inline regex hex lookbehind removed (D-04)
+
+The guard accepts hex-color false positives in plain prose by design, because false negatives (a missed real citation like `owner/repo#NNN` slipping through) are worse than false positives (a flagged hex tail that an author can move to a code fence or add to the allowlist). The inline regex deliberately has no hex lookbehind; it was removed in quick task 260610-gku. The precise mechanics: `#e8c170` produces zero hits in `tests/no-issue-citations.test.cjs` because the character immediately after `#` is `e` — not a digit — so `INLINE_RE` (`/#(\d+)\b/g`) does not match. A hex tail whose first post-`#` character IS a digit (e.g., `#8170ff`) WOULD match and is accepted-as-flagged. Hex colors inside YAML frontmatter (D-09) and code fences (D-10) are fully protected by the exclusion state machines in 07-INV-4 — that protection requires no hex-specific rule.
+
+Rationale: a citation scanner that adds hex-lookahead to avoid prose false positives reintroduces the false-negative path it was built to close — real `owner/repo#NNN`-style citations would slip through undetected.
+
+**Settled — do not reopen.** Consequence of reopening: re-adding a hex lookbehind to suppress prose hex false positives reintroduces the false negative it was removed to fix — real citations of the form `owner/repo#NNN` (where the first digit after `#` is numeric) would slip through the guard undetected.
+
+---
+
+### (c) Two-tier-allowlist refactor as settled design (D-05)
+
+The original single flat allowlist was split into a global `PLACEHOLDER_DIGITS` tier and a per-file `FILE_ALLOWLIST` tier because the two exemption needs are different in kind: illustrative-everywhere placeholders (which have no real issue referent and should be exempt everywhere) versus functional-here-only cross-references (which are required by another test in a specific file and should be flagged everywhere else). The two-tier design is the normative structure; INV-2 and INV-3 are separate invariants precisely because the scope-of-exemption contrast (global vs per-file) is the observable behavioral claim.
+
+Rationale: collapsing both exemption types back into one flat list cannot express "exempt everywhere" and "exempt only here" simultaneously without either over-exempting functional cross-reference digits corpus-wide or burdening illustrative placeholders with per-file entries that require constant maintenance.
+
+**Settled — do not reopen.** Consequence of reopening: a single flat allowlist either leaks functional cross-reference digits into every file (real citations in the wrong file slip through undetected) or forces per-file entries onto every illustrative placeholder digit (needless maintenance burden and churn on every corpus edit); the INV-2/INV-3 scope-of-exemption contrast collapses, leaving a reimplementer unable to reason about which exemptions are global and which are file-scoped.
 
 ## Code Context
 
-<!-- advisory --> <!-- to be filled: current file paths, function names, and symbols pointing
-     to the existing implementation; ADVISORY ONLY — these paths will not survive the
-     upstream refactor; no normative claim may rely solely on this section -->
+<!-- advisory -->
+
+The items below are current as of 2026-06-12. All file paths, function names, regex bodies, constant values, and line numbers are advisory and will shift on any test edit or upstream refactor. No normative invariant depends on these paths or symbols — a reimplementer rebuilds the guard from the behavioral contract in §Invariants and §Key Decisions above.
+
+---
+
+### `tests/no-issue-citations.test.cjs` — tier-1 normative source
+
+| Symbol | What it does | Line (advisory) |
+|--------|--------------|-----------------|
+| `SCAN_DIRS` | Five-element array of corpus directories scanned | 44 |
+| `PLACEHOLDER_DIGITS` | `new Set([1, 2, 123])` — global tier of illustrative example digits, exempt everywhere | 54 |
+| `FILE_ALLOWLIST` | Per-file map: three file keys / four allowlisted digits — per-file functional cross-reference exemptions | 60 |
+| `INLINE_RE` | `/#(\d+)\b/g` — matches `#NNN` in non-frontmatter, non-code-fence prose; no hex lookbehind | 77 |
+| `FEAT_FORM_RE` | `/\bfeat-(\d{3,})\b/g` — matches `feat-NNNN` with 3+ digit tracker IDs | 82 |
+| `scanContent(content, relPath)` | Paren-context disambiguation for parenthetical vs inline; applies `PLACEHOLDER_DIGITS` + `FILE_ALLOWLIST[relPath]` exemption; frontmatter (line-1-only) + code-fence state machines | 133 |
+| `collectMarkdownFiles(dir)` | ENOENT-tolerant recursive `.md` file collector | 93 |
+| `ALL_FILES` | All markdown files collected from `SCAN_DIRS` at module scope | 117 |
+
+There is no dedicated `FILE_ALLOWLIST` unit test and no dedicated `SCAN_DIRS`-scope unit test — the corpus describe block `'corpus scan — no issue citations'` (one `'no citations in <file>'` subtest per file) is the functional oracle for 07-INV-3 and 07-INV-5. There is no remediation or normalizer CLI for this guard.
+
+---
+
+### Advisory FILE_ALLOWLIST backing-test cross-references (D-03)
+
+The following cross-references document which sibling test backs each `FILE_ALLOWLIST` entry. These paths are advisory and will shift on any test rename. The test-backing requirement itself is normative (07-INV-3 / Key Decision (a)); these specific test paths are not.
+
+| FILE_ALLOWLIST file | Digit(s) | Backing test (advisory) |
+|---------------------|----------|-------------------------|
+| `commands/gsd/config.md` | 2439 | `tests/bug-2439-set-profile-gsd-sdk-preflight.test.cjs` |
+| `get-shit-done/references/thinking-partner.md` | 1729 | `tests/thinking-partner.test.cjs` |
+| `agents/gsd-executor.md` | 2924 | `tests/worktree-cleanup.test.cjs` |
+| `agents/gsd-executor.md` | 3542 | `tests/bug-3542-executor-git-stash-prohibition.test.cjs` |
