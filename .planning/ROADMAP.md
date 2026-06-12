@@ -906,7 +906,9 @@ Plans:
   2. Invariants are EARS statements (≥2) citing `tests/no-issue-citations.test.cjs` as the tier-1 source; the two allowlist tiers are distinguished as separate invariants; traceability table complete [QUAL-01, QUAL-02, QUAL-04]
   3. Current paths advisory-marked; Key Decisions records the two-tier-allowlist refactor as settled [QUAL-03, QUAL-05]
 
-**Plans**: TBD
+**Plans**: 1 plan
+
+- [ ] 76-01-PLAN.md — Author SPEC-07 body: Purpose/Scope/five 07-INV-M invariants/Acceptance Tests (Task 1) + three Key Decisions/advisory Code Context/Status Draft->Ready (Task 2) + INDEX.md SPEC-07 row Draft->Ready (Task 3)
 
 #### Phase 77: Cross-Spec Consistency Review
 
