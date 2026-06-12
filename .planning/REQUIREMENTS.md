@@ -19,7 +19,7 @@
 ### Feature Specs
 
 - [x] **SPEC-01**: `01-positive-framing/SPEC.md` specifies the positive/affirmative-framing standard and the negative-framing corpus scanner — all 12+ detection branches enumerated (doNot, never, dont, antiPatterns, mustNot, shouldNot, cannot, wont, willNot, prohibited, forbidden, warn-only variants), the replacement rule (rewrite negatives as affirmative instructions), the paired-pattern exception, and the four scan directories
-- [ ] **SPEC-02**: `02-sha-versioning/SPEC.md` specifies the SHA-based versioning system — install.js git-SHA emit, `no-network` sentinel semantics, update worker via the GitHub Commits API with `isNewer` SHA equality, statusline display, `check-latest-version.cjs` injectable seam, and the `{{GSD_REPO}}`/`{{GSD_BRANCH}}` template placeholder boundary
+- [x] **SPEC-02**: `02-sha-versioning/SPEC.md` specifies the SHA-based versioning system — install.js git-SHA emit, `no-network` sentinel semantics, update worker via the GitHub Commits API with `isNewer` SHA equality, statusline display, `check-latest-version.cjs` injectable seam, and the `{{GSD_REPO}}`/`{{GSD_BRANCH}}` template placeholder boundary
 - [ ] **SPEC-03**: `03-hooks-build/SPEC.md` specifies the on-demand hooks build (`ensureHooksDist`) — trigger condition (absent `hooks/dist/`), `spawnSync` vs `execSync` decision, console notice, and abort-on-failure behavior
 - [ ] **SPEC-04**: `04-eta-materialization/SPEC.md` specifies Eta v4 install-time content materialization — engine configuration (default delimiters, `autoEscape: false`, `<%~` raw output), `<%~ include() %>` conversion from `@~/` refs, the `ALLOWED_INLINE_REFS` exception list, and coverage of every copy path including the skills `wrappedConverter`
 - [ ] **SPEC-05**: `05-step-numbering/SPEC.md` specifies whole-integer step numbering — the scanner (decimal + letter-suffix + out-of-order detection), `normalize-step-numbers.cjs` cross-file-aware idempotent CLI, the cross-file-step-refs scanner, and the explicit Pattern C exclusion (`## N.N.` section headings in plan files)
@@ -64,7 +64,7 @@ Maps each REQ-ID to its phase. Every requirement maps to exactly one phase; QUAL
 | SCAF-02 | Phase 68 | Complete |
 | SCAF-03 | Phase 68 | Complete |
 | SPEC-01 | Phase 69 | Complete |
-| SPEC-02 | Phase 70 | Pending |
+| SPEC-02 | Phase 70 | Complete |
 | SPEC-04 | Phase 71 | Pending |
 | SPEC-08 | Phase 72 | Pending |
 | SPEC-03 | Phase 73 | Pending |

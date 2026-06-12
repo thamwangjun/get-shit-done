@@ -823,7 +823,7 @@ Plans:
 
 **Wave 1**
 
-- [ ] 70-01-PLAN.md — Author SPEC.md body: Purpose, Scope, ~6 02-INV-M invariants + Acceptance Tests table across five tier-1 SHA tests, four settled Key Decisions, advisory Code Context; advance Status Draft -> Ready [SPEC-02, QUAL-01, QUAL-02, QUAL-03, QUAL-04, QUAL-05]
+- [x] 70-01-PLAN.md — Author SPEC.md body: Purpose, Scope, ~6 02-INV-M invariants + Acceptance Tests table across five tier-1 SHA tests, four settled Key Decisions, advisory Code Context; advance Status Draft -> Ready [SPEC-02, QUAL-01, QUAL-02, QUAL-03, QUAL-04, QUAL-05]
 
 #### Phase 71: spec-04 Eta Materialization
 
@@ -998,7 +998,7 @@ Plans:
 | 67. Full Verification | v2.1.0-g | 1/1 | Complete    | 2026-06-10 |
 | 68. Spec Scaffold | v2.1.0-h | 2/2 | Complete    | 2026-06-11 |
 | 69. spec-01 Positive Framing | v2.1.0-h | 1/1 | Complete    | 2026-06-12 |
-| 70. spec-02 SHA Versioning | v2.1.0-h | 0/TBD | Not started | - |
+| 70. spec-02 SHA Versioning | v2.1.0-h | 1/1 | Complete   | 2026-06-12 |
 | 71. spec-04 Eta Materialization | v2.1.0-h | 0/TBD | Not started | - |
 | 72. spec-08 Test Infrastructure | v2.1.0-h | 0/TBD | Not started | - |
 | 73. spec-03 Hooks Build | v2.1.0-h | 0/TBD | Not started | - |

@@ -2,16 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.1.0-h
 milestone_name: Phase Details
-status: executing
-stopped_at: context exhaustion at 78% (2026-06-12)
-last_updated: "2026-06-12T01:36:36.870Z"
-last_activity: 2026-06-12 -- Phase 70 planning complete
+status: verifying
+last_updated: "2026-06-12T01:45:31.762Z"
+last_activity: 2026-06-12
 progress:
   total_phases: 10
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 4
-  completed_plans: 3
-  percent: 20
+  completed_plans: 4
+  percent: 30
 ---
 
 # Project State
@@ -21,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-06-07 after v2.1.0-f milestone start)
 
 **Core value:** Every agent, command, and workflow file on `main` meets the fork's prompt engineering quality bar before it ships
-**Current focus:** Phase 69 — spec-01-positive-framing
+**Current focus:** Phase 70 — spec-02-sha-versioning
 
 ## Current Position
 
-Phase: 70
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-06-12 -- Phase 70 planning complete
+Phase: 70 (spec-02-sha-versioning) — EXECUTING
+Plan: 1 of 1
+Status: Phase complete — ready for verification
+Last activity: 2026-06-12
 
 Progress: [██████████] 100%
 
@@ -56,6 +55,7 @@ Decisions are logged in PROJECT.md Key Decisions table.
 - [Phase ?]: XML tag hierarchy exclusion recorded once in INDEX.md — PROJECT.md item and SCAF-03 floor item are the same exclusion; single consolidated entry
 - [Phase 69]: D-02 shape-normative: detection SHAPE is the contract; branch enumeration marked 'current as of 2026-06-12' and advisory — makes spec survive upstream merges that add/remove detection branches
 - [Phase 69]: D-05 affirmative-rewrite rule documented in Purpose + Key Decisions, NOT as a MUST invariant — scanner only flags; no tier-1 test for rewriting; rewrite is a human-authoring standard
+- [Phase ?]: Placeholder substitution folded into 02-INV-1 as sub-clause per D-01; D-10 sentinel count shape-normative with 'current as of 2026-06-12' marker
 
 ### Wave Structure (for execution)
 
@@ -99,12 +99,13 @@ None. Research is HIGH confidence across all five phases.
 | 260610-ita | Address milestone v2.1.0-g documentation tech debt | 2026-06-10 | e3bf3419 | [260610-ita-address-milestone-v2-1-0-g-documentation](./quick/260610-ita-address-milestone-v2-1-0-g-documentation/) |
 | Phase 68 P01 | 3m | 2 tasks | 9 files |
 | Phase 68 P02 | 2m | 1 tasks | 1 files |
+| Phase 70-spec-02-sha-versioning P01 | 203 | 2 tasks | 1 files |
 
 ## Session Continuity
 
 Last activity: 2026-06-11 — Roadmap created for v2.1.0-h (Phases 68–77); REQUIREMENTS traceability filled
 Stopped at: context exhaustion at 78% (2026-06-12)
-Resume file: .planning/phases/70-spec-02-sha-versioning/70-CONTEXT.md
+Resume file: None
 
 ## Deferred Items
 
